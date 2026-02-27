@@ -1,26 +1,18 @@
 @import "tailwindcss";
 
+/* Glow Theme CSS Variables (mydesktop default: gold) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --glow-primary: #ffd700;
+  --glow-secondary: #ff8c00;
+  --glow-orb-1: rgba(255, 215, 0, 0.15);
+  --glow-orb-2: rgba(255, 140, 0, 0.1);
+  --glow-orb-3: rgba(255, 215, 0, 0.08);
+  --glow-orb-4: rgba(255, 140, 0, 0.05);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* 100vh lock - NO page scroll EVER */
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100vh;
+  overflow: hidden;
 }
