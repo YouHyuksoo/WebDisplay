@@ -17,7 +17,7 @@
  *   - `App.state` -> `state` (state.ts import)
  *   - `App.Config` -> config.ts import
  *   - `App.Carousel` / `App.Sections` / `App.Lanes` -> lazy import (순환 참조 방지)
- *   - `App.openModal` / `App.showConfirm` / `App.showContextMenu` -> ui-stub.ts import
+ *   - `App.openModal` / `App.showConfirm` / `App.showContextMenu` -> ui.ts import
  *   - 카드 클릭 시 `window.open` -> `mes-navigate` CustomEvent dispatch (MES 전용)
  */
 
@@ -30,7 +30,7 @@ import {
   showConfirm,
   showContextMenu,
   saveShortcuts,
-} from './ui-stub';
+} from './ui';
 import type { Shortcut, Category, Section } from './types';
 
 // ---------------------------------------------------------------------------

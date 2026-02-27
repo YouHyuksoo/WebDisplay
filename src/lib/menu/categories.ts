@@ -20,7 +20,7 @@
  *   - `App.Config` -> config.ts import
  *   - `App.Storage` -> storage.ts import
  *   - `App.State` -> state.ts import
- *   - `App.showToast` / `App.showConfirm` -> ui-stub.ts import
+ *   - `App.showToast` / `App.showConfirm` -> ui.ts import
  *   - `App.Sections` / `App.Cards` -> lazy import (순환 참조 방지)
  */
 
@@ -28,7 +28,7 @@ import type { Category } from './types';
 import { DEFAULT_CATEGORIES, SECTIONS } from './config';
 import * as Storage from './storage';
 import { state } from './state';
-import { showToast, showConfirm, saveShortcuts } from './ui-stub';
+import { showToast, showConfirm, saveShortcuts } from './ui';
 
 // ---------------------------------------------------------------------------
 // 상수

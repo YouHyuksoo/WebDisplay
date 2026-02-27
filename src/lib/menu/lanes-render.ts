@@ -10,7 +10,7 @@
  *    renderHistoryLane(); // 히스토리 카드 렌더링
  *    renderToolsLane();   // 도구 카드 렌더링
  *    ```
- * 3. **의존성**: state, gsap, ui-stub
+ * 3. **의존성**: state, gsap, ui
  *
  * 원본: mydesktop/js/lanes.js (App.Lanes) 중 렌더링 부분
  * 변경점:
@@ -24,7 +24,7 @@ import {
   showToast,
   applyGlowTheme,
   toggleSettingsMenu,
-} from './ui-stub';
+} from './ui';
 import type { Shortcut } from './types';
 
 // ---------------------------------------------------------------------------

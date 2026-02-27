@@ -16,12 +16,12 @@
  *   - `App.Carousel.xxx` -> named export 함수
  *   - `App.state` -> `state` (state.ts import)
  *   - `App.Cards` -> lazy import (순환 참조 방지)
- *   - `App.showToast` -> ui-stub.ts import
+ *   - `App.showToast` -> ui.ts import
  */
 
 import gsap from 'gsap';
 import { state } from './state';
-import { showToast, saveSettings } from './ui-stub';
+import { showToast, saveSettings } from './ui';
 
 // ---------------------------------------------------------------------------
 // 상수
