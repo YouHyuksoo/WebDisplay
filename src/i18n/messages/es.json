@@ -1,0 +1,53 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error al cargar datos",
+    "refresh": "Actualizar",
+    "settings": "Configuración",
+    "back": "Atrás",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar"
+  },
+  "menu": {
+    "management": "Configuración de gestión",
+    "monitoring": "Monitoreo en tiempo real",
+    "quality": "Control de calidad"
+  },
+  "screens": {
+    "12": "Estado de producción ASSY",
+    "16": "Error de recopilación de registros",
+    "18": "Configuración de opciones",
+    "21": "Estado de máquinas ASSY",
+    "22": "Volumen de producción ASSY",
+    "23": "Rendimiento AOI",
+    "24": "Estado de máquinas SMD",
+    "25": "Volumen de producción SMD",
+    "26": "Estado de entrada de materiales",
+    "27": "Gestión MSL",
+    "28": "Tasa de operación de equipos",
+    "31": "Gestión de pasta de soldadura",
+    "32": "Gestión de Stencil",
+    "34": "Defectos de visión",
+    "37": "Gestión de temperatura",
+    "38": "Gestión de humedad"
+  },
+  "display": {
+    "refreshInterval": "Actualización: {seconds}s",
+    "placeholder": "Pantalla en desarrollo",
+    "escHint": "Presione ESC para volver al menú",
+    "lineStatus": "Estado de línea",
+    "checkItems": "Elementos de verificación"
+  },
+  "table": {
+    "line": "Línea",
+    "status": "Estado",
+    "model": "Modelo",
+    "plan": "Plan",
+    "input": "Entrada",
+    "actual": "Real",
+    "ng": "NG",
+    "aoi": "AOI",
+    "operationRate": "Tasa de operación"
+  }
+}

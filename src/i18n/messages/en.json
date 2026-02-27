@@ -1,0 +1,53 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Failed to load data",
+    "refresh": "Refresh",
+    "settings": "Settings",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "menu": {
+    "management": "Management Settings",
+    "monitoring": "Real-time Monitoring",
+    "quality": "Quality Control"
+  },
+  "screens": {
+    "12": "ASSY Production Status",
+    "16": "Equipment Log Collection Error",
+    "18": "Option Settings",
+    "21": "ASSY Machine Status",
+    "22": "ASSY Production Volume",
+    "23": "AOI Yield",
+    "24": "SMD Machine Status",
+    "25": "SMD Production Volume",
+    "26": "Material Input Status",
+    "27": "MSL Management",
+    "28": "Equipment Operation Rate",
+    "31": "Solder Paste Management",
+    "32": "Stencil Management",
+    "34": "Vision Defects",
+    "37": "Temperature Management",
+    "38": "Humidity Management"
+  },
+  "display": {
+    "refreshInterval": "Refresh: {seconds}s",
+    "placeholder": "Screen under development",
+    "escHint": "Press ESC to return to menu",
+    "lineStatus": "Line Status",
+    "checkItems": "Check Items"
+  },
+  "table": {
+    "line": "Line",
+    "status": "Status",
+    "model": "Model",
+    "plan": "Plan",
+    "input": "Input",
+    "actual": "Actual",
+    "ng": "NG",
+    "aoi": "AOI",
+    "operationRate": "Operation Rate"
+  }
+}

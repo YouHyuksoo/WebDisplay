@@ -1,0 +1,53 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "error": "데이터 로드 실패",
+    "refresh": "새로고침",
+    "settings": "설정",
+    "back": "뒤로",
+    "save": "저장",
+    "cancel": "취소",
+    "close": "닫기"
+  },
+  "menu": {
+    "management": "관리 설정",
+    "monitoring": "실시간 모니터링",
+    "quality": "품질 관리"
+  },
+  "screens": {
+    "12": "ASSY 생산 현황",
+    "16": "설비 로그 수집 오류",
+    "18": "옵션 설정",
+    "21": "ASSY 기계 상태",
+    "22": "ASSY 생산량",
+    "23": "AOI 수율",
+    "24": "SMD 기계 상태",
+    "25": "SMD 생산량",
+    "26": "자재 투입 현황",
+    "27": "MSL 관리",
+    "28": "설비 가동률",
+    "31": "Solder Paste 관리",
+    "32": "Stencil 관리",
+    "34": "비전 불량",
+    "37": "온도 관리",
+    "38": "습도 관리"
+  },
+  "display": {
+    "refreshInterval": "새로고침: {seconds}초",
+    "placeholder": "화면 구현 예정",
+    "escHint": "ESC 키로 메뉴 복귀",
+    "lineStatus": "라인 상태",
+    "checkItems": "점검 항목"
+  },
+  "table": {
+    "line": "라인",
+    "status": "상태",
+    "model": "모델",
+    "plan": "계획",
+    "input": "투입",
+    "actual": "실적",
+    "ng": "NG",
+    "aoi": "AOI",
+    "operationRate": "가동률"
+  }
+}
