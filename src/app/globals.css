@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+/* === mydesktop Menu CSS (ported from C:/Project/mydesktop/css/) === */
+@import "../styles/menu/variables.css";
+@import "../styles/menu/base.css";
+@import "../styles/menu/animations.css";
+@import "../styles/menu/components-core.css";
+@import "../styles/menu/components-cards.css";
+@import "../styles/menu/components-menus.css";
+@import "../styles/menu/components-modals.css";
+@import "../styles/menu/components-layout.css";
+@import "../styles/menu/components-lanes.css";
+@import "../styles/menu/components-effects.css";
+@import "../styles/menu/components-creatures.css";
+@import "../styles/menu/components-dragon.css";
+@import "../styles/menu/components-protocol.css";
+@import "../styles/menu/responsive.css";
+
 /* Glow Theme CSS Variables (mydesktop default: gold) */
 :root {
   --glow-primary: #ffd700;

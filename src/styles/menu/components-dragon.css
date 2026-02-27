@@ -1,0 +1,260 @@
+/**
+ * @file src/styles/menu/components-dragon.css
+ * @description 드래곤 이스터에그 스타일 (mydesktop 원본 포팅)
+ *
+ * 초보자 가이드:
+ * 1. 이 파일은 드래곤 공격 이스터에그의 CSS 스타일을 포함합니다
+ * 2. mydesktop/css/components/dragon.css에서 그대로 포팅된 파일입니다
+ * 3. globals.css에서 @import로 로드됩니다
+ */
+
+/* === From: dragon.css === */
+
+/* ===== Dragon Attack Easter Egg ===== */
+.dragon {
+  position: fixed;
+  width: 200px;
+  height: 150px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.dragon-body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.dragon-head {
+  position: absolute;
+  left: 0;
+  top: 30px;
+  width: 60px;
+  height: 50px;
+  background: linear-gradient(135deg, #2d5a27 0%, #1a3a15 100%);
+  border-radius: 50% 50% 40% 40%;
+  z-index: 5;
+}
+
+.dragon-eye {
+  position: absolute;
+  left: 15px;
+  top: 15px;
+  width: 15px;
+  height: 12px;
+  background: #ff6600;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ff6600, inset 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.dragon-eye::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 5px;
+  height: 8px;
+  background: #000;
+  border-radius: 50%;
+}
+
+.dragon-horn {
+  position: absolute;
+  top: -15px;
+  width: 8px;
+  height: 25px;
+  background: linear-gradient(to top, #4a3728, #2a1a10);
+  border-radius: 50% 50% 30% 30%;
+}
+
+.dragon-horn.left {
+  left: 10px;
+  transform: rotate(-20deg);
+}
+
+.dragon-horn.right {
+  left: 30px;
+  transform: rotate(20deg);
+}
+
+.dragon-snout {
+  position: absolute;
+  left: -20px;
+  top: 25px;
+  width: 35px;
+  height: 25px;
+  background: linear-gradient(135deg, #3d7a37 0%, #2d5a27 100%);
+  border-radius: 40% 20% 20% 40%;
+}
+
+.dragon-nostril {
+  position: absolute;
+  top: 5px;
+  width: 6px;
+  height: 4px;
+  background: #1a1a1a;
+  border-radius: 50%;
+}
+
+.dragon-nostril.left {
+  left: 5px;
+}
+
+.dragon-nostril.right {
+  left: 15px;
+}
+
+.dragon-mouth {
+  position: absolute;
+  left: -15px;
+  top: 35px;
+  width: 30px;
+  height: 8px;
+  background: #8b0000;
+  border-radius: 0 0 50% 50%;
+}
+
+.dragon-neck {
+  position: absolute;
+  left: 50px;
+  top: 45px;
+  width: 40px;
+  height: 35px;
+  background: linear-gradient(90deg, #2d5a27 0%, #3d7a37 50%, #2d5a27 100%);
+  border-radius: 30%;
+  z-index: 3;
+}
+
+.dragon-torso {
+  position: absolute;
+  left: 70px;
+  top: 35px;
+  width: 80px;
+  height: 60px;
+  background: linear-gradient(135deg, #3d7a37 0%, #2d5a27 50%, #1a3a15 100%);
+  border-radius: 50% 40% 40% 50%;
+  z-index: 2;
+}
+
+.dragon-wing {
+  position: absolute;
+  top: 10px;
+  width: 70px;
+  height: 80px;
+  z-index: 1;
+  transform-origin: bottom center;
+}
+
+.dragon-wing.left {
+  left: 80px;
+  transform: rotate(-10deg);
+}
+
+.dragon-wing.right {
+  left: 110px;
+  transform: rotate(10deg);
+}
+
+.wing-membrane {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(45, 90, 39, 0.9) 0%, rgba(61, 122, 55, 0.6) 100%);
+  clip-path: polygon(0% 100%, 50% 0%, 100% 30%, 80% 100%);
+  border: 2px solid #2d5a27;
+}
+
+.dragon-tail {
+  position: absolute;
+  left: 140px;
+  top: 60px;
+  display: flex;
+  z-index: 1;
+}
+
+.tail-segment {
+  width: 25px;
+  height: 20px;
+  background: linear-gradient(135deg, #3d7a37 0%, #2d5a27 100%);
+  border-radius: 50%;
+  margin-left: -10px;
+  transform-origin: left center;
+}
+
+.tail-tip {
+  width: 20px;
+  height: 15px;
+  background: linear-gradient(135deg, #2d5a27 0%, #1a3a15 100%);
+  clip-path: polygon(0% 0%, 0% 100%, 100% 50%);
+  margin-left: -5px;
+}
+
+.dragon-leg {
+  position: absolute;
+  bottom: 20px;
+  width: 15px;
+  height: 30px;
+  background: linear-gradient(to bottom, #2d5a27, #1a3a15);
+  border-radius: 30% 30% 50% 50%;
+}
+
+.dragon-leg.left {
+  left: 85px;
+}
+
+.dragon-leg.right {
+  left: 115px;
+}
+
+/* Dragon Fire Animation */
+@keyframes flame-dance {
+  0%, 100% {
+    transform: scaleY(1) scaleX(1) translateX(0);
+  }
+  25% {
+    transform: scaleY(1.2) scaleX(0.9) translateX(-2px);
+  }
+  50% {
+    transform: scaleY(0.9) scaleX(1.1) translateX(2px);
+  }
+  75% {
+    transform: scaleY(1.1) scaleX(0.95) translateX(-1px);
+  }
+}
+
+.card-fire-overlay {
+  background: linear-gradient(to top, rgba(255, 100, 0, 0.3), transparent);
+}
+
+.card-flame {
+  animation: flame-dance 0.3s ease-in-out infinite;
+}
+
+.shortcut-card.burning {
+  z-index: 100;
+}
+
+.smoke-particle {
+  animation: smoke-rise 2s ease-out forwards;
+}
+
+@keyframes smoke-rise {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.5);
+  }
+}
+
+/* Phoenix revival glow */
+@keyframes phoenix-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px #ff6600, 0 0 40px #ffaa00;
+  }
+  50% {
+    box-shadow: 0 0 40px #ff6600, 0 0 80px #ffaa00, 0 0 120px #ff3300;
+  }
+}

@@ -1,0 +1,19 @@
+/**
+ * @file src/styles/menu/variables.css
+ * @description CSS 변수 및 테마 색상 정의 (mydesktop 원본 포팅)
+ *
+ * 초보자 가이드:
+ * 1. 이 파일은 mydesktop 메뉴 화면에서 사용하는 CSS 변수를 정의합니다
+ * 2. --accent, --border 등 변수를 통해 테마 색상을 일괄 관리합니다
+ * 3. globals.css에서 @import로 로드됩니다
+ */
+
+:root {
+  --bg-primary: #050508;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --accent: #ffd700;
+  --accent-secondary: #ff8c00;
+  --border: rgba(255, 215, 0, 0.2);
+  --card-glow: rgba(255, 215, 0, 0.4);
+}

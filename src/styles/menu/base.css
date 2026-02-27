@@ -1,0 +1,105 @@
+/**
+ * @file src/styles/menu/base.css
+ * @description 기본 스타일, 리셋, 레이아웃 (mydesktop 원본 포팅)
+ *
+ * 초보자 가이드:
+ * 1. 이 파일은 mydesktop 메뉴 화면의 기본 레이아웃과 리셋 스타일입니다
+ * 2. body, canvas, ambient glow, loading 등 전역 요소를 정의합니다
+ * 3. globals.css에서 @import로 로드됩니다
+ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+
+#canvas-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* 몽환적인 조명 효과 */
+#ambient-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  mix-blend-mode: screen;
+  transition: all 0.5s ease;
+}
+
+.glow-orb.orb-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 70%);
+  top: 20%;
+  left: 10%;
+}
+
+.glow-orb.orb-2 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(255, 140, 0, 0.3) 0%, transparent 70%);
+  top: 60%;
+  right: 10%;
+}
+
+.glow-orb.orb-3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 100, 100, 0.25) 0%, transparent 70%);
+  bottom: 10%;
+  left: 30%;
+}
+
+.glow-orb.orb-4 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(100, 200, 255, 0.2) 0%, transparent 70%);
+  top: 10%;
+  right: 25%;
+}
+
+/* ===== Loading ===== */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #050508;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-ring {
+  width: 60px;
+  height: 60px;
+  border: 3px solid rgba(255, 215, 0, 0.1);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}

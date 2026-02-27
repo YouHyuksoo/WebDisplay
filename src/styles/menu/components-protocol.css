@@ -1,0 +1,157 @@
+/**
+ * @file src/styles/menu/components-protocol.css
+ * @description 프로토콜 핸들러 및 다이얼로그 모달 스타일 (mydesktop 원본 포팅)
+ *
+ * 초보자 가이드:
+ * 1. 이 파일은 북마클릿 설정, 프로토콜 핸들러 모달, 다이얼로그 모달을 포함합니다
+ * 2. mydesktop/css/components/creatures.css 후반부에서 분리 포팅되었습니다
+ * 3. globals.css에서 @import로 로드됩니다
+ */
+
+/* === From: creatures.css (Part 2 - Protocol & Dialog) === */
+
+/* ===== Protocol Handler Modal ===== */
+.protocol-modal {
+  max-width: 450px;
+}
+
+.protocol-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.protocol-description strong {
+  color: var(--accent);
+}
+
+.bookmarklet-container {
+  text-align: center;
+  margin-bottom: 25px;
+  padding: 25px;
+  background: rgba(255, 215, 0, 0.05);
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 215, 0, 0.3);
+}
+
+.bookmarklet-btn {
+  display: inline-block;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  color: #000;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  text-decoration: none;
+  cursor: grab;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+}
+
+.bookmarklet-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5);
+}
+
+.bookmarklet-btn:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+.bookmarklet-hint {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--accent);
+  animation: hintBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes hintBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.protocol-usage {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.protocol-usage h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.protocol-usage ol {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.protocol-usage li {
+  margin-bottom: 4px;
+}
+
+.protocol-usage li::marker {
+  color: var(--accent);
+}
+
+/* ===== Dialog Modal ===== */
+.dialog-modal {
+  max-width: 380px;
+}
+
+.dialog-message {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  white-space: pre-line;
+}
+
+.dialog-input-field {
+  margin-bottom: 20px;
+}
+
+.dialog-input-field input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 215, 0, 0.05);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.dialog-input-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.protocol-url-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.bookmarklet-copy {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.bookmarklet-copy small {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}

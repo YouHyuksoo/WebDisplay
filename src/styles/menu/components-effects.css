@@ -1,0 +1,359 @@
+/**
+ * @file src/styles/menu/components-effects.css
+ * @description 이펙트 및 이스터에그 버튼 스타일 (mydesktop 원본 포팅)
+ *
+ * 초보자 가이드:
+ * 1. 이 파일은 click ripple, meteor, easter-egg 버튼, meteor-impact 스타일을 포함합니다
+ * 2. mydesktop/css/components/effects.css, easter-buttons.css, meteor-impact.css에서 포팅되었습니다
+ * 3. globals.css에서 @import로 로드됩니다
+ */
+
+/* === From: effects.css === */
+
+/* ===== Click Ripple Effect ===== */
+.click-ripple {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0.8;
+  z-index: 5;
+  animation: rippleExpand 1s ease-out forwards;
+}
+
+.click-burst {
+  position: fixed;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.burst-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent);
+}
+
+/* ===== Meteor Effect ===== */
+.meteor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 15;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow:
+    0 0 10px var(--accent),
+    0 0 20px var(--accent),
+    0 0 40px var(--accent);
+}
+
+.meteor::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(to left, var(--accent), transparent);
+  border-radius: 2px;
+}
+
+.meteor::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  width: 150px;
+  height: 1px;
+  background: linear-gradient(to left, var(--accent-secondary), transparent);
+  opacity: 0.5;
+}
+
+.impact-spark {
+  position: fixed;
+  pointer-events: none;
+  z-index: 16;
+}
+
+.spark-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--accent);
+}
+
+/* === From: easter-buttons.css === */
+
+/* ===== Easter Egg Container ===== */
+#easter-egg-container {
+  position: fixed;
+  left: 20px;
+  top: 120px;
+  z-index: 300;
+}
+
+/* 인디케이터 (평소 보임) */
+#easter-egg-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(10, 10, 15, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.5;
+}
+
+#easter-egg-indicator:hover {
+  opacity: 1;
+  border-color: var(--accent);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+/* 버튼들 (평소 숨김, 호버 시 표시) */
+#easter-egg-buttons {
+  position: absolute;
+  left: 40px;
+  top: 0;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+
+#easter-egg-container:hover #easter-egg-buttons {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.easter-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  opacity: 0.8;
+}
+
+.easter-btn:hover {
+  opacity: 1;
+  border-color: var(--accent);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  transform: scale(1.1);
+}
+
+.easter-btn:active {
+  transform: scale(0.95);
+}
+
+/* ===== Lottie Dragon ===== */
+.dragon-lottie {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.5));
+}
+
+.dragon-fire-lottie {
+  position: fixed;
+  z-index: 9998;
+  pointer-events: none;
+  filter: drop-shadow(0 0 30px rgba(255, 100, 0, 0.8));
+}
+
+/* === From: meteor-impact.css === */
+
+/* ===== 화면 깨짐 효과 (유성 충돌) ===== */
+.screen-crack-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 99999;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* 충돌 순간 플래시 효과 */
+.impact-flash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at var(--impact-x, 50%) var(--impact-y, 50%),
+    rgba(255, 200, 100, 0.9) 0%,
+    rgba(255, 100, 0, 0.5) 20%,
+    rgba(255, 50, 0, 0.2) 40%,
+    transparent 70%);
+  animation: impactFlash 0.3s ease-out forwards;
+}
+
+/* 깨진 유리 SVG */
+.crack-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.crack-line {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 8px rgba(255, 200, 200, 0.6));
+  animation: crackSpread 0.4s ease-out forwards, crackGlow 2s ease-in-out infinite;
+}
+
+.crack-line.secondary {
+  stroke: rgba(200, 220, 255, 0.7);
+  stroke-width: 1;
+  filter: drop-shadow(0 0 2px rgba(200, 220, 255, 0.5));
+}
+
+.crack-line.tertiary {
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 0.5;
+  filter: none;
+}
+
+/* 유리 파편 */
+.glass-shard {
+  position: absolute;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(200, 220, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.1) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    inset 0 0 10px rgba(255, 255, 255, 0.3),
+    0 0 10px rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+}
+
+/* 충격파 효과 */
+.shockwave {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 200, 100, 0.8);
+  box-shadow:
+    0 0 20px rgba(255, 150, 0, 0.6),
+    inset 0 0 20px rgba(255, 200, 100, 0.3);
+  transform: translate(-50%, -50%);
+  animation: shockwaveExpand 1s ease-out forwards;
+}
+
+@keyframes shockwaveExpand {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 200vw;
+    height: 200vw;
+    opacity: 0;
+  }
+}
+
+/* 화면 흔들림 클래스 */
+.screen-shaking {
+  animation: screenShake 0.5s ease-out;
+}
+
+/* 복구 효과 */
+.heal-line {
+  animation: crackHeal 0.5s ease-out forwards !important;
+}
+
+@keyframes crackHeal {
+  0% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 1000; opacity: 0; }
+}
+
+/* 메테오(유성) 스타일 */
+.meteor-impact {
+  position: fixed;
+  z-index: 99998;
+  pointer-events: none;
+}
+
+.meteor-body {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,
+    #ffffff 0%,
+    #ffdd88 10%,
+    #ff8800 30%,
+    #ff4400 50%,
+    #882200 70%,
+    #331100 100%);
+  box-shadow:
+    0 0 30px #ff8800,
+    0 0 60px #ff4400,
+    0 0 100px #ff2200,
+    inset -10px -10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.meteor-tail {
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  height: 4px;
+  background: linear-gradient(to left,
+    rgba(255, 200, 100, 0.9) 0%,
+    rgba(255, 100, 0, 0.6) 30%,
+    rgba(255, 50, 0, 0.3) 60%,
+    transparent 100%);
+  border-radius: 2px;
+  transform: translateY(-50%);
+  filter: blur(2px);
+}
+
+/* 스파크 파티클 (meteor-impact 버전) */
+.impact-spark {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* 먼지/잔해 */
+.debris {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 200, 150, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+}

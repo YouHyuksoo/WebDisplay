@@ -1,0 +1,427 @@
+/**
+ * @file src/styles/menu/components-menus.css
+ * @description 메뉴, 컨텍스트 메뉴, 사이드바 토글 스타일 (mydesktop 원본 포팅)
+ *
+ * 초보자 가이드:
+ * 1. 이 파일은 settings menu, tunnel/card-style submenu, context menu, sidebar toggles를 포함합니다
+ * 2. mydesktop/css/components/menus.css, context-menu.css, sidebar-toggles.css에서 포팅되었습니다
+ * 3. globals.css에서 @import로 로드됩니다
+ */
+
+/* === From: menus.css === */
+
+/* ===== Settings Menu ===== */
+#settings-menu {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  padding: 12px 0;
+  min-width: 220px;
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+#settings-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.settings-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.settings-item:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.settings-item .icon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+}
+
+.settings-item .icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.settings-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 8px 0;
+}
+
+.settings-credits {
+  padding: 12px 20px;
+  text-align: center;
+}
+
+.credits-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 6px;
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.credits-avatar:hover {
+  transform: scale(1.2) rotate(10deg);
+  box-shadow: 0 0 20px var(--accent), 0 0 40px rgba(255, 215, 0, 0.5);
+  border-color: #fff;
+}
+
+.credits-avatar:active {
+  transform: scale(0.95);
+}
+
+.credits-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.credits-tagline {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+.settings-submenu-trigger {
+  position: relative;
+}
+
+.submenu-arrow {
+  margin-left: auto;
+  opacity: 0.5;
+}
+
+/* ===== Tunnel Submenu ===== */
+#tunnel-submenu {
+  position: fixed;
+  bottom: 100px;
+  right: 260px;
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  padding: 8px 0;
+  min-width: 140px;
+  z-index: 201;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+}
+
+#tunnel-submenu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.tunnel-option {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.tunnel-option:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.tunnel-option.active {
+  color: var(--accent);
+}
+
+.tunnel-option.active::after {
+  content: '\2713';
+  margin-left: auto;
+  color: var(--accent);
+}
+
+.shape-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+/* ===== Card Style Submenu ===== */
+#card-style-submenu {
+  position: fixed;
+  bottom: 100px;
+  right: 260px;
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  padding: 8px 0;
+  min-width: 140px;
+  z-index: 201;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+}
+
+#card-style-submenu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.card-style-option {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.card-style-option:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.card-style-option.active::after {
+  content: '\2713';
+  margin-left: auto;
+  color: var(--accent);
+}
+
+.style-preview {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.glass-preview { background: rgba(255,255,255,0.1); }
+.rainbow-preview { background: linear-gradient(135deg, #ff6b6b, #ffd700, #4ecdc4, #45b7d1, #a55eea); }
+.gradient-preview { background: linear-gradient(135deg, var(--accent), var(--accent-secondary)); }
+.dark-preview { background: rgba(0,0,0,0.6); }
+.neon-preview { background: #000; box-shadow: inset 0 0 8px var(--accent); }
+.hermes-preview { background: linear-gradient(135deg, #f37021, #cf5a28, #8b4513); }
+.cyberpunk-preview { background: linear-gradient(135deg, #ff00ff, #00ffff, #ff0080); }
+.apple-preview { background: linear-gradient(135deg, #f5f5f7, #e8e8ed, #d2d2d7); }
+.luxury-preview {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95) 1px, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.9) 1px, transparent 1px),
+    radial-gradient(circle at 50% 80%, rgba(255,255,255,0.85) 1px, transparent 1px),
+    linear-gradient(135deg, #ffc0cb 0%, #ff69b4 40%, #ff1493 70%, #db7093 100%);
+  box-shadow: inset 0 0 10px rgba(255,192,203,0.5), 0 0 8px rgba(255,105,180,0.4);
+}
+
+/* ===== Color Bar ===== */
+#color-bar {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10, 10, 15, 0.5);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 10px 6px;
+  z-index: 200;
+}
+
+#color-bar-label {
+  font-size: 8px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  opacity: 0.6;
+}
+
+.color-bar-options {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.color-bar-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.color-bar-btn:hover {
+  transform: scale(1.3);
+}
+
+.color-bar-btn.active {
+  border-color: white;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.color-bar-btn.gold { background: linear-gradient(135deg, #ffd700, #ff8c00); }
+.color-bar-btn.purple { background: linear-gradient(135deg, #a855f7, #6366f1); }
+.color-bar-btn.cyan { background: linear-gradient(135deg, #22d3ee, #06b6d4); }
+.color-bar-btn.pink { background: linear-gradient(135deg, #f472b6, #ec4899); }
+.color-bar-btn.green { background: linear-gradient(135deg, #4ade80, #22c55e); }
+.color-bar-btn.red { background: linear-gradient(135deg, #f87171, #ef4444); }
+.color-bar-btn.blue { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+.color-bar-btn.white { background: linear-gradient(135deg, #f8fafc, #cbd5e1); }
+
+/* === From: context-menu.css === */
+
+/* ===== Context Menu ===== */
+#context-menu {
+  position: fixed;
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 12px;
+  padding: 8px 0;
+  min-width: 150px;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.9);
+  transition: all 0.2s ease;
+}
+
+#context-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+.context-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.context-item:hover { background: rgba(255, 215, 0, 0.1); }
+.context-item.danger { color: #ff4757; }
+
+/* === From: sidebar-toggles.css === */
+
+/* ===== Left Sidebar Container ===== */
+#left-sidebar-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 200;
+  pointer-events: none;
+}
+
+#left-sidebar-indicator {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 8px;
+  background: rgba(10, 10, 15, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+}
+
+#left-sidebar-indicator span {
+  width: 3px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 2px;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+#left-sidebar-indicator:hover span,
+#left-sidebar-container.menu-open #left-sidebar-indicator span {
+  opacity: 1;
+}
+
+#left-sidebar-menus {
+  pointer-events: auto;
+}
+
+/* ===== Sidebar Toggles ===== */
+#sidebar-toggles {
+  position: fixed;
+  left: 20px;
+  top: calc(50% + 120px);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#left-sidebar-menus #color-bar {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#sidebar-toggles button {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(10, 10, 15, 0.6);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+#sidebar-toggles button:hover {
+  background: rgba(20, 20, 30, 0.8);
+  border-color: var(--accent);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+#sidebar-toggles button svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--accent);
+}

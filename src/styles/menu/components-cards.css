@@ -1,0 +1,497 @@
+/**
+ * @file src/styles/menu/components-cards.css
+ * @description 카드 컴포넌트 스타일 - shortcut-card, carousel, card styles (mydesktop 원본 포팅)
+ */
+
+/* === From: cards.css === */
+
+/* ===== 3D Cards Space ===== */
+#cards-3d-space {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+  z-index: 10;
+}
+
+.section-cards {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+  align-content: flex-start;
+  flex-wrap: wrap;
+  width: 800px;
+  max-width: 90vw;
+  max-height: calc(100vh - 280px);
+  overflow: hidden;
+  padding: 20px;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+/* 반응형 중앙 정렬 */
+@media (max-width: 900px) {
+  .section-cards {
+    width: 90vw;
+  }
+}
+
+/* 그리드 모드에서 내부 스크롤 지원 */
+.section-cards.grid-scrollable {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.section-cards.grid-scrollable::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* 캐러셀 레이아웃 */
+.section-cards.carousel-layout {
+  flex-wrap: nowrap;
+  gap: 0;
+  max-width: none;
+  overflow: visible;
+  justify-content: center;
+  align-items: center;
+}
+
+.section-cards.carousel-layout .shortcut-card {
+  flex-shrink: 0;
+  position: absolute;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 캐러셀 네비게이션 버튼 - 숨김 */
+.carousel-nav {
+  display: none !important;
+}
+
+/* 캐러셀 인디케이터 */
+.carousel-dots {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 10px;
+  z-index: 100;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.carousel-dots.visible { display: flex; }
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.carousel-dot:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.carousel-dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  transform: scale(1.3);
+}
+
+/* ===== Shortcut Card ===== */
+.shortcut-card {
+  --card-color: var(--accent);
+  position: relative;
+  width: 140px;
+  height: 180px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 20px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-primary);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  pointer-events: auto;
+}
+
+.section-cards.active .shortcut-card:hover {
+  transform: scale(1.15) translateZ(50px);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--card-color) 50%, transparent),
+              0 20px 40px rgba(0,0,0,0.3);
+  border-color: var(--card-color);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.shortcut-card.pressing {
+  transform: scale(0.92) translateZ(-20px) !important;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2), inset 0 0 30px rgba(0,0,0,0.3) !important;
+  transition: all 0.1s ease !important;
+}
+
+.shortcut-card.opening {
+  pointer-events: none;
+}
+
+.shortcut-card.opening::after {
+  content: '\C5EC\B294 \C911...';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  animation: openingPulse 0.8s ease-in-out infinite;
+}
+
+.shortcut-card.opening .shortcut-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.shortcut-card.shake {
+  animation: cardShake 0.6s ease-out;
+}
+
+.section-cards:not(.active) .shortcut-card {
+  border-color: rgba(255, 215, 0, 0.15);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.05);
+}
+
+.section-cards::before {
+  content: attr(data-label);
+  position: fixed;
+  top: calc(50% - 150px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 4px;
+  opacity: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 0 20px var(--card-glow);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.section-cards:not(.active)::before {
+  opacity: 0.5;
+}
+
+.shortcut-icon {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: white;
+  font-weight: bold;
+  background: transparent !important;
+}
+
+.shortcut-icon img,
+.shortcut-icon svg {
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.shortcut-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.shortcut-url {
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+/* Card Actions */
+.card-actions {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.shortcut-card:hover .card-actions {
+  opacity: 1;
+}
+
+.card-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.card-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: rgba(255, 255, 255, 0.5);
+  transition: all 0.2s ease;
+}
+
+.card-btn:hover svg {
+  fill: rgba(255, 255, 255, 0.9);
+  transform: scale(1.15);
+}
+
+.delete-btn:hover svg {
+  fill: #ff6b6b;
+}
+
+/* ===== Card Styles ===== */
+.shortcut-card.style-rainbow {
+  background: linear-gradient(135deg,
+    rgba(var(--rainbow-r), var(--rainbow-g), var(--rainbow-b), 0.25),
+    rgba(var(--rainbow-r), var(--rainbow-g), var(--rainbow-b), 0.1));
+  border-color: rgba(var(--rainbow-r), var(--rainbow-g), var(--rainbow-b), 0.4);
+}
+
+.shortcut-card.style-gradient {
+  background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,140,0,0.1));
+  border-color: rgba(255,215,0,0.3);
+}
+
+.shortcut-card.style-dark {
+  background: rgba(0,0,0,0.5);
+  border-color: rgba(255,255,255,0.1);
+}
+
+.shortcut-card.style-neon {
+  background: rgba(0,0,0,0.7);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 15px var(--card-glow), inset 0 0 15px rgba(255,215,0,0.1);
+}
+
+.section-cards.active .shortcut-card.style-neon:hover {
+  box-shadow: 0 0 30px var(--card-glow), inset 0 0 20px rgba(255,215,0,0.2), 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.shortcut-card.style-hermes {
+  background: linear-gradient(145deg, rgba(243,112,33,0.2), rgba(139,69,19,0.15));
+  border: 1px solid rgba(243,112,33,0.4);
+  box-shadow: 0 4px 20px rgba(139,69,19,0.2);
+}
+
+.section-cards.active .shortcut-card.style-hermes:hover {
+  background: linear-gradient(145deg, rgba(243,112,33,0.3), rgba(207,90,40,0.2));
+  border-color: #f37021;
+  box-shadow: 0 0 30px rgba(243,112,33,0.4), 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.shortcut-card.style-cyberpunk {
+  background: linear-gradient(145deg, rgba(255,0,128,0.15), rgba(0,255,255,0.1));
+  border: 1px solid rgba(255,0,255,0.3);
+  box-shadow: 0 0 15px rgba(255,0,128,0.2), 0 0 15px rgba(0,255,255,0.1);
+}
+
+.section-cards.active .shortcut-card.style-cyberpunk:hover {
+  background: linear-gradient(145deg, rgba(255,0,128,0.25), rgba(0,255,255,0.15));
+  border-color: #ff00ff;
+  box-shadow: 0 0 30px rgba(255,0,255,0.5), 0 0 30px rgba(0,255,255,0.3), 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.shortcut-card.style-apple {
+  background: rgba(255,255,255,0.9);
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.shortcut-card.style-apple .shortcut-title {
+  color: #1d1d1f;
+}
+
+.shortcut-card.style-apple .shortcut-url {
+  color: #86868b;
+}
+
+.section-cards.active .shortcut-card.style-apple:hover {
+  background: rgba(255,255,255,0.95);
+  border-color: rgba(0,0,0,0.15);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15), 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Luxury Princess Style */
+.shortcut-card.style-luxury {
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 1px, transparent 1px),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.7) 1px, transparent 1px),
+    radial-gradient(circle at 40% 70%, rgba(255,255,255,0.8) 1px, transparent 1px),
+    radial-gradient(circle at 70% 80%, rgba(255,255,255,0.6) 1px, transparent 1px),
+    radial-gradient(circle at 10% 90%, rgba(255,255,255,0.7) 1px, transparent 1px),
+    radial-gradient(circle at 90% 50%, rgba(255,255,255,0.8) 1px, transparent 1px),
+    radial-gradient(circle at 50% 40%, rgba(255,192,203,0.9) 1px, transparent 1px),
+    radial-gradient(circle at 25% 60%, rgba(255,105,180,0.7) 1px, transparent 1px),
+    linear-gradient(145deg, rgba(255,182,193,0.85) 0%, rgba(255,105,180,0.7) 30%, rgba(255,20,147,0.5) 60%, rgba(219,112,147,0.6) 100%);
+  border: 1px solid rgba(255,105,180,0.7);
+  box-shadow:
+    0 0 25px rgba(255,105,180,0.5),
+    0 0 50px rgba(255,20,147,0.3),
+    inset 0 0 40px rgba(255,192,203,0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.shortcut-card.style-luxury::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(255,255,255,0.1) 45%,
+    rgba(255,255,255,0.3) 50%,
+    rgba(255,255,255,0.1) 55%,
+    transparent 60%
+  );
+  animation: luxuryShine 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.shortcut-card.style-luxury::after {
+  content: '\2726';
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  animation: sparkle 2s ease-in-out infinite;
+  text-shadow: 0 0 10px rgba(255,182,193,0.8);
+}
+
+.shortcut-card.style-luxury .shortcut-title {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(219,112,147,0.5);
+}
+
+.shortcut-card.style-luxury .shortcut-url {
+  color: rgba(255,220,230,0.8);
+}
+
+.section-cards.active .shortcut-card.style-luxury:hover {
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,1) 2px, transparent 2px),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.9) 2px, transparent 2px),
+    radial-gradient(circle at 40% 70%, rgba(255,255,255,0.95) 2px, transparent 2px),
+    radial-gradient(circle at 70% 80%, rgba(255,255,255,0.85) 2px, transparent 2px),
+    radial-gradient(circle at 10% 90%, rgba(255,255,255,0.9) 2px, transparent 2px),
+    radial-gradient(circle at 90% 50%, rgba(255,255,255,1) 2px, transparent 2px),
+    radial-gradient(circle at 30% 40%, rgba(255,192,203,0.9) 1px, transparent 1px),
+    radial-gradient(circle at 60% 30%, rgba(255,105,180,0.8) 1px, transparent 1px),
+    radial-gradient(circle at 15% 50%, rgba(255,20,147,0.6) 1px, transparent 1px),
+    linear-gradient(145deg, rgba(255,192,203,0.95) 0%, rgba(255,105,180,0.85) 30%, rgba(255,20,147,0.65) 60%, rgba(219,112,147,0.7) 100%);
+  border-color: rgba(255,20,147,0.9);
+  box-shadow:
+    0 0 50px rgba(255,105,180,0.7),
+    0 0 80px rgba(255,20,147,0.5),
+    0 20px 40px rgba(0,0,0,0.2),
+    inset 0 0 50px rgba(255,192,203,0.4);
+}
+
+.shortcut-card.style-luxury:hover::after {
+  animation: sparkleHover 0.8s ease-in-out infinite;
+}
+
+@keyframes luxuryShine {
+  0%, 100% {
+    transform: translateX(-30%) translateY(-30%) rotate(45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(30%) translateY(30%) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(180deg);
+  }
+}
+
+@keyframes sparkleHover {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1) rotate(0deg);
+    text-shadow: 0 0 10px rgba(255,182,193,0.8);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.3) rotate(90deg);
+    text-shadow: 0 0 20px rgba(255,255,255,1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.1) rotate(180deg);
+    text-shadow: 0 0 15px rgba(255,182,193,1);
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1.4) rotate(270deg);
+    text-shadow: 0 0 25px rgba(255,255,255,1);
+  }
+}

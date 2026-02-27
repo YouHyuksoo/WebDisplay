@@ -1,0 +1,467 @@
+/**
+ * @file src/styles/menu/responsive.css
+ * @description 반응형 미디어 쿼리 (mydesktop 원본 포팅)
+ *
+ * 초보자 가이드:
+ * 1. 이 파일은 mydesktop 메뉴 화면의 반응형 레이아웃을 정의합니다
+ * 2. 768px, 480px 브레이크포인트에서 모바일 최적화를 적용합니다
+ * 3. globals.css에서 @import로 로드됩니다
+ */
+
+@media (max-width: 768px) {
+  .shortcut-card { width: 100px; height: 130px; padding: 12px; }
+  .shortcut-icon { width: 36px; height: 36px; font-size: 16px; }
+  .shortcut-icon img, .shortcut-icon svg { width: 28px; height: 28px; }
+  .shortcut-title { font-size: 11px; }
+  .shortcut-url { font-size: 8px; }
+  #section-title { font-size: 24px; letter-spacing: 4px; }
+  #section-subtitle { font-size: 10px; }
+  .section-cards { gap: 12px; max-width: 400px; }
+
+  #system-widget {
+    padding: 8px 12px;
+    font-size: 10px;
+    top: 15px;
+    right: 15px;
+  }
+
+  #weather-widget {
+    top: auto;
+    bottom: 80px;
+    right: 15px;
+    padding: 8px 12px;
+    min-width: 100px;
+  }
+
+  #weather-widget .weather-icon {
+    font-size: 22px;
+  }
+
+  #weather-widget .weather-temp {
+    font-size: 18px;
+  }
+
+  #weather-widget .weather-desc {
+    font-size: 10px;
+  }
+
+  #weather-widget .weather-location {
+    font-size: 9px;
+  }
+
+  #weather-widget .weather-edit-hint {
+    display: none;
+  }
+
+  #clock-widget {
+    padding: 8px 12px;
+  }
+
+  #clock-widget .time {
+    font-size: 20px;
+  }
+
+  #clock-widget .date {
+    font-size: 9px;
+  }
+
+  .card-actions { display: none; }
+
+  /* 캐러셀 모바일 */
+  .carousel-nav {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  .carousel-nav.prev { left: 10px; }
+  .carousel-nav.next { right: 10px; }
+
+  /* 세로 캐러셀용 버튼 위치 */
+  .carousel-nav.prev {
+    top: 35%;
+    left: 50%;
+    transform: translateX(-50%) rotate(90deg);
+  }
+  .carousel-nav.next {
+    top: 65%;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) rotate(90deg);
+  }
+
+  .carousel-dots {
+    bottom: auto;
+    right: 20px;
+    left: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .shortcut-card { width: 80px; height: 105px; padding: 10px; border-radius: 14px; }
+  .shortcut-icon { width: 30px; height: 30px; }
+  .shortcut-icon img, .shortcut-icon svg { width: 24px; height: 24px; }
+  .shortcut-title { font-size: 10px; }
+  .shortcut-url { display: none; }
+  #section-title { font-size: 18px; letter-spacing: 2px; }
+  #section-subtitle { font-size: 9px; letter-spacing: 1px; }
+  #section-info { top: 30px; }
+  .section-cards { gap: 10px; max-width: 320px; }
+
+  /* 모바일 검색창 - 아이콘 토글 방식 */
+  #search-container {
+    bottom: 15px;
+    left: 15px;
+    width: auto;
+  }
+
+  .search-box {
+    padding: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .search-box .search-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  /* 펼쳐진 상태에서 아이콘 hover 효과 */
+  #search-container.search-expanded .search-box .search-icon:hover {
+    color: var(--accent);
+  }
+
+  .search-box #search-input {
+    width: 0;
+    padding: 0;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  .search-box .search-shortcut {
+    display: none;
+  }
+
+  /* 검색창 펼쳐진 상태 */
+  #search-container.search-expanded .search-box {
+    width: 220px;
+    border-radius: 12px;
+    padding: 10px 14px;
+    justify-content: flex-start;
+  }
+
+  #search-container.search-expanded .search-box #search-input {
+    width: 100%;
+    padding: 0 10px;
+    opacity: 1;
+  }
+
+  .search-results {
+    max-height: 200px;
+  }
+
+  /* 검색 결과 위치 조정 */
+  #search-container.search-expanded .search-results {
+    width: 220px;
+  }
+
+  #system-widget {
+    display: none;
+  }
+
+  /* 날씨 위젯 - 우상단 작게 */
+  #weather-widget {
+    top: 10px;
+    right: 10px;
+    bottom: auto;
+    padding: 6px 10px;
+    min-width: auto;
+    border-radius: 12px;
+  }
+
+  #weather-widget .weather-main {
+    margin-bottom: 0;
+  }
+
+  #weather-widget .weather-icon {
+    font-size: 18px;
+  }
+
+  #weather-widget .weather-temp {
+    font-size: 14px;
+  }
+
+  #weather-widget .weather-info {
+    display: none;
+  }
+
+  #clock-widget {
+    padding: 6px 10px;
+    top: 10px;
+    left: 10px;
+  }
+
+  #clock-widget .time {
+    font-size: 16px;
+  }
+
+  #scroll-hint {
+    bottom: 15px;
+    font-size: 10px;
+  }
+
+  #scroll-hint .mouse {
+    width: 18px;
+    height: 30px;
+  }
+
+  .color-bar-btn {
+    width: 12px;
+    height: 12px;
+  }
+
+  #color-bar {
+    padding: 8px 5px;
+    gap: 6px;
+  }
+
+  #sidebar-toggles {
+    top: calc(50% + 90px);
+    left: 12px;
+    gap: 6px;
+  }
+
+  #sidebar-toggles button {
+    width: 30px;
+    height: 30px;
+  }
+
+  #sidebar-toggles button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .depth-dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  #depth-indicator {
+    right: 15px;
+    gap: 10px;
+  }
+
+  .bottom-buttons {
+    bottom: 12px;
+    right: 12px;
+    gap: 8px;
+  }
+
+  .floating-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  #add-btn {
+    font-size: 18px;
+  }
+
+  /* 설정 메뉴 모바일 최적화 */
+  #settings-menu {
+    bottom: 60px;
+    right: 12px;
+    min-width: 180px;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  .settings-item {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+
+  .settings-item .icon {
+    font-size: 14px;
+  }
+
+  .settings-credits {
+    padding: 10px 14px;
+  }
+
+  .credits-avatar {
+    width: 24px;
+    height: 24px;
+  }
+
+  .credits-name {
+    font-size: 12px;
+  }
+
+  .credits-tagline {
+    font-size: 9px;
+  }
+
+  /* 터널 서브메뉴 모바일 */
+  #tunnel-submenu {
+    bottom: 60px;
+    right: 12px;
+    left: auto;
+    min-width: 120px;
+  }
+
+  .tunnel-option {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  /* 카드 스타일 서브메뉴 모바일 */
+  #card-style-submenu {
+    bottom: 60px;
+    right: 12px;
+    left: auto;
+    min-width: 120px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .card-style-option {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .style-preview {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* 왼쪽 사이드바 - 모바일에서 인디케이터로 토글 */
+  #left-sidebar-container {
+    display: flex;
+    align-items: center;
+    pointer-events: auto;
+  }
+
+  #left-sidebar-indicator {
+    display: flex;
+    position: relative;
+    z-index: 210;
+  }
+
+  /* 모바일에서 기존 fixed 메뉴 숨김 */
+  #color-bar,
+  #sidebar-toggles {
+    display: none !important;
+  }
+
+  #left-sidebar-menus {
+    position: absolute;
+    left: -150px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(15px);
+    border-radius: 0 16px 16px 0;
+    padding: 15px;
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-left: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #left-sidebar-container.menu-open #left-sidebar-menus {
+    left: 0;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* 메뉴 안의 컬러바/토글은 다시 표시 */
+  #left-sidebar-menus #color-bar,
+  #left-sidebar-menus #sidebar-toggles {
+    display: flex !important;
+    position: relative;
+    left: 0;
+    top: 0;
+    transform: none;
+  }
+
+  #left-sidebar-menus #color-bar {
+    padding: 8px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100px;
+    background: transparent;
+    border: none;
+    backdrop-filter: none;
+  }
+
+  #left-sidebar-menus #color-bar #color-bar-label {
+    width: 100%;
+    writing-mode: horizontal-tb;
+    transform: none;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+
+  #left-sidebar-menus #color-bar .color-bar-options {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  #left-sidebar-menus #sidebar-toggles {
+    flex-direction: row;
+    margin-top: 0;
+    gap: 6px;
+  }
+
+  #left-sidebar-menus #sidebar-toggles button {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* 이스터에그 - 모바일에서 클릭으로 토글 */
+  #easter-egg-container {
+    top: 60px;
+    left: 10px;
+  }
+
+  #easter-egg-indicator {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  #easter-egg-buttons {
+    left: 35px;
+  }
+
+  .easter-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  /* 모바일에서 터치를 위해 컨테이너에 클래스 추가 시 버튼 표시 */
+  #easter-egg-container.show-buttons #easter-egg-buttons {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+  }
+}

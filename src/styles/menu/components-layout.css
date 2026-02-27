@@ -1,0 +1,210 @@
+/**
+ * @file src/styles/menu/components-layout.css
+ * @description 레이아웃 컴포넌트 스타일 (mydesktop 원본 포팅)
+ *
+ * 초보자 가이드:
+ * 1. 이 파일은 depth-indicator, grid-scroll 스타일을 포함합니다
+ * 2. mydesktop/css/components/depth-indicator.css, grid-scroll.css에서 포팅되었습니다
+ * 3. globals.css에서 @import로 로드됩니다
+ */
+
+/* === From: depth-indicator.css === */
+
+/* ===== Depth Indicator ===== */
+#depth-indicator {
+  position: fixed;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 200;
+  perspective: 500px;
+}
+
+.depth-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 215, 0, 0.2);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+}
+
+.depth-dot::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translate(-50%, -50%) translateZ(-10px) scale(0.5);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.depth-dot::after {
+  content: attr(data-label);
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%) translateZ(20px);
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  background: rgba(10, 10, 15, 0.8);
+  padding: 4px 10px;
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+}
+
+.depth-dot:hover {
+  transform: translateZ(25px) scale(1.5);
+  background: rgba(255, 215, 0, 0.4);
+  border-color: var(--accent);
+  box-shadow:
+    0 0 20px var(--card-glow),
+    0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.depth-dot:hover::before {
+  transform: translate(-50%, -50%) translateZ(-15px) scale(2);
+  opacity: 0.3;
+}
+
+.depth-dot:hover::after {
+  opacity: 1;
+  right: 40px;
+}
+
+.depth-dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow:
+    0 0 25px var(--card-glow),
+    0 5px 20px rgba(0, 0, 0, 0.4);
+  transform: translateZ(15px) scale(1.4);
+}
+
+.depth-dot.active::before {
+  transform: translate(-50%, -50%) translateZ(-20px) scale(2.5);
+  opacity: 0.2;
+  animation: depthPulse 2s ease-in-out infinite;
+}
+
+@keyframes depthPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateZ(-20px) scale(2.5);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translate(-50%, -50%) translateZ(-25px) scale(3);
+    opacity: 0.1;
+  }
+}
+
+/* === From: grid-scroll.css === */
+
+/* ===== Grid Scroll Controls ===== */
+#grid-scroll-controls {
+  position: fixed;
+  right: 100px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 150;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+#grid-scroll-controls.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.grid-scroll-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  transition: all 0.3s ease;
+}
+
+.grid-scroll-btn:hover {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+.grid-scroll-btn:active {
+  transform: scale(0.95);
+}
+
+.grid-scroll-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.grid-scroll-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ===== Scroll Hint ===== */
+#scroll-hint {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 2px;
+  z-index: 200;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+#scroll-hint .mouse {
+  width: 24px;
+  height: 40px;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  position: relative;
+}
+
+#scroll-hint .mouse::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: scrollWheel 1.5s ease-in-out infinite;
+}

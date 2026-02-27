@@ -1,0 +1,94 @@
+/**
+ * @file src/styles/menu/animations.css
+ * @description 키프레임 애니메이션 정의 (mydesktop 원본 포팅)
+ *
+ * 초보자 가이드:
+ * 1. 이 파일은 mydesktop 메뉴 화면에서 사용하는 모든 키프레임 애니메이션을 정의합니다
+ * 2. spin, pulse, cardShake, screenShake 등 다양한 효과가 포함되어 있습니다
+ * 3. globals.css에서 @import로 로드됩니다
+ */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes scrollWheel {
+  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+  50% { transform: translateX(-50%) translateY(10px); opacity: 0; }
+}
+
+@keyframes openingPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes batteryPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes rippleExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes cardShake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  10% { transform: translateX(-8px) rotate(-2deg); }
+  20% { transform: translateX(8px) rotate(2deg); }
+  30% { transform: translateX(-6px) rotate(-1.5deg); }
+  40% { transform: translateX(6px) rotate(1.5deg); }
+  50% { transform: translateX(-4px) rotate(-1deg); }
+  60% { transform: translateX(4px) rotate(1deg); }
+  70% { transform: translateX(-2px) rotate(-0.5deg); }
+  80% { transform: translateX(2px) rotate(0.5deg); }
+  90% { transform: translateX(-1px) rotate(0deg); }
+}
+
+/* ===== 화면 깨짐 효과 애니메이션 ===== */
+@keyframes screenShake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-20px, -10px); }
+  20% { transform: translate(20px, 10px); }
+  30% { transform: translate(-15px, -15px); }
+  40% { transform: translate(15px, 15px); }
+  50% { transform: translate(-10px, -5px); }
+  60% { transform: translate(10px, 5px); }
+  70% { transform: translate(-5px, -10px); }
+  80% { transform: translate(5px, 10px); }
+  90% { transform: translate(-3px, -3px); }
+}
+
+@keyframes crackSpread {
+  0% { stroke-dashoffset: 1000; opacity: 0; }
+  10% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
+@keyframes glassShatter {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(0.9) translateY(100px); opacity: 0; }
+}
+
+@keyframes impactFlash {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes crackGlow {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 100, 0, 0.8)); }
+  50% { filter: drop-shadow(0 0 15px rgba(255, 150, 0, 1)); }
+}
