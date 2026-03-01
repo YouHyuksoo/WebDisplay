@@ -63,6 +63,9 @@ const handlers: Array<{
   options?: boolean | AddEventListenerOptions;
 }> = [];
 
+/** 클릭 리플 이펙트 활성 상태 */
+let clickFxEnabled = false;
+
 /**
  * 이벤트 리스너를 등록하고 추적
  */
@@ -447,6 +450,11 @@ export function initEventListeners(): void {
       hideTunnelSubmenu();
       hideCardStyleSubmenu();
     }
+    // 이스터에그 패널 바깥 클릭 시 닫기
+    if (!target.closest('#easter-egg-container')) {
+      document.getElementById('easter-egg-panel')?.classList.remove('open');
+      document.getElementById('easter-egg-indicator')?.classList.remove('active');
+    }
   };
   addTracked(document, 'click', outsideClickHandler as EventListener);
 
@@ -471,6 +479,7 @@ export function initEventListeners(): void {
 
   // ===== 배경 클릭 이펙트 =====
   const bgClickHandler = (e: MouseEvent) => {
+    if (!clickFxEnabled) return;
     const target = e.target as HTMLElement;
     if (!target.closest('.shortcut-card') &&
         !target.closest('.floating-btn') &&
@@ -480,7 +489,9 @@ export function initEventListeners(): void {
         !target.closest('.modal-overlay') &&
         !target.closest('#context-menu') &&
         !target.closest('.depth-dot') &&
-        !target.closest('#grid-scroll-controls')) {
+        !target.closest('#grid-scroll-controls') &&
+        !target.closest('#easter-egg-container') &&
+        !target.closest('#util-icons')) {
       createClickEffect(e.clientX, e.clientY);
     }
   };
@@ -489,7 +500,7 @@ export function initEventListeners(): void {
   // ===== 그리드 스크롤 버튼 =====
   initGridScrollControls();
 
-  // ===== 이스터에그 테스트 버튼 =====
+  // ===== 이스터에그 버튼 (1회 실행) =====
   document.getElementById('dragon-test-btn')?.addEventListener('click', () => {
     import('../effects').then((E) => E.createDragonAttack());
   });
@@ -497,8 +508,44 @@ export function initEventListeners(): void {
     import('../effects').then((E) => E.createWolfAppear());
   });
   document.getElementById('meteor-test-btn')?.addEventListener('click', () => {
+    import('../effects').then((E) => E.createMeteor());
+  });
+  document.getElementById('meteor-impact-btn')?.addEventListener('click', () => {
     import('../effects').then((E) => E.createMeteorImpact());
   });
+  document.getElementById('crow-test-btn')?.addEventListener('click', () => {
+    import('../effects').then((E) => E.createCrowAttack());
+  });
+  document.getElementById('cat-test-btn')?.addEventListener('click', () => {
+    import('../effects').then((E) => E.createCatPawEvent());
+  });
+  document.getElementById('ufo-test-btn')?.addEventListener('click', () => {
+    import('../effects').then((E) => E.createUfoEvent());
+  });
+  document.getElementById('star-test-btn')?.addEventListener('click', () => {
+    import('../effects').then((E) => E.createStarFlyby());
+  });
+
+  // ===== 클릭 리플 토글 =====
+  const clickFxBtn = document.getElementById('click-fx-btn');
+  if (clickFxBtn) {
+    clickFxBtn.addEventListener('click', () => {
+      clickFxEnabled = !clickFxEnabled;
+      clickFxBtn.classList.toggle('active', clickFxEnabled);
+    });
+  }
+
+  // ===== 카드 수면 토글 =====
+  const cardSleepBtn = document.getElementById('card-sleep-btn');
+  if (cardSleepBtn) {
+    cardSleepBtn.addEventListener('click', () => {
+      const isActive = cardSleepBtn.classList.toggle('active');
+      if (isActive) {
+        import('../effects').then((E) => E.startCardSleepSystem());
+      }
+      // When deactivating, the sleep system will stop on its own when no longer needed
+    });
+  }
 
   // ===== 아이콘 색상 토글 버튼 =====
   document.getElementById('icon-color-toggle-btn')?.addEventListener('click', () => {
@@ -515,14 +562,59 @@ export function initEventListeners(): void {
     });
   }
 
-  const easterEggIndicator = document.getElementById('easter-egg-indicator');
-  const easterEggContainer = document.getElementById('easter-egg-container');
-  if (easterEggIndicator && easterEggContainer) {
-    easterEggIndicator.addEventListener('click', (e) => {
+  // ===== 이스터에그 패널 토글 =====
+  const easterIndicator = document.getElementById('easter-egg-indicator');
+  const easterPanel = document.getElementById('easter-egg-panel');
+  if (easterIndicator && easterPanel) {
+    easterIndicator.addEventListener('click', (e) => {
       e.stopPropagation();
-      easterEggContainer.classList.toggle('show-buttons');
+      easterPanel.classList.toggle('open');
+      easterIndicator.classList.toggle('active');
     });
   }
+
+  // ===== 다국어 전환 =====
+  document.getElementById('locale-btn')?.addEventListener('click', () => {
+    const STORAGE_KEY = 'mes-display-locale';
+    const locales = ['ko', 'en', 'es'];
+    const current = localStorage.getItem(STORAGE_KEY) ?? 'ko';
+    const nextIndex = (locales.indexOf(current) + 1) % locales.length;
+    localStorage.setItem(STORAGE_KEY, locales[nextIndex]);
+    import('../ui').then((UI) => UI.showToast(`🌐 Language: ${locales[nextIndex].toUpperCase()}`));
+    // Reload to apply locale change
+    setTimeout(() => location.reload(), 800);
+  });
+
+  // ===== 테마 전환 (display 페이지용) =====
+  document.getElementById('theme-btn')?.addEventListener('click', () => {
+    const THEME_KEY = 'mes-display-theme';
+    const current = localStorage.getItem(THEME_KEY) ?? 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    const themeBtn = document.getElementById('theme-btn');
+    if (themeBtn) themeBtn.innerHTML = next === 'dark' ? '&#127769;' : '&#9728;&#65039;';
+    import('../ui').then((UI) => UI.showToast(`🎨 Theme: ${next === 'dark' ? 'Dark' : 'Light'}`));
+  });
+
+  // ===== 종료 =====
+  document.getElementById('exit-btn')?.addEventListener('click', () => {
+    const exitModal = document.getElementById('exit-modal');
+    if (exitModal) exitModal.classList.add('active');
+  });
+  document.getElementById('exit-cancel')?.addEventListener('click', () => {
+    const exitModal = document.getElementById('exit-modal');
+    if (exitModal) exitModal.classList.remove('active');
+  });
+  document.getElementById('exit-confirm')?.addEventListener('click', () => {
+    window.close();
+    // If window.close() doesn't work (not opened by script), show toast
+    import('../ui').then((UI) => UI.showToast('⚠️ 브라우저에서 직접 닫아주세요'));
+  });
+
+  // ===== 테마 버튼 초기 상태 =====
+  const savedTheme = localStorage.getItem('mes-display-theme') ?? 'dark';
+  const themeBtnEl = document.getElementById('theme-btn');
+  if (themeBtnEl) themeBtnEl.innerHTML = savedTheme === 'dark' ? '&#127769;' : '&#9728;&#65039;';
 }
 
 /**
