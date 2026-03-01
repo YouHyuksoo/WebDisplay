@@ -180,13 +180,13 @@ export function updateCarouselPosition(immediate = false): void {
     if (isMobile) {
       y = Math.sin(angle) * radius * 0.8;
       z = depth * 150;
-      scale = 0.7 + 0.3 * normalizedDepth;
+      scale = 0.75 + 0.3 * normalizedDepth;     // 0.75 ~ 1.05 (center card slightly bigger)
       opacity = 0.6 + 0.4 * normalizedDepth;
     } else {
       x = Math.sin(angle) * radius;
       z = depth * 250;
       rotateY = -angle * (180 / Math.PI) * 0.4;
-      scale = 0.65 + 0.35 * normalizedDepth;
+      scale = 0.75 + 0.35 * normalizedDepth;    // 0.75 ~ 1.1 (center card is bigger)
       opacity = 0.5 + 0.5 * normalizedDepth;
     }
 
