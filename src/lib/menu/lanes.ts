@@ -263,8 +263,9 @@ export function goToLane(laneId: number): void {
   state.currentLane = laneId;
   updateLaneIndicator();
 
-  // 캐러셀 화살표 표시 업데이트
+  // 캐러셀/썸네일 화살표 표시 업데이트
   Carousel.updateNavArrowsVisibility();
+  import('./cards').then((Cards) => Cards.updateThumbnailArrowsVisibility());
 
   setTimeout(() => {
     state.isLaneTransitioning = false;

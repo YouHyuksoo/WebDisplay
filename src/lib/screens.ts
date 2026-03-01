@@ -8,25 +8,22 @@ export interface ScreenConfig {
   title: string;
   titleKo: string;
   window: string;
-  group: 'management' | 'monitoring' | 'quality';
+  group: 'favorites' | 'smd-monitoring' | 'pba-monitoring' | 'equipment' | 'quality' | 'management';
 }
 
 export const SCREENS: Record<string, ScreenConfig> = {
-  '12': { id: '12', title: 'ASSY Production Status', titleKo: 'ASSY 생산 현황', window: 'w_display_assy_production_status', group: 'management' },
-  '16': { id: '16', title: 'Machine Log Error', titleKo: '설비 로그 수집 오류', window: 'w_display_machine_log_gather_error_list', group: 'management' },
-  '18': { id: '18', title: 'Display Option', titleKo: '옵션 설정', window: 'w_display_option', group: 'management' },
-  '21': { id: '21', title: 'ASSY Production Status', titleKo: 'ASSY 생산현황', window: 'w_display_machine_status_assy', group: 'monitoring' },
-  '22': { id: '22', title: 'ASSY Production', titleKo: 'ASSY 생산량', window: 'w_display_production_assy', group: 'monitoring' },
-  '23': { id: '23', title: 'AOI Yield', titleKo: 'AOI 수율', window: 'w_display_aoi_yield', group: 'monitoring' },
-  '24': { id: '24', title: 'SMD Production Status', titleKo: 'SMD 생산현황', window: 'w_display_machine_status_smd', group: 'monitoring' },
-  '25': { id: '25', title: 'SMD Production', titleKo: 'SMD 생산량', window: 'w_display_production_smd', group: 'monitoring' },
-  '26': { id: '26', title: 'Material Input', titleKo: '자재 투입 현황', window: 'w_display_material_input', group: 'monitoring' },
-  '27': { id: '27', title: 'MSL Management', titleKo: 'MSL 관리', window: 'w_display_msl_mgmt', group: 'monitoring' },
-  '28': { id: '28', title: 'Machine Operation Rate', titleKo: '설비 가동률', window: 'w_display_machine_operation_rate', group: 'monitoring' },
-  '29': { id: '29', title: 'MSL Warning List', titleKo: 'MSL 경고 목록', window: 'w_display_msl_warning_list', group: 'monitoring' },
+  '18': { id: '18', title: 'Display Option', titleKo: '옵션 설정', window: 'w_display_option', group: 'favorites' },
+  '24': { id: '24', title: 'SMD Production Status', titleKo: 'SMD 생산현황', window: 'w_display_machine_status_smd', group: 'smd-monitoring' },
+  '25': { id: '25', title: 'SMD Production', titleKo: 'SMD 생산량', window: 'w_display_production_smd', group: 'smd-monitoring' },
+
+  '28': { id: '28', title: 'Machine Operation Rate', titleKo: '설비 가동률', window: 'w_display_machine_operation_rate', group: 'equipment' },
+  '21': { id: '21', title: 'ASSY Production Status', titleKo: 'ASSY 생산현황', window: 'w_display_machine_status_assy', group: 'pba-monitoring' },
+  '22': { id: '22', title: 'ASSY Production', titleKo: 'ASSY 생산량', window: 'w_display_production_assy', group: 'pba-monitoring' },
+  '23': { id: '23', title: 'AOI Yield', titleKo: 'AOI 수율', window: 'w_display_aoi_yield', group: 'quality' },
+  '27': { id: '27', title: 'MSL Management', titleKo: 'MSL 관리', window: 'w_display_msl_mgmt', group: 'quality' },
+  '29': { id: '29', title: 'MSL Warning List (Mount)', titleKo: 'MSL(장착기준)', window: 'w_display_msl_warning_list', group: 'quality' },
+  '30': { id: '30', title: 'MSL Warning List (Issue)', titleKo: 'MSL(출고기준)', window: 'w_display_msl_warning_list_issue_item', group: 'quality' },
   '31': { id: '31', title: 'Solder Paste Mgmt', titleKo: 'Solder Paste 관리', window: 'w_display_solderpaste_mgmt', group: 'quality' },
   '32': { id: '32', title: 'Stencil Mgmt', titleKo: 'Stencil 관리', window: 'w_display_stencil_mgmt', group: 'quality' },
-  '34': { id: '34', title: 'Vision Defect', titleKo: '비전 불량', window: 'w_display_vision_defect', group: 'quality' },
-  '37': { id: '37', title: 'Temperature Mgmt', titleKo: '온도 관리', window: 'w_display_temp_mgmt', group: 'quality' },
-  '38': { id: '38', title: 'Humidity Mgmt', titleKo: '습도 관리', window: 'w_display_humidity_mgmt', group: 'quality' },
+  '37': { id: '37', title: 'Temp & Humidity', titleKo: '온습도', window: 'w_display_temp_mgmt', group: 'quality' },
 };

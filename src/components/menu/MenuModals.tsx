@@ -8,6 +8,8 @@
  * 3. **중요**: 모든 ID는 원본과 동일 유지 (JS 모듈이 getElementById 사용)
  */
 
+import { Lightbulb, Paperclip, Link as LinkIcon, Download, Plus, ArrowUp, Clipboard } from 'lucide-react';
+
 /**
  * 바로가기 모달 + 카테고리 모달 + 북마크 가져오기 + 프로토콜 설정 + 범용 다이얼로그
  */
@@ -29,26 +31,26 @@ export default function MenuModals() {
           <div className="modal-field">
             <label>Category</label>
             <select id="shortcut-layer">
-              <option value="0">Favorites</option>
+              <option value="0">★ Favorites</option>
             </select>
           </div>
           <div className="modal-field">
             <label>Icon</label>
             <input type="text" id="shortcut-icon" placeholder="si:google" />
             <div className="icon-help">
-              <small>
-                &#128161; <strong>si:아이콘명</strong> 형식 사용 (예: si:google, si:github, si:youtube)
+              <small style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                <Lightbulb size={12} /> <strong>si:아이콘명</strong> 형식 사용 (예: si:google, si:github, si:youtube)
               </small>
-              <br />
-              <small>
-                &#128206;{' '}
+              <small style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                <Paperclip size={12} />{' '}
                 <a href="https://simpleicons.org" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>
                   simpleicons.org
                 </a>
                 에서 아이콘 이름 검색
               </small>
-              <br />
-              <small>&#128279; 또는 이미지 URL 직접 입력 / 비워두면 첫글자 표시</small>
+              <small style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <LinkIcon size={12} /> 또는 이미지 URL 직접 입력 / 비워두면 첫글자 표시
+              </small>
             </div>
           </div>
           <div className="modal-field">
@@ -88,8 +90,8 @@ export default function MenuModals() {
             <input type="text" id="category-subtitle-input" placeholder="Description" />
           </div>
           <div className="modal-field">
-            <label>아이콘 (이모지)</label>
-            <input type="text" id="category-icon-input" placeholder="&#128193;" maxLength={2} />
+            <label>아이콘 (문자/심볼)</label>
+            <input type="text" id="category-icon-input" placeholder="◻" maxLength={2} />
           </div>
           <div className="modal-actions">
             <button className="modal-btn secondary" id="category-edit-cancel">취소</button>
@@ -106,7 +108,9 @@ export default function MenuModals() {
             Chrome에서 북마크 내보내기한 HTML 파일을 선택하거나 드래그하세요.
           </p>
           <div className="import-dropzone" id="import-dropzone">
-            <div className="dropzone-icon">&#128229;</div>
+            <div className="dropzone-icon">
+              <Download size={48} />
+            </div>
             <div className="dropzone-text">
               HTML 파일을 드래그하거나
               <br />
@@ -121,7 +125,9 @@ export default function MenuModals() {
       {/* 프로토콜 핸들러 설정 모달 */}
       <div className="modal-overlay" id="protocol-modal">
         <div className="modal protocol-modal">
-          <h2 className="modal-title">&#128279; 빠른 추가 설정</h2>
+          <h2 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <LinkIcon size={24} /> 빠른 추가 설정
+          </h2>
           <p className="protocol-description">
             다른 사이트에서 클릭 한 번으로 MyDesktop에 추가하세요!
           </p>
@@ -133,13 +139,15 @@ export default function MenuModals() {
             </small>
           </div>
           <div className="bookmarklet-container" id="bookmarklet-container" style={{ display: 'none' }}>
-            <a href="#" id="bookmarklet-link" className="bookmarklet-btn" onClick={(e) => e.preventDefault()}>
-              &#10133; Add to MyDesktop
+            <a href="#" id="bookmarklet-link" className="bookmarklet-btn" onClick={(e) => e.preventDefault()} style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+              <Plus size={16} /> Add to MyDesktop
             </a>
-            <div className="bookmarklet-hint">&#8593; 이 버튼을 북마크바로 드래그!</div>
+            <div className="bookmarklet-hint" style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+              <ArrowUp size={14} /> 이 버튼을 북마크바로 드래그!
+            </div>
             <div className="bookmarklet-copy">
-              <button className="modal-btn secondary" id="copy-bookmarklet-btn">
-                &#128203; 코드 복사
+              <button className="modal-btn secondary" id="copy-bookmarklet-btn" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Clipboard size={16} /> 코드 복사
               </button>
               <small>드래그가 안 되면 코드를 복사해서 북마크 URL에 붙여넣기</small>
             </div>

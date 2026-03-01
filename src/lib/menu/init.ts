@@ -90,7 +90,20 @@ export async function initMenuSystem(): Promise<void> {
   // 4. Three.js 공간 초기화
   Space.init();
 
-  // 5. UI 초기화
+  // 5. 이전 섹션 위치 복원
+  try {
+    const saved = localStorage.getItem(Storage.KEYS.LAST_SECTION);
+    if (saved !== null) {
+      const idx = Number(saved);
+      const sections = Sections.getSections();
+      if (idx >= 0 && idx < sections.length) {
+        state.currentSection = idx;
+      }
+      localStorage.removeItem(Storage.KEYS.LAST_SECTION);
+    }
+  } catch { /* 무시 */ }
+
+  // 6. UI 초기화
   Sections.createDepthIndicator();
   initColorPicker();
   renderCards();

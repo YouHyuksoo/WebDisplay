@@ -305,6 +305,19 @@
   fill: #ff6b6b;
 }
 
+.fav-btn.active svg {
+  fill: #fbbf24;
+}
+
+.fav-btn:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.fav-btn:hover svg {
+  fill: #fbbf24;
+}
+
 /* ===== Card Styles ===== */
 .shortcut-card.style-rainbow {
   background: linear-gradient(135deg,

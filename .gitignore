@@ -36,6 +36,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# DB config (contains credentials)
+/config/database.json
+
 # vercel
 .vercel
 

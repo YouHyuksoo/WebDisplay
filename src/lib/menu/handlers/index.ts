@@ -348,6 +348,13 @@ export function initEventListeners(): void {
   });
 
   // ===== 컨텍스트 메뉴 =====
+  document.getElementById('ctx-fav')?.addEventListener('click', async () => {
+    if (state.contextTargetId) {
+      const { toggleFavoriteById } = await import('../cards');
+      toggleFavoriteById(state.contextTargetId);
+    }
+    hideContextMenu();
+  });
   document.getElementById('ctx-edit')?.addEventListener('click', () => {
     if (state.contextTargetId) openModal(state.contextTargetId);
     hideContextMenu();
@@ -408,17 +415,19 @@ export function initEventListeners(): void {
     import('../categories').then((C) => C.closeManager());
   });
 
-  // ===== 레이아웃 전환 (그리드 <-> 캐러셀) =====
+  // ===== 레이아웃 전환 (그리드 → 캐러셀 → 썸네일 → 그리드) =====
   document.getElementById('layout-toggle-btn')?.addEventListener('click', () => {
-    const next = state.cardLayout === 'grid' ? 'carousel' : 'grid';
+    const order = ['grid', 'carousel', 'thumbnail'] as const;
+    const currentIdx = order.indexOf(state.cardLayout as typeof order[number]);
+    const next = order[(currentIdx + 1) % order.length];
     import('../carousel').then((C) => C.changeCardLayout(next));
     // 아이콘 토글
     const gridIcon = document.getElementById('layout-icon-grid');
     const carouselIcon = document.getElementById('layout-icon-carousel');
-    if (gridIcon && carouselIcon) {
-      gridIcon.style.display = next === 'grid' ? '' : 'none';
-      carouselIcon.style.display = next === 'carousel' ? '' : 'none';
-    }
+    const thumbnailIcon = document.getElementById('layout-icon-thumbnail');
+    if (gridIcon) gridIcon.style.display = next === 'grid' ? '' : 'none';
+    if (carouselIcon) carouselIcon.style.display = next === 'carousel' ? '' : 'none';
+    if (thumbnailIcon) thumbnailIcon.style.display = next === 'thumbnail' ? '' : 'none';
   });
 
   // ===== 공간 타입 토글 버튼 =====
@@ -708,6 +717,16 @@ export function initEventListeners(): void {
     updateBrightnessLabel();
     import('../ui').then((UI) => UI.saveSettings());
   });
+
+  // ===== 레이아웃 아이콘 초기 상태 =====
+  {
+    const g = document.getElementById('layout-icon-grid');
+    const c = document.getElementById('layout-icon-carousel');
+    const t = document.getElementById('layout-icon-thumbnail');
+    if (g) g.style.display = state.cardLayout === 'grid' ? '' : 'none';
+    if (c) c.style.display = state.cardLayout === 'carousel' ? '' : 'none';
+    if (t) t.style.display = state.cardLayout === 'thumbnail' ? '' : 'none';
+  }
 }
 
 /**

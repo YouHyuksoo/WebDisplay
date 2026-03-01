@@ -273,7 +273,12 @@ export function changeCardLayout(layout: string): void {
   // 화살표 표시/숨김 업데이트
   updateNavArrowsVisibility();
 
-  showToast(layout === 'carousel' ? '🎠 캐러셀 배치' : '📦 그리드 배치');
+  const toastMap: Record<string, string> = {
+    carousel: '🎠 캐러셀 배치',
+    grid: '📦 그리드 배치',
+    thumbnail: '🖼️ 썸네일 배치',
+  };
+  showToast(toastMap[layout] || layout);
 }
 
 /**
@@ -282,7 +287,12 @@ export function changeCardLayout(layout: string): void {
 export function updateCardLayoutLabel(): void {
   const label = document.getElementById('card-layout-label');
   if (label) {
-    label.textContent = state.cardLayout === 'carousel' ? '배치: 캐러셀' : '배치: 그리드';
+    const labelMap: Record<string, string> = {
+      carousel: '배치: 캐러셀',
+      grid: '배치: 그리드',
+      thumbnail: '배치: 썸네일',
+    };
+    label.textContent = labelMap[state.cardLayout] || `배치: ${state.cardLayout}`;
   }
 }
 

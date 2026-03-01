@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import DisplayHeader from './DisplayHeader';
 import DisplayMessageBar from './DisplayMessageBar';
+import { usePageRolling } from '@/hooks/usePageRolling';
 
 interface DisplayLayoutProps {
   title: string;
@@ -27,6 +28,7 @@ export default function DisplayLayout({
   children,
 }: DisplayLayoutProps) {
   const router = useRouter();
+  usePageRolling();
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {

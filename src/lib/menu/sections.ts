@@ -167,7 +167,11 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
 
     // 애니메이션 전에 보여야 할 섹션은 display 먼저 설정
     if (absOffset <= 1) {
-      gsap.set(section, { display: 'flex' });
+      if (state.cardLayout === 'thumbnail' && (section as HTMLElement).classList.contains('thumbnail-layout')) {
+        gsap.set(section, { display: 'grid' });
+      } else {
+        gsap.set(section, { display: 'flex' });
+      }
     }
 
     gsap.to(section, {
@@ -188,6 +192,14 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
             state.carouselIndex = 0;
             Carousel.renderCarouselSlots();
             Carousel.updateCarouselUI();
+          }
+          // 썸네일 모드면 페이지 리셋 + 재렌더
+          if (state.cardLayout === 'thumbnail') {
+            import('./cards').then((Cards) => {
+              Cards.resetThumbnailPage();
+              Cards.renderThumbnailPage();
+              Cards.updateThumbnailArrowsVisibility();
+            });
           }
         }
         // 애니메이션 끝난 후 멀리 있는 섹션 숨김
@@ -272,7 +284,9 @@ export function updateCardsDepth(): void {
       opacity: opacity,
       y: yOffset,
       zIndex: zIndex,
-      display: absOffset <= 1 ? 'flex' : 'none',
+      display: absOffset <= 1
+        ? ((section as HTMLElement).classList.contains('thumbnail-layout') ? 'grid' : 'flex')
+        : 'none',
     });
 
     section.classList.toggle('active', offset === 0);

@@ -10,6 +10,10 @@ import DisplayLayout from '@/components/display/DisplayLayout';
 import DisplayPlaceholder from '@/components/display/DisplayPlaceholder';
 import SmdProductionStatus from '@/components/display/screens/smd-status/SmdProductionStatus';
 import MslWarningStatus from '@/components/display/screens/msl-warning/MslWarningStatus';
+import MslWarningIssueStatus from '@/components/display/screens/msl-warning-issue/MslWarningIssueStatus';
+import TempHumidityStatus from '@/components/display/screens/temp-humidity/TempHumidityStatus';
+import DisplayOption from '@/components/display/screens/option/DisplayOption';
+import SolderWarningStatus from '@/components/display/screens/solder-warning/SolderWarningStatus';
 
 interface PageProps {
   params: Promise<{ screenId: string }>;
@@ -26,6 +30,22 @@ export default async function DisplayPage({ params }: PageProps) {
 
   if (screenId === '29') {
     return <MslWarningStatus screenId={screenId} />;
+  }
+
+  if (screenId === '30') {
+    return <MslWarningIssueStatus screenId={screenId} />;
+  }
+
+  if (screenId === '37') {
+    return <TempHumidityStatus screenId={screenId} />;
+  }
+
+  if (screenId === '18') {
+    return <DisplayOption screenId={screenId} />;
+  }
+
+  if (screenId === '31') {
+    return <SolderWarningStatus screenId={screenId} />;
   }
 
   return (

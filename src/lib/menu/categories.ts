@@ -109,7 +109,7 @@ export function getById(id: number): Category | null {
 export function add(
   name: string,
   subtitle = '',
-  icon = '📁',
+  icon = '◻',
 ): Category {
   // 새 ID 생성 (기존 최대값 + 1)
   const maxId =
@@ -231,7 +231,7 @@ export function renderManagerList(): void {
     const isDefault = cat.id < CUSTOM_ID_START;
 
     item.innerHTML = `
-      <span class="category-icon">${cat.icon || '📁'}</span>
+      <span class="category-icon">${cat.icon || '◻'}</span>
       <div class="category-info">
         <div class="category-name">${cat.name}</div>
         <div class="category-subtitle">${cat.subtitle}</div>
@@ -296,13 +296,13 @@ export function openEditDialog(category: Category | null = null): void {
     if (title) title.textContent = '카테고리 수정';
     nameInput.value = category.name;
     subtitleInput.value = category.subtitle;
-    iconInput.value = category.icon || '📁';
+    iconInput.value = category.icon || '◻';
     dialog.dataset.editId = String(category.id);
   } else {
     if (title) title.textContent = '새 카테고리';
     nameInput.value = '';
     subtitleInput.value = '';
-    iconInput.value = '📁';
+    iconInput.value = '◻';
     delete dialog.dataset.editId;
   }
 
@@ -343,12 +343,12 @@ export function saveFromDialog(): void {
     update(parseInt(editId, 10), {
       name: name,
       subtitle: subtitleInput.value.trim(),
-      icon: iconInput.value.trim() || '📁',
+      icon: iconInput.value.trim() || '◻',
     });
     showToast('카테고리 수정됨');
   } else {
     // 추가
-    add(name, subtitleInput.value.trim(), iconInput.value.trim() || '📁');
+    add(name, subtitleInput.value.trim(), iconInput.value.trim() || '◻');
     showToast('카테고리 추가됨');
   }
 

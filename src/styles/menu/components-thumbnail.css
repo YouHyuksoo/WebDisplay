@@ -1,0 +1,235 @@
+/**
+ * @file src/styles/menu/components-thumbnail.css
+ * @description 썸네일 보기 모드 카드 스타일
+ *
+ * 초보자 가이드:
+ * 1. .thumbnail-layout: 3열 2행 고정 그리드 (한 페이지에 최대 6개)
+ * 2. 좌우 화살표로 페이지 전환 (휠은 주메뉴 섹션 전환용)
+ * 3. 카드 구성: 상단 이미지(~160px) + 하단 제목(~40px)
+ */
+
+/* === 썸네일 레이아웃 그리드 (3열 x 2행 고정) === */
+.section-cards.thumbnail-layout {
+  display: grid !important;
+  grid-template-columns: repeat(3, 320px) !important;
+  grid-template-rows: repeat(2, 220px) !important;
+  gap: 24px !important;
+  justify-content: center;
+  align-content: center;
+  padding: 20px;
+  width: 1060px !important;
+  max-width: 96vw !important;
+  max-height: none !important;
+  overflow: hidden !important;
+  flex-wrap: unset !important;
+}
+
+/* === 썸네일 카드 === */
+.thumbnail-layout .shortcut-card {
+  width: 320px;
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+/* 이미지 영역 */
+.thumbnail-layout .thumbnail-image-area {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.thumbnail-layout .thumbnail-image-area img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 이미지 미등록 상태 */
+.thumbnail-layout .thumbnail-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.5));
+  font-size: 12px;
+}
+
+.thumbnail-layout .thumbnail-placeholder svg {
+  width: 32px;
+  height: 32px;
+  opacity: 0.4;
+}
+
+/* 이미지 등록/변경 버튼 */
+.thumbnail-layout .thumbnail-upload-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 8px;
+  color: var(--accent, #ffd700);
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 5;
+}
+
+/* 미등록 상태에서는 항상 표시 */
+.thumbnail-layout .thumbnail-image-area.empty .thumbnail-upload-btn {
+  opacity: 1;
+}
+
+/* 등록된 상태에서 호버 시 오버레이 + 버튼 표시 */
+.thumbnail-layout .thumbnail-image-area:not(.empty):hover .thumbnail-upload-btn {
+  opacity: 1;
+}
+
+.thumbnail-layout .thumbnail-image-area:not(.empty):hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 4;
+}
+
+.thumbnail-upload-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+  border-color: var(--accent, #ffd700);
+}
+
+/* 제목 영역 */
+.thumbnail-layout .thumbnail-title {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary, rgba(255, 255, 255, 0.9));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 기존 카드 내부 요소 숨김 (썸네일 모드에서는 별도 구조 사용) */
+.thumbnail-layout .shortcut-icon,
+.thumbnail-layout .shortcut-title,
+.thumbnail-layout .shortcut-url,
+.thumbnail-layout .card-actions {
+  display: none;
+}
+
+/* === 썸네일 좌우 네비게이션 화살표 === */
+#thumbnail-nav-arrows {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(96vw, 1200px);
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 150;
+}
+
+#thumbnail-nav-arrows.visible {
+  display: flex;
+}
+
+.thumbnail-nav-arrow {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(10px);
+  color: var(--accent, #ffd700);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  pointer-events: auto;
+}
+
+.thumbnail-nav-arrow:hover {
+  background: rgba(20, 20, 30, 0.9);
+  border-color: var(--accent, #ffd700);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+  transform: scale(1.1);
+}
+
+.thumbnail-nav-arrow:active {
+  transform: scale(0.95);
+}
+
+.thumbnail-nav-arrow.disabled {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.thumbnail-nav-arrow svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+/* 페이지 인디케이터 */
+#thumbnail-page-info {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.5));
+  z-index: 150;
+  display: none;
+}
+
+#thumbnail-page-info.visible {
+  display: block;
+}
+
+/* === 반응형 === */
+@media (max-width: 1100px) {
+  .section-cards.thumbnail-layout {
+    grid-template-columns: repeat(2, 300px) !important;
+    width: 660px !important;
+  }
+
+  .thumbnail-layout .shortcut-card {
+    width: 300px;
+  }
+}
+
+@media (max-width: 700px) {
+  .section-cards.thumbnail-layout {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: repeat(3, 180px) !important;
+    width: 340px !important;
+    padding: 12px;
+  }
+
+  .thumbnail-layout .shortcut-card {
+    width: 100%;
+    height: 180px;
+  }
+}

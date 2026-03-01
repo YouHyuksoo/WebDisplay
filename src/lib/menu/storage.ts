@@ -30,6 +30,8 @@ export const KEYS = {
   SHORTCUTS: 'mes-display-shortcuts',
   SETTINGS: 'mes-display-settings',
   CATEGORIES: 'mes-display-categories',
+  ROLLING: 'mes-display-rolling',
+  LAST_SECTION: 'mes-display-last-section',
 } as const;
 
 // ---------------------------------------------------------------------------

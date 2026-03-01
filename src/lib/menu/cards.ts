@@ -30,8 +30,46 @@ import {
   showConfirm,
   showContextMenu,
   saveShortcuts,
+  showToast,
 } from './ui';
 import type { Shortcut, Category, Section } from './types';
+
+/** FAVORITES 카테고리의 layer ID */
+const FAVORITES_LAYER = 0;
+
+/**
+ * 해당 URL이 즐겨찾기에 등록되어 있는지 확인
+ */
+function isFavorited(url: string): boolean {
+  return state.shortcuts.some((s) => s.layer === FAVORITES_LAYER && s.url === url);
+}
+
+/**
+ * 즐겨찾기 토글 — 없으면 복사 등록, 있으면 제거
+ * @returns 토글 후 즐겨찾기 상태 (true=등록됨)
+ */
+function toggleFavorite(shortcut: Shortcut): boolean {
+  const favId = `fav-${shortcut.id}`;
+  const existing = state.shortcuts.find(
+    (s) => s.layer === FAVORITES_LAYER && s.url === shortcut.url,
+  );
+
+  if (existing) {
+    state.shortcuts = state.shortcuts.filter((s) => s !== existing);
+    saveShortcuts();
+    showToast('즐겨찾기에서 제거됨');
+    return false;
+  }
+
+  state.shortcuts.push({
+    ...shortcut,
+    id: favId,
+    layer: FAVORITES_LAYER,
+  });
+  saveShortcuts();
+  showToast('즐겨찾기에 등록됨');
+  return true;
+}
 
 // ---------------------------------------------------------------------------
 // 아이콘 라이브러리
@@ -188,11 +226,15 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
 
   const iconContent = getIconContent(shortcut);
 
+  const favored = isFavorited(shortcut.url);
   card.innerHTML = `
     <div class="shortcut-icon">${iconContent}</div>
     <div class="shortcut-title">${shortcut.title}</div>
     <div class="shortcut-url">${getDomain(shortcut.url)}</div>
     <div class="card-actions">
+      <button class="card-btn fav-btn${favored ? ' active' : ''}" title="즐겨찾기">
+        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </button>
       <button class="card-btn edit-btn" title="수정">
         <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
       </button>
@@ -204,6 +246,15 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
 
   // 카드 색상을 글로우 효과로 활용
   card.style.setProperty('--card-color', shortcut.color);
+
+  // 즐겨찾기 버튼
+  card.querySelector('.fav-btn')!.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const btn = e.currentTarget as HTMLElement;
+    const nowActive = toggleFavorite(shortcut);
+    btn.classList.toggle('active', nowActive);
+    renderCards();
+  });
 
   // 수정 버튼
   card.querySelector('.edit-btn')!.addEventListener('click', (e) => {
@@ -256,6 +307,9 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
       duration: 0.15,
       ease: 'power2.out',
       onComplete: () => {
+        // 현재 섹션 위치 저장 (돌아왔을 때 복원용) — 동기 저장 필수
+        try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
+
         // MES: dispatch navigation event instead of opening URL
         window.dispatchEvent(
           new CustomEvent('mes-navigate', {
@@ -294,6 +348,223 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
 }
 
 // ---------------------------------------------------------------------------
+// 썸네일 카드 생성
+// ---------------------------------------------------------------------------
+
+/**
+ * 썸네일 모드 카드 DOM 요소 생성
+ * @param shortcut - 바로가기 데이터
+ * @param index - 카드 인덱스
+ * @returns 썸네일 카드 DOM 요소
+ */
+export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivElement {
+  const card = document.createElement('div');
+  card.className = 'shortcut-card';
+
+  if (state.cardStyle !== 'glass') {
+    card.classList.add('style-' + state.cardStyle);
+  }
+
+  if (state.cardStyle === 'rainbow') {
+    const color = RAINBOW_COLORS[index % RAINBOW_COLORS.length];
+    card.style.setProperty('--rainbow-r', String(color.r));
+    card.style.setProperty('--rainbow-g', String(color.g));
+    card.style.setProperty('--rainbow-b', String(color.b));
+  }
+
+  card.dataset.id = shortcut.id;
+  card.style.setProperty('--card-color', shortcut.color);
+
+  // screenId 추출 (url에서 /display/XX 형태)
+  const screenIdMatch = shortcut.url.match(/\/display\/(\d+)/);
+  const screenId = screenIdMatch ? screenIdMatch[1] : '';
+  const hasImage = !!screenId;
+
+  // 이미지 영역
+  const imageArea = document.createElement('div');
+  imageArea.className = 'thumbnail-image-area';
+
+  // 업로드 버튼
+  const uploadBtn = document.createElement('button');
+  uploadBtn.className = 'thumbnail-upload-btn';
+  uploadBtn.textContent = '이미지 등록';
+  uploadBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    triggerThumbnailUpload(screenId, card);
+  });
+
+  if (hasImage) {
+    const img = document.createElement('img');
+    img.src = `/thumbnails/${screenId}.png?t=${Date.now()}`;
+    img.alt = shortcut.title;
+    img.loading = 'lazy';
+    img.onerror = () => {
+      img.remove();
+      imageArea.classList.add('empty');
+      imageArea.insertBefore(createPlaceholder(), uploadBtn);
+      uploadBtn.textContent = '이미지 등록';
+    };
+    img.onload = () => {
+      uploadBtn.textContent = '이미지 변경';
+    };
+    imageArea.appendChild(img);
+  } else {
+    imageArea.classList.add('empty');
+    imageArea.appendChild(createPlaceholder());
+  }
+
+  imageArea.appendChild(uploadBtn);
+
+  // 제목 영역
+  const titleArea = document.createElement('div');
+  titleArea.className = 'thumbnail-title';
+  titleArea.textContent = shortcut.title;
+
+  // 액션 버튼 (즐겨찾기 / 수정 / 삭제)
+  const favored = isFavorited(shortcut.url);
+  const actions = document.createElement('div');
+  actions.className = 'card-actions';
+  actions.innerHTML = `
+    <button class="card-btn fav-btn${favored ? ' active' : ''}" title="즐겨찾기">
+      <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+    </button>
+    <button class="card-btn edit-btn" title="수정">
+      <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+    </button>
+    <button class="card-btn delete-btn" title="삭제">
+      <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+    </button>
+  `;
+
+  actions.querySelector('.fav-btn')!.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleFavorite(shortcut);
+    renderCards();
+  });
+
+  actions.querySelector('.edit-btn')!.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openModal(shortcut.id);
+  });
+
+  actions.querySelector('.delete-btn')!.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const confirmed = await showConfirm('삭제할까요?', {
+      title: '바로가기 삭제',
+      danger: true,
+    });
+    if (confirmed) {
+      state.shortcuts = state.shortcuts.filter((x) => x.id !== shortcut.id);
+      saveShortcuts();
+      renderCards();
+    }
+  });
+
+  card.appendChild(imageArea);
+  card.appendChild(titleArea);
+  card.appendChild(actions);
+
+  // 클릭 - 디스플레이 화면 열기
+  card.addEventListener('click', () => {
+    const parent = card.closest('.section-cards');
+    if (!parent?.classList.contains('active')) return;
+
+    // 현재 섹션 위치 저장 (돌아왔을 때 복원용)
+    import('./state').then(({ state: s }) => {
+      try { localStorage.setItem('mes-display-last-section', String(s.currentSection)); } catch {}
+    });
+
+    window.dispatchEvent(
+      new CustomEvent('mes-navigate', {
+        detail: { url: shortcut.url, title: shortcut.title },
+      }),
+    );
+
+    import('./lanes').then((Lanes) => {
+      if (Lanes.addToHistory) {
+        Lanes.addToHistory(shortcut);
+      }
+    });
+  });
+
+  // 우클릭 컨텍스트 메뉴
+  card.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const parent = card.closest('.section-cards');
+    if (!parent?.classList.contains('active')) return;
+    showContextMenu(e, shortcut.id);
+  });
+
+  return card;
+}
+
+/** 이미지 미등록 placeholder */
+function createPlaceholder(): HTMLElement {
+  const placeholder = document.createElement('div');
+  placeholder.className = 'thumbnail-placeholder';
+  placeholder.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+    </svg>
+    <span>스크린샷 미등록</span>
+  `;
+  return placeholder;
+}
+
+/** 이미지 업로드 트리거 */
+function triggerThumbnailUpload(screenId: string, card: HTMLDivElement): void {
+  if (!screenId) {
+    import('./ui').then(({ showToast }) => showToast('이 화면은 이미지 등록을 지원하지 않습니다'));
+    return;
+  }
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('screenId', screenId);
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/thumbnails', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.success) {
+        const imageArea = card.querySelector('.thumbnail-image-area');
+        if (imageArea) {
+          imageArea.classList.remove('empty');
+          const placeholder = imageArea.querySelector('.thumbnail-placeholder');
+          if (placeholder) placeholder.remove();
+
+          let img = imageArea.querySelector('img');
+          if (!img) {
+            img = document.createElement('img');
+            img.alt = card.querySelector('.thumbnail-title')?.textContent || '';
+            img.loading = 'lazy';
+            imageArea.insertBefore(img, imageArea.querySelector('.thumbnail-upload-btn'));
+          }
+          img.src = `${data.path}?t=${Date.now()}`;
+
+          const btn = imageArea.querySelector('.thumbnail-upload-btn');
+          if (btn) btn.textContent = '이미지 변경';
+        }
+
+        import('./ui').then(({ showToast }) => showToast('스크린샷이 등록되었습니다'));
+      } else {
+        import('./ui').then(({ showToast }) => showToast(data.error || '업로드 실패'));
+      }
+    } catch {
+      import('./ui').then(({ showToast }) => showToast('업로드 중 오류가 발생했습니다'));
+    }
+  };
+  input.click();
+}
+
+// ---------------------------------------------------------------------------
 // 카드 렌더링
 // ---------------------------------------------------------------------------
 
@@ -312,6 +583,7 @@ export function renderAllCards(): void {
 
   const sections = getSections();
   const isCarousel = state.cardLayout === 'carousel';
+  const isThumbnail = state.cardLayout === 'thumbnail';
 
   sections.forEach((section, sectionIndex) => {
     const sectionDiv = document.createElement('div');
@@ -320,20 +592,40 @@ export function renderAllCards(): void {
     if (isCarousel) {
       sectionDiv.classList.add('carousel-layout');
     }
+    if (isThumbnail) {
+      sectionDiv.classList.add('thumbnail-layout');
+      // gsap이 display:flex를 인라인으로 덮어쓰므로, 인라인으로 grid 강제
+      sectionDiv.style.display = 'grid';
+      sectionDiv.style.gridTemplateColumns = 'repeat(3, 320px)';
+      sectionDiv.style.gridTemplateRows = 'repeat(2, 220px)';
+      sectionDiv.style.gap = '24px';
+      sectionDiv.style.width = '1060px';
+      sectionDiv.style.maxWidth = '96vw';
+      sectionDiv.style.maxHeight = 'none';
+      sectionDiv.style.flexWrap = 'unset';
+    }
 
     sectionDiv.dataset.section = String(sectionIndex);
     sectionDiv.dataset.label = section.name;
 
-    // 캐러셀 모드가 아닐 때만 모든 카드 렌더링
-    // 캐러셀 모드에서는 나중에 renderCarouselSlots에서 처리
+    // 캐러셀 모드는 나중에 renderCarouselSlots에서 처리
     if (!isCarousel) {
       const sectionShortcuts = state.shortcuts.filter(
         (s) => s.layer === section.id,
       );
-      sectionShortcuts.forEach((shortcut, i) => {
-        const cardEl = createCard(shortcut, i);
-        sectionDiv.appendChild(cardEl);
-      });
+
+      if (isThumbnail) {
+        // 썸네일: 첫 페이지(6개)만 렌더
+        const pageSlice = sectionShortcuts.slice(0, THUMBNAILS_PER_PAGE);
+        pageSlice.forEach((shortcut, i) => {
+          sectionDiv.appendChild(createThumbnailCard(shortcut, i));
+        });
+      } else {
+        // 그리드: 전부 렌더
+        sectionShortcuts.forEach((shortcut, i) => {
+          sectionDiv.appendChild(createCard(shortcut, i));
+        });
+      }
     }
 
     space.appendChild(sectionDiv);
@@ -375,6 +667,166 @@ export function renderAllCards(): void {
     import('./lanes').then((Lanes) => {
       Lanes.createLaneIndicator();
     });
+  }
+
+  // 썸네일 네비게이션 관리
+  if (isThumbnail) {
+    thumbnailPage = 0;
+    createThumbnailNavArrows();
+  } else {
+    removeThumbnailNavArrows();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 썸네일 스크롤 화살표
+// ---------------------------------------------------------------------------
+
+/** 한 페이지에 표시할 썸네일 수 (3열 x 2행) */
+const THUMBNAILS_PER_PAGE = 6;
+
+/** 현재 썸네일 페이지 (모듈 레벨) */
+let thumbnailPage = 0;
+
+/**
+ * 썸네일 페이지 렌더링 (현재 섹션의 카드를 6개씩 페이지로 표시)
+ */
+export function renderThumbnailPage(): void {
+  const section = document.querySelector(
+    `.section-cards.thumbnail-layout[data-section="${state.currentSection}"]`
+  ) as HTMLElement | null;
+  if (!section) return;
+
+  // 현재 섹션의 바로가기 목록
+  const sections = getSections();
+  const currentSec = sections[state.currentSection];
+  if (!currentSec) return;
+
+  const shortcuts = state.shortcuts.filter((s) => s.layer === currentSec.id);
+  const totalPages = Math.max(1, Math.ceil(shortcuts.length / THUMBNAILS_PER_PAGE));
+
+  // 페이지 범위 보정
+  if (thumbnailPage >= totalPages) thumbnailPage = totalPages - 1;
+  if (thumbnailPage < 0) thumbnailPage = 0;
+
+  // 현재 페이지의 카드만 슬라이스
+  const start = thumbnailPage * THUMBNAILS_PER_PAGE;
+  const pageShortcuts = shortcuts.slice(start, start + THUMBNAILS_PER_PAGE);
+
+  // 기존 카드 제거 후 재렌더
+  section.innerHTML = '';
+  pageShortcuts.forEach((shortcut, i) => {
+    section.appendChild(createThumbnailCard(shortcut, start + i));
+  });
+
+  updateThumbnailNavState(shortcuts.length);
+}
+
+/**
+ * 썸네일 좌우 네비게이션 화살표 생성
+ */
+function createThumbnailNavArrows(): void {
+  removeThumbnailNavArrows();
+
+  const container = document.createElement('div');
+  container.id = 'thumbnail-nav-arrows';
+  container.innerHTML = `
+    <div class="thumbnail-nav-arrow thumbnail-nav-prev">
+      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+    </div>
+    <div class="thumbnail-nav-arrow thumbnail-nav-next">
+      <svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+    </div>
+  `;
+
+  // 페이지 인디케이터
+  const pageInfo = document.createElement('div');
+  pageInfo.id = 'thumbnail-page-info';
+
+  document.body.appendChild(container);
+  document.body.appendChild(pageInfo);
+  container.classList.add('visible');
+  pageInfo.classList.add('visible');
+
+  container.querySelector('.thumbnail-nav-prev')
+    ?.addEventListener('click', () => {
+      if (thumbnailPage > 0) {
+        thumbnailPage--;
+        renderThumbnailPage();
+      }
+    });
+  container.querySelector('.thumbnail-nav-next')
+    ?.addEventListener('click', () => {
+      thumbnailPage++;
+      renderThumbnailPage();
+    });
+}
+
+/**
+ * 썸네일 네비게이션 제거
+ */
+function removeThumbnailNavArrows(): void {
+  document.getElementById('thumbnail-nav-arrows')?.remove();
+  document.getElementById('thumbnail-page-info')?.remove();
+}
+
+/**
+ * 좌우 화살표 활성/비활성 + 페이지 표시 업데이트
+ */
+function updateThumbnailNavState(totalCards: number): void {
+  const totalPages = Math.max(1, Math.ceil(totalCards / THUMBNAILS_PER_PAGE));
+  const prevBtn = document.querySelector('.thumbnail-nav-prev');
+  const nextBtn = document.querySelector('.thumbnail-nav-next');
+  const pageInfo = document.getElementById('thumbnail-page-info');
+
+  prevBtn?.classList.toggle('disabled', thumbnailPage <= 0);
+  nextBtn?.classList.toggle('disabled', thumbnailPage >= totalPages - 1);
+
+  if (pageInfo) {
+    if (totalPages > 1) {
+      pageInfo.textContent = `${thumbnailPage + 1} / ${totalPages}`;
+      pageInfo.classList.add('visible');
+    } else {
+      pageInfo.classList.remove('visible');
+    }
+  }
+}
+
+/**
+ * 썸네일 네비게이션 표시/숨김 업데이트
+ */
+export function updateThumbnailArrowsVisibility(): void {
+  const arrowContainer = document.getElementById('thumbnail-nav-arrows');
+  const pageInfo = document.getElementById('thumbnail-page-info');
+  if (!arrowContainer) return;
+
+  const isThumbnail = state.cardLayout === 'thumbnail';
+  const isCenter = state.currentLane === 0;
+
+  if (isThumbnail && isCenter) {
+    arrowContainer.classList.add('visible');
+    pageInfo?.classList.add('visible');
+  } else {
+    arrowContainer.classList.remove('visible');
+    pageInfo?.classList.remove('visible');
+  }
+}
+
+/**
+ * 썸네일 페이지 초기화 (섹션 전환 시)
+ */
+export function resetThumbnailPage(): void {
+  thumbnailPage = 0;
+}
+
+/**
+ * ID로 즐겨찾기 토글 (컨텍스트 메뉴에서 호출)
+ */
+export function toggleFavoriteById(id: string): void {
+  const shortcut = state.shortcuts.find((s) => s.id === id);
+  if (shortcut) {
+    toggleFavorite(shortcut);
+    renderCards();
   }
 }
 
