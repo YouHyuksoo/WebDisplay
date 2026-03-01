@@ -19,19 +19,22 @@
  */
 
 import type { Shortcut, Category, MenuSettings } from './types';
-import { DEFAULT_SHORTCUTS, DEFAULT_CATEGORIES } from './config';
+import { DEFAULT_SHORTCUTS, DEFAULT_CATEGORIES, DEFAULT_MENU_SETTINGS } from './config';
 
 // ---------------------------------------------------------------------------
 // localStorage 키 상수
 // ---------------------------------------------------------------------------
 
-/** localStorage 키 매핑 */
+/** localStorage 키 매핑 — Single Source of Truth */
 export const KEYS = {
   SHORTCUTS: 'mes-display-shortcuts',
   SETTINGS: 'mes-display-settings',
   CATEGORIES: 'mes-display-categories',
   ROLLING: 'mes-display-rolling',
   LAST_SECTION: 'mes-display-last-section',
+  LOCALE: 'mes-display-locale',
+  THEME: 'mes-display-theme',
+  HISTORY: 'mes-display-history',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -116,18 +119,8 @@ export function resetShortcuts(): Shortcut[] {
 // Settings
 // ---------------------------------------------------------------------------
 
-/** 기본 설정 값 */
-const DEFAULT_SETTINGS: MenuSettings = {
-  tunnelShape: 'triangle',
-  glowTheme: 'gold',
-  iconColorMode: 'brand',
-  cardStyle: 'glass',
-  spaceType: 'tunnel',
-  cardLayout: 'grid',
-  auroraBrightness: 1.0,
-  simpleVirtualization: true,
-  enable3D: true,
-};
+/** 기본 설정 값 — config.ts에서 통합 관리 */
+const DEFAULT_SETTINGS = DEFAULT_MENU_SETTINGS;
 
 /**
  * 설정 불러오기

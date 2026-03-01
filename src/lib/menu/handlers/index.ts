@@ -23,6 +23,7 @@
 import gsap from 'gsap';
 import { state } from '../state';
 import { COLORS } from '../config';
+import { KEYS } from '../storage';
 import {
   openModal,
   closeModal,
@@ -649,8 +650,7 @@ export function initEventListeners(): void {
   const localeBtn = document.getElementById('locale-btn');
 
   // 현재 언어 활성 표시
-  const STORAGE_KEY = 'mes-display-locale';
-  const currentLocale = localStorage.getItem(STORAGE_KEY) ?? 'ko';
+  const currentLocale = localStorage.getItem(KEYS.LOCALE) ?? 'ko';
   localeDropdown
     ?.querySelector(`.locale-option[data-locale="${currentLocale}"]`)
     ?.classList.add('active');
@@ -665,7 +665,7 @@ export function initEventListeners(): void {
   localeDropdown?.querySelectorAll('.locale-option').forEach((btn) => {
     btn.addEventListener('click', () => {
       const locale = (btn as HTMLElement).dataset.locale ?? 'ko';
-      localStorage.setItem(STORAGE_KEY, locale);
+      localStorage.setItem(KEYS.LOCALE, locale);
       import('../ui').then((UI) => UI.showToast(`🌐 Language: ${locale.toUpperCase()}`));
       localeDropdown.classList.remove('open');
       setTimeout(() => location.reload(), 800);
@@ -679,10 +679,9 @@ export function initEventListeners(): void {
 
   // ===== 테마 전환 (display 페이지용) =====
   document.getElementById('theme-btn')?.addEventListener('click', () => {
-    const THEME_KEY = 'mes-display-theme';
-    const current = localStorage.getItem(THEME_KEY) ?? 'dark';
+    const current = localStorage.getItem(KEYS.THEME) ?? 'dark';
     const next = current === 'dark' ? 'light' : 'dark';
-    localStorage.setItem(THEME_KEY, next);
+    localStorage.setItem(KEYS.THEME, next);
     const themeBtn = document.getElementById('theme-btn');
     if (themeBtn) themeBtn.innerHTML = next === 'dark' ? '&#127769;' : '&#9728;&#65039;';
     import('../ui').then((UI) => UI.showToast(`🎨 Theme: ${next === 'dark' ? 'Dark' : 'Light'}`));
@@ -704,7 +703,7 @@ export function initEventListeners(): void {
   });
 
   // ===== 테마 버튼 초기 상태 =====
-  const savedTheme = localStorage.getItem('mes-display-theme') ?? 'dark';
+  const savedTheme = localStorage.getItem(KEYS.THEME) ?? 'dark';
   const themeBtnEl = document.getElementById('theme-btn');
   if (themeBtnEl) themeBtnEl.innerHTML = savedTheme === 'dark' ? '&#127769;' : '&#9728;&#65039;';
 

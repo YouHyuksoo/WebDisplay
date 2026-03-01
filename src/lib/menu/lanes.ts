@@ -44,11 +44,10 @@ export const LANE_NAMES: Record<number, { name: string; subtitle: string; icon: 
   [1]: { name: '도구', subtitle: '설정 및 유틸리티', icon: '🔧' },
 };
 
+import { KEYS } from './storage';
+
 /** 히스토리 최대 저장 개수 */
 const MAX_HISTORY = 20;
-
-/** 히스토리 localStorage 키 */
-const HISTORY_STORAGE_KEY = 'mydesktop-history';
 
 // ---------------------------------------------------------------------------
 // Re-exports (lanes-render.ts에서)
@@ -66,7 +65,7 @@ export { renderHistoryLane, renderToolsLane };
  */
 function loadHistory(): Shortcut[] {
   try {
-    const saved = localStorage.getItem(HISTORY_STORAGE_KEY);
+    const saved = localStorage.getItem(KEYS.HISTORY);
     if (saved) {
       return JSON.parse(saved) as Shortcut[];
     }
@@ -82,7 +81,7 @@ function loadHistory(): Shortcut[] {
  */
 function saveHistory(history: Shortcut[]): void {
   try {
-    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+    localStorage.setItem(KEYS.HISTORY, JSON.stringify(history));
   } catch (e) {
     console.error('Failed to save history:', e);
   }

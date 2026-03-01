@@ -12,6 +12,7 @@
  */
 
 import type { MenuState } from './types';
+import { DEFAULT_MENU_SETTINGS } from './config';
 
 /**
  * 메뉴 시스템 전역 상태 객체
@@ -45,18 +46,18 @@ export const state: MenuState = {
   // 네비게이션 히스토리 (돌아가기 기능)
   sectionHistory: [],
 
-  // 설정
-  tunnelShape: 'triangle',
+  // 설정 — DEFAULT_MENU_SETTINGS에서 통합 관리
+  tunnelShape: DEFAULT_MENU_SETTINGS.tunnelShape,
   glowIntensity: 0,
-  glowTheme: 'gold',
-  iconColorMode: 'brand',
-  cardStyle: 'neon',
-  spaceType: 'aurora',
-  cardLayout: 'grid',
+  glowTheme: DEFAULT_MENU_SETTINGS.glowTheme,
+  iconColorMode: DEFAULT_MENU_SETTINGS.iconColorMode,
+  cardStyle: DEFAULT_MENU_SETTINGS.cardStyle,
+  spaceType: DEFAULT_MENU_SETTINGS.spaceType,
+  cardLayout: DEFAULT_MENU_SETTINGS.cardLayout,
   carouselIndex: 0,
-  auroraBrightness: 1.0,
-  simpleVirtualization: true,
-  enable3D: true,
+  auroraBrightness: DEFAULT_MENU_SETTINGS.auroraBrightness,
+  simpleVirtualization: DEFAULT_MENU_SETTINGS.simpleVirtualization,
+  enable3D: DEFAULT_MENU_SETTINGS.enable3D,
   lastActivityTime: Date.now(),
 
   // Three.js (런타임 할당)

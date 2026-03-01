@@ -23,7 +23,7 @@
 
 import gsap from 'gsap';
 import { state } from './state';
-import { RAINBOW_COLORS, DEFAULT_CATEGORIES } from './config';
+import { RAINBOW_COLORS, FAVORITES_CATEGORY_ID } from './config';
 import * as Categories from './categories';
 import {
   openModal,
@@ -34,8 +34,8 @@ import {
 } from './ui';
 import type { Shortcut, Category } from './types';
 
-/** FAVORITES 카테고리의 layer ID */
-const FAVORITES_LAYER = 0;
+/** FAVORITES 카테고리의 layer ID — config.ts에서 관리 */
+const FAVORITES_LAYER = FAVORITES_CATEGORY_ID;
 
 /**
  * 해당 URL이 즐겨찾기에 등록되어 있는지 확인
@@ -181,20 +181,9 @@ export function getIconContent(shortcut: Shortcut): string {
   return icon;
 }
 
-// ---------------------------------------------------------------------------
-// 섹션(카테고리) 목록 가져오기
-// ---------------------------------------------------------------------------
-
-/**
- * 현재 사용 가능한 카테고리(섹션) 목록 반환
- * @returns 카테고리 배열
- */
-export function getSections(): Category[] {
-  if (typeof Categories.getAll === 'function') {
-    return Categories.getAll();
-  }
-  return DEFAULT_CATEGORIES;
-}
+// getSections() → sections.ts로 통합
+import { getSections } from './sections';
+export { getSections };
 
 // ---------------------------------------------------------------------------
 // 카드 생성

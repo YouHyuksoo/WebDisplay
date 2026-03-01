@@ -18,8 +18,7 @@
 import koMessages from '@/i18n/messages/ko.json';
 import enMessages from '@/i18n/messages/en.json';
 import esMessages from '@/i18n/messages/es.json';
-
-const STORAGE_KEY = 'mes-display-locale';
+import { KEYS } from './storage';
 
 const allMessages: Record<string, Record<string, unknown>> = {
   ko: koMessages,
@@ -33,7 +32,7 @@ const allMessages: Record<string, Record<string, unknown>> = {
  */
 function getLocale(): string {
   if (typeof window === 'undefined') return 'ko';
-  return localStorage.getItem(STORAGE_KEY) ?? 'ko';
+  return localStorage.getItem(KEYS.LOCALE) ?? 'ko';
 }
 
 /**

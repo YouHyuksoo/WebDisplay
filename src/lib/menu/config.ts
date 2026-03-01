@@ -17,6 +17,7 @@
 import type {
   Shortcut,
   Category,
+  MenuSettings,
   GlowTheme,
   TunnelConfig,
   WarpConfig,
@@ -24,8 +25,31 @@ import type {
 } from './types';
 
 // ---------------------------------------------------------------------------
+// DEFAULT_MENU_SETTINGS (유일한 기본 설정 — Single Source of Truth)
+// ---------------------------------------------------------------------------
+
+/**
+ * 메뉴 시스템 기본 설정값
+ * storage.ts와 state.ts 모두 이 값을 참조한다.
+ */
+export const DEFAULT_MENU_SETTINGS: MenuSettings = {
+  tunnelShape: 'triangle',
+  glowTheme: 'gold',
+  iconColorMode: 'brand',
+  cardStyle: 'glass',
+  spaceType: 'tunnel',
+  cardLayout: 'grid',
+  auroraBrightness: 1.0,
+  simpleVirtualization: true,
+  enable3D: true,
+};
+
+// ---------------------------------------------------------------------------
 // DEFAULT_CATEGORIES (유일한 카테고리 정의 — Single Source of Truth)
 // ---------------------------------------------------------------------------
+
+/** 즐겨찾기 카테고리 고정 ID */
+export const FAVORITES_CATEGORY_ID = 0;
 
 /**
  * 기본 카테고리 정의 - MES 메뉴 그룹
