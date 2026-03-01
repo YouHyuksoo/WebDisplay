@@ -20,7 +20,7 @@
 
 import gsap from 'gsap';
 import { state } from './state';
-import { COLORS, GLOW_THEMES, SECTIONS } from './config';
+import { COLORS, GLOW_THEMES } from './config';
 import * as Storage from './storage';
 
 // ---------------------------------------------------------------------------
@@ -73,7 +73,7 @@ export function openModal(target: string | Shortcut | null = null): void {
     (document.getElementById('shortcut-url') as HTMLInputElement).value = '';
     // 현재 섹션의 카테고리 ID로 설정
     import('./categories').then((Categories) => {
-      const sections = Categories.getAll ? Categories.getAll() : SECTIONS;
+      const sections = Categories.getAll();
       const currentCategory = sections[state.currentSection];
       (document.getElementById('shortcut-layer') as HTMLSelectElement).value =
         currentCategory ? String(currentCategory.id) : '0';

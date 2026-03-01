@@ -23,7 +23,7 @@
 
 import gsap from 'gsap';
 import { state } from './state';
-import { RAINBOW_COLORS, SECTIONS } from './config';
+import { RAINBOW_COLORS, DEFAULT_CATEGORIES } from './config';
 import * as Categories from './categories';
 import {
   openModal,
@@ -32,7 +32,7 @@ import {
   saveShortcuts,
   showToast,
 } from './ui';
-import type { Shortcut, Category, Section } from './types';
+import type { Shortcut, Category } from './types';
 
 /** FAVORITES 카테고리의 layer ID */
 const FAVORITES_LAYER = 0;
@@ -189,11 +189,11 @@ export function getIconContent(shortcut: Shortcut): string {
  * 현재 사용 가능한 카테고리(섹션) 목록 반환
  * @returns 카테고리 배열
  */
-export function getSections(): (Category | Section)[] {
+export function getSections(): Category[] {
   if (typeof Categories.getAll === 'function') {
     return Categories.getAll();
   }
-  return SECTIONS;
+  return DEFAULT_CATEGORIES;
 }
 
 // ---------------------------------------------------------------------------

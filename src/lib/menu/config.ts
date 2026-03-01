@@ -17,7 +17,6 @@
 import type {
   Shortcut,
   Category,
-  Section,
   GlowTheme,
   TunnelConfig,
   WarpConfig,
@@ -25,28 +24,12 @@ import type {
 } from './types';
 
 // ---------------------------------------------------------------------------
-// SECTIONS (레거시)
-// ---------------------------------------------------------------------------
-
-/**
- * 섹션 정의 - 대시보드의 카테고리들 (레거시)
- * @deprecated SECTIONS는 DEFAULT_CATEGORIES 사용 권장
- */
-export const SECTIONS: Section[] = [
-  { id: 0, name: 'FAVORITES', subtitle: '즐겨찾기' },
-  { id: 1, name: 'SMD MONITORING', subtitle: 'SMD 모니터링' },
-  { id: 2, name: 'PBA MONITORING', subtitle: 'PBA 모니터링' },
-  { id: 3, name: 'EQUIPMENT', subtitle: '설비 모니터링' },
-  { id: 4, name: 'QUALITY', subtitle: '품질 관리' },
-  { id: 5, name: 'MANAGEMENT', subtitle: '관리 설정' },
-];
-
-// ---------------------------------------------------------------------------
-// DEFAULT_CATEGORIES
+// DEFAULT_CATEGORIES (유일한 카테고리 정의 — Single Source of Truth)
 // ---------------------------------------------------------------------------
 
 /**
  * 기본 카테고리 정의 - MES 메뉴 그룹
+ * 새 카테고리 추가 시 여기에만 추가하면 됨 (SECTIONS, ScreenConfig.group 등 별도 수정 불필요)
  * 사용자 정의 카테고리는 id가 100 이상
  */
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -56,6 +39,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 3, name: 'EQUIPMENT', subtitle: '설비 모니터링', icon: '⌂' },
   { id: 4, name: 'QUALITY', subtitle: '품질 관리', icon: '✔' },
   { id: 5, name: 'MANAGEMENT', subtitle: '관리 설정', icon: '⚙' },
+  { id: 6, name: 'CHARTS', subtitle: '차트 보기', icon: '▦' },
 ];
 
 // ---------------------------------------------------------------------------

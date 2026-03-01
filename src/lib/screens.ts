@@ -8,7 +8,7 @@ export interface ScreenConfig {
   title: string;
   titleKo: string;
   window: string;
-  group: 'favorites' | 'smd-monitoring' | 'pba-monitoring' | 'equipment' | 'quality' | 'management';
+  group: string;
 }
 
 export const SCREENS: Record<string, ScreenConfig> = {

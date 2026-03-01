@@ -22,10 +22,10 @@
 
 import gsap from 'gsap';
 import { state } from './state';
-import { SECTIONS } from './config';
+import { DEFAULT_CATEGORIES } from './config';
 import * as Categories from './categories';
 import * as Carousel from './carousel';
-import type { Category, Section } from './types';
+import type { Category } from './types';
 
 // ---------------------------------------------------------------------------
 // 상수
@@ -40,14 +40,14 @@ export const DEPTH_SPACING = 600;
 
 /**
  * 현재 사용 가능한 카테고리(섹션) 목록 반환
- * Categories가 있으면 동적 카테고리, 없으면 기본 SECTIONS 사용
+ * 동적 카테고리(기본 + 사용자 정의) 반환
  * @returns 카테고리 배열
  */
-export function getSections(): (Category | Section)[] {
+export function getSections(): Category[] {
   if (typeof Categories.getAll === 'function') {
     return Categories.getAll();
   }
-  return SECTIONS;
+  return DEFAULT_CATEGORIES;
 }
 
 // ---------------------------------------------------------------------------

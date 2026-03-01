@@ -25,7 +25,7 @@
  */
 
 import type { Category } from './types';
-import { DEFAULT_CATEGORIES, SECTIONS } from './config';
+import { DEFAULT_CATEGORIES } from './config';
 import * as Storage from './storage';
 import { state } from './state';
 import { showToast, showConfirm, saveShortcuts } from './ui';
@@ -70,7 +70,7 @@ export function save(): boolean {
  * @returns 전체 카테고리 배열
  */
 export function getAll(): Category[] {
-  const defaults = DEFAULT_CATEGORIES || SECTIONS;
+  const defaults = DEFAULT_CATEGORIES;
   return [...defaults, ...customCategories];
 }
 
@@ -79,7 +79,7 @@ export function getAll(): Category[] {
  * @returns 기본 카테고리 배열
  */
 export function getDefaults(): Category[] {
-  return DEFAULT_CATEGORIES || SECTIONS;
+  return DEFAULT_CATEGORIES;
 }
 
 /**
