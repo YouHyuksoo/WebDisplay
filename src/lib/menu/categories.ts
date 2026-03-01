@@ -241,8 +241,8 @@ export function renderManagerList(): void {
           ? '<span class="category-badge">기본</span>'
           : `
           <div class="category-actions">
-            <button class="category-edit-btn" title="수정">✏️</button>
-            <button class="category-delete-btn" title="삭제">🗑️</button>
+            <button class="category-edit-btn" data-tooltip="수정">✏️</button>
+            <button class="category-delete-btn" data-tooltip="삭제">🗑️</button>
           </div>
         `
       }

@@ -148,6 +148,8 @@ export interface MenuSettings {
   spaceType: string;
   cardLayout: string;
   auroraBrightness: number;
+  simpleVirtualization: boolean;
+  enable3D: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -210,6 +212,9 @@ export interface MenuState {
   cardLayout: string;
   carouselIndex: number;
   auroraBrightness: number;
+  simpleVirtualization: boolean;
+  enable3D: boolean;
+  lastActivityTime: number;
 
   // Three.js (런타임 할당)
   scene: any;

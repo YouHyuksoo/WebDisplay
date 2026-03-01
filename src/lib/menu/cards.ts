@@ -232,13 +232,13 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
     <div class="shortcut-title">${shortcut.title}</div>
     <div class="shortcut-url">${getDomain(shortcut.url)}</div>
     <div class="card-actions">
-      <button class="card-btn fav-btn${favored ? ' active' : ''}" title="즐겨찾기">
+      <button class="card-btn fav-btn${favored ? ' active' : ''}" data-tooltip="즐겨찾기">
         <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
       </button>
-      <button class="card-btn edit-btn" title="수정">
+      <button class="card-btn edit-btn" data-tooltip="수정">
         <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
       </button>
-      <button class="card-btn delete-btn" title="삭제">
+      <button class="card-btn delete-btn" data-tooltip="삭제">
         <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
       </button>
     </div>
@@ -254,6 +254,13 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
     const nowActive = toggleFavorite(shortcut);
     btn.classList.toggle('active', nowActive);
     renderCards();
+  });
+
+  // 로고 아이콘 클릭 시 등록/수정 모달 (stopPropagation 처리로 내비게이션 방지)
+  card.querySelector('.shortcut-icon')!.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isRegistered = state.shortcuts.some((s) => s.id === shortcut.id);
+    openModal(isRegistered ? shortcut.id : shortcut);
   });
 
   // 수정 버튼
@@ -301,15 +308,15 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
     card.classList.remove('pressing');
     card.classList.add('opening');
 
+    // 현재 섹션 위치 즉시 저장 (GSAP 애니메이션 전 — 페이지 전환 시 유실 방지)
+    try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
+
     // 짧은 애니메이션 후 내비게이션 이벤트 발생
     gsap.to(card, {
       scale: 1.05,
       duration: 0.15,
       ease: 'power2.out',
       onComplete: () => {
-        // 현재 섹션 위치 저장 (돌아왔을 때 복원용) — 동기 저장 필수
-        try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
-
         // MES: dispatch navigation event instead of opening URL
         window.dispatchEvent(
           new CustomEvent('mes-navigate', {
@@ -425,13 +432,13 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
   const actions = document.createElement('div');
   actions.className = 'card-actions';
   actions.innerHTML = `
-    <button class="card-btn fav-btn${favored ? ' active' : ''}" title="즐겨찾기">
+    <button class="card-btn fav-btn${favored ? ' active' : ''}" data-tooltip="즐겨찾기">
       <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
     </button>
-    <button class="card-btn edit-btn" title="수정">
+    <button class="card-btn edit-btn" data-tooltip="수정">
       <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
     </button>
-    <button class="card-btn delete-btn" title="삭제">
+    <button class="card-btn delete-btn" data-tooltip="삭제">
       <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
     </button>
   `;
@@ -441,6 +448,7 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
     toggleFavorite(shortcut);
     renderCards();
   });
+
 
   actions.querySelector('.edit-btn')!.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -469,10 +477,8 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
     const parent = card.closest('.section-cards');
     if (!parent?.classList.contains('active')) return;
 
-    // 현재 섹션 위치 저장 (돌아왔을 때 복원용)
-    import('./state').then(({ state: s }) => {
-      try { localStorage.setItem('mes-display-last-section', String(s.currentSection)); } catch {}
-    });
+    // 현재 섹션 위치 저장 (돌아왔을 때 복원용) — 동기 저장 필수
+    try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
 
     window.dispatchEvent(
       new CustomEvent('mes-navigate', {
@@ -569,6 +575,39 @@ function triggerThumbnailUpload(screenId: string, card: HTMLDivElement): void {
 // ---------------------------------------------------------------------------
 
 /**
+ * 특정 섹션의 카드들을 생성하여 컨테이너에 추가 (가상화 지원)
+ */
+export function populateSection(container: HTMLElement, sectionIndex: number): void {
+  // 이미 카드가 있으면 리턴 (단, 썸네일 모드가 아니어야 함)
+  if (state.cardLayout !== 'thumbnail' && state.cardLayout !== 'carousel' && container.querySelector('.shortcut-card')) {
+    return;
+  }
+
+  const sections = getSections();
+  const section = sections[sectionIndex];
+  if (!section) return;
+
+  const sectionShortcuts = state.shortcuts.filter((s) => s.layer === section.id);
+  const isThumbnail = state.cardLayout === 'thumbnail';
+
+  if (isThumbnail) {
+    // 썸네일은 현재 보여주는 페이지(6개)만 렌더
+    container.innerHTML = '';
+    const startIdx = thumbnailPage * THUMBNAILS_PER_PAGE;
+    const pageSlice = sectionShortcuts.slice(startIdx, startIdx + THUMBNAILS_PER_PAGE);
+    pageSlice.forEach((shortcut, i) => {
+      container.appendChild(createThumbnailCard(shortcut, i));
+    });
+  } else {
+    // 그리드: 컨테이너 비우고 전부 생성 (레이아웃 보존용)
+    container.innerHTML = '';
+    sectionShortcuts.forEach((shortcut, i) => {
+      container.appendChild(createCard(shortcut, i));
+    });
+  }
+}
+
+/**
  * 모든 섹션의 카드를 3D 깊이로 렌더링
  *
  * Carousel/Sections/Lanes/Events 모듈은 순환 참조 방지를 위해 lazy import 사용
@@ -608,23 +647,12 @@ export function renderAllCards(): void {
     sectionDiv.dataset.section = String(sectionIndex);
     sectionDiv.dataset.label = section.name;
 
-    // 캐러셀 모드는 나중에 renderCarouselSlots에서 처리
-    if (!isCarousel) {
-      const sectionShortcuts = state.shortcuts.filter(
-        (s) => s.layer === section.id,
-      );
+    // 가상화 적용: 현재 섹션과 인접 섹션만 바로 로드
+    const absOffset = Math.abs(sectionIndex - state.currentSection);
 
-      if (isThumbnail) {
-        // 썸네일: 첫 페이지(6개)만 렌더
-        const pageSlice = sectionShortcuts.slice(0, THUMBNAILS_PER_PAGE);
-        pageSlice.forEach((shortcut, i) => {
-          sectionDiv.appendChild(createThumbnailCard(shortcut, i));
-        });
-      } else {
-        // 그리드: 전부 렌더
-        sectionShortcuts.forEach((shortcut, i) => {
-          sectionDiv.appendChild(createCard(shortcut, i));
-        });
+    if (!isCarousel) {
+      if (!state.simpleVirtualization || absOffset <= 1) {
+        populateSection(sectionDiv, sectionIndex);
       }
     }
 

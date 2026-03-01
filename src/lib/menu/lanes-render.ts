@@ -24,6 +24,7 @@ import {
   showToast,
   applyGlowTheme,
   toggleSettingsMenu,
+  openModal,
 } from './ui';
 import type { Shortcut } from './types';
 
@@ -166,12 +167,12 @@ function createHistoryCard(
   const timeAgo = getTimeAgo(item.usedAt);
 
   card.innerHTML = `
-    <div class="history-icon">${iconContent}</div>
+    <div class="history-icon" data-tooltip="${item.title}">${iconContent}</div>
     <div class="history-info">
       <div class="history-title">${item.title}</div>
       <div class="history-time">${timeAgo}</div>
     </div>
-    <button class="history-delete-btn" title="삭제">
+    <button class="history-delete-btn" data-tooltip="삭제">
       <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
       </svg>
@@ -187,9 +188,25 @@ function createHistoryCard(
     });
   }
 
+  // 히스토리 로고 아이콘 클릭 시 메인 바로가기에 등록 (stopPropagation 필수)
+  card.querySelector('.history-icon')!.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // 이미 등록된 바로가기인지 확인
+    const isRegistered = state.shortcuts.some((s) => s.url === item.url);
+    if (isRegistered) {
+      const existing = state.shortcuts.find((s) => s.url === item.url);
+      openModal(existing!.id);
+    } else {
+      openModal(item);
+    }
+  });
+
   // 클릭 이벤트 - MES: dispatch navigation event
   card.addEventListener('click', () => {
     if (item.url) {
+      // 현재 섹션 위치 저장 (돌아왔을 때 복원용)
+      try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
+
       // MES: dispatch navigation event instead of opening URL
       window.dispatchEvent(
         new CustomEvent('mes-navigate', {
@@ -283,6 +300,7 @@ function createToolCard(
   const card = document.createElement('div');
   card.className = 'tool-card';
   card.dataset.action = tool.action;
+  card.setAttribute('data-tooltip', tool.title);
 
   card.innerHTML = `
     <div class="tool-icon">${tool.icon}</div>

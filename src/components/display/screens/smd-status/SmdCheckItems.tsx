@@ -13,10 +13,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useGridResizer } from '@/hooks/useGridResizer';
 
-/* ------------------------------------------------------------------ */
-/*  타입 정의                                                          */
-/* ------------------------------------------------------------------ */
 
 /** 라인 1건의 점검 데이터 행 */
 interface CheckItemRow {
@@ -42,10 +40,6 @@ interface SmdCheckItemsProps {
   rows: CheckItemRow[];
 }
 
-/* ------------------------------------------------------------------ */
-/*  점검 항목 정의                                                      */
-/* ------------------------------------------------------------------ */
-
 const CHECK_ITEMS = [
   { label: '메탈마스크', statusKey: 'MASK_CHECK', dateKey: 'MASK_CHECK_DATE' },
   { label: '스퀴지', statusKey: 'SQUEEZE_CHECK', dateKey: 'SQUEEZE_CHECK_DATE' },
@@ -55,10 +49,6 @@ const CHECK_ITEMS = [
   { label: 'Master Check', statusKey: 'XRAY_CHECK', dateKey: 'XRAY_CHECK_DATE' },
   { label: '프로파일검사', statusKey: 'SPEC_CHECK', dateKey: 'SPEC_CHECK_DATE' },
 ] as const;
-
-/* ------------------------------------------------------------------ */
-/*  유틸리티 함수                                                       */
-/* ------------------------------------------------------------------ */
 
 /** 라인에 NG 항목이 하나라도 있는지 판별 */
 function hasNg(row: CheckItemRow): boolean {
@@ -77,13 +67,13 @@ function getBadgeClass(status: string): string {
   return 'bg-zinc-300 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400';
 }
 
-/* ------------------------------------------------------------------ */
-/*  컴포넌트                                                           */
-/* ------------------------------------------------------------------ */
+/** 초기 폭 설정 (항목명 + 라인들) */
+const INITIAL_WIDTHS = [160, 150, 150, 150, 150, 150, 150];
 
 /** SMD 점검 항목 매트릭스 테이블 (행=항목, 열=라인) */
 export default function SmdCheckItems({ rows }: SmdCheckItemsProps) {
   const t = useTranslations('display');
+  const { widths, handleMouseDown } = useGridResizer('grid-widths-smd-check', INITIAL_WIDTHS);
 
   // 데이터 없을 때 빈 상태 표시
   if (!rows.length) {
@@ -97,12 +87,18 @@ export default function SmdCheckItems({ rows }: SmdCheckItemsProps) {
   return (
     <div className="h-full overflow-hidden rounded-lg border border-zinc-200 bg-zinc-950 dark:border-white/10 dark:bg-zinc-950">
       <table className="h-full w-full table-fixed border-collapse">
+        <colgroup>
+          {widths.slice(0, rows.length + 1).map((w, i) => (
+            <col key={i} style={{ width: typeof w === 'number' ? `${w}px` : w }} />
+          ))}
+        </colgroup>
         {/* ---------- 헤더: "Check Items" | S01 | S02 | ... ---------- */}
         <thead>
           <tr className="bg-zinc-900 dark:bg-zinc-900">
             {/* 항목명 열 헤더 */}
-            <th className="w-40 border-b border-zinc-700 px-4 py-3 text-center text-lg font-black text-white dark:border-zinc-700 dark:text-white">
+            <th className="relative border-b border-zinc-700 px-4 py-3 text-center text-lg font-black text-white dark:border-zinc-700 dark:text-white">
               Check Items
+              <div className="resize-handle" onMouseDown={(e) => handleMouseDown(0, e)} />
             </th>
 
             {/* 라인 열 헤더 — NG 있으면 빨간 강조 */}
@@ -117,9 +113,10 @@ export default function SmdCheckItems({ rows }: SmdCheckItemsProps) {
               return (
                 <th
                   key={name + i}
-                  className={`border-b border-zinc-700 px-2 py-3 text-center text-lg font-black dark:border-zinc-700 ${headerCls}`}
+                  className={`relative border-b border-zinc-700 px-2 py-3 text-center text-lg font-black dark:border-zinc-700 ${headerCls}`}
                 >
                   {name}
+                  <div className="resize-handle" onMouseDown={(e) => handleMouseDown(i + 1, e)} />
                 </th>
               );
             })}

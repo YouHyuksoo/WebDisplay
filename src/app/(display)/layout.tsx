@@ -6,6 +6,7 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LocaleProvider } from "@/components/providers/LocaleProvider";
+import { TooltipProvider } from "@/components/providers/TooltipProvider";
 import "../globals.css";
 import "./display-theme.css";
 
@@ -22,7 +23,9 @@ export default function DisplayLayout({
       <body className="h-screen overflow-hidden bg-background text-foreground antialiased dark:bg-background-dark dark:text-white">
         <ThemeProvider>
           <LocaleProvider>
-            {children}
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
           </LocaleProvider>
         </ThemeProvider>
       </body>

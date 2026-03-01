@@ -55,6 +55,9 @@ export const state: MenuState = {
   cardLayout: 'grid',
   carouselIndex: 0,
   auroraBrightness: 1.0,
+  simpleVirtualization: true,
+  enable3D: true,
+  lastActivityTime: Date.now(),
 
   // Three.js (런타임 할당)
   scene: null,

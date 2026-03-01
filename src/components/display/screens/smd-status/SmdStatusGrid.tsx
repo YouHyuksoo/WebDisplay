@@ -8,6 +8,7 @@
  */
 'use client';
 
+import { useGridResizer } from '@/hooks/useGridResizer';
 import { formatNumber } from '../../shared/DataBadges';
 
 /**
@@ -66,6 +67,9 @@ const MAIN_HEADERS = [
   { label: '비율', align: 'right' },
 ] as const;
 
+/** 초기 폭 설정 (상태 + 8개 컬럼) */
+const INITIAL_WIDTHS = [128, 120, 240, 100, 160, 160, 120, 120, 100];
+
 /** 날짜 문자열에서 년월일(YYYY-MM-DD)만 추출한다. */
 function dateOnly(val?: string): string {
   if (!val) return '-';
@@ -88,6 +92,8 @@ function calcRate(plan?: number, actual?: number): string {
  * 각 라인마다 메인행 + 서브행 2줄 구조로 표시한다.
  */
 export default function SmdStatusGrid({ rows }: SmdStatusGridProps) {
+  const { widths, handleMouseDown } = useGridResizer('grid-widths-smd-status', INITIAL_WIDTHS);
+
   if (!rows || rows.length === 0) {
     return (
       <div className="flex h-32 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-400 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-500">
@@ -96,20 +102,31 @@ export default function SmdStatusGrid({ rows }: SmdStatusGridProps) {
     );
   }
 
+  // widths[0]은 상태 컬럼, 나머지는 grid 영역
+  const gridTemplate = widths.slice(1).map(w => typeof w === 'number' ? `${w}px` : w).join(' ');
+
   return (
     <section className="flex h-full flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-950">
       {/* 메인행 헤더 */}
       <div className="flex shrink-0 border-b border-zinc-700 bg-zinc-900 dark:border-zinc-700 dark:bg-zinc-900">
-        <div className="flex w-32 shrink-0 items-center justify-center text-lg font-black text-zinc-100 dark:text-zinc-100">
+        <div 
+          className="relative flex shrink-0 items-center justify-center text-lg font-black text-zinc-100 dark:text-zinc-100"
+          style={{ width: widths[0] }}
+        >
           상태
+          <div className="resize-handle" onMouseDown={(e) => handleMouseDown(0, e)} />
         </div>
-        <div className="grid min-w-0 flex-1 grid-cols-8 gap-px px-1">
-          {MAIN_HEADERS.filter((h) => h.label !== '상태').map((h) => (
+        <div 
+          className="grid min-w-0 flex-1 gap-px px-1"
+          style={{ gridTemplateColumns: gridTemplate }}
+        >
+          {MAIN_HEADERS.filter((h) => h.label !== '상태').map((h, i) => (
             <div
               key={h.label}
-              className={`px-2 py-3 text-lg font-black text-zinc-100 dark:text-zinc-100 ${ALIGN[h.align]}`}
+              className={`relative px-2 py-3 text-lg font-black text-zinc-100 dark:text-zinc-100 ${ALIGN[h.align]}`}
             >
               {h.label}
+              <div className="resize-handle" onMouseDown={(e) => handleMouseDown(i + 1, e)} />
             </div>
           ))}
         </div>
@@ -133,9 +150,10 @@ export default function SmdStatusGrid({ rows }: SmdStatusGridProps) {
             <div className="flex">
               {/* 좌: 상태 — 행 전체 높이를 꽉 채움 */}
               <div
-                className={`flex w-32 shrink-0 items-center justify-center text-3xl font-black ${
+                className={`flex shrink-0 items-center justify-center text-3xl font-black ${
                   getStatusColor(row.LINE_STATUS)
                 }`}
+                style={{ width: widths[0] }}
               >
                 {row.LINE_STATUS_NAME || '-'}
               </div>
@@ -143,8 +161,11 @@ export default function SmdStatusGrid({ rows }: SmdStatusGridProps) {
               {/* 우: 메인정보 + 서브정보 2줄 */}
               <div className="min-w-0 flex-1">
                 {/* 1줄: 메인 정보 */}
-                <div className="grid grid-cols-8 items-center gap-px px-1">
-                  <div className="px-2 py-1 text-3xl font-black text-zinc-900 dark:text-white">
+                <div 
+                  className="grid items-center gap-px px-1"
+                  style={{ gridTemplateColumns: gridTemplate }}
+                >
+                  <div className="truncate px-2 py-1 text-3xl font-black text-zinc-900 dark:text-white">
                     {row.LINE_NAME ?? '-'}
                   </div>
                   <div className="truncate px-2 py-1 text-2xl font-bold text-zinc-700 dark:text-zinc-300">
@@ -177,7 +198,7 @@ export default function SmdStatusGrid({ rows }: SmdStatusGridProps) {
                     {rate}
                   </div>
                 </div>
-                {/* 2줄: 서브 정보 */}
+                {/* 2줄: 서브 정보 (일단 하드코딩된 6컬럼 비율로 둠 - 메인과 정합성 맞추려면 고민 필요) */}
                 <div className="grid grid-cols-6 items-center gap-px border-t border-zinc-100/60 bg-zinc-50/30 px-1 dark:border-white/[0.03] dark:bg-zinc-900/20">
                   <div className="px-2 py-0.5 text-center text-lg font-semibold text-zinc-500 dark:text-zinc-500">
                     {row.LCR_CHECK_STATUS ?? '-'}

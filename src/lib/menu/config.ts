@@ -95,20 +95,14 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   // Favorites (layer: 0) — 사용자가 즐겨찾기에 추가한 항목이 여기에 표시
   // SMD Monitoring (layer: 1)
   { id: 'menu-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 1 },
-  { id: 'menu-25', title: 'SMD 생산량', url: '/display/25', color: '#818cf8', icon: 'svg:production', layer: 1 },
 
   // PBA Monitoring (layer: 2)
-  { id: 'menu-21', title: 'ASSY 생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:machine-status', layer: 2 },
-  { id: 'menu-22', title: 'ASSY 생산량', url: '/display/22', color: '#22d3ee', icon: 'svg:production', layer: 2 },
+  { id: 'menu-21', title: 'PBA 생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:machine-status', layer: 2 },
   // Equipment (layer: 3)
-  { id: 'menu-28', title: '설비 가동률', url: '/display/28', color: '#e879f9', icon: 'svg:operation-rate', layer: 3 },
   // Quality (layer: 4)
-  { id: 'menu-23', title: 'AOI 수율', url: '/display/23', color: '#2dd4bf', icon: 'svg:yield', layer: 4 },
-  { id: 'menu-27', title: 'MSL 관리', url: '/display/27', color: '#c084fc', icon: 'svg:msl-warning', layer: 4 },
   { id: 'menu-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 4 },
   { id: 'menu-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:msl-warning', layer: 4 },
   { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 4 },
-  { id: 'menu-32', title: 'Stencil 관리', url: '/display/32', color: '#34d399', icon: 'svg:stencil', layer: 4 },
   { id: 'menu-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 4 },
   // Management (layer: 5)
   { id: 'menu-18', title: '옵션 설정', url: '/display/18', color: '#94a3b8', icon: 'svg:settings', layer: 5 },

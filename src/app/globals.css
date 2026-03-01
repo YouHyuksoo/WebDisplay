@@ -8,3 +8,78 @@ body {
   height: 100vh;
   overflow: hidden;
 }
+
+/* Grid Resizing */
+body.resizing {
+  cursor: col-resize !important;
+  user-select: none;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px; /* 폭을 약간 넓힘 */
+  cursor: col-resize;
+  z-index: 10;
+  transition: all 0.2s;
+  /* 평소에도 아주 은은하게 보이도록 설정 */
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.resize-handle:hover,
+body.resizing .resize-handle {
+  background-color: #3b82f6;
+  border-right: 1px solid #60a5fa;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+/* Custom Tooltip (Speech Bubble) */
+.custom-tooltip {
+  background: rgba(15, 23, 42, 0.9);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 14px;
+  font-size: 1.25rem; /* 더 크게! */
+  font-weight: 800;
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.6),
+    0 8px 10px -6px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+  backdrop-filter: blur(12px) saturate(180%);
+  z-index: 99999;
+}
+
+/* 말풍선 꼬리 (Speech Bubble Tail - Top) */
+.custom-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -10px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: rgba(15, 23, 42, 0.9) transparent transparent transparent;
+}
+
+/* 툴팁이 아래에 표시될 때 (Bottom Mode) */
+.custom-tooltip.is-bottom::after {
+  top: auto;
+  bottom: 100%;
+  border-color: transparent transparent rgba(15, 23, 42, 0.9) transparent;
+}
+
+.dark .custom-tooltip {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.dark .custom-tooltip::after {
+  border-color: rgba(30, 41, 59, 0.95) transparent transparent transparent;
+}
+
+.dark .custom-tooltip.is-bottom::after {
+  border-color: transparent transparent rgba(30, 41, 59, 0.95) transparent;
+}

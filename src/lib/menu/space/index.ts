@@ -74,9 +74,8 @@ registerCreators({
 /** requestAnimationFrame ID (stopAnimate에서 취소용) */
 let _animFrameId: number | null = null;
 
-// ---------------------------------------------------------------------------
-// 메인 애니메이션 루프
-// ---------------------------------------------------------------------------
+/** 마지막 렌더링 시간 (FPS 제어용) */
+let _lastRenderTime = 0;
 
 /**
  * 메인 애니메이션 루프
@@ -84,9 +83,24 @@ let _animFrameId: number | null = null;
  * requestAnimationFrame으로 매 프레임 호출.
  * state에서 targetSpeed/glowIntensity/spaceType을 읽어 반영하고,
  * 현재 spaceType에 맞는 업데이트 함수를 호출한 뒤 renderer.render() 실행.
+ *
+ * [최적화] 사용자가 조작하지 않을 때는 프레임워크를 '절전 모드'로 전환하여 CPU/GPU 점유율을 낮춥니다.
  */
 export function animate(): void {
   _animFrameId = requestAnimationFrame(animate);
+
+  const now = Date.now();
+  const inactiveTime = now - state.lastActivityTime;
+  
+  // 조작 중인지 여부 (속도가 있거나 글로우가 살아있어도 조작 중으로 간주)
+  const isMoving = Math.abs(_i.tunnelSpeed) > 0.01 || Math.abs(state.targetSpeed) > 0.01 || _i.glowIntensity > 0.1;
+
+  // 10초 이상 입력이 없으면 절전 모드 (1초에 약 20프레임으로 제한)
+  if (!isMoving && inactiveTime > 10000) {
+    if (now - _lastRenderTime < 50) return; // 약 20fps
+  }
+  
+  _lastRenderTime = now;
 
   // state에서 값 읽기 (외부에서 설정한 값 반영)
   const stateTargetSpeed = state.targetSpeed || 0;

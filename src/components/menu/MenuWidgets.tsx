@@ -31,10 +31,10 @@ export default function MenuWidgets() {
           </div>
           <div className="search-results" id="search-results" />
         </div>
-        <button id="recent-btn" title="최근 사용">
+        <button id="recent-btn" data-tooltip="최근 사용">
           <History size={20} />
         </button>
-        <button id="back-btn" title="돌아가기">
+        <button id="back-btn" data-tooltip="돌아가기">
           <ArrowLeft size={20} />
         </button>
       </div>
@@ -47,25 +47,25 @@ export default function MenuWidgets() {
 
       {/* 이스터에그 패널 (✨ 클릭 시 토글) */}
       <div id="easter-egg-container">
-        <div id="easter-egg-indicator" title="이스터에그">&#10024;</div>
+        <div id="easter-egg-indicator" data-tooltip="이스터에그">&#10024;</div>
         <div id="easter-egg-panel">
-          <button className="easter-btn" id="dragon-test-btn" title="드래곤 소환">&#128009;</button>
-          <button className="easter-btn" id="wolf-test-btn" title="늑대 소환">&#128058;</button>
-          <button className="easter-btn" id="meteor-test-btn" title="유성 샤워">&#9732;&#65039;</button>
-          <button className="easter-btn" id="meteor-impact-btn" title="유성 충돌">&#128165;</button>
-          <button className="easter-btn" id="crow-test-btn" title="까마귀 도둑">&#128038;</button>
-          <button className="easter-btn" id="cat-test-btn" title="고양이 발자국">&#128049;</button>
-          <button className="easter-btn" id="ufo-test-btn" title="UFO 외계인">&#128760;</button>
-          <button className="easter-btn" id="star-test-btn" title="별 날아오기">&#11088;</button>
-          <button className="easter-btn toggle-btn" id="click-fx-btn" title="클릭 리플 ON/OFF">&#128070;</button>
-          <button className="easter-btn toggle-btn" id="card-sleep-btn" title="카드 수면 ON/OFF">&#128564;</button>
+          <button className="easter-btn" id="dragon-test-btn" data-tooltip="드래곤 소환">&#128009;</button>
+          <button className="easter-btn" id="wolf-test-btn" data-tooltip="늑대 소환">&#128058;</button>
+          <button className="easter-btn" id="meteor-test-btn" data-tooltip="유성 샤워">&#9732;&#65039;</button>
+          <button className="easter-btn" id="meteor-impact-btn" data-tooltip="유성 충돌">&#128165;</button>
+          <button className="easter-btn" id="crow-test-btn" data-tooltip="까마귀 도둑">&#128038;</button>
+          <button className="easter-btn" id="cat-test-btn" data-tooltip="고양이 발자국">&#128049;</button>
+          <button className="easter-btn" id="ufo-test-btn" data-tooltip="UFO 외계인">&#128760;</button>
+          <button className="easter-btn" id="star-test-btn" data-tooltip="별 날아오기">&#11088;</button>
+          <button className="easter-btn toggle-btn" id="click-fx-btn" data-tooltip="클릭 리플 ON/OFF">&#128070;</button>
+          <button className="easter-btn toggle-btn" id="card-sleep-btn" data-tooltip="카드 수면 ON/OFF">&#128564;</button>
         </div>
       </div>
 
       {/* 우측 상단 기능 아이콘 */}
       <div id="util-icons">
         <div id="locale-wrapper">
-          <button className="util-btn" id="locale-btn" title="다국어 전환">
+          <button className="util-btn" id="locale-btn" data-tooltip="다국어 전환">
             <Globe size={20} />
           </button>
           <div id="locale-dropdown">
@@ -83,10 +83,10 @@ export default function MenuWidgets() {
             </button>
           </div>
         </div>
-        <button className="util-btn" id="theme-btn" title="테마 전환">
+        <button className="util-btn" id="theme-btn" data-tooltip="테마 전환">
           <Moon size={20} />
         </button>
-        <button className="util-btn" id="exit-btn" title="종료">
+        <button className="util-btn" id="exit-btn" data-tooltip="종료">
           <Power size={20} />
         </button>
       </div>

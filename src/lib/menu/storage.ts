@@ -54,7 +54,17 @@ export function loadShortcuts(): Shortcut[] {
   try {
     const saved = localStorage.getItem(KEYS.SHORTCUTS);
     if (saved) {
-      return JSON.parse(saved) as Shortcut[];
+      const shortcuts = JSON.parse(saved) as Shortcut[];
+      // 기본 목록에서 제거된 화면 자동 정리 (localStorage 캐시 동기화)
+      const defaultUrls = new Set(DEFAULT_SHORTCUTS.map((s) => s.url));
+      const cleaned = shortcuts.filter((s) => {
+        if (!s.id.startsWith('menu-') && !s.id.startsWith('fav-menu-')) return true;
+        return defaultUrls.has(s.url);
+      });
+      if (cleaned.length !== shortcuts.length) {
+        localStorage.setItem(KEYS.SHORTCUTS, JSON.stringify(cleaned));
+      }
+      return cleaned;
     }
   } catch (e) {
     console.error('Failed to load shortcuts:', e);
@@ -111,10 +121,12 @@ const DEFAULT_SETTINGS: MenuSettings = {
   tunnelShape: 'triangle',
   glowTheme: 'gold',
   iconColorMode: 'brand',
-  cardStyle: 'neon',
-  spaceType: 'aurora',
+  cardStyle: 'glass',
+  spaceType: 'tunnel',
   cardLayout: 'grid',
   auroraBrightness: 1.0,
+  simpleVirtualization: true,
+  enable3D: true,
 };
 
 /**

@@ -27,12 +27,16 @@ import * as Storage from './storage';
 // Modal (바로가기 추가/수정)
 // ---------------------------------------------------------------------------
 
+import type { Shortcut } from './types';
+
 /**
  * 모달 열기
- * @param id - 수정할 바로가기 ID (null이면 새로 추가)
+ * @param target - 수정할 바로가기 ID 또는 미리 채울 데이터 (null이면 새로 추가)
  */
-export function openModal(id: string | null = null): void {
-  state.editingId = id;
+export function openModal(target: string | Shortcut | null = null): void {
+  const isShortcutObj = typeof target === 'object' && target !== null && 'url' in target;
+  state.editingId = isShortcutObj ? null : (target as string | null);
+  
   const modal = document.getElementById('shortcut-modal');
   const title = document.getElementById('modal-title');
   const deleteBtn = document.getElementById('modal-delete');
@@ -46,16 +50,22 @@ export function openModal(id: string | null = null): void {
     }
   });
 
-  if (id) {
-    const s = state.shortcuts.find((x) => x.id === id);
+  if (target) {
+    let s: Shortcut | undefined;
+    if (isShortcutObj) {
+      s = target as Shortcut;
+    } else {
+      s = state.shortcuts.find((x) => x.id === target);
+    }
+
     if (s) {
-      title.textContent = 'Edit Shortcut';
+      title.textContent = isShortcutObj ? 'Add Shortcut' : 'Edit Shortcut';
       (document.getElementById('shortcut-title') as HTMLInputElement).value = s.title;
       (document.getElementById('shortcut-url') as HTMLInputElement).value = s.url;
       (document.getElementById('shortcut-layer') as HTMLSelectElement).value = String(s.layer);
       (document.getElementById('shortcut-icon') as HTMLInputElement).value = s.icon || '';
       state.selectedColor = s.color;
-      deleteBtn.style.display = 'block';
+      deleteBtn.style.display = isShortcutObj ? 'none' : 'block';
     }
   } else {
     title.textContent = 'Add Shortcut';
@@ -258,6 +268,23 @@ export function updateCardLayoutLabel(): void {
   }
 }
 
+export function updateVirtualizationLabel(): void {
+  const label = document.getElementById('virtualization-label');
+  if (label) {
+    label.textContent = state.simpleVirtualization ? '성능: 고성능 (가상화)' : '성능: 일반 (전체 로드)';
+  }
+}
+
+/**
+ * 3D 배경 레이블 업데이트
+ */
+export function update3DLabel(): void {
+  const label = document.getElementById('enable-3d-label');
+  if (label) {
+    label.textContent = state.enable3D ? '3D 배경: 켜짐' : '3D 배경: 꺼짐';
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Entrance Animation
 // ---------------------------------------------------------------------------
@@ -283,16 +310,24 @@ export function animateEntrance(): void {
     { scale: 1, opacity: 1, duration: 0.5, delay: 0.5, ease: 'back.out(1.7)' },
   );
 
-  // 현재 섹션 카드들 등장 애니메이션
+  // 현재 섹션 카드들 등장 애니메이션 (캐러셀 모드 제외 — 3D 원형 배치 유지)
   const activeSection = document.querySelector('.section-cards.active');
   if (activeSection) {
-    const cards = activeSection.querySelectorAll('.shortcut-card');
-    cards.forEach((card, i) => {
-      gsap.fromTo(card,
-        { scale: 0.3, opacity: 0, z: -200 },
-        { scale: 1, opacity: 1, z: 0, duration: 0.6, delay: 0.2 + i * 0.08, ease: 'back.out(1.7)' },
+    if (state.cardLayout === 'carousel') {
+      // 캐러셀: 3D 원형 배치를 보존하며 전체 섹션만 페이드인
+      gsap.fromTo(activeSection,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6 },
       );
-    });
+    } else {
+      const cards = activeSection.querySelectorAll('.shortcut-card');
+      cards.forEach((card, i) => {
+        gsap.fromTo(card,
+          { scale: 0.3, opacity: 0, z: -200 },
+          { scale: 1, opacity: 1, z: 0, duration: 0.6, delay: 0.2 + i * 0.08, ease: 'back.out(1.7)' },
+        );
+      });
+    }
   }
 }
 
@@ -569,6 +604,8 @@ export function saveSettings(): void {
     spaceType: state.spaceType,
     cardLayout: state.cardLayout,
     auroraBrightness: state.auroraBrightness,
+    simpleVirtualization: state.simpleVirtualization,
+    enable3D: state.enable3D,
   });
 }
 

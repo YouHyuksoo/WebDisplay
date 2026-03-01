@@ -158,15 +158,23 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
     const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -40 : offset < 0 ? 40 : 0;
 
-    // 현재 섹션과 앞/뒤 1개만 보이게, 나머지는 숨김
-    // 뒤 섹션은 0.1로 매우 투명하게 (앞 카드와 확실히 구분)
-    const opacity = absOffset <= 1 ? (offset === 0 ? 1 : 0.1) : 0;
+    // 가상화 옵션: 현재 섹션과 앞/뒤 1개만 보이게, 나머지는 숨김
+    // 비활성화 시 모든 섹션 표시
+    const opacity = state.simpleVirtualization
+      ? absOffset <= 1 ? (offset === 0 ? 1 : 0.1) : 0
+      : (offset === 0 ? 1 : 0.1 / Math.max(1, absOffset));
 
     // z-index로 렌더링 순서 강제
     const zIndex = 100 - absOffset;
 
     // 애니메이션 전에 보여야 할 섹션은 display 먼저 설정
-    if (absOffset <= 1) {
+    // 애니메이션 전에 보여야 할 섹션은 display 먼저 설정 및 카드 로드
+    if (!state.simpleVirtualization || absOffset <= 1) {
+      // 카드 동적 로드 (가상화)
+      import('./cards').then((Cards) => {
+        Cards.populateSection(section as HTMLElement, i);
+      });
+
       if (state.cardLayout === 'thumbnail' && (section as HTMLElement).classList.contains('thumbnail-layout')) {
         gsap.set(section, { display: 'grid' });
       } else {
@@ -202,8 +210,8 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
             });
           }
         }
-        // 애니메이션 끝난 후 멀리 있는 섹션 숨김
-        if (absOffset > 1) {
+        // 애니메이션 끝난 후 멀리 있는 섹션 숨김 (가상화 On 일 때만)
+        if (state.simpleVirtualization && absOffset > 1) {
           gsap.set(section, { display: 'none' });
         }
       },
@@ -270,21 +278,29 @@ export function updateCardsDepth(): void {
     const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -30 : offset < 0 ? 30 : 0;
 
-    // 현재 섹션과 앞/뒤 1개만 보이게, 나머지는 숨김
-    // 뒤 섹션은 0.1로 매우 투명하게 (앞 카드와 확실히 구분)
-    const opacity = absOffset <= 1 ? (offset === 0 ? 1 : 0.1) : 0;
+    // 가상화 옵션: 현재 섹션과 앞/뒤 1개만 보이게, 나머지는 숨김
+    // 비활성화 시 모든 섹션 표시
+    const opacity = state.simpleVirtualization
+      ? absOffset <= 1 ? (offset === 0 ? 1 : 0.1) : 0
+      : (offset === 0 ? 1 : 0.1 / Math.max(1, absOffset));
 
     // z-index로 렌더링 순서 강제 (현재 섹션이 가장 위)
     const zIndex = 100 - absOffset;
 
     // GSAP.set으로 초기 상태 설정
+    if (!state.simpleVirtualization || absOffset <= 1) {
+      import('./cards').then((Cards) => {
+        Cards.populateSection(section as HTMLElement, i);
+      });
+    }
+
     gsap.set(section, {
       z: zPos,
       scale: scale,
       opacity: opacity,
       y: yOffset,
       zIndex: zIndex,
-      display: absOffset <= 1
+      display: (!state.simpleVirtualization || absOffset <= 1)
         ? ((section as HTMLElement).classList.contains('thumbnail-layout') ? 'grid' : 'flex')
         : 'none',
     });

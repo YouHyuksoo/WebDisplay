@@ -7,6 +7,8 @@
  */
 'use client';
 
+import { useGridResizer } from '@/hooks/useGridResizer';
+
 /** MSL 출고기준 경고 아이템 행 데이터 */
 export interface MslWarningIssueRow {
   LINE_NAME?: string;
@@ -71,7 +73,12 @@ function getPassedStyle(rate: number): string {
   return '';
 }
 
+/** 초기 폭 설정 (9개 컬럼) */
+const INITIAL_WIDTHS = [120, 140, 200, 240, 180, 200, 100, 100, 100];
+
 export default function MslWarningIssueGrid({ rows }: MslWarningIssueGridProps) {
+  const { widths, handleMouseDown } = useGridResizer('grid-widths-msl-warning-issue', INITIAL_WIDTHS);
+
   if (!rows || rows.length === 0) {
     return (
       <div className="flex h-full items-center justify-center rounded-lg border border-zinc-200 bg-white text-2xl text-zinc-400 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-500">
@@ -84,12 +91,14 @@ export default function MslWarningIssueGrid({ rows }: MslWarningIssueGridProps) 
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-zinc-700 bg-zinc-950 dark:border-zinc-700 dark:bg-zinc-950">
       {/* 헤더 */}
       <div className="flex shrink-0 border-b border-zinc-700 bg-red-800 dark:border-zinc-700 dark:bg-red-900">
-        {HEADERS.map((h) => (
+        {HEADERS.map((h, i) => (
           <div
             key={h.key}
-            className={`flex-1 px-3 py-3 text-lg font-black text-white ${ALIGN[h.align]}`}
+            className={`relative shrink-0 px-3 py-3 text-lg font-black text-white ${ALIGN[h.align]}`}
+            style={{ width: widths[i] }}
           >
             {h.label}
+            <div className="resize-handle" onMouseDown={(e) => handleMouseDown(i, e)} />
           </div>
         ))}
       </div>
@@ -109,35 +118,41 @@ export default function MslWarningIssueGrid({ rows }: MslWarningIssueGridProps) 
               key={`${row.LOT_NO}-${idx}`}
               className={`flex border-b border-zinc-800 last:border-b-0 ${rowBg || stripeBg}`}
             >
-              <div className="flex-1 truncate px-3 py-2 text-xl font-bold text-white">
+              <div className="shrink-0 truncate px-3 py-2 text-xl font-bold text-white" style={{ width: widths[0] }}>
                 {row.LINE_NAME ?? '-'}
               </div>
-              <div className="flex-1 px-3 py-2 text-center">
+              <div className="shrink-0 px-3 py-2 text-center" style={{ width: widths[1] }}>
                 <span className="inline-block rounded bg-zinc-700 px-3 py-0.5 text-lg font-black text-white">
                   {row.MSL_LEVEL ?? '-'}
                 </span>
               </div>
-              <div className="flex-1 truncate px-3 py-2 text-xl font-bold text-zinc-300">
+              <div className="shrink-0 truncate px-3 py-2 text-xl font-bold text-zinc-300" style={{ width: widths[2] }}>
                 {row.ITEM_CODE ?? '-'}
               </div>
-              <div className="flex-1 truncate px-3 py-2 text-xl font-bold text-zinc-300">
+              <div className="shrink-0 truncate px-3 py-2 text-xl font-bold text-zinc-300" style={{ width: widths[3] }}>
                 {row.ITEM_NAME ?? '-'}
               </div>
-              <div className="flex-1 truncate px-3 py-2 font-mono text-xl font-bold text-zinc-300">
+              <div className="shrink-0 truncate px-3 py-2 font-mono text-xl font-bold text-zinc-300" style={{ width: widths[4] }}>
                 {row.LOT_NO ?? '-'}
               </div>
-              <div className="flex-1 px-3 py-2 text-center text-xl font-bold text-zinc-400">
+              <div className="shrink-0 px-3 py-2 text-center text-xl font-bold text-zinc-400" style={{ width: widths[5] }}>
                 {formatDate(row.FEEDING_DATE)}
               </div>
-              <div className="flex-1 px-3 py-2 text-right tabular-nums text-xl font-bold text-zinc-400">
+              <div className="shrink-0 px-3 py-2 text-right tabular-nums text-xl font-bold text-zinc-400" style={{ width: widths[6] }}>
                 {formatHour(row.MSL_MAX_HOUR)}
                 <span className="ml-1 text-base text-zinc-600">h</span>
               </div>
-              <div className={`flex-1 px-3 py-2 text-right tabular-nums text-xl font-black ${passedBg || 'text-zinc-300'}`}>
+              <div 
+                className={`shrink-0 px-3 py-2 text-right tabular-nums text-xl font-black ${passedBg || 'text-zinc-300'}`}
+                style={{ width: widths[7] }}
+              >
                 {formatHour(row.MSL_PASSED_HOUR)}
                 <span className="ml-1 text-base">h</span>
               </div>
-              <div className={`flex-1 px-3 py-2 text-right tabular-nums text-xl font-bold ${rate >= 90 ? 'text-red-400' : 'text-zinc-300'}`}>
+              <div 
+                className={`shrink-0 px-3 py-2 text-right tabular-nums text-xl font-bold ${rate >= 90 ? 'text-red-400' : 'text-zinc-300'}`}
+                style={{ width: widths[8] }}
+              >
                 {formatHour(row.MSL_REMAIN_HOUR)}
                 <span className="ml-1 text-base text-zinc-600">h</span>
               </div>

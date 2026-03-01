@@ -13,6 +13,7 @@
 
 import { state } from './state';
 import type { Shortcut } from './types';
+import { openModal } from './ui';
 
 // ---------------------------------------------------------------------------
 // 내부 상태
@@ -246,6 +247,22 @@ function renderResults(
   searchResults.classList.add('active');
 
   searchResults.querySelectorAll('.search-result-item').forEach((item) => {
+    // 아이콘 클릭 시 등록/수정 모달 (stopPropagation 처리로 탐색 방지)
+    item.querySelector('.search-result-icon')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt((item as HTMLElement).dataset.index || '0');
+      const s = currentResults[idx];
+      if (s) {
+        const isRegistered = state.shortcuts.some((x) => x.url === s.url);
+        if (isRegistered) {
+          const existing = state.shortcuts.find((x) => x.url === s.url);
+          openModal(existing!.id);
+        } else {
+          openModal(s);
+        }
+      }
+    });
+
     item.addEventListener('click', () => {
       const idx = parseInt((item as HTMLElement).dataset.index || '0');
       if (currentResults[idx]) navigateToResult(currentResults[idx]);

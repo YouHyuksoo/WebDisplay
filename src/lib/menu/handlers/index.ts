@@ -34,6 +34,8 @@ import {
   toggleTunnelSubmenu,
   toggleCardStyleSubmenu,
   applyGlowTheme,
+  updateVirtualizationLabel,
+  update3DLabel,
 } from '../ui';
 import { saveShortcut, deleteShortcut } from './shortcut-crud';
 import {
@@ -193,6 +195,7 @@ export function initEventListeners(): void {
   const LANE_WHEEL_THRESHOLD = 100;
 
   const wheelHandler = (e: WheelEvent) => {
+    state.lastActivityTime = Date.now();
     const now = Date.now();
     const timeDelta = now - lastWheelTime;
     lastWheelTime = now;
@@ -266,6 +269,7 @@ export function initEventListeners(): void {
   let touchOnCard = false;
 
   const touchStartHandler = (e: TouchEvent) => {
+    state.lastActivityTime = Date.now();
     const target = e.target as HTMLElement;
     if (target.closest('.floating-btn') ||
         target.closest('#settings-menu') ||
@@ -367,6 +371,7 @@ export function initEventListeners(): void {
 
   // ===== 키보드 이벤트 =====
   const keydownHandler = (e: KeyboardEvent) => {
+    state.lastActivityTime = Date.now();
     if ((document.activeElement as HTMLElement)?.tagName === 'INPUT') return;
 
     if (state.cardLayout === 'carousel' && state.currentLane === 0) {
@@ -438,8 +443,52 @@ export function initEventListeners(): void {
   // ===== 터널 서브메뉴 =====
   document.getElementById('menu-tunnel')?.addEventListener('click', (e) => {
     e.stopPropagation();
-    hideCardStyleSubmenu();
     toggleTunnelSubmenu();
+  });
+  document.getElementById('menu-enable-3d')?.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    state.enable3D = !state.enable3D;
+    update3DLabel();
+    
+    import('../ui').then((UI) => UI.saveSettings());
+    
+    if (state.enable3D) {
+      const Space = await import('../space');
+      Space.init();
+      Space.animate();
+    } else {
+      const Space = await import('../space');
+      Space.stopAnimate();
+      Space.dispose();
+      // Three.js 캔버스 영역 정리 (필요 시)
+      const container = document.getElementById('three-container');
+      if (container) container.innerHTML = '';
+    }
+  });
+  document.getElementById('menu-virtualization')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.simpleVirtualization = !state.simpleVirtualization;
+    updateVirtualizationLabel();
+    // 아이콘 업데이트
+    const on = document.getElementById('virtualization-icon-on');
+    const off = document.getElementById('virtualization-icon-off');
+    if (on) on.style.display = state.simpleVirtualization ? '' : 'none';
+    if (off) off.style.display = state.simpleVirtualization ? 'none' : '';
+    
+    import('../ui').then((UI) => UI.saveSettings());
+    import('../sections').then((S) => S.updateCardsDepth());
+  });
+  document.getElementById('virtualization-toggle-btn')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.simpleVirtualization = !state.simpleVirtualization;
+    updateVirtualizationLabel();
+    const on = document.getElementById('virtualization-icon-on');
+    const off = document.getElementById('virtualization-icon-off');
+    if (on) on.style.display = state.simpleVirtualization ? '' : 'none';
+    if (off) off.style.display = state.simpleVirtualization ? 'none' : '';
+
+    import('../ui').then((UI) => UI.saveSettings());
+    import('../sections').then((S) => S.updateCardsDepth());
   });
   document.querySelectorAll('.tunnel-option').forEach((opt) => {
     opt.addEventListener('click', (e) => {
@@ -726,6 +775,20 @@ export function initEventListeners(): void {
     if (g) g.style.display = state.cardLayout === 'grid' ? '' : 'none';
     if (c) c.style.display = state.cardLayout === 'carousel' ? '' : 'none';
     if (t) t.style.display = state.cardLayout === 'thumbnail' ? '' : 'none';
+  }
+
+  // ===== 가상화 아이콘/레이블 초기 상태 =====
+  {
+    const on = document.getElementById('virtualization-icon-on');
+    const off = document.getElementById('virtualization-icon-off');
+    if (on) on.style.display = state.simpleVirtualization ? '' : 'none';
+    if (off) off.style.display = state.simpleVirtualization ? 'none' : '';
+    updateVirtualizationLabel();
+  }
+  
+  // ===== 3D 배경 초기 레이블 =====
+  {
+    update3DLabel();
   }
 }
 
