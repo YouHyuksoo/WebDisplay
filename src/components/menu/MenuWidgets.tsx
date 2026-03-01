@@ -1,15 +1,15 @@
 /**
  * @file src/components/menu/MenuWidgets.tsx
- * @description 위젯 영역 - 시계, 시스템 정보, 날씨, 검색, 이스터에그 버튼
+ * @description 위젯 영역 - 검색, 시계, 이스터에그 패널, 기능 아이콘(다국어/테마/종료)
  *
  * 초보자 가이드:
  * 1. **주요 개념**: mydesktop의 위젯 HTML 구조를 JSX로 변환
  * 2. **사용 방법**: MenuScene에서 import하여 렌더링
- * 3. **중요**: 모든 ID와 클래스명을 원본과 동일하게 유지
+ * 3. **중요**: 이스터에그는 ✨ 클릭 시 패널 토글, 각 아이콘 클릭 시 1회 실행
  */
 
 /**
- * 검색창 + 시계 + 이스터에그 + 시스템 위젯 + 날씨 위젯
+ * 검색창 + 시계 + 이스터에그 패널 + 기능 아이콘(다국어/테마/종료)
  */
 export default function MenuWidgets() {
   return (
@@ -37,63 +37,40 @@ export default function MenuWidgets() {
         <div className="date" id="clock-date">Loading...</div>
       </div>
 
-      {/* 이스터에그 테스트 버튼 */}
+      {/* 이스터에그 패널 (✨ 클릭 시 토글) */}
       <div id="easter-egg-container">
         <div id="easter-egg-indicator" title="이스터에그">&#10024;</div>
-        <div id="easter-egg-buttons">
-          <button className="easter-btn" id="dragon-test-btn" title="드래곤 소환">
-            &#128009;
-          </button>
-          <button className="easter-btn" id="wolf-test-btn" title="늑대 소환">
-            &#128058;
-          </button>
-          <button className="easter-btn" id="meteor-test-btn" title="유성 충돌">
-            &#9732;&#65039;
-          </button>
+        <div id="easter-egg-panel">
+          <button className="easter-btn" id="dragon-test-btn" title="드래곤 소환">&#128009;</button>
+          <button className="easter-btn" id="wolf-test-btn" title="늑대 소환">&#128058;</button>
+          <button className="easter-btn" id="meteor-test-btn" title="유성 샤워">&#9732;&#65039;</button>
+          <button className="easter-btn" id="meteor-impact-btn" title="유성 충돌">&#128165;</button>
+          <button className="easter-btn" id="crow-test-btn" title="까마귀 도둑">&#128038;</button>
+          <button className="easter-btn" id="cat-test-btn" title="고양이 발자국">&#128049;</button>
+          <button className="easter-btn" id="ufo-test-btn" title="UFO 외계인">&#128760;</button>
+          <button className="easter-btn" id="star-test-btn" title="별 날아오기">&#11088;</button>
+          <button className="easter-btn toggle-btn" id="click-fx-btn" title="클릭 리플 ON/OFF">&#128070;</button>
+          <button className="easter-btn toggle-btn" id="card-sleep-btn" title="카드 수면 ON/OFF">&#128564;</button>
         </div>
       </div>
 
-      {/* 시스템 정보 위젯 */}
-      <div id="system-widget">
-        <div className="system-row" id="battery-row">
-          <span className="system-icon">&#128267;</span>
-          <span className="system-label">Battery</span>
-          <div className="system-bar">
-            <div className="system-bar-fill" id="battery-bar" />
-          </div>
-          <span className="system-value" id="battery-value">--%</span>
-        </div>
-        <div className="system-row">
-          <span className="system-icon">&#9889;</span>
-          <span className="system-label">Cores</span>
-          <span className="system-value" id="cores-value">--</span>
-        </div>
-        <div className="system-row" id="network-row">
-          <span className="system-icon">&#128246;</span>
-          <span className="system-label">Network</span>
-          <span className="system-value" id="network-value">--</span>
-        </div>
-        <div className="system-row" id="memory-row">
-          <span className="system-icon">&#128202;</span>
-          <span className="system-label">JS Heap</span>
-          <div className="system-bar">
-            <div className="system-bar-fill" id="memory-bar" />
-          </div>
-          <span className="system-value" id="memory-value">--MB</span>
-        </div>
+      {/* 우측 상단 기능 아이콘 */}
+      <div id="util-icons">
+        <button className="util-btn" id="locale-btn" title="다국어 전환">&#127760;</button>
+        <button className="util-btn" id="theme-btn" title="테마 전환">&#127769;</button>
+        <button className="util-btn" id="exit-btn" title="종료">&#9211;</button>
       </div>
 
-      {/* 날씨 위젯 */}
-      <div id="weather-widget" title="클릭해서 도시 변경">
-        <div className="weather-main">
-          <span className="weather-icon" id="weather-icon">&#127780;&#65039;</span>
-          <span className="weather-temp" id="weather-temp">--&deg;</span>
+      {/* 종료 확인 모달 */}
+      <div className="modal-overlay" id="exit-modal">
+        <div className="modal dialog-modal">
+          <h2 className="modal-title">시스템 종료</h2>
+          <p className="dialog-message">프로그램을 종료하시겠습니까?</p>
+          <div className="modal-actions">
+            <button className="modal-btn secondary" id="exit-cancel">취소</button>
+            <button className="modal-btn primary" id="exit-confirm">종료</button>
+          </div>
         </div>
-        <div className="weather-info">
-          <span className="weather-desc" id="weather-desc">날씨 로딩...</span>
-          <span className="weather-location" id="weather-location">--</span>
-        </div>
-        <div className="weather-edit-hint">&#128205; 클릭해서 변경</div>
       </div>
     </>
   );
