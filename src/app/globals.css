@@ -1,20 +1,35 @@
+@layer menu;
 @import "tailwindcss";
 
-/* === mydesktop Menu CSS (ported from C:/Project/mydesktop/css/) === */
-@import "../styles/menu/variables.css";
-@import "../styles/menu/base.css";
-@import "../styles/menu/animations.css";
-@import "../styles/menu/components-core.css";
-@import "../styles/menu/components-cards.css";
-@import "../styles/menu/components-menus.css";
-@import "../styles/menu/components-modals.css";
-@import "../styles/menu/components-layout.css";
-@import "../styles/menu/components-lanes.css";
-@import "../styles/menu/components-effects.css";
-@import "../styles/menu/components-creatures.css";
-@import "../styles/menu/components-dragon.css";
-@import "../styles/menu/components-protocol.css";
-@import "../styles/menu/responsive.css";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * 전역 리셋 — base 레이어에 넣어서:
+ * 1) 브라우저 기본 margin/padding을 0으로 리셋 (레이아웃 안정)
+ * 2) Tailwind utilities(px-10 등)는 utilities 레이어라 이 리셋보다 우선
+ */
+@layer base {
+  *, ::before, ::after {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* === mydesktop Menu CSS — 'menu' layer (Tailwind utilities보다 낮은 우선순위) === */
+@import "../styles/menu/variables.css" layer(menu);
+@import "../styles/menu/base.css" layer(menu);
+@import "../styles/menu/animations.css" layer(menu);
+@import "../styles/menu/components-core.css" layer(menu);
+@import "../styles/menu/components-cards.css" layer(menu);
+@import "../styles/menu/components-menus.css" layer(menu);
+@import "../styles/menu/components-modals.css" layer(menu);
+@import "../styles/menu/components-layout.css" layer(menu);
+@import "../styles/menu/components-lanes.css" layer(menu);
+@import "../styles/menu/components-effects.css" layer(menu);
+@import "../styles/menu/components-creatures.css" layer(menu);
+@import "../styles/menu/components-dragon.css" layer(menu);
+@import "../styles/menu/components-protocol.css" layer(menu);
+@import "../styles/menu/responsive.css" layer(menu);
 
 /* Glow Theme CSS Variables (mydesktop default: gold) */
 :root {
@@ -24,6 +39,54 @@
   --glow-orb-2: rgba(255, 140, 0, 0.1);
   --glow-orb-3: rgba(255, 215, 0, 0.08);
   --glow-orb-4: rgba(255, 140, 0, 0.05);
+}
+
+/* === Display 테마 CSS 변수 (공장 모니터용) === */
+:root {
+  --dp-primary: #0ea5e9;
+  --dp-primary-hover: #0284c7;
+  --dp-primary-light: rgba(14, 165, 233, 0.10);
+  --dp-primary-border: rgba(14, 165, 233, 0.25);
+  --dp-bg: #ffffff;
+  --dp-surface: #f4f4f5;
+  --dp-surface-hover: #e4e4e7;
+  --dp-border: #e4e4e7;
+  --dp-text: #18181b;
+  --dp-text-secondary: #71717a;
+  --dp-text-muted: #a1a1aa;
+  --dp-success: #22c55e;
+  --dp-warning: #f59e0b;
+  --dp-error: #ef4444;
+  --dp-modal-overlay: rgba(0, 0, 0, 0.50);
+  --dp-shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+.dark {
+  --dp-primary: #38bdf8;
+  --dp-primary-hover: #7dd3fc;
+  --dp-primary-light: rgba(56, 189, 248, 0.12);
+  --dp-primary-border: rgba(56, 189, 248, 0.25);
+  --dp-bg: #09090b;
+  --dp-surface: #18181b;
+  --dp-surface-hover: #27272a;
+  --dp-border: #3f3f46;
+  --dp-text: #fafafa;
+  --dp-text-secondary: #a1a1aa;
+  --dp-text-muted: #71717a;
+  --dp-success: #4ade80;
+  --dp-warning: #fbbf24;
+  --dp-error: #f87171;
+  --dp-modal-overlay: rgba(0, 0, 0, 0.65);
+  --dp-shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.50);
+}
+
+/* === Display 공통 애니메이션 === */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 /* 100vh lock - NO page scroll EVER */

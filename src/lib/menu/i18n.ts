@@ -1,0 +1,86 @@
+/**
+ * @file src/lib/menu/i18n.ts
+ * @description 메뉴 시스템(vanilla JS) 전용 다국어 유틸리티.
+ *
+ * 초보자 가이드:
+ * 1. **주요 개념**: React useTranslations 훅을 사용할 수 없는 vanilla JS 코드에서
+ *    번역 함수 `t(key)` 를 제공한다.
+ * 2. **사용 방법**:
+ *    ```ts
+ *    import { t } from '@/lib/menu/i18n';
+ *    t('menuUI.edit');              // → '수정' (ko) / 'Edit' (en) / 'Editar' (es)
+ *    t('screens.24');               // → 'SMD 생산현황' (ko)
+ *    t('menuUI.minutesAgo', {n:5}); // → '5분 전' (ko) / '5 min ago' (en)
+ *    ```
+ * 3. **로케일 소스**: localStorage의 'mes-display-locale' 키 (LocaleProvider와 동일)
+ */
+
+import koMessages from '@/i18n/messages/ko.json';
+import enMessages from '@/i18n/messages/en.json';
+import esMessages from '@/i18n/messages/es.json';
+
+const STORAGE_KEY = 'mes-display-locale';
+
+const allMessages: Record<string, Record<string, unknown>> = {
+  ko: koMessages,
+  en: enMessages,
+  es: esMessages,
+};
+
+/**
+ * 현재 로케일을 localStorage에서 읽어 반환
+ * @returns 'ko' | 'en' | 'es'
+ */
+function getLocale(): string {
+  if (typeof window === 'undefined') return 'ko';
+  return localStorage.getItem(STORAGE_KEY) ?? 'ko';
+}
+
+/**
+ * 메뉴 시스템용 번역 함수
+ * @param key - 점(.)으로 구분된 메시지 키 (예: 'screens.24', 'menuUI.edit')
+ * @param params - ICU 스타일 보간 파라미터 (예: \{ n: 5 \})
+ * @returns 번역된 문자열, 키를 못 찾으면 key 그대로 반환
+ */
+export function t(key: string, params?: Record<string, string | number>): string {
+  const locale = getLocale();
+  const messages = allMessages[locale] ?? allMessages.ko;
+
+  // 'screens.24' → messages['screens']['24']
+  const parts = key.split('.');
+  let value: unknown = messages;
+  for (const part of parts) {
+    if (value && typeof value === 'object') {
+      value = (value as Record<string, unknown>)[part];
+    } else {
+      return key;
+    }
+  }
+
+  if (typeof value !== 'string') return key;
+
+  // {n} → params.n 보간
+  if (params) {
+    return Object.entries(params).reduce(
+      (s, [k, v]) => s.replaceAll(`{${k}}`, String(v)),
+      value,
+    );
+  }
+
+  return value;
+}
+
+/**
+ * 바로가기 URL에서 screen ID를 추출하여 번역된 제목 반환
+ * @param shortcut - 바로가기 객체 (url, title 포함)
+ * @returns 번역된 화면 제목. 매칭 실패 시 원본 title 반환.
+ */
+export function getScreenTitle(shortcut: { url: string; title: string }): string {
+  const match = shortcut.url.match(/\/display\/(\d+)/);
+  if (match) {
+    const translated = t(`screens.${match[1]}`);
+    // t()가 키 자체를 반환하면 fallback
+    if (translated !== `screens.${match[1]}`) return translated;
+  }
+  return shortcut.title;
+}

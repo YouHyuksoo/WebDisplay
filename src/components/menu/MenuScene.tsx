@@ -40,17 +40,20 @@ export default function MenuScene() {
   const router = useRouter();
   const initialized = useRef(false);
 
+  // 메뉴 시스템 초기화 (StrictMode 이중 호출 방지)
   useEffect(() => {
-    // StrictMode에서 이중 호출 방지
     if (initialized.current) return;
     initialized.current = true;
 
-    // 메뉴 시스템 초기화 (동적 import로 SSR 회피)
     import('@/lib/menu/init').then(({ initMenuSystem }) => {
       initMenuSystem();
     });
 
-    // 카드 클릭 시 Next.js 라우팅 연동
+    // cleanup은 실제 언마운트 시에만 필요 (StrictMode에서는 ref 가드로 재실행 안 됨)
+  }, []);
+
+  // 카드 클릭 → Next.js 라우팅 (별도 useEffect로 분리하여 StrictMode에서도 항상 등록)
+  useEffect(() => {
     const handleNavigate = (e: Event) => {
       const detail = (e as CustomEvent<{ url: string; title: string }>).detail;
       if (detail?.url) {
@@ -58,12 +61,8 @@ export default function MenuScene() {
       }
     };
     window.addEventListener('mes-navigate', handleNavigate);
-
     return () => {
       window.removeEventListener('mes-navigate', handleNavigate);
-      import('@/lib/menu/init').then(({ destroyMenuSystem }) => {
-        destroyMenuSystem();
-      });
     };
   }, [router]);
 
