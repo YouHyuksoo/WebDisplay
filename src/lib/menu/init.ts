@@ -16,7 +16,7 @@
  *    - 카테고리/바로가기/설정 로드 (localStorage)
  *    - Three.js 공간 초기화 + 렌더링
  *    - 카드 렌더링, 이벤트 바인딩
- *    - 위젯(시계/날씨/시스템) 초기화
+ *    - 위젯(시계) 초기화
  *    - 진입 애니메이션 + 이스터에그 이펙트
  *
  * 원본: mydesktop/js/main.js (init 함수)
@@ -102,8 +102,6 @@ export async function initMenuSystem(): Promise<void> {
   // 7. 위젯 초기화
   Widgets.updateClock();
   clockIntervalId = setInterval(Widgets.updateClock, 1000);
-  Widgets.initSystemInfo();
-  Widgets.initWeather();
 
   // 8. 카테고리 셀렉트 업데이트
   Categories.updateCategorySelect();
