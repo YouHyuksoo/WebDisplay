@@ -87,11 +87,26 @@
   #section-info { top: 30px; }
   .section-cards { gap: 10px; max-width: 320px; }
 
-  /* 모바일 검색창 - 아이콘 토글 방식 */
-  #search-container {
+  /* 모바일 검색 영역 */
+  #search-area {
     bottom: 15px;
     left: 15px;
+    gap: 6px;
+  }
+
+  #search-container {
     width: auto;
+  }
+
+  #recent-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+  }
+
+  #recent-btn svg {
+    width: 16px;
+    height: 16px;
   }
 
   .search-box {
@@ -268,11 +283,6 @@
 
   .settings-credits {
     padding: 10px 14px;
-  }
-
-  .credits-avatar {
-    width: 24px;
-    height: 24px;
   }
 
   .credits-name {

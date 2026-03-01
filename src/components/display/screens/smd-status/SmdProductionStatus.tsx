@@ -63,9 +63,15 @@ export default function SmdProductionStatus({
       screenId={screenId}
       refreshInterval={refreshInterval}
     >
-      <div ref={scrollRef} className="flex flex-col gap-3 p-3">
-        <SmdStatusGrid rows={data?.machineStatus ?? []} />
-        <SmdCheckItems rows={data?.checkItems ?? []} />
+      <div ref={scrollRef} className="flex h-full flex-col gap-2 p-3">
+        {/* 상단 그리드 50% */}
+        <div className="min-h-0 flex-1 overflow-auto">
+          <SmdStatusGrid rows={data?.machineStatus ?? []} />
+        </div>
+        {/* 하단 점검 항목 50% */}
+        <div className="min-h-0 flex-1 overflow-auto">
+          <SmdCheckItems rows={data?.checkItems ?? []} />
+        </div>
       </div>
     </DisplayLayout>
   );

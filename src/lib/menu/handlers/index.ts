@@ -573,16 +573,37 @@ export function initEventListeners(): void {
     });
   }
 
-  // ===== 다국어 전환 =====
-  document.getElementById('locale-btn')?.addEventListener('click', () => {
-    const STORAGE_KEY = 'mes-display-locale';
-    const locales = ['ko', 'en', 'es'];
-    const current = localStorage.getItem(STORAGE_KEY) ?? 'ko';
-    const nextIndex = (locales.indexOf(current) + 1) % locales.length;
-    localStorage.setItem(STORAGE_KEY, locales[nextIndex]);
-    import('../ui').then((UI) => UI.showToast(`🌐 Language: ${locales[nextIndex].toUpperCase()}`));
-    // Reload to apply locale change
-    setTimeout(() => location.reload(), 800);
+  // ===== 다국어 드롭다운 =====
+  const localeDropdown = document.getElementById('locale-dropdown');
+  const localeBtn = document.getElementById('locale-btn');
+
+  // 현재 언어 활성 표시
+  const STORAGE_KEY = 'mes-display-locale';
+  const currentLocale = localStorage.getItem(STORAGE_KEY) ?? 'ko';
+  localeDropdown
+    ?.querySelector(`.locale-option[data-locale="${currentLocale}"]`)
+    ?.classList.add('active');
+
+  // 드롭다운 토글
+  localeBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    localeDropdown?.classList.toggle('open');
+  });
+
+  // 언어 선택
+  localeDropdown?.querySelectorAll('.locale-option').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const locale = (btn as HTMLElement).dataset.locale ?? 'ko';
+      localStorage.setItem(STORAGE_KEY, locale);
+      import('../ui').then((UI) => UI.showToast(`🌐 Language: ${locale.toUpperCase()}`));
+      localeDropdown.classList.remove('open');
+      setTimeout(() => location.reload(), 800);
+    });
+  });
+
+  // 외부 클릭 시 닫기
+  document.addEventListener('click', () => {
+    localeDropdown?.classList.remove('open');
   });
 
   // ===== 테마 전환 (display 페이지용) =====
@@ -615,6 +636,11 @@ export function initEventListeners(): void {
   const savedTheme = localStorage.getItem('mes-display-theme') ?? 'dark';
   const themeBtnEl = document.getElementById('theme-btn');
   if (themeBtnEl) themeBtnEl.innerHTML = savedTheme === 'dark' ? '&#127769;' : '&#9728;&#65039;';
+
+  // ===== 최근 사용 바로가기 =====
+  document.getElementById('recent-btn')?.addEventListener('click', () => {
+    import('../lanes').then((Lanes) => Lanes.goToLane(-1));
+  });
 }
 
 /**

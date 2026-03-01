@@ -1,0 +1,33 @@
+/*
+ * @file menu-theme.css
+ * @description 메뉴(mydesktop) 전용 테마 CSS
+ *
+ * 초보자 가이드:
+ * - layer(menu) 제거: 라우트 그룹 (menu)/(display) 분리로 레이아웃 수준 격리가 보장됨
+ * - Tailwind v4 preflight가 @layer base에서 * { padding:0; margin:0 } 를 포함하므로
+ *   layer(menu)에 넣으면 모든 padding/margin이 무시됨 → unlayered로 import
+ */
+@import "../../styles/menu/variables.css";
+@import "../../styles/menu/base.css";
+@import "../../styles/menu/animations.css";
+@import "../../styles/menu/components-core.css";
+@import "../../styles/menu/components-cards.css";
+@import "../../styles/menu/components-menus.css";
+@import "../../styles/menu/components-modals.css";
+@import "../../styles/menu/components-layout.css";
+@import "../../styles/menu/components-lanes.css";
+@import "../../styles/menu/components-effects.css";
+@import "../../styles/menu/components-creatures.css";
+@import "../../styles/menu/components-dragon.css";
+@import "../../styles/menu/components-protocol.css";
+@import "../../styles/menu/responsive.css";
+
+/* Glow Theme CSS Variables (mydesktop default: gold) */
+:root {
+  --glow-primary: #ffd700;
+  --glow-secondary: #ff8c00;
+  --glow-orb-1: rgba(255, 215, 0, 0.15);
+  --glow-orb-2: rgba(255, 140, 0, 0.1);
+  --glow-orb-3: rgba(255, 215, 0, 0.08);
+  --glow-orb-4: rgba(255, 140, 0, 0.05);
+}

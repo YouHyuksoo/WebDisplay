@@ -13,6 +13,7 @@ import DisplayMessageBar from './DisplayMessageBar';
 
 interface DisplayLayoutProps {
   title: string;
+  screenId?: string;
   refreshInterval?: number;
   message?: string;
   children: React.ReactNode;
@@ -20,6 +21,7 @@ interface DisplayLayoutProps {
 
 export default function DisplayLayout({
   title,
+  screenId,
   refreshInterval = 30,
   message,
   children,
@@ -36,7 +38,7 @@ export default function DisplayLayout({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-white dark:bg-zinc-950">
-      <DisplayHeader title={title} refreshInterval={refreshInterval} />
+      <DisplayHeader title={title} screenId={screenId} refreshInterval={refreshInterval} />
       <main className="flex-1 overflow-y-auto">
         {children}
       </main>

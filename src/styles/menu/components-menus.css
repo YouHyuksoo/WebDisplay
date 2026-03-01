@@ -19,7 +19,7 @@
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 16px;
-  padding: 12px 0;
+  padding: 16px 0;
   min-width: 220px;
   z-index: 200;
   opacity: 0;
@@ -35,12 +35,12 @@
 }
 
 .settings-item {
-  padding: 12px 20px;
+  padding: 18px 24px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   transition: all 0.2s ease;
 }
 
@@ -64,41 +64,19 @@
 .settings-divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.1);
-  margin: 8px 0;
+  margin: 10px 16px;
 }
 
 .settings-credits {
-  padding: 12px 20px;
+  padding: 12px 24px;
   text-align: center;
 }
 
-.credits-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-bottom: 6px;
-  border: 1px solid var(--accent);
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.credits-avatar:hover {
-  transform: scale(1.2) rotate(10deg);
-  box-shadow: 0 0 20px var(--accent), 0 0 40px rgba(255, 215, 0, 0.5);
-  border-color: #fff;
-}
-
-.credits-avatar:active {
-  transform: scale(0.95);
-}
-
 .credits-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--accent);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .credits-tagline {
@@ -379,6 +357,15 @@
 
 #left-sidebar-menus {
   pointer-events: auto;
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  z-index: 200;
 }
 
 /* ===== Sidebar Toggles ===== */
@@ -389,14 +376,22 @@
   z-index: 200;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
 }
 
+/* 부모 flex 컨테이너 안에서는 fixed 해제하여 자연스러운 정렬 */
 #left-sidebar-menus #color-bar {
-  position: fixed;
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+}
+
+#left-sidebar-menus #sidebar-toggles {
+  position: static;
+  left: auto;
+  top: auto;
 }
 
 #sidebar-toggles button {

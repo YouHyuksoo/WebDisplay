@@ -38,13 +38,54 @@
 
 /* === From: search.css === */
 
-/* ===== Search Box ===== */
-#search-container {
+/* ===== Search Area (검색 + 최근사용 버튼) ===== */
+#search-area {
   position: fixed;
   bottom: 30px;
   left: 30px;
   z-index: 250;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+#search-container {
   width: 280px;
+}
+
+#recent-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(20px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+#recent-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--text-secondary);
+  transition: fill 0.3s ease;
+}
+
+#recent-btn:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+}
+
+#recent-btn:hover svg {
+  fill: var(--accent);
+}
+
+#recent-btn:active {
+  transform: scale(0.95);
 }
 
 .search-box {
@@ -291,9 +332,10 @@
 }
 
 #clock-widget .date {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-secondary);
   margin-top: 4px;
+  letter-spacing: 1px;
 }
 
 /* ===== Utility Icons (우측 상단) ===== */
@@ -332,4 +374,58 @@
 
 .util-btn:active {
   transform: scale(0.95);
+}
+
+/* ===== Locale Dropdown ===== */
+#locale-wrapper {
+  position: relative;
+}
+
+#locale-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 12px;
+  padding: 6px 0;
+  min-width: 140px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: all 0.2s ease;
+  z-index: 210;
+}
+
+#locale-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.locale-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.locale-option:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.locale-option.active {
+  color: var(--accent);
+}
+
+.locale-flag {
+  font-size: 16px;
 }

@@ -41,7 +41,7 @@ export default function MslWarningList({
   const ngCount: number = data?.ngCount ?? 0;
 
   return (
-    <DisplayLayout screenId={screenId} refreshInterval={refreshInterval}>
+    <DisplayLayout title="MSL Warning List" screenId={screenId} refreshInterval={refreshInterval}>
       {isLoading ? (
         <div className="flex h-full items-center justify-center text-5xl font-bold text-zinc-400 dark:text-zinc-500">
           {t('common.loading')}

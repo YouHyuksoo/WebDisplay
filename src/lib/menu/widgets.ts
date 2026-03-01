@@ -30,16 +30,17 @@ export function updateClock(): void {
     clockTime.textContent = now.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
+      second: '2-digit',
       hour12: false,
     });
   }
 
   if (clockDate) {
-    clockDate.textContent = now.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    clockDate.textContent = `${y}-${m}-${d} (${weekdays[now.getDay()]})`;
   }
 }
 

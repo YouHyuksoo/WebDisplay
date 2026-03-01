@@ -144,7 +144,6 @@ export default function MenuControls() {
         </div>
         <div className="settings-divider" />
         <div className="settings-credits">
-          <div className="credits-avatar" style={{ width: 32, height: 32, borderRadius: '50%', background: '#333' }} />
           <div className="credits-name">DogBirds</div>
           <div className="credits-tagline">Where imagination takes flight</div>
         </div>

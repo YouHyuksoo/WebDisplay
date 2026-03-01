@@ -1,0 +1,83 @@
+/**
+ * @file display-theme.css
+ * @description WBS Master Design Guideline 기반의 디스플레이(공장 모니터링) 전용 테마 CSS.
+ * (메뉴 시스템과 완벽히 격리됨)
+ */
+
+@layer utilities {
+  /* 라이트 모드 기본 색상 */
+  :root {
+    --background: oklch(0.98 0.002 248);
+    --foreground: oklch(0.16 0.035 282);
+    --card: oklch(1.0 0 0);
+    
+    --primary: oklch(0.67 0.290 341); /* 마젠타/핑크 계열 메인 색상 */
+    --primary-foreground: oklch(1.0 0 0);
+    
+    --secondary: oklch(0.96 0.020 286);
+    --accent: oklch(0.89 0.174 171);
+    --destructive: oklch(0.65 0.235 34);
+    
+    --border: oklch(0.92 0.009 225);
+    
+    --muted: oklch(0.96 0.020 286);
+    --muted-foreground: oklch(0.16 0.035 282);
+
+    /* 레거시 호환 색상 (Tailwind 클래스 매핑용) */
+    --text: var(--foreground);
+    --text-secondary: oklch(0.45 0.015 282); /* 추정치 */
+    --surface: oklch(0.96 0.020 286); /* 보조 배경 */
+    --surface-dark: oklch(0.18 0.04 281); /* 예측값 */
+    --background-white: oklch(1.0 0 0);
+    --background-dark: oklch(0.16 0.035 282);
+
+    /* 상태(Status) 색상 */
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
+
+    /* 모서리 (Radius) */
+    --radius: 0.5rem; /* 8px */
+    --radius-sm: calc(var(--radius) - 2px); /* 4px */
+    --radius-md: calc(var(--radius) - 2px); /* 6px */
+    --radius-lg: var(--radius); /* 8px */
+    --radius-xl: calc(var(--radius) + 4px); /* 12px */
+    --radius-2xl: calc(var(--radius) + 8px); /* 16px */
+  }
+
+  /* 다크 모드 색상 */
+  .dark {
+    --background: oklch(0.16 0.035 282);
+    --foreground: oklch(0.95 0.007 261);
+    --card: oklch(0.25 0.061 281);
+    
+    /* primary 계열은 라이트모드와 동일하게 유지됨 */
+    --primary: oklch(0.67 0.290 341);
+    --primary-foreground: oklch(1.0 0 0);
+    
+    --secondary: oklch(0.25 0.061 281);
+    --accent: oklch(0.89 0.174 171);
+    --destructive: oklch(0.65 0.235 34);
+    
+    --border: oklch(0.33 0.083 281);
+    
+    --muted: oklch(0.21 0.052 281);
+    --muted-foreground: oklch(0.62 0.050 278);
+
+    /* 레거시 호환 다크 변수 */
+    --text: oklch(1.0 0 0); /* 흰색 통일 */
+    --surface: oklch(0.25 0.061 281);
+    --border-dark: oklch(0.33 0.083 281);
+  }
+}
+
+/* === 모니터링 공통 애니메이션 === */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
