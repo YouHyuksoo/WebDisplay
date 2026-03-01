@@ -9,7 +9,7 @@ import { SCREENS } from '@/lib/screens';
 import DisplayLayout from '@/components/display/DisplayLayout';
 import DisplayPlaceholder from '@/components/display/DisplayPlaceholder';
 import SmdProductionStatus from '@/components/display/screens/smd-status/SmdProductionStatus';
-import MslWarningList from '@/components/display/screens/MslWarningList';
+import MslWarningStatus from '@/components/display/screens/msl-warning/MslWarningStatus';
 
 interface PageProps {
   params: Promise<{ screenId: string }>;
@@ -25,7 +25,7 @@ export default async function DisplayPage({ params }: PageProps) {
   }
 
   if (screenId === '29') {
-    return <MslWarningList screenId={screenId} />;
+    return <MslWarningStatus screenId={screenId} />;
   }
 
   return (

@@ -568,6 +568,7 @@ export function saveSettings(): void {
     cardStyle: state.cardStyle,
     spaceType: state.spaceType,
     cardLayout: state.cardLayout,
+    auroraBrightness: state.auroraBrightness,
   });
 }
 

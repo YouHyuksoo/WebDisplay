@@ -96,6 +96,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'menu-26', title: '자재 투입 현황', url: '/display/26', color: '#a78bfa', icon: 'svg:material', layer: 1 },
   { id: 'menu-27', title: 'MSL 관리', url: '/display/27', color: '#c084fc', icon: 'svg:msl-warning', layer: 1 },
   { id: 'menu-28', title: '설비 가동률', url: '/display/28', color: '#e879f9', icon: 'svg:operation-rate', layer: 1 },
+  { id: 'menu-29', title: 'MSL 경고 목록', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 1 },
   // Quality (layer: 2)
   { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 2 },
   { id: 'menu-32', title: 'Stencil 관리', url: '/display/32', color: '#34d399', icon: 'svg:stencil', layer: 2 },

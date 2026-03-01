@@ -84,6 +84,7 @@ export async function initMenuSystem(): Promise<void> {
   state.cardStyle = settings.cardStyle;
   state.spaceType = settings.spaceType;
   state.cardLayout = settings.cardLayout;
+  state.auroraBrightness = settings.auroraBrightness ?? 1.0;
   state.selectedColor = COLORS[0];
 
   // 4. Three.js 공간 초기화

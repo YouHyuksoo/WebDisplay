@@ -147,6 +147,7 @@ export interface MenuSettings {
   cardStyle: string;
   spaceType: string;
   cardLayout: string;
+  auroraBrightness: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -208,6 +209,7 @@ export interface MenuState {
   spaceType: string;
   cardLayout: string;
   carouselIndex: number;
+  auroraBrightness: number;
 
   // Three.js (런타임 할당)
   scene: any;

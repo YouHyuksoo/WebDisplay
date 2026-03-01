@@ -680,6 +680,34 @@ export function initEventListeners(): void {
       import('../ui').then((UI) => UI.showToast('이전 메뉴가 없습니다'));
     }
   });
+
+  // ===== 배경 밝기 조절 =====
+  const brightnessValueEl = document.getElementById('brightness-value');
+  const updateBrightnessLabel = () => {
+    if (brightnessValueEl) {
+      brightnessValueEl.textContent = `${Math.round(state.auroraBrightness * 100)}%`;
+    }
+  };
+  updateBrightnessLabel();
+
+  // 밝기 항목 전체 클릭 시 메뉴 닫힘 방지
+  document.getElementById('menu-brightness')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  document.getElementById('brightness-up')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.auroraBrightness = Math.min(3.0, +(state.auroraBrightness + 0.25).toFixed(2));
+    updateBrightnessLabel();
+    import('../ui').then((UI) => UI.saveSettings());
+  });
+
+  document.getElementById('brightness-down')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.auroraBrightness = Math.max(0.25, +(state.auroraBrightness - 0.25).toFixed(2));
+    updateBrightnessLabel();
+    import('../ui').then((UI) => UI.saveSettings());
+  });
 }
 
 /**

@@ -257,11 +257,11 @@ export function updateAuroraAnimation(): void {
       (child as THREE.Sprite).material.map = createGlowTexture(newColor);
       (child as THREE.Sprite).material.map!.needsUpdate = true;
 
-      // 투명도 맥동
+      // 투명도 맥동 (auroraBrightness 적용)
       (child as THREE.Sprite).material.opacity =
-        0.3 +
+        (0.3 +
         Math.sin(_i.auroraTime * 0.5 + phase) * 0.15 +
-        _i.glowIntensity * 0.2;
+        _i.glowIntensity * 0.2) * state.auroraBrightness;
 
       // 크기 맥동 (부드럽게 숨쉬는 느낌)
       const scalePulse = 1 + Math.sin(_i.auroraTime * 0.3 + phase) * 0.15;
@@ -296,11 +296,11 @@ export function updateAuroraAnimation(): void {
       (child as THREE.Sprite).material.map = createGlowTexture(newColor);
       (child as THREE.Sprite).material.map!.needsUpdate = true;
 
-      // 깜빡임 효과
+      // 깜빡임 효과 (auroraBrightness 적용)
       (child as THREE.Sprite).material.opacity =
-        0.15 +
+        (0.15 +
         Math.sin(_i.auroraTime * speed + phase) * 0.1 +
-        _i.glowIntensity * 0.15;
+        _i.glowIntensity * 0.15) * state.auroraBrightness;
     }
 
     // 배경 빛
@@ -318,11 +318,11 @@ export function updateAuroraAnimation(): void {
       (child as THREE.Sprite).material.map = createGlowTexture(newColor);
       (child as THREE.Sprite).material.map!.needsUpdate = true;
 
-      // 미세한 투명도 변화
+      // 미세한 투명도 변화 (auroraBrightness 적용)
       (child as THREE.Sprite).material.opacity =
-        0.1 +
+        (0.1 +
         Math.sin(_i.auroraTime * 0.15 + phase) * 0.05 +
-        _i.glowIntensity * 0.08;
+        _i.glowIntensity * 0.08) * state.auroraBrightness;
     }
   });
 

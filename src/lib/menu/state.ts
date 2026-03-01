@@ -54,6 +54,7 @@ export const state: MenuState = {
   spaceType: 'aurora',
   cardLayout: 'grid',
   carouselIndex: 0,
+  auroraBrightness: 1.0,
 
   // Three.js (런타임 할당)
   scene: null,

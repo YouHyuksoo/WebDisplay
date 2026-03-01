@@ -112,6 +112,7 @@ const DEFAULT_SETTINGS: MenuSettings = {
   cardStyle: 'neon',
   spaceType: 'aurora',
   cardLayout: 'grid',
+  auroraBrightness: 1.0,
 };
 
 /**
