@@ -296,134 +296,40 @@
   margin-top: 4px;
 }
 
-#system-widget {
+/* ===== Utility Icons (우측 상단) ===== */
+#util-icons {
   position: fixed;
   top: 20px;
   right: 20px;
-  background: rgba(255, 215, 0, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  border-radius: 16px;
-  padding: 12px 16px;
+  display: flex;
+  gap: 10px;
   z-index: 200;
-  font-size: 11px;
 }
 
-.system-row {
+.util-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  background: rgba(10, 10, 15, 0.5);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-size: 18px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.system-row:last-child { margin-bottom: 0; }
-
-.system-icon {
-  width: 16px;
-  text-align: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: var(--text);
   opacity: 0.7;
 }
 
-.system-label {
-  color: var(--text-secondary);
-  width: 45px;
-}
-
-.system-value {
-  color: var(--accent);
-  font-weight: 500;
-}
-
-.system-bar {
-  width: 60px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.system-bar-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-.battery-charging .system-icon {
-  animation: batteryPulse 1s ease-in-out infinite;
-}
-
-/* ===== Weather Widget ===== */
-#weather-widget {
-  position: fixed;
-  top: 140px;
-  right: 20px;
-  background: rgba(255, 215, 0, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  border-radius: 16px;
-  padding: 12px 16px;
-  z-index: 200;
-  min-width: 120px;
-}
-
-.weather-main {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.weather-icon {
-  font-size: 28px;
-  line-height: 1;
-}
-
-.weather-temp {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.weather-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.weather-desc {
-  font-size: 11px;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100px;
-}
-
-.weather-location {
-  font-size: 10px;
-  color: var(--text-secondary);
-}
-
-#weather-widget {
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#weather-widget:hover {
-  border-color: var(--accent);
-  background: rgba(255, 215, 0, 0.1);
-}
-
-.weather-edit-hint {
-  font-size: 9px;
-  color: var(--text-secondary);
-  margin-top: 6px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  text-align: center;
-}
-
-#weather-widget:hover .weather-edit-hint {
+.util-btn:hover {
   opacity: 1;
+  border-color: var(--accent);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  transform: scale(1.1);
+}
+
+.util-btn:active {
+  transform: scale(0.95);
 }

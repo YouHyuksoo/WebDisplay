@@ -93,7 +93,7 @@
 
 /* === From: easter-buttons.css === */
 
-/* ===== Easter Egg Container ===== */
+/* ===== Easter Egg Panel ===== */
 #easter-egg-container {
   position: fixed;
   left: 20px;
@@ -101,7 +101,6 @@
   z-index: 300;
 }
 
-/* 인디케이터 (평소 보임) */
 #easter-egg-indicator {
   width: 32px;
   height: 32px;
@@ -124,20 +123,32 @@
   box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
-/* 버튼들 (평소 숨김, 호버 시 표시) */
-#easter-egg-buttons {
+#easter-egg-indicator.active {
+  opacity: 1;
+  border-color: var(--accent);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+/* 패널 (기본 숨김, 인디케이터 클릭 시 표시) */
+#easter-egg-panel {
   position: absolute;
   left: 40px;
-  top: 0;
-  display: flex;
-  gap: 8px;
+  top: -4px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  padding: 8px;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 12px;
   opacity: 0;
   visibility: hidden;
   transform: translateX(-10px);
   transition: all 0.3s ease;
 }
 
-#easter-egg-container:hover #easter-egg-buttons {
+#easter-egg-panel.open {
   opacity: 1;
   visibility: visible;
   transform: translateX(0);
@@ -168,6 +179,13 @@
 
 .easter-btn:active {
   transform: scale(0.95);
+}
+
+/* 토글 버튼 활성 상태 */
+.easter-btn.toggle-btn.active {
+  border-color: var(--accent);
+  background: rgba(255, 215, 0, 0.15);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
 }
 
 /* ===== Lottie Dragon ===== */

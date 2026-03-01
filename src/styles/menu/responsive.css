@@ -18,39 +18,16 @@
   #section-subtitle { font-size: 10px; }
   .section-cards { gap: 12px; max-width: 400px; }
 
-  #system-widget {
-    padding: 8px 12px;
-    font-size: 10px;
+  #util-icons {
     top: 15px;
     right: 15px;
+    gap: 8px;
   }
 
-  #weather-widget {
-    top: auto;
-    bottom: 80px;
-    right: 15px;
-    padding: 8px 12px;
-    min-width: 100px;
-  }
-
-  #weather-widget .weather-icon {
-    font-size: 22px;
-  }
-
-  #weather-widget .weather-temp {
-    font-size: 18px;
-  }
-
-  #weather-widget .weather-desc {
-    font-size: 10px;
-  }
-
-  #weather-widget .weather-location {
-    font-size: 9px;
-  }
-
-  #weather-widget .weather-edit-hint {
-    display: none;
+  .util-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
   }
 
   #clock-widget {
@@ -174,34 +151,28 @@
     width: 220px;
   }
 
-  #system-widget {
-    display: none;
-  }
-
-  /* 날씨 위젯 - 우상단 작게 */
-  #weather-widget {
+  #util-icons {
     top: 10px;
     right: 10px;
-    bottom: auto;
-    padding: 6px 10px;
-    min-width: auto;
-    border-radius: 12px;
+    gap: 6px;
   }
 
-  #weather-widget .weather-main {
-    margin-bottom: 0;
-  }
-
-  #weather-widget .weather-icon {
-    font-size: 18px;
-  }
-
-  #weather-widget .weather-temp {
+  .util-btn {
+    width: 30px;
+    height: 30px;
     font-size: 14px;
   }
 
-  #weather-widget .weather-info {
-    display: none;
+  #easter-egg-panel {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .easter-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
   }
 
   #clock-widget {
@@ -448,18 +419,8 @@
     font-size: 12px;
   }
 
-  #easter-egg-buttons {
-    left: 35px;
-  }
-
-  .easter-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 16px;
-  }
-
-  /* 모바일에서 터치를 위해 컨테이너에 클래스 추가 시 버튼 표시 */
-  #easter-egg-container.show-buttons #easter-egg-buttons {
+  /* 모바일에서 터치를 위해 컨테이너에 클래스 추가 시 패널 표시 */
+  #easter-egg-container.show-buttons #easter-egg-panel {
     opacity: 1;
     visibility: visible;
     transform: translateX(0);
