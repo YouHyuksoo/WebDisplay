@@ -79,6 +79,10 @@ export function goToSection(index: number, forceDirection: number | null = null)
   if (index === state.currentSection) return;
   if (forceDirection !== null) direction = forceDirection;
 
+  // 히스토리에 현재 섹션 기록 (돌아가기 기능용, 최대 20개)
+  state.sectionHistory.push(state.currentSection);
+  if (state.sectionHistory.length > 20) state.sectionHistory.shift();
+
   state.isTransitioning = true;
 
   // 터널 가속
@@ -128,18 +132,27 @@ export function goToSection(index: number, forceDirection: number | null = null)
 // ---------------------------------------------------------------------------
 
 /**
- * 카드들을 목표 섹션으로 애니메이션
+ * 카드들을 목표 섹션으로 애니메이션 (무한 순환 지원)
+ *
+ * 순환 오프셋 계산으로 마지막→첫번째, 첫번째→마지막 이동 시에도
+ * 최단 경로로 부드러운 전환을 구현합니다.
+ *
  * @param targetIndex - 목표 섹션 인덱스
  * @param direction - 이동 방향 (1 또는 -1)
  */
 export function animateCardsToSection(targetIndex: number, direction: number): void {
   const sections = document.querySelectorAll('.section-cards');
+  const sectionCount = sections.length;
 
   // 먼저 모든 섹션에서 active 제거
   sections.forEach((s) => s.classList.remove('active'));
 
   sections.forEach((section, i) => {
-    const offset = i - targetIndex;
+    // 순환 오프셋: 최단 경로 계산
+    let offset = i - targetIndex;
+    if (offset > sectionCount / 2) offset -= sectionCount;
+    if (offset < -sectionCount / 2) offset += sectionCount;
+
     const absOffset = Math.abs(offset);
     const zPos = -offset * DEPTH_SPACING;
     const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
@@ -228,13 +241,18 @@ export function updateSectionInfo(): void {
 // ---------------------------------------------------------------------------
 
 /**
- * 카드 섹션들의 3D 깊이 업데이트
+ * 카드 섹션들의 3D 깊이 업데이트 (무한 순환 지원)
  */
 export function updateCardsDepth(): void {
   const sections = document.querySelectorAll('.section-cards');
+  const sectionCount = sections.length;
 
   sections.forEach((section, i) => {
-    const offset = i - state.currentSection;
+    // 순환 오프셋: 최단 경로 계산
+    let offset = i - state.currentSection;
+    if (offset > sectionCount / 2) offset -= sectionCount;
+    if (offset < -sectionCount / 2) offset += sectionCount;
+
     const absOffset = Math.abs(offset);
     const zPos = -offset * DEPTH_SPACING;
     const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);

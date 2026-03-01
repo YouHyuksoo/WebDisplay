@@ -13,104 +13,90 @@
 /* ===== Depth Indicator ===== */
 #depth-indicator {
   position: fixed;
-  right: 30px;
+  right: 25px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  align-items: flex-end;
+  gap: 8px;
   z-index: 200;
-  perspective: 500px;
 }
 
 .depth-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: rgba(255, 215, 0, 0.2);
-  border: 2px solid rgba(255, 215, 0, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
-  transform-style: preserve-3d;
-  transform: translateZ(0);
+  background: rgba(10, 10, 15, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
 }
 
+/* 도트 원형 마커 */
 .depth-dot::before {
   content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: var(--accent);
-  transform: translate(-50%, -50%) translateZ(-10px) scale(0.5);
-  opacity: 0;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: rgba(255, 215, 0, 0.25);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  flex-shrink: 0;
+  order: 1;
+  transition: all 0.3s ease;
 }
 
+/* 메뉴 이름 라벨 (항상 표시) */
 .depth-dot::after {
   content: attr(data-label);
-  position: absolute;
-  right: 30px;
-  top: 50%;
-  transform: translateY(-50%) translateZ(20px);
-  font-size: 12px;
-  color: var(--text-secondary);
   white-space: nowrap;
-  opacity: 0;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-  background: rgba(10, 10, 15, 0.8);
-  padding: 4px 10px;
-  border-radius: 6px;
-  backdrop-filter: blur(10px);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  order: 0;
 }
 
 .depth-dot:hover {
-  transform: translateZ(25px) scale(1.5);
-  background: rgba(255, 215, 0, 0.4);
-  border-color: var(--accent);
-  box-shadow:
-    0 0 20px var(--card-glow),
-    0 10px 30px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 215, 0, 0.08);
+  border-color: rgba(255, 215, 0, 0.2);
 }
 
 .depth-dot:hover::before {
-  transform: translate(-50%, -50%) translateZ(-15px) scale(2);
-  opacity: 0.3;
+  background: rgba(255, 215, 0, 0.4);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--card-glow);
 }
 
 .depth-dot:hover::after {
-  opacity: 1;
-  right: 40px;
+  color: var(--accent);
 }
 
+/* 활성 섹션 */
 .depth-dot.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow:
-    0 0 25px var(--card-glow),
-    0 5px 20px rgba(0, 0, 0, 0.4);
-  transform: translateZ(15px) scale(1.4);
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.25);
 }
 
 .depth-dot.active::before {
-  transform: translate(-50%, -50%) translateZ(-20px) scale(2.5);
-  opacity: 0.2;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--card-glow);
   animation: depthPulse 2s ease-in-out infinite;
 }
 
+.depth-dot.active::after {
+  color: var(--accent);
+  font-weight: 600;
+  text-shadow: 0 0 8px var(--card-glow);
+}
+
 @keyframes depthPulse {
-  0%, 100% {
-    transform: translate(-50%, -50%) translateZ(-20px) scale(2.5);
-    opacity: 0.2;
-  }
-  50% {
-    transform: translate(-50%, -50%) translateZ(-25px) scale(3);
-    opacity: 0.1;
-  }
+  0%, 100% { box-shadow: 0 0 12px var(--card-glow); }
+  50% { box-shadow: 0 0 20px var(--card-glow); }
 }
 
 /* === From: grid-scroll.css === */

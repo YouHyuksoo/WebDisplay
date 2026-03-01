@@ -42,12 +42,15 @@ export const state: MenuState = {
     right: [],                 // 도구/설정 카드들
   },
 
+  // 네비게이션 히스토리 (돌아가기 기능)
+  sectionHistory: [],
+
   // 설정
   tunnelShape: 'triangle',
   glowIntensity: 0,
   glowTheme: 'gold',
   iconColorMode: 'brand',
-  cardStyle: 'glass',
+  cardStyle: 'neon',
   spaceType: 'aurora',
   cardLayout: 'grid',
   carouselIndex: 0,

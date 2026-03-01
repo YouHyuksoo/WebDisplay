@@ -117,8 +117,8 @@
 .shortcut-card {
   --card-color: var(--accent);
   position: relative;
-  width: 140px;
-  height: 180px;
+  width: 160px;
+  height: 200px;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -253,8 +253,8 @@
 /* Card Actions */
 .card-actions {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
+  bottom: 8px;
+  right: 8px;
   display: flex;
   gap: 6px;
   opacity: 0;
@@ -266,11 +266,12 @@
 }
 
 .card-btn {
-  width: 22px;
-  height: 22px;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -280,15 +281,24 @@
 }
 
 .card-btn svg {
-  width: 14px;
-  height: 14px;
-  fill: rgba(255, 255, 255, 0.5);
+  width: 16px;
+  height: 16px;
+  fill: rgba(255, 255, 255, 0.7);
   transition: all 0.2s ease;
 }
 
+.card-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
 .card-btn:hover svg {
-  fill: rgba(255, 255, 255, 0.9);
-  transform: scale(1.15);
+  fill: #fff;
+}
+
+.delete-btn:hover {
+  background: rgba(255, 75, 75, 0.2);
+  border-color: rgba(255, 75, 75, 0.5);
 }
 
 .delete-btn:hover svg {

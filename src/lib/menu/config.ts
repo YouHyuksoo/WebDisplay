@@ -84,24 +84,24 @@ export const COLORS: string[] = [
  */
 export const DEFAULT_SHORTCUTS: Shortcut[] = [
   // Management (layer: 0)
-  { id: 'menu-12', title: 'ASSY 생산 현황', url: '/display/12', color: '#ffd700', icon: '', layer: 0 },
-  { id: 'menu-16', title: '설비 로그 오류', url: '/display/16', color: '#ff6b6b', icon: '', layer: 0 },
-  { id: 'menu-18', title: '옵션 설정', url: '/display/18', color: '#94a3b8', icon: '', layer: 0 },
+  { id: 'menu-12', title: 'ASSY 생산 현황', url: '/display/12', color: '#ffd700', icon: 'svg:factory', layer: 0 },
+  { id: 'menu-16', title: '설비 로그 오류', url: '/display/16', color: '#ff6b6b', icon: 'svg:error-log', layer: 0 },
+  { id: 'menu-18', title: '옵션 설정', url: '/display/18', color: '#94a3b8', icon: 'svg:settings', layer: 0 },
   // Monitoring (layer: 1)
-  { id: 'menu-21', title: 'ASSY 기계 상태', url: '/display/21', color: '#06b6d4', icon: '', layer: 1 },
-  { id: 'menu-22', title: 'ASSY 생산량', url: '/display/22', color: '#22d3ee', icon: '', layer: 1 },
-  { id: 'menu-23', title: 'AOI 수율', url: '/display/23', color: '#2dd4bf', icon: '', layer: 1 },
-  { id: 'menu-24', title: 'SMD 기계 상태', url: '/display/24', color: '#3b82f6', icon: '', layer: 1 },
-  { id: 'menu-25', title: 'SMD 생산량', url: '/display/25', color: '#818cf8', icon: '', layer: 1 },
-  { id: 'menu-26', title: '자재 투입 현황', url: '/display/26', color: '#a78bfa', icon: '', layer: 1 },
-  { id: 'menu-27', title: 'MSL 관리', url: '/display/27', color: '#c084fc', icon: '', layer: 1 },
-  { id: 'menu-28', title: '설비 가동률', url: '/display/28', color: '#e879f9', icon: '', layer: 1 },
+  { id: 'menu-21', title: 'ASSY 기계 상태', url: '/display/21', color: '#06b6d4', icon: 'svg:machine-status', layer: 1 },
+  { id: 'menu-22', title: 'ASSY 생산량', url: '/display/22', color: '#22d3ee', icon: 'svg:production', layer: 1 },
+  { id: 'menu-23', title: 'AOI 수율', url: '/display/23', color: '#2dd4bf', icon: 'svg:yield', layer: 1 },
+  { id: 'menu-24', title: 'SMD 기계 상태', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 1 },
+  { id: 'menu-25', title: 'SMD 생산량', url: '/display/25', color: '#818cf8', icon: 'svg:production', layer: 1 },
+  { id: 'menu-26', title: '자재 투입 현황', url: '/display/26', color: '#a78bfa', icon: 'svg:material', layer: 1 },
+  { id: 'menu-27', title: 'MSL 관리', url: '/display/27', color: '#c084fc', icon: 'svg:msl-warning', layer: 1 },
+  { id: 'menu-28', title: '설비 가동률', url: '/display/28', color: '#e879f9', icon: 'svg:operation-rate', layer: 1 },
   // Quality (layer: 2)
-  { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: '', layer: 2 },
-  { id: 'menu-32', title: 'Stencil 관리', url: '/display/32', color: '#34d399', icon: '', layer: 2 },
-  { id: 'menu-34', title: '비전 불량', url: '/display/34', color: '#f43f5e', icon: '', layer: 2 },
-  { id: 'menu-37', title: '온도 관리', url: '/display/37', color: '#f97316', icon: '', layer: 2 },
-  { id: 'menu-38', title: '습도 관리', url: '/display/38', color: '#0ea5e9', icon: '', layer: 2 },
+  { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 2 },
+  { id: 'menu-32', title: 'Stencil 관리', url: '/display/32', color: '#34d399', icon: 'svg:stencil', layer: 2 },
+  { id: 'menu-34', title: '비전 불량', url: '/display/34', color: '#f43f5e', icon: 'svg:vision', layer: 2 },
+  { id: 'menu-37', title: '온도 관리', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 2 },
+  { id: 'menu-38', title: '습도 관리', url: '/display/38', color: '#0ea5e9', icon: 'svg:humidity', layer: 2 },
 ];
 
 // ---------------------------------------------------------------------------

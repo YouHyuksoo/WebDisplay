@@ -5,8 +5,24 @@
  * 원본: d_display_machine_status_check_items_smd.srd, d_display_machine_status_es.srd
  */
 
+/**
+ * 라인 코드 배열을 Oracle IN 절 바인드 변수로 변환한다.
+ * @param lines - 라인 코드 배열 (['S01','S02'] 등). '%' 또는 빈 배열이면 전체.
+ * @returns { clause: SQL WHERE 조각, binds: 바인드 객체 }
+ */
+export function buildLineFilter(lines: string[]): { clause: string; binds: Record<string, string> } {
+  if (!lines.length || lines.includes('%')) {
+    return { clause: '', binds: {} };
+  }
+  const placeholders = lines.map((_, i) => `:line${i}`);
+  const binds: Record<string, string> = {};
+  lines.forEach((code, i) => { binds[`line${i}`] = code; });
+  return { clause: `AND line_code IN (${placeholders.join(', ')})`, binds };
+}
+
 /** SMD 점검 항목 조회 (d_display_machine_status_check_items_smd) */
-export const SQL_CHECK_ITEMS = `
+export function sqlCheckItems(lineClause: string): string {
+  return `
 SELECT
   organization_id,
   actual_date,
@@ -36,11 +52,14 @@ SELECT
   spec_check_date
 FROM IRPT_PRODUCT_LINE_MONITORING
 WHERE organization_id = :orgId
+  ${lineClause}
 ORDER BY line_code
 `;
+}
 
 /** 기계 상태 전체 조회 (d_display_machine_status_es) */
-export const SQL_MACHINE_STATUS = `
+export function sqlMachineStatus(lineClause: string): string {
+  return `
 SELECT
   organization_id,
   organization_name,
@@ -88,5 +107,7 @@ SELECT
 FROM IRPT_PRODUCT_LINE_MONITORING
 WHERE organization_id = :orgId
   AND mes_display_yn = 'Y'
+  ${lineClause}
 ORDER BY mes_display_sequence, line_code
 `;
+}

@@ -95,8 +95,8 @@ export default function SmdCheckItems({ rows }: SmdCheckItemsProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-950 dark:border-white/10 dark:bg-zinc-950">
-      <table className="w-full table-fixed border-collapse">
+    <div className="h-full overflow-hidden rounded-lg border border-zinc-200 bg-zinc-950 dark:border-white/10 dark:bg-zinc-950">
+      <table className="h-full w-full table-fixed border-collapse">
         {/* ---------- 헤더: "Check Items" | S01 | S02 | ... ---------- */}
         <thead>
           <tr className="bg-zinc-900 dark:bg-zinc-900">
@@ -160,17 +160,17 @@ export default function SmdCheckItems({ rows }: SmdCheckItemsProps) {
                     }`}
                   >
                     {isActive ? (
-                      <div className="flex flex-col items-center gap-0.5">
-                        {/* 상태 뱃지 */}
+                      <div className="flex items-center gap-1.5">
+                        {/* 상태 뱃지 (좌) */}
                         <span
-                          className={`inline-block rounded px-2.5 py-0.5 text-sm font-black ${getBadgeClass(status)}`}
+                          className={`shrink-0 rounded px-2 py-0.5 text-sm font-black ${getBadgeClass(status)}`}
                         >
                           {status}
                         </span>
-                        {/* 값 텍스트 */}
+                        {/* 값 텍스트 (우) */}
                         {dateVal && (
                           <span
-                            className={`truncate text-sm ${
+                            className={`truncate text-xs ${
                               status === 'NG'
                                 ? 'font-semibold text-red-400'
                                 : 'text-zinc-400 dark:text-zinc-500'

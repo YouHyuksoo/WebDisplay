@@ -7,13 +7,26 @@
 'use client';
 
 import useSWR from 'swr';
-import { useRef } from 'react';
-import { useAutoScroll } from '@/hooks/useAutoScroll';
+import { useEffect, useState, useCallback } from 'react';
 import DisplayLayout from '../../DisplayLayout';
 import SmdStatusGrid from './SmdStatusGrid';
 import SmdCheckItems from './SmdCheckItems';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const STORAGE_KEY_PREFIX = 'display-lines-';
+
+/** localStorage에서 선택된 라인 코드를 읽어온다 */
+function getSelectedLines(screenId: string): string {
+  try {
+    const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${screenId}`);
+    if (stored) {
+      const arr = JSON.parse(stored) as string[];
+      if (arr.includes('%') || arr.length === 0) return '%';
+      return arr.join(',');
+    }
+  } catch { /* 무시 */ }
+  return '%';
+}
 
 interface SmdProductionStatusProps {
   screenId: string;
@@ -28,14 +41,24 @@ export default function SmdProductionStatus({
   screenId,
   refreshInterval = 30,
 }: SmdProductionStatusProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [lines, setLines] = useState(() => getSelectedLines(screenId));
+
   const { data, error, isLoading } = useSWR(
-    `/api/display/24?orgId=1`,
+    `/api/display/24?orgId=1&lines=${encodeURIComponent(lines)}`,
     fetcher,
     { refreshInterval: refreshInterval * 1000 },
   );
 
-  useAutoScroll({ containerRef: scrollRef, interval: 5000, enabled: !isLoading });
+  /* 라인 선택 모달에서 저장 시 localStorage를 다시 읽고 SWR 키 변경으로 즉시 리페치 */
+  const handleLineChange = useCallback(() => {
+    setLines(getSelectedLines(screenId));
+  }, [screenId]);
+
+  useEffect(() => {
+    const eventName = `line-config-changed-${screenId}`;
+    window.addEventListener(eventName, handleLineChange);
+    return () => window.removeEventListener(eventName, handleLineChange);
+  }, [screenId, handleLineChange]);
 
   if (isLoading) {
     return (
@@ -63,13 +86,13 @@ export default function SmdProductionStatus({
       screenId={screenId}
       refreshInterval={refreshInterval}
     >
-      <div ref={scrollRef} className="flex h-full flex-col gap-2 p-3">
-        {/* 상단 그리드 50% */}
-        <div className="min-h-0 flex-1 overflow-auto">
+      <div className="flex h-full flex-col gap-1 p-2">
+        {/* 상단 그리드 50% — 스크롤 없이 꽉 참 */}
+        <div className="min-h-0 flex-1 overflow-hidden">
           <SmdStatusGrid rows={data?.machineStatus ?? []} />
         </div>
-        {/* 하단 점검 항목 50% */}
-        <div className="min-h-0 flex-1 overflow-auto">
+        {/* 하단 점검 항목 50% — 스크롤 없이 꽉 참 */}
+        <div className="min-h-0 flex-1 overflow-hidden">
           <SmdCheckItems rows={data?.checkItems ?? []} />
         </div>
       </div>

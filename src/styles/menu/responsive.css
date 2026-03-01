@@ -237,13 +237,22 @@
   }
 
   .depth-dot {
-    width: 10px;
-    height: 10px;
+    padding: 4px 8px;
+    gap: 6px;
+  }
+
+  .depth-dot::after {
+    font-size: 10px;
+  }
+
+  .depth-dot::before {
+    width: 8px;
+    height: 8px;
   }
 
   #depth-indicator {
-    right: 15px;
-    gap: 10px;
+    right: 10px;
+    gap: 6px;
   }
 
   .bottom-buttons {

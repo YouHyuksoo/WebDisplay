@@ -51,32 +51,33 @@ export default function LineSelectModal({ isOpen, onClose, screenId }: LineSelec
   }, [isOpen, screenId]);
 
   const lines = data?.lines || [];
-  
-  // % 가 포함되어 있거나 아예 선택된 항목이 없다면 PB 기준 '전체 선택'으로 간주
-  const isSelectAll = selectedLines.size === 0 || selectedLines.has('%');
+
+  /** '%'가 포함되어 있으면 전체 선택 모드 */
+  const isSelectAll = selectedLines.has('%');
 
   const toggleLine = (lineCode: string) => {
     const newSet = new Set(selectedLines);
-    newSet.delete('%'); // 개별 라인을 클릭할 땐 % 태그 삭제
-    
+    newSet.delete('%');
+
     if (newSet.has(lineCode)) {
       newSet.delete(lineCode);
     } else {
       newSet.add(lineCode);
     }
-    
-    // 만약 다 해제되었다면 다시 전체 선택(%) 화
-    if (newSet.size === 0) newSet.add('%');
-    
+
+    /* 전부 개별 선택했으면 % 모드로 전환 */
+    if (lines.length > 0 && lines.every((l) => newSet.has(l.lineCode))) {
+      newSet.clear();
+      newSet.add('%');
+    }
+
     setSelectedLines(newSet);
   };
 
   const toggleAll = () => {
     if (isSelectAll) {
-      // 전체 선택 해제? (목록 전체가 선택 해제되며, 저장 시엔 validate를 할 수 있음)
       setSelectedLines(new Set());
     } else {
-      // 명시적인 % 세팅
       setSelectedLines(new Set(['%']));
     }
   };
@@ -85,6 +86,7 @@ export default function LineSelectModal({ isOpen, onClose, screenId }: LineSelec
     const arr = Array.from(selectedLines);
     const valueToSave = arr.length > 0 ? arr : ['%'];
     localStorage.setItem(`display-lines-${screenId}`, JSON.stringify(valueToSave));
+
     
     // 로컬 스토리지 변경 이벤트를 발생시켜 상위 뷰가 재랜더링 되도록 유도
     window.dispatchEvent(new Event(`line-config-changed-${screenId}`));
@@ -126,10 +128,9 @@ export default function LineSelectModal({ isOpen, onClose, screenId }: LineSelec
                     ? 'bg-sky-50 dark:bg-sky-900/20' 
                     : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
                   }`}>
-                 <input type="checkbox" className="h-5 w-5 accent-sky-500" 
-                    checked={isSelectAll || selectedLines.has(line.lineCode)} 
-                    onChange={() => toggleLine(line.lineCode)} 
-                    disabled={isSelectAll}
+                 <input type="checkbox" className="h-5 w-5 accent-sky-500"
+                    checked={isSelectAll || selectedLines.has(line.lineCode)}
+                    onChange={() => toggleLine(line.lineCode)}
                   />
                  <span className={`${
                     isSelectAll || selectedLines.has(line.lineCode) 

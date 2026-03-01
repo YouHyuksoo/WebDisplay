@@ -39,7 +39,7 @@ export default function DisplayLayout({
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-white dark:bg-zinc-950">
       <DisplayHeader title={title} screenId={screenId} refreshInterval={refreshInterval} />
-      <main className="flex-1 overflow-y-auto">
+      <main className="min-h-0 flex-1 overflow-hidden">
         {children}
       </main>
       <DisplayMessageBar message={message} />

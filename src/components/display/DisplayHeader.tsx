@@ -5,6 +5,7 @@
  */
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import LineSelectModal from '../common/LineSelectModal';
 
@@ -15,6 +16,7 @@ interface DisplayHeaderProps {
 }
 
 export default function DisplayHeader({ title, screenId, refreshInterval = 30 }: DisplayHeaderProps) {
+  const router = useRouter();
   const [time, setTime] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -26,18 +28,18 @@ export default function DisplayHeader({ title, screenId, refreshInterval = 30 }:
   }, []);
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-zinc-200 bg-zinc-50 px-6 dark:border-white/10 dark:bg-black/50">
-      <h1 className="text-lg font-semibold text-zinc-900 dark:text-white" style={{ color: 'var(--glow-primary)' }}>
+    <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-700 bg-zinc-900 px-6 dark:border-zinc-700 dark:bg-zinc-900">
+      <h1 className="text-3xl font-black text-white">
         {title}
       </h1>
-      <div className="flex items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center gap-4 text-base text-zinc-400">
         <span>새로고침: {refreshInterval}초</span>
-        <span className="font-mono text-zinc-900 dark:text-white">{time}</span>
+        <span className="font-mono text-white">{time}</span>
         {screenId && (
           <>
-            <button 
-              onClick={() => setIsModalOpen(true)} 
-              className="rounded-full p-1.5 transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-800" 
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="rounded-full p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
               aria-label="Settings"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -45,13 +47,23 @@ export default function DisplayHeader({ title, screenId, refreshInterval = 30 }:
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
-            <LineSelectModal 
-              isOpen={isModalOpen} 
-              onClose={() => setIsModalOpen(false)} 
-              screenId={screenId} 
+            <LineSelectModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              screenId={screenId}
             />
           </>
         )}
+        <button
+          onClick={() => router.push('/')}
+          className="rounded-full p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+          aria-label="나가기"
+          title="메뉴로 돌아가기 (ESC)"
+        >
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
       </div>
     </header>
   );

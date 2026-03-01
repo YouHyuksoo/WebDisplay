@@ -101,7 +101,10 @@ export function hideCarouselUI(): void {
 // ---------------------------------------------------------------------------
 
 /**
- * 캐러셀 슬롯 렌더링 (8개만)
+ * 캐러셀 슬롯 렌더링 (모든 카드 - 3D 원형 배치로 무한 순환)
+ *
+ * 이전: 8개씩 페이지 단위로 잘라서 렌더링 → 페이지 경계에서 전체 DOM 재생성으로 끊김 발생
+ * 현재: 모든 카드를 렌더링하고 3D 원형 위치/투명도로 가시성 제어 → 부드러운 무한 순환
  */
 export function renderCarouselSlots(): void {
   const activeSection = document.querySelector('.section-cards.active') as HTMLElement | null;
@@ -115,25 +118,17 @@ export function renderCarouselSlots(): void {
     return;
   }
 
-  // 현재 페이지의 시작 인덱스
-  const pageStart = Math.floor(state.carouselIndex / VISIBLE_SLOTS) * VISIBLE_SLOTS;
-  const pageEnd = Math.min(pageStart + VISIBLE_SLOTS, totalCards);
-  const visibleShortcuts = shortcuts.slice(pageStart, pageEnd);
-
-  // 기존 카드 제거
   activeSection.innerHTML = '';
 
-  // cards.ts의 createCard를 lazy import (순환 참조 방지)
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const Cards = require('./cards') as typeof import('./cards');
 
-  // 보이는 카드만 렌더링
-  visibleShortcuts.forEach((shortcut, i) => {
-    const card = Cards.createCard(shortcut, pageStart + i);
+  // 모든 카드를 렌더링 (3D 원형 배치 + opacity로 뒷면 카드 자동 숨김)
+  shortcuts.forEach((shortcut, i) => {
+    const card = Cards.createCard(shortcut, i);
     activeSection.appendChild(card);
   });
 
-  // 3D 위치 업데이트
   updateCarouselPosition(true);
 }
 
@@ -142,7 +137,11 @@ export function renderCarouselSlots(): void {
 // ---------------------------------------------------------------------------
 
 /**
- * 캐러셀 위치 업데이트 (3D 원형 배치)
+ * 캐러셀 위치 업데이트 (3D 원형 배치 - 무한 순환)
+ *
+ * 모든 카드를 원형으로 배치하고, 현재 인덱스 기준 최단 경로 오프셋으로
+ * 각도를 계산하여 자연스러운 무한 순환을 구현합니다.
+ *
  * @param immediate - true면 애니메이션 없이 즉시 이동
  */
 export function updateCarouselPosition(immediate = false): void {
@@ -150,22 +149,22 @@ export function updateCarouselPosition(immediate = false): void {
   if (!activeSection || state.cardLayout !== 'carousel') return;
 
   const cards = activeSection.querySelectorAll('.shortcut-card');
-  const cardCount = cards.length;
-  if (cardCount === 0) return;
+  const totalCards = cards.length;
+  if (totalCards === 0) return;
 
   const isMobile = window.innerWidth <= 768;
-
-  // 8개 이하이므로 적절한 반지름
-  const baseRadius = isMobile ? 200 : 320;
-  const radius = baseRadius;
-  const angleStep = (Math.PI * 2) / Math.max(cardCount, 5);
-
-  // 페이지 내 로컬 인덱스
-  const pageStart = Math.floor(state.carouselIndex / VISIBLE_SLOTS) * VISIBLE_SLOTS;
-  const localIndex = state.carouselIndex - pageStart;
+  const radius = isMobile ? 200 : 320;
+  const angleStep = (Math.PI * 2) / Math.max(totalCards, 5);
 
   cards.forEach((card, i) => {
-    const angle = angleStep * (i - localIndex);
+    // 순환 오프셋: 현재 카드와의 최단 거리 계산
+    let offset = i - state.carouselIndex;
+    if (offset > totalCards / 2) offset -= totalCards;
+    if (offset < -totalCards / 2) offset += totalCards;
+
+    const angle = angleStep * offset;
+    const depth = Math.cos(angle);
+    const normalizedDepth = (depth + 1) / 2;
 
     let x = 0,
       y = 0,
@@ -174,38 +173,28 @@ export function updateCarouselPosition(immediate = false): void {
       rotateY = 0,
       opacity = 1;
 
-    const depth = Math.cos(angle);
-    const normalizedDepth = (depth + 1) / 2;
-
     if (isMobile) {
       y = Math.sin(angle) * radius * 0.8;
       z = depth * 150;
-      scale = 0.75 + 0.3 * normalizedDepth;     // 0.75 ~ 1.05 (center card slightly bigger)
-      opacity = 0.6 + 0.4 * normalizedDepth;
+      scale = 0.75 + 0.3 * normalizedDepth;
+      opacity = normalizedDepth > 0.3 ? 0.6 + 0.4 * normalizedDepth : 0;
     } else {
       x = Math.sin(angle) * radius;
       z = depth * 250;
       rotateY = -angle * (180 / Math.PI) * 0.4;
-      scale = 0.75 + 0.35 * normalizedDepth;    // 0.75 ~ 1.1 (center card is bigger)
-      opacity = 0.5 + 0.5 * normalizedDepth;
+      scale = 0.75 + 0.35 * normalizedDepth;
+      opacity = normalizedDepth > 0.3 ? 0.5 + 0.5 * normalizedDepth : 0;
     }
 
     const zIndex = Math.round(50 + 50 * normalizedDepth);
     const pointerEvents = normalizedDepth > 0.3 ? 'auto' : 'none';
-
     const htmlCard = card as HTMLElement;
 
     if (immediate) {
       gsap.set(htmlCard, { x, y, z, scale, rotateY, opacity, zIndex });
     } else {
       gsap.to(htmlCard, {
-        x,
-        y,
-        z,
-        scale,
-        rotateY,
-        opacity,
-        zIndex,
+        x, y, z, scale, rotateY, opacity, zIndex,
         duration: 0.25,
         ease: 'power2.out',
       });
@@ -213,9 +202,9 @@ export function updateCarouselPosition(immediate = false): void {
     htmlCard.style.pointerEvents = pointerEvents;
   });
 
-  // 점 업데이트
-  const totalCards = getCurrentShortcuts().length;
-  const totalPages = Math.ceil(totalCards / VISIBLE_SLOTS);
+  // 도트 업데이트 (페이지 단위)
+  const totalShortcuts = getCurrentShortcuts().length;
+  const totalPages = Math.ceil(totalShortcuts / VISIBLE_SLOTS);
   const currentPage = Math.floor(state.carouselIndex / VISIBLE_SLOTS);
 
   document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
@@ -224,7 +213,11 @@ export function updateCarouselPosition(immediate = false): void {
 }
 
 /**
- * 특정 인덱스의 카드로 이동
+ * 특정 인덱스의 카드로 이동 (무한 순환)
+ *
+ * DOM을 재생성하지 않고 기존 카드의 3D 위치만 애니메이션으로 업데이트하여
+ * 끊김 없는 부드러운 회전을 구현합니다.
+ *
  * @param index - 이동할 카드 인덱스
  */
 export function goToCarouselIndex(index: number): void {
@@ -236,18 +229,11 @@ export function goToCarouselIndex(index: number): void {
   if (index < 0) index = totalCards - 1;
   if (index >= totalCards) index = 0;
 
-  const oldPage = Math.floor(state.carouselIndex / VISIBLE_SLOTS);
-  const newPage = Math.floor(index / VISIBLE_SLOTS);
-
   state.carouselIndex = index;
 
-  // 페이지가 바뀌면 슬롯 재렌더링
-  if (oldPage !== newPage) {
-    renderCarouselSlots();
-    updateCarouselUI();
-  } else {
-    updateCarouselPosition();
-  }
+  // DOM 재생성 없이 위치만 애니메이션 (부드러운 무한 순환)
+  updateCarouselPosition();
+  updateCarouselUI();
 }
 
 /**

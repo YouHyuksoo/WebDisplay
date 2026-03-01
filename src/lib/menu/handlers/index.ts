@@ -408,6 +408,19 @@ export function initEventListeners(): void {
     import('../categories').then((C) => C.closeManager());
   });
 
+  // ===== 레이아웃 전환 (그리드 <-> 캐러셀) =====
+  document.getElementById('layout-toggle-btn')?.addEventListener('click', () => {
+    const next = state.cardLayout === 'grid' ? 'carousel' : 'grid';
+    import('../carousel').then((C) => C.changeCardLayout(next));
+    // 아이콘 토글
+    const gridIcon = document.getElementById('layout-icon-grid');
+    const carouselIcon = document.getElementById('layout-icon-carousel');
+    if (gridIcon && carouselIcon) {
+      gridIcon.style.display = next === 'grid' ? '' : 'none';
+      carouselIcon.style.display = next === 'carousel' ? '' : 'none';
+    }
+  });
+
   // ===== 공간 타입 토글 버튼 =====
   document.getElementById('space-toggle-btn')?.addEventListener('click', () => {
     changeSpaceType();
@@ -637,9 +650,35 @@ export function initEventListeners(): void {
   const themeBtnEl = document.getElementById('theme-btn');
   if (themeBtnEl) themeBtnEl.innerHTML = savedTheme === 'dark' ? '&#127769;' : '&#9728;&#65039;';
 
+  // ===== 레이아웃 아이콘 초기 상태 =====
+  const gridIcon = document.getElementById('layout-icon-grid');
+  const carouselIcon = document.getElementById('layout-icon-carousel');
+  if (gridIcon && carouselIcon) {
+    gridIcon.style.display = state.cardLayout === 'grid' ? '' : 'none';
+    carouselIcon.style.display = state.cardLayout === 'carousel' ? '' : 'none';
+  }
+
   // ===== 최근 사용 바로가기 =====
   document.getElementById('recent-btn')?.addEventListener('click', () => {
     import('../lanes').then((Lanes) => Lanes.goToLane(-1));
+  });
+
+  // ===== 돌아가기 버튼 =====
+  document.getElementById('back-btn')?.addEventListener('click', () => {
+    // 사이드 레인에 있으면 먼저 센터로 복귀
+    if (state.currentLane !== 0) {
+      import('../lanes').then((Lanes) => Lanes.goToLane(0));
+      return;
+    }
+    // 히스토리에서 이전 섹션으로 이동
+    const prev = state.sectionHistory.pop();
+    if (prev !== undefined) {
+      import('../sections').then((S) => S.goToSection(prev));
+      // goToSection이 현재 섹션을 다시 push하므로 중복 제거
+      state.sectionHistory.pop();
+    } else {
+      import('../ui').then((UI) => UI.showToast('이전 메뉴가 없습니다'));
+    }
   });
 }
 

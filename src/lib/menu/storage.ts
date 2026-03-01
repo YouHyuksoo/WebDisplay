@@ -109,8 +109,8 @@ const DEFAULT_SETTINGS: MenuSettings = {
   tunnelShape: 'triangle',
   glowTheme: 'gold',
   iconColorMode: 'brand',
-  cardStyle: 'glass',
-  spaceType: 'tunnel',
+  cardStyle: 'neon',
+  spaceType: 'aurora',
   cardLayout: 'grid',
 };
 

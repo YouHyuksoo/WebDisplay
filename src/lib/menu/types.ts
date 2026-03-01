@@ -196,6 +196,9 @@ export interface MenuState {
   isLaneTransitioning: boolean;
   laneData: LaneData;
 
+  // 네비게이션 히스토리 (돌아가기 기능)
+  sectionHistory: number[];
+
   // 설정
   tunnelShape: string;
   glowIntensity: number;

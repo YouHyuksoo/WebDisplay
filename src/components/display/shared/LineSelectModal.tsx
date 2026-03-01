@@ -130,13 +130,16 @@ export default function LineSelectModal({
 
         {/* ── 전체 선택 ── */}
         <div className="border-b border-zinc-100 px-6 py-3 dark:border-zinc-800">
-          <label className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800">
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800"
+          >
             <Checkbox checked={allSelected} />
             <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
               {t('common.selectAll')}
             </span>
-            <input type="checkbox" className="hidden" checked={allSelected} onChange={toggleAll} />
-          </label>
+          </button>
         </div>
 
         {/* ── 라인 목록 ── */}
@@ -158,9 +161,11 @@ export default function LineSelectModal({
               {lines.map((line) => {
                 const isOn = selected.has(line.lineCode);
                 return (
-                  <label
+                  <button
+                    type="button"
                     key={line.lineCode}
-                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition-all duration-150
+                    onClick={() => toggle(line.lineCode)}
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 text-left transition-all duration-150
                       ${isOn
                         ? 'border-sky-500 bg-sky-50 dark:border-sky-400 dark:bg-sky-950/30'
                         : 'border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600'}`}
@@ -174,8 +179,7 @@ export default function LineSelectModal({
                         {line.lineName}
                       </div>
                     </div>
-                    <input type="checkbox" className="hidden" checked={isOn} onChange={() => toggle(line.lineCode)} />
-                  </label>
+                  </button>
                 );
               })}
             </div>
