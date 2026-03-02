@@ -11,11 +11,10 @@
  * 6. 반환값 '%'는 "전체 선택"을 의미하며, API에서 와일드카드로 처리한다.
  */
 
+import { SCREENS } from './screens';
+
 /** 기본 조직 ID — 전체 프로젝트 공통 상수 */
 export const DEFAULT_ORG_ID = '1';
-
-/** 라인 선택이 필요한 화면 ID 목록 (이 목록에 없는 화면은 자동 팝업 안 뜸) */
-const LINE_REQUIRED_SCREENS = new Set(['21', '24', '25', '26', '27']);
 
 /** 숫자를 천 단위 콤마 포맷으로 변환 (null/undefined → '-') */
 export function fmtNum(val: number | null | undefined): string {
@@ -72,7 +71,7 @@ export function getSelectedLines(screenId: string): string {
  * @returns 저장값이 존재하면 true
  */
 export function hasLineSelection(screenId: string): boolean {
-  if (!LINE_REQUIRED_SCREENS.has(screenId)) return true;
+  if (!SCREENS[screenId]?.lineFilter) return true;
   try {
     return localStorage.getItem(`display-lines-${screenId}`) !== null;
   } catch { return false; }
