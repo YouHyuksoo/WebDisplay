@@ -34,15 +34,15 @@ import type {
  */
 export const DEFAULT_MENU_SETTINGS: MenuSettings = {
   tunnelShape: 'triangle',
-  glowTheme: 'gold',
+  glowTheme: 'pink',
   iconColorMode: 'brand',
   cardStyle: 'glass',
-  spaceType: 'tunnel',
+  spaceType: 'aurora',
   cardLayout: 'grid',
   auroraBrightness: 1.0,
   simpleVirtualization: true,
   enable3D: true,
-  autoRolling: false,
+  autoRolling: true,
 };
 
 // ---------------------------------------------------------------------------
