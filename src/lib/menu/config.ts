@@ -42,6 +42,7 @@ export const DEFAULT_MENU_SETTINGS: MenuSettings = {
   auroraBrightness: 1.0,
   simpleVirtualization: true,
   enable3D: true,
+  autoRolling: false,
 };
 
 // ---------------------------------------------------------------------------
@@ -62,7 +63,6 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 2, name: 'PBA MONITORING', subtitle: 'PBA 모니터링', icon: '▤' },
   { id: 3, name: 'EQUIPMENT', subtitle: '설비 모니터링', icon: '⌂' },
   { id: 4, name: 'QUALITY', subtitle: '품질 관리', icon: '✔' },
-  { id: 5, name: 'MANAGEMENT', subtitle: '관리 설정', icon: '⚙' },
   { id: 6, name: 'CHARTS', subtitle: '차트 보기', icon: '▦' },
 ];
 
@@ -97,26 +97,37 @@ export const COLORS: string[] = [
  *   2 = PBA MONITORING (PBA 모니터링)
  *   3 = EQUIPMENT (설비 모니터링)
  *   4 = QUALITY (품질 관리)
- *   5 = MANAGEMENT (관리 설정)
  */
 export const DEFAULT_SHORTCUTS: Shortcut[] = [
-  // Favorites (layer: 0) — 사용자가 즐겨찾기에 추가한 항목이 여기에 표시
+  // Favorites (layer: 0) — 모든 메뉴 즐겨찾기 등록
+  { id: 'fav-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 0 },
+  { id: 'fav-25', title: '종합F/P현황', url: '/display/25', color: '#a78bfa', icon: 'svg:chip-smd', layer: 0 },
+  { id: 'fav-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:chip-smd', layer: 0 },
+  { id: 'fav-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:pba-production', layer: 0 },
+  { id: 'fav-34', title: '픽업률현황(BASE)', url: '/display/34', color: '#f59e0b', icon: 'svg:chip-smd', layer: 0 },
+  { id: 'fav-35', title: '픽업률현황(HEAD)', url: '/display/35', color: '#eab308', icon: 'svg:chip-smd', layer: 0 },
+  { id: 'fav-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 0 },
+  { id: 'fav-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:msl-warning', layer: 0 },
+  { id: 'fav-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 0 },
+  { id: 'fav-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 0 },
+
   // SMD Monitoring (layer: 1)
   { id: 'menu-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 1 },
+  { id: 'menu-25', title: '종합F/P현황', url: '/display/25', color: '#a78bfa', icon: 'svg:chip-smd', layer: 1 },
   { id: 'menu-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:chip-smd', layer: 1 },
 
   // PBA Monitoring (layer: 2)
-  { id: 'menu-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:machine-status', layer: 2 },
+  { id: 'menu-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:pba-production', layer: 2 },
+
   // Equipment (layer: 3)
   { id: 'menu-34', title: '픽업률현황(BASE)', url: '/display/34', color: '#f59e0b', icon: 'svg:chip-smd', layer: 3 },
   { id: 'menu-35', title: '픽업률현황(HEAD)', url: '/display/35', color: '#eab308', icon: 'svg:chip-smd', layer: 3 },
+
   // Quality (layer: 4)
   { id: 'menu-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 4 },
   { id: 'menu-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:msl-warning', layer: 4 },
   { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 4 },
   { id: 'menu-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 4 },
-  // Management (layer: 5)
-  { id: 'menu-18', title: '옵션 설정', url: '/display/18', color: '#94a3b8', icon: 'svg:settings', layer: 5 },
 ];
 
 // ---------------------------------------------------------------------------

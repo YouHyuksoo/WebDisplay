@@ -1,25 +1,25 @@
 /**
  * @file SolderWarningStatus.tsx
  * @description Solder Paste Warning List 메인 화면 (메뉴 31). SWR polling + 다크 UI.
- * 초보자 가이드: API에서 데이터를 가져와 상단(SolderNgBanner) + 하단(SolderWarningGrid)에 전달.
+ * 초보자 가이드: API에서 데이터를 가져와 상단(NgAlertBanner) + 하단(SolderWarningGrid)에 전달.
  * DisplayLayout이 100vh 프레임(헤더+메시지바)을 제공하고, 콘텐츠는 스크롤 없이 꽉 찬다.
+ * 설정 아이콘을 누르면 임계값 조정 모달이 열린다.
  */
 'use client';
 
+import { useCallback } from 'react';
 import useSWR from 'swr';
 import DisplayLayout from '../../DisplayLayout';
-import SolderNgBanner from './SolderNgBanner';
+import NgAlertBanner from '../../NgAlertBanner';
 import SolderWarningGrid from './SolderWarningGrid';
-
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`API 오류 (${res.status})`);
-  return res.json();
-};
+import SolderThresholdModal from './SolderThresholdModal';
+import useDisplayTiming from '@/hooks/useDisplayTiming';
+import useSolderThresholds from '@/hooks/useSolderThresholds';
+import { fetcher } from '@/lib/fetcher';
+import { buildDisplayApiUrl } from '@/lib/display-helpers';
 
 interface SolderWarningStatusProps {
   screenId: string;
-  refreshInterval?: number;
 }
 
 /**
@@ -28,30 +28,36 @@ interface SolderWarningStatusProps {
  */
 export default function SolderWarningStatus({
   screenId,
-  refreshInterval = 30,
 }: SolderWarningStatusProps) {
+  const timing = useDisplayTiming();
+  const thresholds = useSolderThresholds();
+
   const { data, error, isLoading } = useSWR(
-    '/api/display/31',
+    buildDisplayApiUrl(screenId),
     fetcher,
-    { refreshInterval: refreshInterval * 1000 },
+    { refreshInterval: timing.refreshSeconds * 1000 },
   );
 
   const ngCount: number = data?.ngCount ?? 0;
   const errorMsg = error ? String(error.message ?? error) : data?.error ?? null;
 
+  const renderSettingsModal = useCallback(
+    (props: { isOpen: boolean; onClose: () => void }) => (
+      <SolderThresholdModal isOpen={props.isOpen} onClose={props.onClose} />
+    ), [],
+  );
+
   return (
-    <DisplayLayout
-      title="Solder Paste Warning List"
-      screenId={screenId}
-      refreshInterval={refreshInterval}
-    >
+    <DisplayLayout screenId={screenId} renderSettingsModal={renderSettingsModal}>
       <div className="flex h-full flex-col overflow-hidden">
-        {ngCount > 0 && <SolderNgBanner count={ngCount} />}
+        {ngCount > 0 && <NgAlertBanner message={`Solder Paste NG 경고: ${ngCount}건 발생`} />}
         <div className="min-h-0 flex-1 overflow-hidden p-2">
           <SolderWarningGrid
             rows={data?.warningList ?? []}
             isLoading={isLoading}
             error={errorMsg}
+            scrollSeconds={timing.scrollSeconds}
+            thresholds={thresholds}
           />
         </div>
       </div>

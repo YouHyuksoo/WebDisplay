@@ -8,6 +8,9 @@
 'use client';
 
 import { useGridResizer } from '@/hooks/useGridResizer';
+import { useGridPaging } from '@/hooks/useGridPaging';
+import PageIndicator from '../../shared/PageIndicator';
+import { getMslRateRowStyle, getMslRatePassedStyle, getMslRemainTextStyle } from '../../shared/status-styles';
 
 /** MSL 경고 아이템 행 데이터 */
 export interface MslWarningRow {
@@ -26,6 +29,8 @@ export interface MslWarningRow {
 
 interface MslWarningGridProps {
   rows: MslWarningRow[];
+  /** 자동 페이지 순환 간격(초) */
+  scrollSeconds?: number;
 }
 
 /** 헤더 정의 */
@@ -53,29 +58,13 @@ function formatHour(val?: number): string {
   return val.toFixed(2);
 }
 
-/**
- * msl_used_rate 기반 행 배경/텍스트 색상 반환.
- * PB 원본: >= 90 → RED, 70~90 → YELLOW, < 70 → 기본
- */
-function getRowStyle(usedRate: number): string {
-  if (usedRate >= 90) return 'bg-red-600/20 dark:bg-red-900/30';
-  if (usedRate >= 70) return 'bg-yellow-500/10 dark:bg-yellow-900/20';
-  return '';
-}
-
-/** Passed Time 셀 전용 색상 */
-function getPassedStyle(usedRate: number): string {
-  if (usedRate >= 90) return 'bg-red-600 text-white animate-pulse';
-  if (usedRate >= 70) return 'bg-yellow-500 text-black dark:bg-yellow-600 dark:text-black';
-  return '';
-}
-
 /** 초기 폭 설정 (8개 컬럼) */
 const INITIAL_WIDTHS = [140, 160, 160, 240, 240, 120, 120, 120];
 
 /** MSL Warning 그리드 테이블 */
-export default function MslWarningGrid({ rows }: MslWarningGridProps) {
+export default function MslWarningGrid({ rows, scrollSeconds = 5 }: MslWarningGridProps) {
   const { widths, handleMouseDown } = useGridResizer('grid-widths-msl-warning', INITIAL_WIDTHS);
+  const { bodyRef, startIndex, endIndex, page, totalPages } = useGridPaging({ totalRows: rows.length, scrollSeconds });
 
   if (!rows || rows.length === 0) {
     return (
@@ -102,19 +91,20 @@ export default function MslWarningGrid({ rows }: MslWarningGridProps) {
       </div>
 
       {/* 데이터 행 */}
-      <div className="min-h-0 flex-1 overflow-auto">
-        {rows.map((row, idx) => {
+      <div ref={bodyRef} className="min-h-0 flex-1 overflow-hidden">
+        {rows.slice(startIndex, endIndex).map((row, idx) => {
+          const globalIdx = startIndex + idx;
           const usedRate = Number(row.MSL_USED_RATE ?? 0);
           const ngCount = Number(row.NG_COUNT ?? 0);
-          const rowBg = getRowStyle(usedRate);
-          const passedBg = getPassedStyle(usedRate);
-          const stripeBg = idx % 2 === 0
+          const rowBg = getMslRateRowStyle(usedRate);
+          const passedBg = getMslRatePassedStyle(usedRate);
+          const stripeBg = globalIdx % 2 === 0
             ? 'bg-zinc-950 dark:bg-zinc-950'
             : 'bg-zinc-900/40 dark:bg-zinc-900/40';
 
           return (
             <div
-              key={`${row.LOT_NO}-${idx}`}
+              key={`${row.LOT_NO}-${globalIdx}`}
               className={`flex border-b border-zinc-800 last:border-b-0 ${rowBg || stripeBg}`}
             >
               <div className="shrink-0 truncate px-3 py-2 text-xl font-bold text-white" style={{ width: widths[0] }}>
@@ -149,7 +139,7 @@ export default function MslWarningGrid({ rows }: MslWarningGridProps) {
                 )}
               </div>
               <div 
-                className={`shrink-0 px-3 py-2 text-right tabular-nums text-xl font-bold ${usedRate >= 90 ? 'text-red-400' : 'text-zinc-300'}`}
+                className={`shrink-0 px-3 py-2 text-right tabular-nums text-xl font-bold ${getMslRemainTextStyle(usedRate)}`}
                 style={{ width: widths[7] }}
               >
                 {formatHour(row.MSL_REMAIN_HOUR)}
@@ -159,6 +149,8 @@ export default function MslWarningGrid({ rows }: MslWarningGridProps) {
           );
         })}
       </div>
+
+      <PageIndicator page={page} totalPages={totalPages} activeColor="bg-red-400" />
     </div>
   );
 }

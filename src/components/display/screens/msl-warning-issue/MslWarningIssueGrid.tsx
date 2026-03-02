@@ -8,6 +8,9 @@
 'use client';
 
 import { useGridResizer } from '@/hooks/useGridResizer';
+import { useGridPaging } from '@/hooks/useGridPaging';
+import PageIndicator from '../../shared/PageIndicator';
+import { getMslRateRowStyle, getMslRatePassedStyle, getMslRemainTextStyle } from '../../shared/status-styles';
 
 /** MSL 출고기준 경고 아이템 행 데이터 */
 export interface MslWarningIssueRow {
@@ -26,6 +29,8 @@ export interface MslWarningIssueRow {
 
 interface MslWarningIssueGridProps {
   rows: MslWarningIssueRow[];
+  /** 자동 페이지 순환 간격(초) */
+  scrollSeconds?: number;
 }
 
 const HEADERS = [
@@ -61,23 +66,12 @@ function formatDate(val?: string): string {
   });
 }
 
-function getRowStyle(rate: number): string {
-  if (rate >= 90) return 'bg-red-600/20 dark:bg-red-900/30';
-  if (rate >= 70) return 'bg-yellow-500/10 dark:bg-yellow-900/20';
-  return '';
-}
-
-function getPassedStyle(rate: number): string {
-  if (rate >= 90) return 'bg-red-600 text-white animate-pulse';
-  if (rate >= 70) return 'bg-yellow-500 text-black dark:bg-yellow-600 dark:text-black';
-  return '';
-}
-
 /** 초기 폭 설정 (9개 컬럼) */
 const INITIAL_WIDTHS = [120, 140, 200, 240, 180, 200, 100, 100, 100];
 
-export default function MslWarningIssueGrid({ rows }: MslWarningIssueGridProps) {
+export default function MslWarningIssueGrid({ rows, scrollSeconds = 5 }: MslWarningIssueGridProps) {
   const { widths, handleMouseDown } = useGridResizer('grid-widths-msl-warning-issue', INITIAL_WIDTHS);
+  const { bodyRef, startIndex, endIndex, page, totalPages } = useGridPaging({ totalRows: rows.length, scrollSeconds });
 
   if (!rows || rows.length === 0) {
     return (
@@ -104,18 +98,19 @@ export default function MslWarningIssueGrid({ rows }: MslWarningIssueGridProps) 
       </div>
 
       {/* 데이터 행 */}
-      <div className="min-h-0 flex-1 overflow-auto">
-        {rows.map((row, idx) => {
+      <div ref={bodyRef} className="min-h-0 flex-1 overflow-hidden">
+        {rows.slice(startIndex, endIndex).map((row, idx) => {
+          const globalIdx = startIndex + idx;
           const rate = Number(row.MSL_PASSED_RATE ?? 0);
-          const rowBg = getRowStyle(rate);
-          const passedBg = getPassedStyle(rate);
-          const stripeBg = idx % 2 === 0
+          const rowBg = getMslRateRowStyle(rate);
+          const passedBg = getMslRatePassedStyle(rate);
+          const stripeBg = globalIdx % 2 === 0
             ? 'bg-zinc-950 dark:bg-zinc-950'
             : 'bg-zinc-900/40 dark:bg-zinc-900/40';
 
           return (
             <div
-              key={`${row.LOT_NO}-${idx}`}
+              key={`${row.LOT_NO}-${globalIdx}`}
               className={`flex border-b border-zinc-800 last:border-b-0 ${rowBg || stripeBg}`}
             >
               <div className="shrink-0 truncate px-3 py-2 text-xl font-bold text-white" style={{ width: widths[0] }}>
@@ -150,7 +145,7 @@ export default function MslWarningIssueGrid({ rows }: MslWarningIssueGridProps) 
                 <span className="ml-1 text-base">h</span>
               </div>
               <div 
-                className={`shrink-0 px-3 py-2 text-right tabular-nums text-xl font-bold ${rate >= 90 ? 'text-red-400' : 'text-zinc-300'}`}
+                className={`shrink-0 px-3 py-2 text-right tabular-nums text-xl font-bold ${getMslRemainTextStyle(rate)}`}
                 style={{ width: widths[8] }}
               >
                 {formatHour(row.MSL_REMAIN_HOUR)}
@@ -160,6 +155,8 @@ export default function MslWarningIssueGrid({ rows }: MslWarningIssueGridProps) 
           );
         })}
       </div>
+
+      <PageIndicator page={page} totalPages={totalPages} activeColor="bg-red-400" />
     </div>
   );
 }

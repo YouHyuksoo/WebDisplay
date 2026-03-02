@@ -47,12 +47,6 @@ const TOOLS_CONFIG = [
     action: 'openCategories',
   },
   {
-    id: 'tool-import',
-    title: '가져오기',
-    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>',
-    action: 'openImport',
-  },
-  {
     id: 'tool-theme',
     title: '테마',
     icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>',
@@ -327,16 +321,19 @@ function createToolCard(
 function executeToolAction(action: string): void {
   switch (action) {
     case 'openSettings':
-      toggleSettingsMenu();
+      // 현재 섹션 위치 저장 (돌아왔을 때 복원용)
+      try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
+
+      window.dispatchEvent(
+        new CustomEvent('mes-navigate', {
+          detail: { url: '/display/18', title: '시스템 옵션 설정' },
+        }),
+      );
       break;
     case 'openCategories':
       import('./categories').then((Categories) => {
         Categories.openManager();
       });
-      break;
-    case 'openImport':
-      // App.Bookmarks는 아직 포팅 전 - placeholder
-      console.log('[Lanes] openImport - Bookmarks not ported yet');
       break;
     case 'cycleTheme': {
       const themes = ['gold', 'purple', 'cyan', 'pink', 'green', 'red', 'blue', 'white'];

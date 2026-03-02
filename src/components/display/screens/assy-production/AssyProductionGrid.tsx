@@ -12,6 +12,10 @@
 'use client';
 
 import { useGridResizer } from '@/hooks/useGridResizer';
+import { useGridPaging } from '@/hooks/useGridPaging';
+import PageIndicator from '../../shared/PageIndicator';
+import { getAssyRateColor } from '../../shared/status-styles';
+import { fmtNum } from '@/lib/display-helpers';
 
 export interface AssyProductionRow {
   LINE_NAME: string;
@@ -58,15 +62,7 @@ function getRowBg(idx: number): string {
   return idx % 2 === 0 ? 'bg-zinc-950 dark:bg-zinc-950' : 'bg-zinc-900/40 dark:bg-zinc-900/40';
 }
 
-/** 달성률 텍스트 색상 - PB 원본: 빨간색 강조 */
-function getRateColor(rate: number | null): string {
-  if (rate == null) return 'text-zinc-400';
-  if (rate >= 100) return 'text-emerald-400';
-  if (rate >= 80) return 'text-amber-400';
-  return 'text-red-400';
-}
-
-/** 숫자 포맷 (천 단위 콤마) */
+/** 숫자 포맷 (0도 '-'로 표시) */
 function fmt(val: number | null | undefined): string {
   if (val == null || val === 0) return '-';
   return val.toLocaleString();
@@ -76,10 +72,13 @@ interface AssyProductionGridProps {
   rows: AssyProductionRow[];
   isLoading: boolean;
   error: unknown;
+  /** 자동 페이지 순환 간격(초) */
+  scrollSeconds?: number;
 }
 
-export default function AssyProductionGrid({ rows, isLoading, error }: AssyProductionGridProps) {
+export default function AssyProductionGrid({ rows, isLoading, error, scrollSeconds = 5 }: AssyProductionGridProps) {
   const { widths, handleMouseDown } = useGridResizer('grid-widths-assy-production', INITIAL_WIDTHS);
+  const { bodyRef, startIndex, endIndex, page, totalPages } = useGridPaging({ totalRows: rows.length, scrollSeconds });
 
   if (isLoading) {
     return (
@@ -123,10 +122,12 @@ export default function AssyProductionGrid({ rows, isLoading, error }: AssyProdu
         ))}
       </div>
 
-      {/* 데이터 행 */}
-      <div className="min-h-0 flex-1 overflow-auto">
-        {rows.map((row, idx) => (
-          <div key={idx} className={`flex border-b border-zinc-800 ${getRowBg(idx)}`}>
+      {/* 데이터 행 — overflow-hidden으로 스크롤바 제거, 자동 페이징 */}
+      <div ref={bodyRef} className="min-h-0 flex-1 overflow-hidden">
+        {rows.slice(startIndex, endIndex).map((row, idx) => {
+          const globalIdx = startIndex + idx;
+          return (
+          <div key={globalIdx} className={`flex border-b border-zinc-800 ${getRowBg(globalIdx)}`}>
             {/* Line */}
             <div className="shrink-0 truncate px-3 py-2 text-xl font-bold text-white" style={{ width: widths[0] }}>
               {row.LINE_NAME ?? '-'}
@@ -155,12 +156,15 @@ export default function AssyProductionGrid({ rows, isLoading, error }: AssyProdu
               {fmt(row.RESULT_QTY)}
             </div>
             {/* Rate (달성률) */}
-            <div className={`shrink-0 px-3 py-2 text-right font-mono text-xl font-bold tabular-nums ${getRateColor(row.PROGRESS_RATE)}`} style={{ width: widths[14] }}>
+            <div className={`shrink-0 px-3 py-2 text-right font-mono text-xl font-bold tabular-nums ${getAssyRateColor(row.PROGRESS_RATE)}`} style={{ width: widths[14] }}>
               {row.PROGRESS_RATE != null ? `${row.PROGRESS_RATE}%` : '-'}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
+
+      <PageIndicator page={page} totalPages={totalPages} />
     </div>
   );
 }

@@ -6,7 +6,7 @@
  * 달성률 색상: >= 95 시안, 90~95 노랑, < 90 빨강.
  */
 
-import { buildLineFilter } from './machine-status-smd';
+import { buildLineFilter } from './smd-production';
 
 export { buildLineFilter };
 

@@ -12,38 +12,24 @@ import { useState, useEffect, useCallback } from 'react';
 import useSWR from 'swr';
 import DisplayLayout from '../../DisplayLayout';
 import AssyProductionGrid from './AssyProductionGrid';
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
-const STORAGE_KEY_PREFIX = 'display-lines-';
-
-/** localStorage에서 선택된 라인 코드를 읽어온다 */
-function getSelectedLines(screenId: string): string {
-  try {
-    const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${screenId}`);
-    if (stored) {
-      const arr = JSON.parse(stored) as string[];
-      if (arr.includes('%') || arr.length === 0) return '%';
-      return arr.join(',');
-    }
-  } catch { /* 무시 */ }
-  return '%';
-}
+import useDisplayTiming from '@/hooks/useDisplayTiming';
+import { fetcher } from '@/lib/fetcher';
+import { getSelectedLines, buildDisplayApiUrl, DEFAULT_ORG_ID } from '@/lib/display-helpers';
 
 interface AssyProductionStatusProps {
   screenId: string;
-  refreshInterval?: number;
 }
 
 export default function AssyProductionStatus({
   screenId,
-  refreshInterval = 30,
 }: AssyProductionStatusProps) {
+  const timing = useDisplayTiming();
   const [selectedLines, setSelectedLines] = useState(() => getSelectedLines(screenId));
 
   const { data, error, isLoading } = useSWR(
-    `/api/display/21?orgId=1&lines=${encodeURIComponent(selectedLines)}`,
+    buildDisplayApiUrl(screenId, { orgId: DEFAULT_ORG_ID, lines: encodeURIComponent(selectedLines) }),
     fetcher,
-    { refreshInterval: refreshInterval * 1000 },
+    { refreshInterval: timing.refreshSeconds * 1000 },
   );
 
   const handleLineChange = useCallback(() => {
@@ -57,10 +43,10 @@ export default function AssyProductionStatus({
   }, [screenId, handleLineChange]);
 
   return (
-    <DisplayLayout title="PBA Production Status" screenId={screenId} refreshInterval={refreshInterval}>
+    <DisplayLayout screenId={screenId}>
       <div className="flex h-full flex-col overflow-hidden">
         <div className="min-h-0 flex-1 overflow-hidden p-2">
-          <AssyProductionGrid rows={data?.rows ?? []} isLoading={isLoading} error={error} />
+          <AssyProductionGrid rows={data?.rows ?? []} isLoading={isLoading} error={error} scrollSeconds={timing.scrollSeconds} />
         </div>
       </div>
     </DisplayLayout>

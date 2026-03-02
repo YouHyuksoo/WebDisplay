@@ -293,6 +293,16 @@ export function update3DLabel(): void {
   }
 }
 
+/**
+ * 자동 롤링 레이블 업데이트
+ */
+export function updateAutoRollingLabel(): void {
+  const label = document.getElementById('auto-rolling-label');
+  if (label) {
+    label.textContent = state.autoRolling ? '자동 롤링: 켜짐' : '자동 롤링: 꺼짐';
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Entrance Animation
 // ---------------------------------------------------------------------------
@@ -636,6 +646,7 @@ export function saveSettings(): void {
     auroraBrightness: state.auroraBrightness,
     simpleVirtualization: state.simpleVirtualization,
     enable3D: state.enable3D,
+    autoRolling: state.autoRolling,
   });
 }
 

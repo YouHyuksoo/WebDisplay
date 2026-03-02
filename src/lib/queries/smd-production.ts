@@ -1,9 +1,11 @@
 /**
- * @file machine-status-smd.ts
- * @description SMD 기계 상태 화면(메뉴 24) SQL 쿼리.
+ * @file smd-production.ts
+ * @description SMD 생산현황 화면(메뉴 24) SQL 쿼리.
  * 초보자 가이드: PowerBuilder 원본 .srd 파일에서 추출한 SQL.
  * 원본: d_display_machine_status_check_items_smd.srd, d_display_machine_status_es.srd
  */
+
+import { buildInFilter } from '@/lib/display-helpers';
 
 /**
  * 라인 코드 배열을 Oracle IN 절 바인드 변수로 변환한다.
@@ -11,13 +13,7 @@
  * @returns { clause: SQL WHERE 조각, binds: 바인드 객체 }
  */
 export function buildLineFilter(lines: string[]): { clause: string; binds: Record<string, string> } {
-  if (!lines.length || lines.includes('%')) {
-    return { clause: '', binds: {} };
-  }
-  const placeholders = lines.map((_, i) => `:line${i}`);
-  const binds: Record<string, string> = {};
-  lines.forEach((code, i) => { binds[`line${i}`] = code; });
-  return { clause: `AND line_code IN (${placeholders.join(', ')})`, binds };
+  return buildInFilter(lines, 'line_code', 'line');
 }
 
 /** SMD 점검 항목 조회 (d_display_machine_status_check_items_smd) */
@@ -57,8 +53,8 @@ ORDER BY line_code
 `;
 }
 
-/** 기계 상태 전체 조회 (d_display_machine_status_es) */
-export function sqlMachineStatus(lineClause: string): string {
+/** SMD 생산현황 전체 조회 (d_display_machine_status_es) */
+export function sqlSmdProduction(lineClause: string): string {
   return `
 SELECT
   organization_id,

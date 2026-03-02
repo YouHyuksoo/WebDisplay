@@ -39,18 +39,6 @@ function getStatusBlockClass(status: 'OK' | 'WN' | 'NG'): string {
   }
 }
 
-/** 상태 코드에 따른 값 텍스트 색상 */
-function getValueTextClass(status: 'OK' | 'WN' | 'NG'): string {
-  switch (status) {
-    case 'OK':
-      return 'text-zinc-900 dark:text-zinc-100';
-    case 'WN':
-      return 'text-zinc-900 dark:text-zinc-100';
-    case 'NG':
-      return 'text-red-600 dark:text-red-400';
-  }
-}
-
 /** 데이터 수신 중단 여부 — 10분 초과 + SP가 아닌 경우 */
 function isStaleData(lastTime: number | null, machineCode: string): boolean {
   return lastTime !== null && lastTime >= 10 && !machineCode.startsWith('SP');
@@ -98,7 +86,7 @@ export default function TempHumidityCard({ sensor }: TempHumidityCardProps) {
         <div className="flex items-center gap-3">
           <TempIcon />
           <span className="text-sm font-bold text-zinc-400 dark:text-zinc-500">TEMP</span>
-          <span className={`ml-auto text-2xl font-black tabular-nums ${getValueTextClass(sensor.TEMP_STATUS)}`}>
+          <span className="ml-auto text-2xl font-black tabular-nums text-zinc-900 dark:text-zinc-100">
             {sensor.ROOM_TEMPERATURE != null ? `${sensor.ROOM_TEMPERATURE}°C` : '-'}
           </span>
           <div className={`h-8 w-8 shrink-0 rounded-md ${getStatusBlockClass(sensor.TEMP_STATUS)}`} />
@@ -121,7 +109,7 @@ export default function TempHumidityCard({ sensor }: TempHumidityCardProps) {
           <div className="flex items-center gap-3">
             <HumiIcon />
             <span className="text-sm font-bold text-zinc-400 dark:text-zinc-500">HUMI</span>
-            <span className={`ml-auto text-2xl font-black tabular-nums ${getValueTextClass(sensor.HUMIDITY_STATUS)}`}>
+            <span className="ml-auto text-2xl font-black tabular-nums text-zinc-900 dark:text-zinc-100">
               {sensor.HUMIDITY != null ? `${sensor.HUMIDITY}%` : '-'}
             </span>
             <div className={`h-8 w-8 shrink-0 rounded-md ${getStatusBlockClass(sensor.HUMIDITY_STATUS)}`} />

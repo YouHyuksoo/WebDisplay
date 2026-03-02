@@ -6,7 +6,7 @@
  * UNION ALL로 합쳐 라인/모델별 생산현황을 조회한다.
  */
 
-import { buildLineFilter } from './machine-status-smd';
+import { buildLineFilter } from './smd-production';
 
 export { buildLineFilter };
 

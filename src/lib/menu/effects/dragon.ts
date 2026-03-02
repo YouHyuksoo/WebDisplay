@@ -12,6 +12,7 @@
  */
 
 import gsap from 'gsap';
+import '@lottiefiles/dotlottie-wc';
 import { showToast } from '../ui';
 
 /**

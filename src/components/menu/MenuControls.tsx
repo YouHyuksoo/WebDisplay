@@ -29,6 +29,7 @@ import {
   Upload,
   Zap,
   ZapOff,
+  RotateCw,
 } from "lucide-react";
 
 /**
@@ -184,6 +185,12 @@ export default function MenuControls() {
           </span>
           <span id="enable-3d-label">3D 배경: 켜짐</span>
         </div>
+        <div className="settings-item" id="menu-auto-rolling">
+          <span className="icon">
+            <RotateCw size={16} />
+          </span>
+          <span id="auto-rolling-label">자동 롤링: 꺼짐</span>
+        </div>
         <div className="settings-item" id="menu-brightness">
           <span className="icon">
             <Sun size={16} />
@@ -209,36 +216,17 @@ export default function MenuControls() {
           </span>
           <span id="virtualization-label">성능: 고성능 (가상화)</span>
         </div>
+        <div className="settings-item" id="menu-display-options">
+          <span className="icon">
+            <Settings size={16} />
+          </span>
+          <span>시스템 옵션 설정</span>
+        </div>
         <div className="settings-item" id="menu-categories">
           <span className="icon">
             <ListTree size={16} />
           </span>
           <span>카테고리 관리</span>
-        </div>
-        <div className="settings-item" id="menu-import">
-          <span className="icon">
-            <Import size={16} />
-          </span>
-          <span>북마크 가져오기</span>
-        </div>
-        <div className="settings-item" id="menu-protocol">
-          <span className="icon">
-            <Link2 size={16} />
-          </span>
-          <span>빠른 추가 설정</span>
-        </div>
-        <div className="settings-divider" />
-        <div className="settings-item" id="menu-export">
-          <span className="icon">
-            <Download size={16} />
-          </span>
-          <span>데이터 내보내기</span>
-        </div>
-        <div className="settings-item" id="menu-restore">
-          <span className="icon">
-            <Upload size={16} />
-          </span>
-          <span>데이터 가져오기</span>
         </div>
         <div className="settings-divider" />
         <div className="settings-credits">

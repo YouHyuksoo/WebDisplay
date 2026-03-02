@@ -11,24 +11,30 @@ import { useEffect } from 'react';
 import DisplayHeader from './DisplayHeader';
 import DisplayMessageBar from './DisplayMessageBar';
 import { usePageRolling } from '@/hooks/usePageRolling';
+import { SCREENS } from '@/lib/screens';
 
 interface DisplayLayoutProps {
-  title: string;
+  /** 타이틀 직접 지정. 미지정 시 screenId로 SCREENS에서 자동 조회 */
+  title?: string;
   screenId?: string;
-  refreshInterval?: number;
   message?: string;
+  /** 설정 모달 렌더 함수. 미지정 시 기본 LineSelectModal 사용 */
+  renderSettingsModal?: (props: { isOpen: boolean; onClose: () => void; screenId: string }) => React.ReactNode;
   children: React.ReactNode;
 }
 
 export default function DisplayLayout({
   title,
   screenId,
-  refreshInterval = 30,
   message,
+  renderSettingsModal,
   children,
 }: DisplayLayoutProps) {
   const router = useRouter();
   usePageRolling();
+
+  const screen = screenId ? SCREENS[screenId] : undefined;
+  const resolvedTitle = title ?? screen?.titleKo ?? screen?.title ?? '';
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -40,7 +46,7 @@ export default function DisplayLayout({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-white dark:bg-zinc-950">
-      <DisplayHeader title={title} screenId={screenId} refreshInterval={refreshInterval} />
+      <DisplayHeader title={resolvedTitle} screenId={screenId} renderSettingsModal={renderSettingsModal} />
       <main className="min-h-0 flex-1 overflow-hidden">
         {children}
       </main>

@@ -8,14 +8,14 @@
 
 import useSWR from 'swr';
 import DisplayLayout from '../../DisplayLayout';
-import MslNgBanner from './MslNgBanner';
+import NgAlertBanner from '../../NgAlertBanner';
 import MslWarningGrid from './MslWarningGrid';
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import useDisplayTiming from '@/hooks/useDisplayTiming';
+import { fetcher } from '@/lib/fetcher';
+import { buildDisplayApiUrl, DEFAULT_ORG_ID } from '@/lib/display-helpers';
 
 interface MslWarningStatusProps {
   screenId: string;
-  refreshInterval?: number;
 }
 
 /**
@@ -24,17 +24,18 @@ interface MslWarningStatusProps {
  */
 export default function MslWarningStatus({
   screenId,
-  refreshInterval = 30,
 }: MslWarningStatusProps) {
+  const timing = useDisplayTiming();
+
   const { data, error, isLoading } = useSWR(
-    '/api/display/29?orgId=1',
+    buildDisplayApiUrl(screenId, { orgId: DEFAULT_ORG_ID }),
     fetcher,
-    { refreshInterval: refreshInterval * 1000 },
+    { refreshInterval: timing.refreshSeconds * 1000 },
   );
 
   if (isLoading) {
     return (
-      <DisplayLayout title="MSL Warning List (Mount)" screenId={screenId}>
+      <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
           데이터 로딩 중...
         </div>
@@ -44,7 +45,7 @@ export default function MslWarningStatus({
 
   if (error) {
     return (
-      <DisplayLayout title="MSL Warning List (Mount)" screenId={screenId}>
+      <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-red-400 dark:text-red-500">
           데이터 로드 실패
         </div>
@@ -58,12 +59,11 @@ export default function MslWarningStatus({
     <DisplayLayout
       title="MSL Warning List (Mount)"
       screenId={screenId}
-      refreshInterval={refreshInterval}
     >
       <div className="flex h-full flex-col overflow-hidden">
-        {ngCount > 0 && <MslNgBanner count={ngCount} />}
+        {ngCount > 0 && <NgAlertBanner message={`MSL NG 경고: ${ngCount}건 발생`} />}
         <div className="min-h-0 flex-1 overflow-hidden p-2">
-          <MslWarningGrid rows={data?.warningList ?? []} />
+          <MslWarningGrid rows={data?.warningList ?? []} scrollSeconds={timing.scrollSeconds} />
         </div>
       </div>
     </DisplayLayout>

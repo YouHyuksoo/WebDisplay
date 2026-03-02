@@ -127,6 +127,16 @@ export function goToSection(index: number, forceDirection: number | null = null)
   gsap.to('#scroll-hint', { opacity: 0, duration: 0.5 });
 }
 
+/**
+ * 다음 섹션으로 이동 (자동 롤링용)
+ */
+export function goToNextSection(): void {
+  const sections = getSections();
+  if (sections.length === 0) return;
+  const next = (state.currentSection + 1) % sections.length;
+  goToSection(next, 1);
+}
+
 // ---------------------------------------------------------------------------
 // 카드 애니메이션
 // ---------------------------------------------------------------------------

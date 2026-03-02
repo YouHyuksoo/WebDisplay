@@ -1,8 +1,9 @@
 /**
- * @file SmtPickupRateBaseGrid.tsx
- * @description SMT 픽업률현황(BASE) 데이터 테이블. PB DataWindow 컬럼을 React 테이블로 변환.
+ * @file SmtPickupRateGrid.tsx
+ * @description SMT 픽업률현황 공통 데이터 테이블. BASE/HEAD 양쪽에서 공유하는 제네릭 그리드.
  * 초보자 가이드: rows 배열을 받아 테이블로 렌더링. 상태별 색상 표시.
  * useGridResizer 훅으로 컬럼 폭 드래그 조정 + localStorage 저장.
+ * storageKey prop으로 BASE/HEAD 각각의 컬럼 폭을 독립 저장한다.
  *
  * PB 원본 색상 로직:
  *   - ITEM_WARNING_SIGN='S' → 빨간 배경 (NG 위치 존재)
@@ -11,8 +12,12 @@
 'use client';
 
 import { useGridResizer } from '@/hooks/useGridResizer';
+import { useGridPaging } from '@/hooks/useGridPaging';
+import PageIndicator from '../../shared/PageIndicator';
+import { fmtNum } from '@/lib/display-helpers';
 
-interface PickupRateRow {
+/** 픽업률 데이터 행 타입 (BASE/HEAD 공통) */
+export interface PickupRateRow {
   LINE_NAME: string;
   T_CNT: number;
   M_CNT: number;
@@ -53,20 +58,22 @@ function getRateColor(sign: string | null): string {
   return 'text-emerald-400';
 }
 
-/** 숫자 포맷 (천 단위 콤마) */
-function fmt(val: number | null | undefined): string {
-  if (val == null) return '-';
-  return val.toLocaleString();
-}
-
-interface SmtPickupRateBaseGridProps {
+interface SmtPickupRateGridProps {
+  /** 픽업률 데이터 행 배열 */
   rows: PickupRateRow[];
+  /** 데이터 로딩 중 여부 */
   isLoading: boolean;
+  /** 에러 객체 (있을 경우 에러 메시지 표시) */
   error: unknown;
+  /** localStorage에 컬럼 폭을 저장할 키 (예: 'grid-widths-smt-pickup-base') */
+  storageKey: string;
+  /** 자동 페이지 순환 간격(초) */
+  scrollSeconds?: number;
 }
 
-export default function SmtPickupRateBaseGrid({ rows, isLoading, error }: SmtPickupRateBaseGridProps) {
-  const { widths, handleMouseDown } = useGridResizer('grid-widths-smt-pickup-base', INITIAL_WIDTHS);
+export default function SmtPickupRateGrid({ rows, isLoading, error, storageKey, scrollSeconds = 5 }: SmtPickupRateGridProps) {
+  const { widths, handleMouseDown } = useGridResizer(storageKey, INITIAL_WIDTHS);
+  const { bodyRef, startIndex, endIndex, page, totalPages } = useGridPaging({ totalRows: rows.length, scrollSeconds });
 
   if (isLoading) {
     return (
@@ -111,9 +118,11 @@ export default function SmtPickupRateBaseGrid({ rows, isLoading, error }: SmtPic
       </div>
 
       {/* 데이터 행 */}
-      <div className="min-h-0 flex-1 overflow-auto">
-        {rows.map((row, idx) => (
-          <div key={idx} className={`flex border-b border-zinc-800 ${getRowBg(row, idx)}`}>
+      <div ref={bodyRef} className="min-h-0 flex-1 overflow-hidden">
+        {rows.slice(startIndex, endIndex).map((row, idx) => {
+          const globalIdx = startIndex + idx;
+          return (
+          <div key={globalIdx} className={`flex border-b border-zinc-800 ${getRowBg(row, globalIdx)}`}>
             {/* Line Name */}
             <div
               className="shrink-0 truncate px-3 py-2 text-xl font-bold text-white"
@@ -126,21 +135,21 @@ export default function SmtPickupRateBaseGrid({ rows, isLoading, error }: SmtPic
               className="shrink-0 px-3 py-2 text-right font-mono text-xl font-bold tabular-nums text-white"
               style={{ width: widths[1] }}
             >
-              {fmt(row.T_CNT)}
+              {fmtNum(row.T_CNT)}
             </div>
             {/* Miss Count */}
             <div
               className="shrink-0 px-3 py-2 text-right font-mono text-xl font-bold tabular-nums text-white"
               style={{ width: widths[2] }}
             >
-              {fmt(row.M_CNT)}
+              {fmtNum(row.M_CNT)}
             </div>
             {/* Realize Count */}
             <div
               className="shrink-0 px-3 py-2 text-right font-mono text-xl font-bold tabular-nums text-white"
               style={{ width: widths[3] }}
             >
-              {fmt(row.R_CNT)}
+              {fmtNum(row.R_CNT)}
             </div>
             {/* Pickup Rate(%) */}
             <div
@@ -165,8 +174,11 @@ export default function SmtPickupRateBaseGrid({ rows, isLoading, error }: SmtPic
               {row.NG_POSITION ?? '-'}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
+
+      <PageIndicator page={page} totalPages={totalPages} />
     </div>
   );
 }

@@ -7,13 +7,23 @@
  * 헤더 색상: last_time < 10분 → 파랑(정상), >= 10분 → 빨강(데이터 수신 중단).
  */
 
+import { buildInFilter } from '@/lib/display-helpers';
+
+/**
+ * 센서 필터 IN 절 생성. buildLineFilter와 동일 패턴.
+ * '%' 또는 빈 배열이면 필터 없음 (전체 조회).
+ */
+export function buildSensorFilter(machines: string[]): { clause: string; binds: Record<string, string> } {
+  return buildInFilter(machines, 'M.MACHINE_CODE', 'mc');
+}
+
 /**
  * 온습도 센서 데이터 조회 (d_display_temperature_status_ye_img).
  * PB 원본 SQL 그대로 — MACHINE_TYPE='TEMP', MES_DISPLAY_YN='Y' 필터.
- * arg_multi_machine_code 대신 전체 조회 (IN 조건 제거).
+ * @param machineClause - buildSensorFilter()로 생성된 IN 절
  * @returns SQL 문자열
  */
-export function sqlTempHumidityStatus(): string {
+export function sqlTempHumidityStatus(machineClause = ''): string {
   return `
 SELECT M.MACHINE_NAME,
        TRUNC(T.ROOM_TEMPERATURE, 1) AS ROOM_TEMPERATURE,
@@ -50,6 +60,7 @@ SELECT M.MACHINE_NAME,
    AND M.MES_DISPLAY_YN     = 'Y'
    AND M.ORGANIZATION_ID    = :orgId
    AND T.NODETYPE            = 1
+   ${machineClause}
  ORDER BY M.MES_DISPLAY_SEQUENCE
 `;
 }

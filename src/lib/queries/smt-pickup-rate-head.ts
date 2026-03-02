@@ -9,11 +9,17 @@
  *                    → Pickup Rate(%) → PPM → Ng Position
  * 경고 로직: LINE_WARNING_SIGN 'W' = 99.00~99.50%, 'S' = <=99.00%
  *           ITEM_WARNING_SIGN 'S' = 개별 위치 NG (T_CNT>500 & miss+realize>=1%)
+ *
+ * [최적화] ngCount는 list 결과의 ITEM_WARNING_SIGN='S' 행 수로 앱에서 계산.
+ *          별도 ngCount SQL을 DB에 보내지 않아 DB 부하를 절반으로 줄임.
  */
 
 /**
  * 픽업률(HEAD) 메인 리스트 조회 (d_display_smt_pickup_rate_lst2_head).
  * BASE와 동일 구조, ITEM_CODE = 'HEAD' 필터 적용.
+ *
+ * 반환 컬럼 중 ITEM_WARNING_SIGN이 'S'인 행의 수가 곧 ngCount.
+ * API route에서 앱 레벨로 계산하므로 별도 ngCount 쿼리 불필요.
  */
 export function sqlSmtPickupRateHeadList(): string {
   return `
@@ -145,6 +151,10 @@ SELECT M.LINE_NAME,
  * 픽업률(HEAD) NG 건수 조회 (d_display_smt_pickup_rate_ng_count_ys_head).
  * ITEM_WARNING_SIGN = 'S'인 라인 수를 반환.
  * NG > 0이면 화면 상단에 경고 배너를 표시한다.
+ *
+ * @deprecated API route에서 더 이상 호출하지 않음.
+ * list 결과의 ITEM_WARNING_SIGN='S' 행 수로 앱에서 계산하여 DB 부하 절감.
+ * 향후 직접 DB 쿼리가 필요한 경우를 위해 함수는 유지.
  */
 export function sqlSmtPickupRateHeadNgCount(): string {
   return `

@@ -12,44 +12,30 @@ import useSWR from 'swr';
 import DisplayLayout from '../../DisplayLayout';
 import ProductionKpiCard from './ProductionKpiCard';
 import type { ProductionKpiRow } from './ProductionKpiCard';
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
-const STORAGE_KEY_PREFIX = 'display-lines-';
-
-/** localStorage에서 선택된 라인 코드를 읽어온다 */
-function getSelectedLines(screenId: string): string {
-  try {
-    const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${screenId}`);
-    if (stored) {
-      const arr = JSON.parse(stored) as string[];
-      if (arr.includes('%') || arr.length === 0) return '%';
-      return arr.join(',');
-    }
-  } catch { /* 무시 */ }
-  return '%';
-}
+import useDisplayTiming from '@/hooks/useDisplayTiming';
+import { fetcher } from '@/lib/fetcher';
+import { getSelectedLines, buildDisplayApiUrl, DEFAULT_ORG_ID } from '@/lib/display-helpers';
 
 interface ProductionKpiStatusProps {
   screenId: string;
-  refreshInterval?: number;
 }
 
 /**
  * 라인별 생산현황 메인 컴포넌트.
- * SWR polling(30초) + 자동 순환(5초)으로 라인을 전환한다.
+ * SWR polling + 자동 순환으로 라인을 전환한다.
  * 화면 전체를 카드로 꽉 채운다.
  */
 export default function ProductionKpiStatus({
   screenId,
-  refreshInterval = 30,
 }: ProductionKpiStatusProps) {
+  const timing = useDisplayTiming();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedLines, setSelectedLines] = useState(() => getSelectedLines(screenId));
 
   const { data, error, isLoading } = useSWR(
-    `/api/display/26?orgId=1&lines=${encodeURIComponent(selectedLines)}`,
+    buildDisplayApiUrl(screenId, { orgId: DEFAULT_ORG_ID, lines: encodeURIComponent(selectedLines) }),
     fetcher,
-    { refreshInterval: refreshInterval * 1000 },
+    { refreshInterval: timing.refreshSeconds * 1000 },
   );
 
   const lines: ProductionKpiRow[] = data?.lines ?? [];
@@ -66,14 +52,14 @@ export default function ProductionKpiStatus({
     return () => window.removeEventListener(eventName, handleLineChange);
   }, [screenId, handleLineChange]);
 
-  /* 5초마다 다음 라인으로 자동 순환 */
+  /* 설정된 간격마다 다음 라인으로 자동 순환 */
   useEffect(() => {
     if (lines.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % lines.length);
-    }, 5000);
+    }, timing.scrollSeconds * 1000);
     return () => clearInterval(timer);
-  }, [lines.length]);
+  }, [lines.length, timing.scrollSeconds]);
 
   /* 데이터 갱신 시 인덱스 보정 */
   useEffect(() => {
@@ -82,11 +68,10 @@ export default function ProductionKpiStatus({
     }
   }, [lines.length, currentIndex]);
 
-  const title = '라인별 생산현황';
 
   if (isLoading) {
     return (
-      <DisplayLayout title={title} screenId={screenId}>
+      <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-3xl text-zinc-400 dark:text-zinc-500">
           데이터 로딩 중...
         </div>
@@ -96,7 +81,7 @@ export default function ProductionKpiStatus({
 
   if (error) {
     return (
-      <DisplayLayout title={title} screenId={screenId}>
+      <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-3xl text-red-400 dark:text-red-500">
           데이터 로드 실패
         </div>
@@ -106,7 +91,7 @@ export default function ProductionKpiStatus({
 
   if (lines.length === 0) {
     return (
-      <DisplayLayout title={title} screenId={screenId}>
+      <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-3xl text-zinc-400 dark:text-zinc-500">
           데이터 없음
         </div>
@@ -117,11 +102,7 @@ export default function ProductionKpiStatus({
   const currentLine = lines[currentIndex % lines.length];
 
   return (
-    <DisplayLayout
-      title={title}
-      screenId={screenId}
-      refreshInterval={refreshInterval}
-    >
+    <DisplayLayout screenId={screenId}>
       <div className="relative h-full">
         {/* 카드가 화면 전체를 채움 */}
         <ProductionKpiCard row={currentLine} />

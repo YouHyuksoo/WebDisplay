@@ -7,16 +7,16 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 const MIN_COLUMN_WIDTH = 50; // 최소 폭 (px)
 
 export function useGridResizer(storageKey: string, initialWidths: (number | string)[]) {
-  // 1. 상태: 컬럼들의 너비 배열
-  const [widths, setWidths] = useState<(number | string)[]>(() => {
-    if (typeof window === 'undefined') return initialWidths;
+  // 1. 상태: 컬럼들의 너비 배열 (SSR/클라이언트 동일한 초기값으로 hydration 불일치 방지)
+  const [widths, setWidths] = useState<(number | string)[]>(initialWidths);
+
+  // localStorage에서 저장된 값 복원 (클라이언트 마운트 후)
+  useEffect(() => {
     try {
       const stored = localStorage.getItem(storageKey);
-      return stored ? JSON.parse(stored) : initialWidths;
-    } catch {
-      return initialWidths;
-    }
-  });
+      if (stored) setWidths(JSON.parse(stored));
+    } catch { /* 무시 */ }
+  }, [storageKey]);
 
   // 2. 내부 상태 (드래그용)
   const resizingIndex = useRef<number | null>(null);

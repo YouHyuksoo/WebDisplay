@@ -65,15 +65,15 @@ export function loadShortcuts(): Shortcut[] {
       // 1. 기존 항목들의 정보를 최신 기본값과 동기화
       const cleaned = shortcuts
         .filter((s) => {
-          // 제거된 기본 항목은 삭제
-          if (s.id.startsWith('menu-')) {
+          // 제거된 기본 항목은 삭제 (menu- 및 fav- 모두)
+          if (s.id.startsWith('menu-') || s.id.startsWith('fav-')) {
             return defaultMap.has(s.id);
           }
           return true;
         })
         .map((s) => {
           // 기본 항목이라면 config.ts 정보를 강제 동기화 (제목, 아이콘, 색상 등)
-          if (s.id.startsWith('menu-')) {
+          if (s.id.startsWith('menu-') || s.id.startsWith('fav-')) {
             const def = defaultMap.get(s.id);
             if (def && (s.title !== def.title || s.icon !== def.icon || s.color !== def.color || s.layer !== def.layer)) {
               hasChanges = true;

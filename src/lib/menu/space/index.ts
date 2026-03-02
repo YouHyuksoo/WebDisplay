@@ -53,6 +53,7 @@ import {
   createAurora,
   updateAuroraAnimation,
   createGlowTexture,
+  disposeSharedTexture,
 } from './aurora';
 
 // ---------------------------------------------------------------------------
@@ -177,7 +178,7 @@ export function init(): void {
 export function dispose(): void {
   stopAnimate();
 
-  // scene 내 오브젝트 정리
+  // scene 내 오브젝트 정리 (geometry + material + texture)
   if (_i.scene) {
     _i.scene.traverse((object) => {
       const mesh = object as THREE.Mesh;
@@ -185,16 +186,22 @@ export function dispose(): void {
         mesh.geometry.dispose();
       }
       if (mesh.material) {
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach((mat: THREE.Material) => mat.dispose());
-        } else {
-          mesh.material.dispose();
-        }
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        materials.forEach((mat) => {
+          // 텍스처 명시 해제
+          if ('map' in mat && (mat as THREE.SpriteMaterial).map) {
+            (mat as THREE.SpriteMaterial).map!.dispose();
+          }
+          mat.dispose();
+        });
       }
     });
     _i.scene.clear();
     _i.scene = null;
   }
+
+  // 오로라 공유 텍스처 해제
+  disposeSharedTexture();
 
   // renderer 정리
   if (_i.renderer) {

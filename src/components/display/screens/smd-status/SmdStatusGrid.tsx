@@ -23,8 +23,8 @@ function getStatusColor(statusCode?: string | number): string {
   return 'bg-zinc-500 text-white';
 }
 
-/** SMD 라인별 기계 상태 데이터 행 */
-export interface MachineStatusRow {
+/** SMD 라인별 생산현황 데이터 행 */
+export interface SmdProductionRow {
   LINE_NAME?: string;
   LINE_STATUS?: string | number;
   LINE_STATUS_NAME?: string;
@@ -44,7 +44,7 @@ export interface MachineStatusRow {
 }
 
 interface SmdStatusGridProps {
-  rows: MachineStatusRow[];
+  rows: SmdProductionRow[];
 }
 
 /** 정렬 클래스 매핑 (Tailwind JIT가 동적 클래스를 인식하지 못하므로 명시적 매핑) */

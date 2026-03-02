@@ -14,8 +14,8 @@ import { useEffect, useState, useCallback } from 'react';
 import useSWR from 'swr';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher } from '@/lib/fetcher';
+import { DEFAULT_ORG_ID } from '@/lib/display-helpers';
 
 interface LineItem {
   lineCode: string;
@@ -39,7 +39,7 @@ export default function LineSelectModal({
 }: LineSelectModalProps) {
   const t = useTranslations();
   const { data } = useSWR<{ lines: LineItem[] }>(
-    open ? '/api/display/lines?orgId=1' : null,
+    open ? `/api/display/lines?orgId=${DEFAULT_ORG_ID}` : null,
     fetcher,
   );
   const lines = data?.lines ?? [];

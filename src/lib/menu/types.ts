@@ -136,6 +136,7 @@ export interface MenuSettings {
   auroraBrightness: number;
   simpleVirtualization: boolean;
   enable3D: boolean;
+  autoRolling: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -204,6 +205,7 @@ export interface MenuState {
   auroraBrightness: number;
   simpleVirtualization: boolean;
   enable3D: boolean;
+  autoRolling: boolean;
   lastActivityTime: number;
 
   // Three.js (런타임 할당)

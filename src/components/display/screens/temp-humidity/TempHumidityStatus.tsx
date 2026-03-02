@@ -4,42 +4,55 @@
  * 초보자 가이드: API에서 데이터를 가져와 상단(NgBanner) + 하단(4칼럼 카드 그리드)에 전달.
  * 카드가 한 화면에 다 안 들어가면 PB 원본처럼 일정 간격으로 페이지를 순환한다.
  * DisplayLayout이 100vh 프레임(헤더+메시지바)을 제공하고, 콘텐츠는 스크롤 없이 꽉 찬다.
+ * 설정 모달은 라인 선택 대신 센서(온습도기) 선택 모달을 사용한다.
  * PB 원본: w_display_temparture_status_ye.srw
  */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import useSWR from 'swr';
 import DisplayLayout from '../../DisplayLayout';
-import TempHumidityNgBanner from './TempHumidityNgBanner';
+import NgAlertBanner from '../../NgAlertBanner';
 import TempHumidityCard, { type SensorRow } from './TempHumidityCard';
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import SensorSelectModal from '@/components/common/SensorSelectModal';
+import useDisplayTiming from '@/hooks/useDisplayTiming';
+import { fetcher } from '@/lib/fetcher';
+import { getSelectedSensors, buildDisplayApiUrl, DEFAULT_ORG_ID } from '@/lib/display-helpers';
 
 /** 4칼럼 × 3행 = 12카드/페이지 고정 */
 const CARDS_PER_PAGE = 12;
 
 interface TempHumidityStatusProps {
   screenId: string;
-  refreshInterval?: number;
-  /** 페이지 전환 간격(초) */
-  pageInterval?: number;
 }
 
 export default function TempHumidityStatus({
   screenId,
-  refreshInterval = 30,
-  pageInterval = 5,
 }: TempHumidityStatusProps) {
+  const timing = useDisplayTiming();
+  const [selectedMachines, setSelectedMachines] = useState(() => getSelectedSensors(screenId));
+
   const { data, error, isLoading } = useSWR(
-    '/api/display/37?orgId=1',
+    buildDisplayApiUrl(screenId, { orgId: DEFAULT_ORG_ID, machines: encodeURIComponent(selectedMachines) }),
     fetcher,
-    { refreshInterval: refreshInterval * 1000 },
+    { refreshInterval: timing.refreshSeconds * 1000 },
   );
 
   const [page, setPage] = useState(0);
   const sensorData: SensorRow[] = data?.sensorData ?? [];
   const totalPages = Math.max(1, Math.ceil(sensorData.length / CARDS_PER_PAGE));
+
+  /* 센서 선택 모달에서 저장 시 즉시 리페치 */
+  const handleSensorChange = useCallback(() => {
+    setSelectedMachines(getSelectedSensors(screenId));
+    setPage(0);
+  }, [screenId]);
+
+  useEffect(() => {
+    const eventName = `sensor-config-changed-${screenId}`;
+    window.addEventListener(eventName, handleSensorChange);
+    return () => window.removeEventListener(eventName, handleSensorChange);
+  }, [screenId, handleSensorChange]);
 
   /** 자동 페이지 순환 — 2페이지 이상일 때만 */
   useEffect(() => {
@@ -49,18 +62,26 @@ export default function TempHumidityStatus({
     }
     const timer = setInterval(() => {
       setPage((prev) => (prev + 1) % totalPages);
-    }, pageInterval * 1000);
+    }, timing.scrollSeconds * 1000);
     return () => clearInterval(timer);
-  }, [totalPages, pageInterval]);
+  }, [totalPages, timing.scrollSeconds]);
 
   /** 데이터 갱신 시 페이지 범위 초과 보정 */
   useEffect(() => {
     if (page >= totalPages) setPage(0);
   }, [page, totalPages]);
 
+  /** 센서 선택 모달 렌더 함수 (DisplayLayout → DisplayHeader로 전달) */
+  const renderSettingsModal = useCallback(
+    (props: { isOpen: boolean; onClose: () => void; screenId: string }) => (
+      <SensorSelectModal isOpen={props.isOpen} onClose={props.onClose} screenId={props.screenId} />
+    ),
+    [],
+  );
+
   if (isLoading) {
     return (
-      <DisplayLayout title="Temperature & Humidity Status" screenId={screenId}>
+      <DisplayLayout screenId={screenId} renderSettingsModal={renderSettingsModal}>
         <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
           데이터 로딩 중...
         </div>
@@ -70,7 +91,7 @@ export default function TempHumidityStatus({
 
   if (error) {
     return (
-      <DisplayLayout title="Temperature & Humidity Status" screenId={screenId}>
+      <DisplayLayout screenId={screenId} renderSettingsModal={renderSettingsModal}>
         <div className="flex h-full items-center justify-center text-red-400 dark:text-red-500">
           데이터 로드 실패
         </div>
@@ -88,10 +109,10 @@ export default function TempHumidityStatus({
     <DisplayLayout
       title="Temperature & Humidity Status"
       screenId={screenId}
-      refreshInterval={refreshInterval}
+      renderSettingsModal={renderSettingsModal}
     >
       <div className="flex h-full flex-col overflow-hidden">
-        {ngCount > 0 && <TempHumidityNgBanner count={ngCount} />}
+        {ngCount > 0 && <NgAlertBanner message={`Temperature / Humidity NG: ${ngCount}건 발생`} />}
 
         <div className="min-h-0 flex-1 overflow-hidden p-2">
           <div className="grid h-full grid-cols-4 grid-rows-3 gap-2">

@@ -14,6 +14,7 @@ export interface ScreenConfig {
 export const SCREENS: Record<string, ScreenConfig> = {
   '18': { id: '18', title: 'Display Option', titleKo: '옵션 설정', window: 'w_display_option', group: 'favorites' },
   '24': { id: '24', title: 'SMD Production Status', titleKo: 'SMD 생산현황', window: 'w_display_machine_status_smd', group: 'smd-monitoring' },
+  '25': { id: '25', title: 'Foolproof Status', titleKo: '종합F/P현황', window: 'w_display_machine_foolproof_status', group: 'smd-monitoring' },
   '26': { id: '26', title: 'Line Production KPI', titleKo: '라인별생산현황', window: 'w_display_product_kpi_status', group: 'smd-monitoring' },
 
   '21': { id: '21', title: 'PBA Production Status', titleKo: '제품생산현황', window: 'w_display_assy_production_status', group: 'pba-monitoring' },

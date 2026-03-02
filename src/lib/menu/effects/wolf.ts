@@ -12,6 +12,7 @@
  */
 
 import gsap from 'gsap';
+import '@lottiefiles/dotlottie-wc';
 
 /**
  * 늑대 등장 이벤트

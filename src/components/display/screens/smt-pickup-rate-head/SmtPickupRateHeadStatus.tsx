@@ -9,34 +9,35 @@
 
 import useSWR from 'swr';
 import DisplayLayout from '../../DisplayLayout';
-import SmtPickupRateHeadNgBanner from './SmtPickupRateHeadNgBanner';
-import SmtPickupRateHeadGrid from './SmtPickupRateHeadGrid';
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import NgAlertBanner from '../../NgAlertBanner';
+import SmtPickupRateGrid from '../smt-pickup-rate/SmtPickupRateGrid';
+import useDisplayTiming from '@/hooks/useDisplayTiming';
+import { fetcher } from '@/lib/fetcher';
+import { buildDisplayApiUrl } from '@/lib/display-helpers';
 
 interface SmtPickupRateHeadStatusProps {
   screenId: string;
-  refreshInterval?: number;
 }
 
 export default function SmtPickupRateHeadStatus({
   screenId,
-  refreshInterval = 30,
 }: SmtPickupRateHeadStatusProps) {
+  const timing = useDisplayTiming();
+
   const { data, error, isLoading } = useSWR(
-    '/api/display/35',
+    buildDisplayApiUrl(screenId),
     fetcher,
-    { refreshInterval: refreshInterval * 1000 },
+    { refreshInterval: timing.refreshSeconds * 1000 },
   );
 
   const ngCount: number = data?.ngCount ?? 0;
 
   return (
-    <DisplayLayout title="SMT Pickup Rate (Head)" screenId={screenId} refreshInterval={refreshInterval}>
+    <DisplayLayout screenId={screenId}>
       <div className="flex h-full flex-col overflow-hidden">
-        {ngCount > 0 && <SmtPickupRateHeadNgBanner count={ngCount} />}
+        {ngCount > 0 && <NgAlertBanner message={`Pickup Rate (Head) NG Warning: ${ngCount} line(s) detected`} showIcon={false} compact />}
         <div className="min-h-0 flex-1 overflow-hidden p-2">
-          <SmtPickupRateHeadGrid rows={data?.pickupList ?? []} isLoading={isLoading} error={error} />
+          <SmtPickupRateGrid rows={data?.pickupList ?? []} isLoading={isLoading} error={error} storageKey="grid-widths-smt-pickup-head" scrollSeconds={timing.scrollSeconds} />
         </div>
       </div>
     </DisplayLayout>

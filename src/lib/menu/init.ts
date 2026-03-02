@@ -36,6 +36,38 @@ import { state } from './state';
 
 /** 시계 인터벌 ID */
 let clockIntervalId: ReturnType<typeof setInterval> | null = null;
+/** 자동 롤링 인터벌 ID */
+let autoRollingIntervalId: ReturnType<typeof setInterval> | null = null;
+
+// ---------------------------------------------------------------------------
+// 자동 롤링 관리
+// ---------------------------------------------------------------------------
+
+/**
+ * 자동 롤링 시작
+ */
+export async function startAutoRolling(): Promise<void> {
+  if (autoRollingIntervalId) return;
+  const { goToNextSection } = await import('./sections');
+  const { LANE_IDS } = await import('./lanes');
+
+  autoRollingIntervalId = setInterval(() => {
+    // 중앙 레인(메인)에 있고, 다른 전환 중이 아닐 때만 수행
+    if (state.currentLane === LANE_IDS.CENTER && !state.isTransitioning && !state.isLaneTransitioning) {
+      goToNextSection();
+    }
+  }, 5000); // 5초 간격
+}
+
+/**
+ * 자동 롤링 중지
+ */
+export function stopAutoRolling(): void {
+  if (autoRollingIntervalId) {
+    clearInterval(autoRollingIntervalId);
+    autoRollingIntervalId = null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // 초기화
@@ -64,6 +96,7 @@ export async function initMenuSystem(): Promise<void> {
     updateTunnelMenu,
     updateCardStyleMenu,
     updateCardLayoutLabel,
+    updateAutoRollingLabel,
     initDialogListeners,
   } = await import('./ui');
   const Widgets = await import('./widgets');
@@ -93,6 +126,7 @@ export async function initMenuSystem(): Promise<void> {
     state.simpleVirtualization = settings.simpleVirtualization ?? true;
     state.selectedColor = COLORS[0];
     state.enable3D = settings.enable3D ?? true;
+    state.autoRolling = settings.autoRolling ?? false;
 
     state.isInitialized = true;
   }
@@ -150,6 +184,7 @@ export async function initMenuSystem(): Promise<void> {
   updateTunnelMenu();
   updateCardStyleMenu();
   updateCardLayoutLabel();
+  updateAutoRollingLabel();
 
   // 9. 테마 및 애니메이션 적용
   applyGlowTheme(state.glowTheme);
@@ -157,6 +192,11 @@ export async function initMenuSystem(): Promise<void> {
   if (state.enable3D) {
     const Space = await import('./space');
     Space.animate();
+  }
+
+  // 10. 자동 롤링 시작 (설정된 경우)
+  if (state.autoRolling) {
+    startAutoRolling();
   }
 
   // 12. 로딩 화면 숨기기 + 진입 애니메이션
@@ -206,6 +246,9 @@ export async function destroyMenuSystem(): Promise<void> {
     clearInterval(clockIntervalId);
     clockIntervalId = null;
   }
+
+  // 자동 롤링 인터벌 정리
+  stopAutoRolling();
 
   // Three.js 리소스 정리 (초기화된 경우만)
   if (state.enable3D) {

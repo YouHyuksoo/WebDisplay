@@ -14,6 +14,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useGridResizer } from '@/hooks/useGridResizer';
+import { getCheckBadgeClass } from '../../shared/status-styles';
 
 
 /** 라인 1건의 점검 데이터 행 */
@@ -53,18 +54,6 @@ const CHECK_ITEMS = [
 /** 라인에 NG 항목이 하나라도 있는지 판별 */
 function hasNg(row: CheckItemRow): boolean {
   return CHECK_ITEMS.some((item) => row[item.statusKey] === 'NG');
-}
-
-/** 상태값에 따른 뱃지 색상 클래스 반환 */
-function getBadgeClass(status: string): string {
-  if (status === 'OK' || status === 'Y' || status === 'PASS') {
-    return 'bg-emerald-600 text-white';
-  }
-  if (status === 'NG') {
-    return 'bg-red-600 text-yellow-200 animate-pulse';
-  }
-  // 데이터 없음 또는 WAIT 등
-  return 'bg-zinc-300 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400';
 }
 
 /** 초기 폭 설정 (항목명 + 라인들) */
@@ -160,7 +149,7 @@ export default function SmdCheckItems({ rows }: SmdCheckItemsProps) {
                       <div className="flex items-center gap-1.5">
                         {/* 상태 뱃지 (좌) */}
                         <span
-                          className={`shrink-0 rounded px-2 py-0.5 text-sm font-black ${getBadgeClass(status)}`}
+                          className={`shrink-0 rounded px-2 py-0.5 text-sm font-black ${getCheckBadgeClass(status, 'bg-zinc-300 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400')}`}
                         >
                           {status}
                         </span>

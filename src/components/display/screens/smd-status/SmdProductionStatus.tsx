@@ -11,26 +11,12 @@ import { useEffect, useState, useCallback } from 'react';
 import DisplayLayout from '../../DisplayLayout';
 import SmdStatusGrid from './SmdStatusGrid';
 import SmdCheckItems from './SmdCheckItems';
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
-const STORAGE_KEY_PREFIX = 'display-lines-';
-
-/** localStorage에서 선택된 라인 코드를 읽어온다 */
-function getSelectedLines(screenId: string): string {
-  try {
-    const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${screenId}`);
-    if (stored) {
-      const arr = JSON.parse(stored) as string[];
-      if (arr.includes('%') || arr.length === 0) return '%';
-      return arr.join(',');
-    }
-  } catch { /* 무시 */ }
-  return '%';
-}
+import useDisplayTiming from '@/hooks/useDisplayTiming';
+import { fetcher } from '@/lib/fetcher';
+import { getSelectedLines, buildDisplayApiUrl, DEFAULT_ORG_ID } from '@/lib/display-helpers';
 
 interface SmdProductionStatusProps {
   screenId: string;
-  refreshInterval?: number;
 }
 
 /**
@@ -39,14 +25,14 @@ interface SmdProductionStatusProps {
  */
 export default function SmdProductionStatus({
   screenId,
-  refreshInterval = 30,
 }: SmdProductionStatusProps) {
+  const timing = useDisplayTiming();
   const [lines, setLines] = useState(() => getSelectedLines(screenId));
 
   const { data, error, isLoading } = useSWR(
-    `/api/display/24?orgId=1&lines=${encodeURIComponent(lines)}`,
+    buildDisplayApiUrl(screenId, { orgId: DEFAULT_ORG_ID, lines: encodeURIComponent(lines) }),
     fetcher,
-    { refreshInterval: refreshInterval * 1000 },
+    { refreshInterval: timing.refreshSeconds * 1000 },
   );
 
   /* 라인 선택 모달에서 저장 시 localStorage를 다시 읽고 SWR 키 변경으로 즉시 리페치 */
@@ -62,7 +48,7 @@ export default function SmdProductionStatus({
 
   if (isLoading) {
     return (
-      <DisplayLayout title="Production Status (SMD)" screenId={screenId}>
+      <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
           데이터 로딩 중...
         </div>
@@ -72,7 +58,7 @@ export default function SmdProductionStatus({
 
   if (error) {
     return (
-      <DisplayLayout title="Production Status (SMD)" screenId={screenId}>
+      <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-red-400 dark:text-red-500">
           데이터 로드 실패
         </div>
@@ -82,14 +68,13 @@ export default function SmdProductionStatus({
 
   return (
     <DisplayLayout
-      title="Production Status (SMD)"
+      title="SMD Production Status"
       screenId={screenId}
-      refreshInterval={refreshInterval}
     >
       <div className="flex h-full flex-col gap-1 p-2">
         {/* 상단 그리드 50% — 스크롤 없이 꽉 참 */}
         <div className="min-h-0 flex-1 overflow-hidden">
-          <SmdStatusGrid rows={data?.machineStatus ?? []} />
+          <SmdStatusGrid rows={data?.smdProduction ?? []} />
         </div>
         {/* 하단 점검 항목 50% — 스크롤 없이 꽉 참 */}
         <div className="min-h-0 flex-1 overflow-hidden">

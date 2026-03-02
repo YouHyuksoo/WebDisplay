@@ -8,7 +8,7 @@
  * 3. **중요**: 이스터에그는 ✨ 클릭 시 패널 토글, 각 아이콘 클릭 시 1회 실행
  */
 
-import { Search, History, ArrowLeft, Globe, Moon, Power, Image, ImageOff } from 'lucide-react';
+import { Search, History, ArrowLeft, Globe, Moon, Power, Image, ImageOff, RotateCw, CircleStop } from 'lucide-react';
 
 /**
  * 검색창 + 시계 + 이스터에그 패널 + 기능 아이콘(다국어/테마/종료)
@@ -64,6 +64,10 @@ export default function MenuWidgets() {
 
       {/* 우측 상단 기능 아이콘 */}
       <div id="util-icons">
+        <button className="util-btn" id="auto-rolling-toggle-btn" data-tooltip="자동 롤링 ON/OFF">
+          <RotateCw id="rolling-icon-on" size={20} style={{ display: 'none' }} />
+          <CircleStop id="rolling-icon-off" size={20} />
+        </button>
         <button className="util-btn" id="bg-toggle-btn" data-tooltip="배경 ON/OFF">
           <Image id="bg-icon-on" size={20} />
           <ImageOff id="bg-icon-off" size={20} style={{ display: 'none' }} />

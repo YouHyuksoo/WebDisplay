@@ -7,6 +7,8 @@
  */
 'use client';
 
+import { getKpiRateStyle } from '../../shared/status-styles';
+
 /** 라인 KPI 데이터 행 */
 export interface ProductionKpiRow {
   LINE_NAME?: string;
@@ -24,35 +26,6 @@ interface ProductionKpiCardProps {
   row: ProductionKpiRow;
 }
 
-/** 달성률 기반 색상 클래스 반환 */
-function getRateColor(rate: number) {
-  if (rate >= 95) {
-    return {
-      border: 'border-cyan-500',
-      text: 'text-cyan-400',
-      bg: 'bg-cyan-500/10',
-      headerBg: 'bg-cyan-900/40',
-      emoji: ':-)',
-    };
-  }
-  if (rate >= 90) {
-    return {
-      border: 'border-yellow-500',
-      text: 'text-yellow-400',
-      bg: 'bg-yellow-500/10',
-      headerBg: 'bg-yellow-900/40',
-      emoji: ':-|',
-    };
-  }
-  return {
-    border: 'border-red-500',
-    text: 'text-red-500',
-    bg: 'bg-red-500/10',
-    headerBg: 'bg-red-900/40',
-    emoji: ':-(',
-  };
-}
-
 /** 숫자 천단위 포맷 (소수점 반올림) */
 function fmt(val?: number): string {
   if (val == null) return '-';
@@ -66,7 +39,7 @@ function fmt(val?: number): string {
 export default function ProductionKpiCard({ row }: ProductionKpiCardProps) {
   const rate = row.ACHIEVEMENT_RATE ?? 0;
   const diff = row.DIFF_QTY ?? 0;
-  const color = getRateColor(rate);
+  const color = getKpiRateStyle(rate);
 
   return (
     <div className={`flex h-full flex-col border-2 ${color.border} bg-zinc-950`}>
