@@ -16,7 +16,7 @@ setlocal EnableDelayedExpansion
 :: Usage: Run server-manager.bat and select menu option
 :: ============================================================================
 
-set "PROJECT_PATH=C:\Project\WebDisplay"
+set "PROJECT_PATH=D:\Project\WebDisplay"
 set "RUNNER_PATH=D:\Project\action-runner-display"
 set "RUNNER_VERSION=2.321.0"
 set "PM2_APP_NAME=mes-display"

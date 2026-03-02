@@ -11,7 +11,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: C:\Project\WebDisplay
+        working-directory: D:\Project\WebDisplay
 
     steps:
       - name: Check current user
@@ -24,7 +24,7 @@ jobs:
         shell: cmd
 
       - name: Configure Git safe directory
-        run: git config --global --add safe.directory C:/Project/WebDisplay
+        run: git config --global --add safe.directory D:/Project/WebDisplay
 
       - name: Stop MES Display process only
         run: |
@@ -52,7 +52,7 @@ jobs:
           $ErrorActionPreference = 'SilentlyContinue'
           pm2 delete mes-display 2>&1 | Out-Null
           $ErrorActionPreference = 'Stop'
-          Set-Location C:\Project\WebDisplay
+          Set-Location D:\Project\WebDisplay
           pm2 start ecosystem.config.js --update-env
           pm2 save
           Start-Sleep 5
