@@ -13,6 +13,7 @@
 
 import { state } from '../state';
 import { showToast, showConfirm, closeModal, saveShortcuts } from '../ui';
+import { addDeletedDefault } from '../storage';
 
 /**
  * 바로가기 저장
@@ -71,6 +72,10 @@ export function saveShortcut(): void {
 export async function deleteShortcut(id: string): Promise<void> {
   const confirmed = await showConfirm('삭제할까요?', { title: '바로가기 삭제', danger: true });
   if (confirmed) {
+    // 기본 항목(fav-/menu-)을 삭제하면 auto-merge 복원을 방지
+    if (id.startsWith('fav-') || id.startsWith('menu-')) {
+      addDeletedDefault(id);
+    }
     state.shortcuts = state.shortcuts.filter((x) => x.id !== id);
     saveShortcuts();
 

@@ -36,6 +36,7 @@ export const KEYS = {
   THEME: 'mes-display-theme',
   HISTORY: 'mes-display-history',
   AUTO_LAUNCH: 'mes-display-auto-launch',
+  DELETED_DEFAULTS: 'mes-display-deleted-defaults',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -83,9 +84,10 @@ export function loadShortcuts(): Shortcut[] {
           return s;
         });
 
-      // 2. 기본 목록에 새로 추가된 화면 자동 병합
+      // 2. 기본 목록에 새로 추가된 화면 자동 병합 (사용자가 삭제한 항목은 제외)
+      const deletedDefaults = loadDeletedDefaults();
       const existingIds = new Set(cleaned.map((s) => s.id));
-      const added = DEFAULT_SHORTCUTS.filter((s) => !existingIds.has(s.id));
+      const added = DEFAULT_SHORTCUTS.filter((s) => !existingIds.has(s.id) && !deletedDefaults.has(s.id));
       if (added.length > 0) hasChanges = true;
 
       const merged = [...cleaned, ...added];
@@ -137,7 +139,41 @@ export function saveShortcuts(shortcuts: Shortcut[]): boolean {
 export function resetShortcuts(): Shortcut[] {
   const defaults = JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS)) as Shortcut[];
   saveShortcuts(defaults);
+  resetDeletedDefaults();
   return defaults;
+}
+
+// ---------------------------------------------------------------------------
+// Deleted Defaults (사용자가 삭제한 기본 바로가기 추적)
+// ---------------------------------------------------------------------------
+
+/**
+ * 사용자가 삭제한 기본 바로가기 ID 목록 불러오기
+ * @returns 삭제된 기본 항목 ID Set
+ */
+export function loadDeletedDefaults(): Set<string> {
+  try {
+    const saved = localStorage.getItem(KEYS.DELETED_DEFAULTS);
+    if (saved) return new Set(JSON.parse(saved) as string[]);
+  } catch { /* ignore */ }
+  return new Set();
+}
+
+/**
+ * 기본 바로가기를 삭제 목록에 추가 (auto-merge 시 복원 방지)
+ * @param id - 삭제할 기본 바로가기 ID
+ */
+export function addDeletedDefault(id: string): void {
+  const deleted = loadDeletedDefaults();
+  deleted.add(id);
+  localStorage.setItem(KEYS.DELETED_DEFAULTS, JSON.stringify([...deleted]));
+}
+
+/**
+ * 삭제 목록 초기화 (모든 기본 항목 복원 허용)
+ */
+export function resetDeletedDefaults(): void {
+  localStorage.removeItem(KEYS.DELETED_DEFAULTS);
 }
 
 // ---------------------------------------------------------------------------
