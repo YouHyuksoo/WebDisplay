@@ -1,0 +1,60 @@
+name: Deploy MES Display to Windows Server
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    defaults:
+      run:
+        working-directory: C:\Project\WebDisplay
+
+    steps:
+      - name: Check current user
+        run: |
+          echo "=== Current User ==="
+          whoami
+          echo "=== PM2 Home ==="
+          echo %PM2_HOME%
+          echo %USERPROFILE%
+        shell: cmd
+
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory C:/Project/WebDisplay
+
+      - name: Stop MES Display process only
+        run: |
+          set PM2_HOME=C:\Users\Administrator\.pm2
+          echo "=== Stopping mes-display only (not killing PM2) ==="
+          pm2 stop mes-display 2>nul || echo "mes-display not running"
+          pm2 delete mes-display 2>nul || echo "mes-display not registered"
+        shell: cmd
+        continue-on-error: true
+
+      - name: Pull latest code
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Start MES Display PM2 process
+        run: |
+          $env:PM2_HOME = "C:\Users\Administrator\.pm2"
+          $ErrorActionPreference = 'SilentlyContinue'
+          pm2 delete mes-display 2>&1 | Out-Null
+          $ErrorActionPreference = 'Stop'
+          Set-Location C:\Project\WebDisplay
+          pm2 start ecosystem.config.js --update-env
+          pm2 save
+          Start-Sleep 5
+          pm2 list
+        shell: powershell
