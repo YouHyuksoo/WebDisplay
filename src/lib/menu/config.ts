@@ -111,7 +111,6 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'fav-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:msl-warning', layer: 0 },
   { id: 'fav-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 0 },
   { id: 'fav-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 0 },
-  { id: 'fav-help', title: '도움말', url: '/help', color: '#60a5fa', icon: '?', layer: 0 },
   { id: 'fav-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 0 },
   { id: 'fav-41', title: 'AOI 차트분석', url: '/display/41', color: '#06b6d4', icon: 'svg:chart', layer: 0 },
   { id: 'fav-42', title: 'FCT 차트분석', url: '/display/42', color: '#f59e0b', icon: 'svg:chart', layer: 0 },

@@ -30,6 +30,7 @@ import {
   Zap,
   ZapOff,
   RotateCw,
+  CircleHelp,
 } from "lucide-react";
 
 /**
@@ -147,11 +148,14 @@ export default function MenuControls() {
         </div>
       </div>
 
-      {/* 하단 버튼 (설정/추가) */}
+      {/* 하단 버튼 (설정/도움말/추가) */}
       <div className="bottom-buttons">
         <button className="floating-btn" id="settings-btn" data-tooltip="시스템 설정">
           <Settings size={22} />
         </button>
+        <a className="floating-btn" href="/help" data-tooltip="도움말">
+          <CircleHelp size={22} />
+        </a>
         <button className="floating-btn" id="add-btn" data-tooltip="바로가기 추가">
           <Plus size={22} />
         </button>
