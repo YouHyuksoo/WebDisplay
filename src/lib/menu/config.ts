@@ -103,6 +103,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   // Favorites (layer: 0) — 사용자가 즐겨찾기에 추가한 항목이 여기에 표시
   // SMD Monitoring (layer: 1)
   { id: 'menu-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 1 },
+  { id: 'menu-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:chip-smd', layer: 1 },
 
   // PBA Monitoring (layer: 2)
   { id: 'menu-21', title: 'PBA 생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:machine-status', layer: 2 },

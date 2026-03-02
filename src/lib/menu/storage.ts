@@ -64,10 +64,14 @@ export function loadShortcuts(): Shortcut[] {
         if (!s.id.startsWith('menu-') && !s.id.startsWith('fav-menu-')) return true;
         return defaultUrls.has(s.url);
       });
-      if (cleaned.length !== shortcuts.length) {
-        localStorage.setItem(KEYS.SHORTCUTS, JSON.stringify(cleaned));
+      // 기본 목록에 새로 추가된 화면 자동 병합
+      const existingIds = new Set(cleaned.map((s) => s.id));
+      const added = DEFAULT_SHORTCUTS.filter((s) => !existingIds.has(s.id));
+      const merged = [...cleaned, ...added];
+      if (merged.length !== shortcuts.length) {
+        localStorage.setItem(KEYS.SHORTCUTS, JSON.stringify(merged));
       }
-      return cleaned;
+      return merged;
     }
   } catch (e) {
     console.error('Failed to load shortcuts:', e);

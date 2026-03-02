@@ -14,6 +14,7 @@ import MslWarningIssueStatus from '@/components/display/screens/msl-warning-issu
 import TempHumidityStatus from '@/components/display/screens/temp-humidity/TempHumidityStatus';
 import DisplayOption from '@/components/display/screens/option/DisplayOption';
 import SolderWarningStatus from '@/components/display/screens/solder-warning/SolderWarningStatus';
+import ProductionKpiStatus from '@/components/display/screens/production-kpi/ProductionKpiStatus';
 
 interface PageProps {
   params: Promise<{ screenId: string }>;
@@ -42,6 +43,10 @@ export default async function DisplayPage({ params }: PageProps) {
 
   if (screenId === '18') {
     return <DisplayOption screenId={screenId} />;
+  }
+
+  if (screenId === '26') {
+    return <ProductionKpiStatus screenId={screenId} />;
   }
 
   if (screenId === '31') {

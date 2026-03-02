@@ -245,12 +245,7 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
     renderCards();
   });
 
-  // 로고 아이콘 클릭 시 등록/수정 모달 (stopPropagation 처리로 내비게이션 방지)
-  card.querySelector('.shortcut-icon')!.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isRegistered = state.shortcuts.some((s) => s.id === shortcut.id);
-    openModal(isRegistered ? shortcut.id : shortcut);
-  });
+  // 로고 아이콘 클릭 — 카드 클릭과 동일하게 내비게이션 (모달은 edit-btn 전용)
 
   // 수정 버튼
   card.querySelector('.edit-btn')!.addEventListener('click', (e) => {
