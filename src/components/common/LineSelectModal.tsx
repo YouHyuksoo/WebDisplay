@@ -13,16 +13,19 @@ interface LineSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
   screenId: string;
+  /** true이면 최소 1개 이상 선택 필수 (저장값 없으면 닫기 불가) */
+  required?: boolean;
 }
 
 /** 라인 선택 모달 — DisplaySelectModal(type='line') 래퍼 */
-export default function LineSelectModal({ isOpen, onClose, screenId }: LineSelectModalProps) {
+export default function LineSelectModal({ isOpen, onClose, screenId, required }: LineSelectModalProps) {
   return (
     <DisplaySelectModal
       isOpen={isOpen}
       onClose={onClose}
       screenId={screenId}
       type="line"
+      required={required}
     />
   );
 }

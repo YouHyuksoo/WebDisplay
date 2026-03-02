@@ -16,6 +16,7 @@ export const SCREENS: Record<string, ScreenConfig> = {
   '24': { id: '24', title: 'SMD Production Status', titleKo: 'SMD 생산현황', window: 'w_display_machine_status_smd', group: 'smd-monitoring' },
   '25': { id: '25', title: 'Foolproof Status', titleKo: '종합F/P현황', window: 'w_display_machine_foolproof_status', group: 'smd-monitoring' },
   '26': { id: '26', title: 'Line Production KPI', titleKo: '라인별생산현황', window: 'w_display_product_kpi_status', group: 'smd-monitoring' },
+  '27': { id: '27', title: 'SMD Dual Production Status', titleKo: 'SMD 듀얼생산현황', window: 'w_display_machine_status_single_smd', group: 'smd-monitoring' },
 
   '21': { id: '21', title: 'PBA Production Status', titleKo: '제품생산현황', window: 'w_display_assy_production_status', group: 'pba-monitoring' },
   '29': { id: '29', title: 'MSL Warning List (Mount)', titleKo: 'MSL(장착기준)', window: 'w_display_msl_warning_list', group: 'quality' },

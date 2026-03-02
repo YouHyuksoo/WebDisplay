@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import LineSelectModal from '../common/LineSelectModal';
 import SqlViewerModal from '../common/SqlViewerModal';
 import useDisplayTiming from '@/hooks/useDisplayTiming';
+import { hasLineSelection } from '@/lib/display-helpers';
 
 interface DisplayHeaderProps {
   title: string;
@@ -23,6 +24,8 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal }: 
   const [time, setTime] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSqlOpen, setIsSqlOpen] = useState(false);
+  /** 라인 선택 필수 여부 (저장값 없을 때 true) */
+  const [lineRequired, setLineRequired] = useState(false);
   const timing = useDisplayTiming();
 
   useEffect(() => {
@@ -31,6 +34,14 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal }: 
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
+
+  /* ── 최초 접속 시 라인 미선택이면 자동 팝업 ── */
+  useEffect(() => {
+    if (screenId && !renderSettingsModal && !hasLineSelection(screenId)) {
+      setLineRequired(true);
+      setIsModalOpen(true);
+    }
+  }, [screenId, renderSettingsModal]);
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-700 bg-zinc-900 px-6 dark:border-zinc-700 dark:bg-zinc-900">
@@ -58,8 +69,9 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal }: 
               ? renderSettingsModal({ isOpen: isModalOpen, onClose: () => setIsModalOpen(false), screenId })
               : <LineSelectModal
                   isOpen={isModalOpen}
-                  onClose={() => setIsModalOpen(false)}
+                  onClose={() => { setIsModalOpen(false); setLineRequired(false); }}
                   screenId={screenId}
+                  required={lineRequired}
                 />
             }
 

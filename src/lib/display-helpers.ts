@@ -63,6 +63,18 @@ export function getSelectedLines(screenId: string): string {
 }
 
 /**
+ * 해당 화면에 라인 선택 저장값이 존재하는지 확인한다.
+ * 최초 접속 시 라인 선택 팝업 자동 표시 여부를 판단하는 데 사용.
+ * @param screenId - 화면별 고유 ID
+ * @returns 저장값이 존재하면 true
+ */
+export function hasLineSelection(screenId: string): boolean {
+  try {
+    return localStorage.getItem(`display-lines-${screenId}`) !== null;
+  } catch { return false; }
+}
+
+/**
  * localStorage에서 선택된 센서(온습도기) 코드를 읽어온다.
  * 선택값이 없거나 '%'(전체)이면 '%'를 반환하고,
  * 개별 센서가 선택되어 있으면 콤마 구분 문자열을 반환한다.

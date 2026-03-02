@@ -102,6 +102,8 @@ export interface DisplaySelectModalProps {
   screenId: string;
   /** 선택 유형 ('line' | 'sensor') */
   type: SelectType;
+  /** true이면 최소 1개 이상 선택 필수 (저장값 없으면 닫기 불가) */
+  required?: boolean;
 }
 
 /* ───────────── 컴포넌트 ───────────── */
@@ -111,6 +113,7 @@ export default function DisplaySelectModal({
   onClose,
   screenId,
   type,
+  required = false,
 }: DisplaySelectModalProps) {
   const config = CONFIG_MAP[type];
 
@@ -123,6 +126,18 @@ export default function DisplaySelectModal({
   /* ── 상태 ── */
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [timing, setTiming] = useState<DisplayTimingConfig>(DEFAULT_TIMING_CONFIG);
+  const [showWarning, setShowWarning] = useState(false);
+
+  /** 저장값이 이미 존재하는지 여부 */
+  const hasSaved = typeof window !== 'undefined'
+    && localStorage.getItem(`${config.storagePrefix}${screenId}`) !== null;
+
+  /** required 모드에서 저장값 없으면 닫기 차단 */
+  const handleClose = () => {
+    if (required && !hasSaved) return;
+    setShowWarning(false);
+    onClose();
+  };
 
   /* ── 모달 열릴 때 localStorage에서 복원 ── */
   useEffect(() => {
@@ -134,9 +149,10 @@ export default function DisplaySelectModal({
           if (Array.isArray(parsed)) setSelectedItems(new Set(parsed));
         } catch { /* 무시 */ }
       } else {
-        setSelectedItems(new Set(['%']));
+        setSelectedItems(new Set());
       }
       setTiming(loadTiming());
+      setShowWarning(false);
     }
   }, [isOpen, screenId, config.storagePrefix]);
 
@@ -166,10 +182,15 @@ export default function DisplaySelectModal({
 
   /* ── 저장 ── */
   const handleSave = () => {
+    if (selectedItems.size === 0) {
+      setShowWarning(true);
+      return;
+    }
+    setShowWarning(false);
     const arr = Array.from(selectedItems);
     localStorage.setItem(
       `${config.storagePrefix}${screenId}`,
-      JSON.stringify(arr.length > 0 ? arr : ['%']),
+      JSON.stringify(arr),
     );
     window.dispatchEvent(new Event(`${config.eventPrefix}${screenId}`));
     saveTiming(timing);
@@ -178,10 +199,12 @@ export default function DisplaySelectModal({
 
   /* ── 렌더 ── */
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Display Settings" size="md"
+    <Modal isOpen={isOpen} onClose={handleClose} title="Display Settings" size="md"
       footer={
         <>
-          <Button variant="ghost" onClick={onClose}>취소</Button>
+          {!(required && !hasSaved) && (
+            <Button variant="ghost" onClick={handleClose}>취소</Button>
+          )}
           <Button variant="primary" onClick={handleSave}>OK</Button>
         </>
       }
@@ -224,6 +247,16 @@ export default function DisplaySelectModal({
       {/* 항목 선택 */}
       <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
         <h3 className="mb-3 text-sm font-bold text-zinc-900 dark:text-white">{config.sectionTitle}</h3>
+        {showWarning && (
+          <div className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+            최소 1개 이상 선택해 주세요.
+          </div>
+        )}
+        {required && !hasSaved && (
+          <div className="mb-3 rounded-md bg-sky-50 px-3 py-2 text-sm text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+            표시할 항목을 선택한 후 OK를 눌러 주세요.
+          </div>
+        )}
         {isLoading ? (
           <div className="flex h-32 items-center justify-center">
             <svg className="h-8 w-8 animate-spin text-sky-500" fill="none" viewBox="0 0 24 24">

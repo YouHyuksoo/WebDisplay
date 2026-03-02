@@ -10,6 +10,7 @@
  */
 
 import { sqlCheckItems, sqlSmdProduction } from './smd-production';
+import { sqlSmdDualProduction, sqlSmdDualNgCount } from './smd-dual-production';
 import { sqlAssyProductionList } from './assy-production-status';
 import { sqlMslWarningList, sqlMslNgCount } from './msl-warning-list';
 import { sqlMslWarningIssueList, sqlMslWarningIssueNgCount } from './msl-warning-issue';
@@ -60,6 +61,15 @@ const SCREEN_SQL_BUILDERS: Record<string, () => ScreenSqlInfo> = {
     title: '라인별 생산현황 (Line Production KPI)',
     queries: [
       { label: '생산 KPI', sql: sqlProductionKpiList('/* AND line_code IN (:line0, ...) */') },
+    ],
+  }),
+  '27': () => ({
+    screenId: '27',
+    title: 'SMD 듀얼생산현황 (SMD Dual Production Status)',
+    queries: [
+      { label: '생산현황 상세', sql: sqlSmdDualProduction('/* AND line_code IN (:line0, ...) */') },
+      { label: '점검 항목', sql: sqlCheckItems('/* AND line_code IN (:line0, ...) */') },
+      { label: 'NG 건수', sql: sqlSmdDualNgCount('/* AND line_code IN (:line0, ...) */') },
     ],
   }),
   '29': () => ({

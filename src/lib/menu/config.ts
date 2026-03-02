@@ -103,6 +103,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'fav-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 0 },
   { id: 'fav-25', title: '종합F/P현황', url: '/display/25', color: '#a78bfa', icon: 'svg:chip-smd', layer: 0 },
   { id: 'fav-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:chip-smd', layer: 0 },
+  { id: 'fav-27', title: 'SMD 듀얼생산현황', url: '/display/27', color: '#818cf8', icon: 'svg:chip-smd', layer: 0 },
   { id: 'fav-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:pba-production', layer: 0 },
   { id: 'fav-34', title: '픽업률현황(BASE)', url: '/display/34', color: '#f59e0b', icon: 'svg:chip-smd', layer: 0 },
   { id: 'fav-35', title: '픽업률현황(HEAD)', url: '/display/35', color: '#eab308', icon: 'svg:chip-smd', layer: 0 },
@@ -115,6 +116,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'menu-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 1 },
   { id: 'menu-25', title: '종합F/P현황', url: '/display/25', color: '#a78bfa', icon: 'svg:chip-smd', layer: 1 },
   { id: 'menu-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:chip-smd', layer: 1 },
+  { id: 'menu-27', title: 'SMD 듀얼생산현황', url: '/display/27', color: '#818cf8', icon: 'svg:chip-smd', layer: 1 },
 
   // PBA Monitoring (layer: 2)
   { id: 'menu-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:pba-production', layer: 2 },
