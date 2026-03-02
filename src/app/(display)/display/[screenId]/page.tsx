@@ -15,6 +15,9 @@ import TempHumidityStatus from '@/components/display/screens/temp-humidity/TempH
 import DisplayOption from '@/components/display/screens/option/DisplayOption';
 import SolderWarningStatus from '@/components/display/screens/solder-warning/SolderWarningStatus';
 import ProductionKpiStatus from '@/components/display/screens/production-kpi/ProductionKpiStatus';
+import SmtPickupRateBaseStatus from '@/components/display/screens/smt-pickup-rate-base/SmtPickupRateBaseStatus';
+import SmtPickupRateHeadStatus from '@/components/display/screens/smt-pickup-rate-head/SmtPickupRateHeadStatus';
+import AssyProductionStatus from '@/components/display/screens/assy-production/AssyProductionStatus';
 
 interface PageProps {
   params: Promise<{ screenId: string }>;
@@ -51,6 +54,18 @@ export default async function DisplayPage({ params }: PageProps) {
 
   if (screenId === '31') {
     return <SolderWarningStatus screenId={screenId} />;
+  }
+
+  if (screenId === '34') {
+    return <SmtPickupRateBaseStatus screenId={screenId} />;
+  }
+
+  if (screenId === '35') {
+    return <SmtPickupRateHeadStatus screenId={screenId} />;
+  }
+
+  if (screenId === '21') {
+    return <AssyProductionStatus screenId={screenId} />;
   }
 
   return (

@@ -413,13 +413,41 @@ export function initEventListeners(): void {
   document.getElementById('menu-restore')?.addEventListener('click', () => importData());
 
   // ===== 카테고리 관리 =====
-  document.getElementById('menu-categories')?.addEventListener('click', () => {
-    hideSettingsMenu();
-    import('../categories').then((C) => C.openManager());
-  });
-  document.getElementById('category-modal-close')?.addEventListener('click', () => {
-    import('../categories').then((C) => C.closeManager());
-  });
+  const menuCategories = document.getElementById('menu-categories');
+  if (menuCategories) {
+    addTracked(menuCategories, 'click', () => {
+      hideSettingsMenu();
+      import('../categories').then((C) => C.openManager());
+    });
+  }
+
+  const categoryModalClose = document.getElementById('category-modal-close');
+  if (categoryModalClose) {
+    addTracked(categoryModalClose, 'click', () => {
+      import('../categories').then((C) => C.closeManager());
+    });
+  }
+
+  const addCategoryBtn = document.getElementById('add-category-btn');
+  if (addCategoryBtn) {
+    addTracked(addCategoryBtn, 'click', () => {
+      import('../categories').then((C) => C.openEditDialog());
+    });
+  }
+
+  const categoryEditCancel = document.getElementById('category-edit-cancel');
+  if (categoryEditCancel) {
+    addTracked(categoryEditCancel, 'click', () => {
+      import('../categories').then((C) => C.closeEditDialog());
+    });
+  }
+
+  const categoryEditSave = document.getElementById('category-edit-save');
+  if (categoryEditSave) {
+    addTracked(categoryEditSave, 'click', () => {
+      import('../categories').then((C) => C.saveFromDialog());
+    });
+  }
 
   // ===== 레이아웃 전환 (그리드 → 캐러셀 → 썸네일 → 그리드) =====
   document.getElementById('layout-toggle-btn')?.addEventListener('click', () => {
@@ -446,8 +474,8 @@ export function initEventListeners(): void {
     e.stopPropagation();
     toggleTunnelSubmenu();
   });
-  document.getElementById('menu-enable-3d')?.addEventListener('click', async (e) => {
-    e.stopPropagation();
+  const toggleBackground3D = async (e?: Event) => {
+    e?.stopPropagation();
     state.enable3D = !state.enable3D;
     update3DLabel();
     
@@ -465,7 +493,10 @@ export function initEventListeners(): void {
       const container = document.getElementById('three-container');
       if (container) container.innerHTML = '';
     }
-  });
+  };
+
+  document.getElementById('menu-enable-3d')?.addEventListener('click', toggleBackground3D);
+  document.getElementById('bg-toggle-btn')?.addEventListener('click', toggleBackground3D);
   document.getElementById('menu-virtualization')?.addEventListener('click', (e) => {
     e.stopPropagation();
     state.simpleVirtualization = !state.simpleVirtualization;

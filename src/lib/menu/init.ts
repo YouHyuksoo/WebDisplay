@@ -72,33 +72,40 @@ export async function initMenuSystem(): Promise<void> {
   const Lanes = await import('./lanes');
   const Tooltip = await import('./tooltip');
 
-  // 1. 카테고리 로드 (다른 모듈에서 참조하므로 먼저)
-  Categories.load();
+  // 1. 데이터 로드 (앱 생명주기 중 최초 1회만 수행)
+  if (!state.isInitialized) {
+    // 1-1. 카테고리 로드
+    Categories.load();
 
-  // 2. 데이터 로드
-  state.shortcuts = Storage.loadShortcuts();
-  const settings = Storage.loadSettings();
+    // 1-2. 바로가기 및 설정 로드
+    state.shortcutVersion = 1; // 버전 관리 (필요 시)
+    state.shortcuts = Storage.loadShortcuts();
+    const settings = Storage.loadSettings();
 
-  // 3. 설정을 state에 적용
-  state.tunnelShape = settings.tunnelShape;
-  state.glowTheme = settings.glowTheme;
-  state.iconColorMode = settings.iconColorMode;
-  state.cardStyle = settings.cardStyle;
-  state.spaceType = settings.spaceType;
-  state.cardLayout = settings.cardLayout;
-  state.auroraBrightness = settings.auroraBrightness ?? 1.0;
-  state.simpleVirtualization = settings.simpleVirtualization ?? true;
-  state.selectedColor = COLORS[0];
-  state.enable3D = settings.enable3D ?? true;
+    // 1-3. 설정을 state에 적용
+    state.tunnelShape = settings.tunnelShape;
+    state.glowTheme = settings.glowTheme;
+    state.iconColorMode = settings.iconColorMode;
+    state.cardStyle = settings.cardStyle;
+    state.spaceType = settings.spaceType;
+    state.cardLayout = settings.cardLayout;
+    state.auroraBrightness = settings.auroraBrightness ?? 1.0;
+    state.simpleVirtualization = settings.simpleVirtualization ?? true;
+    state.selectedColor = COLORS[0];
+    state.enable3D = settings.enable3D ?? true;
 
-  // 4. Three.js 공간 초기화 (조건부/지연 로드)
+    state.isInitialized = true;
+  }
+
+  // 2. Three.js 공간 초기화 (매 mount 마다 수행 - 캔버스 컨테이너가 새로 생성됨)
   if (state.enable3D) {
     const Space = await import('./space');
     Space.init();
   }
 
-  // 5. 이전 섹션 위치 복원 (디스플레이 → 메뉴 복귀 시)
+  // 3. 이전 섹션 위치 복원 (디스플레이 → 메뉴 복귀 시)
   const savedSection = localStorage.getItem(Storage.KEYS.LAST_SECTION);
+  const isReturning = savedSection !== null;
   try {
     if (savedSection !== null) {
       const idx = Number(savedSection);
@@ -112,45 +119,41 @@ export async function initMenuSystem(): Promise<void> {
     }
   } catch { /* ignored */ }
 
-  // 6. UI 초기화
+  // 4. UI 및 DOM 렌더링 (매 mount 마다 수행)
   Sections.createDepthIndicator();
   initColorPicker();
   renderCards();
-  // 섹션 깊이 즉시 동기 적용 (renderCards 내부의 비동기 호출에만 의존하면 타이밍 이슈 가능)
-  Sections.updateCardsDepth();
+  // renderCards(renderAllCards) 내부에서 이미 updateCardsDepth를 비동기로 호출하므로 여기서 중복 호출 제거 검토 가능
+  // 다만 즉각적인 배치를 위해 동기 호출 유지 (필요 시)
 
   initEventListeners();
   initDialogListeners();
 
-  // 6-1. 캐러셀/썸네일 화살표 가시성 업데이트 (설정 로드 후 필수)
+  // 5. 컴포넌트 상태 업데이트
   const Carousel = await import('./carousel');
   Carousel.updateNavArrowsVisibility();
   const { updateThumbnailArrowsVisibility } = await import('./cards');
   updateThumbnailArrowsVisibility();
 
-  // 7. 레인 시스템 초기화
+  // 6. 시스템 초기화
   Lanes.init();
-
-  // 7-2. 툴팁 초기화
   Tooltip.init();
 
-  // 7. 위젯 초기화
+  // 7. 위젯 초기화 (인터벌 정리 후 재설정)
   Widgets.updateClock();
+  if (clockIntervalId) clearInterval(clockIntervalId);
   clockIntervalId = setInterval(Widgets.updateClock, 1000);
 
-  // 8. 카테고리 셀렉트 업데이트
+  // 8. 기타 UI 요소 업데이트
   Categories.updateCategorySelect();
-
-  // 9. 메뉴 상태 표시 업데이트
   updateSpaceMenu();
   updateTunnelMenu();
   updateCardStyleMenu();
   updateCardLayoutLabel();
 
-  // 10. 테마 적용
+  // 9. 테마 및 애니메이션 적용
   applyGlowTheme(state.glowTheme);
 
-  // 11. 애니메이션 시작 (조건부)
   if (state.enable3D) {
     const Space = await import('./space');
     Space.animate();
@@ -162,25 +165,23 @@ export async function initMenuSystem(): Promise<void> {
     if (loadingScreen) {
       gsap.to(loadingScreen, {
         opacity: 0,
-        duration: 0.5,
+        duration: isReturning ? 0.3 : 0.5,
         onComplete: () => {
           loadingScreen.style.display = 'none';
 
-          // 진입 애니메이션
-          animateEntrance();
-
-          // 이스터에그는 여기에 초기화 로직을 넣지 않고 필요할 때 lazy import 하도록 변경됨
+          // 진입 애니메이션 (복귀 여부 전달)
+          animateEntrance(isReturning);
 
           // 검색 초기화
           Search.init();
         },
       });
     } else {
-      animateEntrance();
+      animateEntrance(isReturning);
       // 검색 초기화
       Search.init();
     }
-  }, 500);
+  }, isReturning ? 100 : 500);
 }
 
 // ---------------------------------------------------------------------------

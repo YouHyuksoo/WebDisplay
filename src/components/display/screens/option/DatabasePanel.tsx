@@ -23,11 +23,13 @@ export default function DatabasePanel() {
   const [config, setConfig] = useState<DatabaseConfig>(EMPTY_CONFIG);
   const [status, setStatus] = useState<Status>('idle');
   const [message, setMessage] = useState('');
+  const [source, setSource] = useState<'env' | 'file' | 'unknown'>('unknown');
 
   const loadCurrent = useCallback(async () => {
     try {
       const res = await fetch('/api/settings/database');
       const data = await res.json();
+      setSource(data.source ?? 'unknown');
       setConfig({
         host: data.host ?? '',
         port: data.port ?? 1521,
@@ -101,9 +103,20 @@ export default function DatabasePanel() {
 
   return (
     <div className="space-y-5 p-6">
-      <h3 className="text-base font-semibold text-zinc-800 dark:text-zinc-100">
-        Oracle 데이터베이스 연결 설정
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-semibold text-zinc-800 dark:text-zinc-100">
+          Oracle 데이터베이스 연결 설정
+        </h3>
+        {source !== 'unknown' && (
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+            source === 'env' 
+              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
+              : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+          }`}>
+            {source === 'env' ? '.env.local 기반' : '설정 파일 기반'}
+          </span>
+        )}
+      </div>
 
       {/* 호스트 + 포트 */}
       <div className="grid grid-cols-3 gap-4">

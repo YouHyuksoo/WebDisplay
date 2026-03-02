@@ -27,11 +27,50 @@ export async function GET() {
         source: 'file',
       });
     }
+
+    // .env.local 기반 파싱
+    const connStr = process.env.ORACLE_CONNECT_STRING ?? '';
+    let host = '';
+    let port = 1521;
+    let sidOrService = '';
+    let connectionType: 'SID' | 'SERVICE_NAME' = 'SERVICE_NAME';
+
+    if (connStr) {
+      // 1. 형식 판별: '/'가 포함되면 SERVICE_NAME, ':'가 2개 이상이면 SID (host:port:sid)
+      if (connStr.includes('/')) {
+        connectionType = 'SERVICE_NAME';
+        // host:port/service
+        const [hp, service] = connStr.split('/');
+        sidOrService = service || '';
+        if (hp.includes(':')) {
+          const [h, p] = hp.split(':');
+          host = h;
+          port = parseInt(p) || 1521;
+        } else {
+          host = hp;
+        }
+      } else if ((connStr.match(/:/g) || []).length >= 2) {
+        connectionType = 'SID';
+        // host:port:sid
+        const [h, p, s] = connStr.split(':');
+        host = h || '';
+        port = parseInt(p) || 1521;
+        sidOrService = s || '';
+      } else if (connStr.includes(':')) {
+        // host:port 또는 host:sid (애매하지만 여기서는 host:port로 가정)
+        const [h, p] = connStr.split(':');
+        host = h;
+        port = parseInt(p) || 1521;
+      } else {
+        host = connStr;
+      }
+    }
+
     return NextResponse.json({
-      host: process.env.ORACLE_CONNECT_STRING?.split(/[:\/]/)[0] ?? '',
-      port: 1521,
-      connectionType: 'SERVICE_NAME',
-      sidOrService: '',
+      host,
+      port,
+      connectionType,
+      sidOrService,
       username: process.env.ORACLE_USER ?? '',
       password: process.env.ORACLE_PASSWORD ? '****' : '',
       source: 'env',

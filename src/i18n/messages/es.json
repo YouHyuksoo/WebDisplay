@@ -18,10 +18,10 @@
     "quality": "Control de calidad"
   },
   "screens": {
-    "12": "Estado de producción ASSY",
+    "12": "Estado de producción de productos",
     "16": "Error de registro de equipos",
     "18": "Configuración de opciones",
-    "21": "Estado de producción ASSY",
+    "21": "Estado de producción de productos",
     "22": "Volumen de producción ASSY",
     "23": "Rendimiento AOI",
     "24": "Estado de producción SMD",

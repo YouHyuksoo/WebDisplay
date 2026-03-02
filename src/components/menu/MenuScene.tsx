@@ -45,11 +45,16 @@ export default function MenuScene() {
     if (initialized.current) return;
     initialized.current = true;
 
-    import('@/lib/menu/init').then(({ initMenuSystem }) => {
+    let destroy: (() => void) | null = null;
+
+    import('@/lib/menu/init').then(({ initMenuSystem, destroyMenuSystem }) => {
       initMenuSystem();
+      destroy = destroyMenuSystem;
     });
 
-    // cleanup은 실제 언마운트 시에만 필요 (StrictMode에서는 ref 가드로 재실행 안 됨)
+    return () => {
+      if (destroy) destroy();
+    };
   }, []);
 
   // 카드 클릭 → Next.js 라우팅 (별도 useEffect로 분리하여 StrictMode에서도 항상 등록)

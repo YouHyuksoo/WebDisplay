@@ -21,6 +21,10 @@ import { DEFAULT_MENU_SETTINGS } from './config';
  * 초기값은 null / 빈 배열입니다.
  */
 export const state: MenuState = {
+  // 상태 제어
+  isInitialized: false,
+  shortcutVersion: 0,
+
   // 데이터
   shortcuts: [],
 

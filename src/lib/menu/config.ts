@@ -106,8 +106,10 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'menu-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:chip-smd', layer: 1 },
 
   // PBA Monitoring (layer: 2)
-  { id: 'menu-21', title: 'PBA 생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:machine-status', layer: 2 },
+  { id: 'menu-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:machine-status', layer: 2 },
   // Equipment (layer: 3)
+  { id: 'menu-34', title: '픽업률현황(BASE)', url: '/display/34', color: '#f59e0b', icon: 'svg:chip-smd', layer: 3 },
+  { id: 'menu-35', title: '픽업률현황(HEAD)', url: '/display/35', color: '#eab308', icon: 'svg:chip-smd', layer: 3 },
   // Quality (layer: 4)
   { id: 'menu-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 4 },
   { id: 'menu-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:msl-warning', layer: 4 },

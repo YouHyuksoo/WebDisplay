@@ -9,12 +9,14 @@ import { useState } from 'react';
 import DisplayLayout from '../../DisplayLayout';
 import PageRollingPanel from './PageRollingPanel';
 import DatabasePanel from './DatabasePanel';
+import AutoLaunchPanel from './AutoLaunchPanel';
 
-type Tab = 'rolling' | 'database';
+type Tab = 'rolling' | 'database' | 'autolaunch';
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'rolling', label: '페이지 순환' },
   { key: 'database', label: 'DB 설정' },
+  { key: 'autolaunch', label: '시작페이지 설정' },
 ];
 
 interface DisplayOptionProps {
@@ -48,6 +50,7 @@ export default function DisplayOption({ screenId }: DisplayOptionProps) {
         <div className="min-h-0 flex-1 overflow-auto">
           {activeTab === 'rolling' && <PageRollingPanel />}
           {activeTab === 'database' && <DatabasePanel />}
+          {activeTab === 'autolaunch' && <AutoLaunchPanel />}
         </div>
       </div>
     </DisplayLayout>

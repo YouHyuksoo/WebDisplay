@@ -167,6 +167,10 @@ export interface LaneData {
  * - Three.js 관련 필드(scene, camera 등)는 런타임에 할당되므로 any 타입
  */
 export interface MenuState {
+  // 상태 제어
+  isInitialized: boolean;
+  shortcutVersion: number;
+
   // 데이터
   shortcuts: Shortcut[];
 

@@ -18,10 +18,10 @@
     "quality": "Quality Control"
   },
   "screens": {
-    "12": "ASSY Production Status",
+    "12": "Product Production Status",
     "16": "Equipment Log Error",
     "18": "Option Settings",
-    "21": "ASSY Production Status",
+    "21": "Product Production Status",
     "22": "ASSY Production Volume",
     "23": "AOI Yield",
     "24": "SMD Production Status",

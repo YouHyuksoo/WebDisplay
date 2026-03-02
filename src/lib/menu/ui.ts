@@ -276,12 +276,20 @@ export function updateVirtualizationLabel(): void {
 }
 
 /**
- * 3D 배경 레이블 업데이트
+ * 3D 배경 레이블 및 아이콘 업데이트
  */
 export function update3DLabel(): void {
   const label = document.getElementById('enable-3d-label');
   if (label) {
     label.textContent = state.enable3D ? '3D 배경: 켜짐' : '3D 배경: 꺼짐';
+  }
+
+  // 우측 상단 유틸리티 아이콘 업데이트
+  const on = document.getElementById('bg-icon-on');
+  const off = document.getElementById('bg-icon-off');
+  if (on && off) {
+    on.style.display = state.enable3D ? '' : 'none';
+    off.style.display = state.enable3D ? 'none' : '';
   }
 }
 
@@ -291,8 +299,30 @@ export function update3DLabel(): void {
 
 /**
  * 초기 등장 애니메이션
+ * @param isReturning - 디스플레이 화면 등에서 돌아오는 것인지 여부
  */
-export function animateEntrance(): void {
+export function animateEntrance(isReturning = false): void {
+  // 복귀 시에는 애니메이션 없이 즉시 표시
+  if (isReturning) {
+    gsap.set(['#section-info', '#clock-widget', '.depth-dot', '.bottom-buttons', '#scroll-hint'], {
+      opacity: 1,
+      y: 0,
+      x: 0,
+      scale: 1,
+    });
+
+    const activeSection = document.querySelector('.section-cards.active');
+    if (activeSection) {
+      gsap.set(activeSection, { opacity: 1 });
+      if (state.cardLayout !== 'carousel') {
+        const cards = activeSection.querySelectorAll('.shortcut-card');
+        gsap.set(cards, { scale: 1, opacity: 1, z: 0 });
+      }
+    }
+    return;
+  }
+
+  // 처음 진입 시 전형적인 애니메이션
   gsap.fromTo('#section-info',
     { y: -50, opacity: 0 },
     { y: 0, opacity: 1, duration: 0.8 },

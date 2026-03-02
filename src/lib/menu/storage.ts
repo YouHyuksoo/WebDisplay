@@ -35,6 +35,7 @@ export const KEYS = {
   LOCALE: 'mes-display-locale',
   THEME: 'mes-display-theme',
   HISTORY: 'mes-display-history',
+  AUTO_LAUNCH: 'mes-display-auto-launch',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -58,17 +59,37 @@ export function loadShortcuts(): Shortcut[] {
     const saved = localStorage.getItem(KEYS.SHORTCUTS);
     if (saved) {
       const shortcuts = JSON.parse(saved) as Shortcut[];
-      // 기본 목록에서 제거된 화면 자동 정리 (localStorage 캐시 동기화)
-      const defaultUrls = new Set(DEFAULT_SHORTCUTS.map((s) => s.url));
-      const cleaned = shortcuts.filter((s) => {
-        if (!s.id.startsWith('menu-') && !s.id.startsWith('fav-menu-')) return true;
-        return defaultUrls.has(s.url);
-      });
-      // 기본 목록에 새로 추가된 화면 자동 병합
+      let hasChanges = false;
+      const defaultMap = new Map(DEFAULT_SHORTCUTS.map((s) => [s.id, s]));
+
+      // 1. 기존 항목들의 정보를 최신 기본값과 동기화
+      const cleaned = shortcuts
+        .filter((s) => {
+          // 제거된 기본 항목은 삭제
+          if (s.id.startsWith('menu-')) {
+            return defaultMap.has(s.id);
+          }
+          return true;
+        })
+        .map((s) => {
+          // 기본 항목이라면 config.ts 정보를 강제 동기화 (제목, 아이콘, 색상 등)
+          if (s.id.startsWith('menu-')) {
+            const def = defaultMap.get(s.id);
+            if (def && (s.title !== def.title || s.icon !== def.icon || s.color !== def.color || s.layer !== def.layer)) {
+              hasChanges = true;
+              return { ...s, ...def };
+            }
+          }
+          return s;
+        });
+
+      // 2. 기본 목록에 새로 추가된 화면 자동 병합
       const existingIds = new Set(cleaned.map((s) => s.id));
       const added = DEFAULT_SHORTCUTS.filter((s) => !existingIds.has(s.id));
+      if (added.length > 0) hasChanges = true;
+
       const merged = [...cleaned, ...added];
-      if (merged.length !== shortcuts.length) {
+      if (hasChanges || merged.length !== shortcuts.length) {
         localStorage.setItem(KEYS.SHORTCUTS, JSON.stringify(merged));
       }
       return merged;

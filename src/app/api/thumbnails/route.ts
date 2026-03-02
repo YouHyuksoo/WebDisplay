@@ -8,41 +8,41 @@
  * 3. DB 연결 없이 정적 파일만 사용
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import sharp from 'sharp';
-import path from 'path';
-import { writeFile, mkdir } from 'fs/promises';
+import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
+import path from "path";
+import { writeFile, mkdir } from "fs/promises";
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const screenId = formData.get('screenId') as string;
-    const file = formData.get('file') as File;
+    const screenId = formData.get("screenId") as string;
+    const file = formData.get("file") as File;
 
     if (!screenId || !file) {
       return NextResponse.json(
-        { success: false, error: 'screenId와 file이 필요합니다' },
+        { success: false, error: "screenId와 file이 필요합니다" },
         { status: 400 },
       );
     }
 
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       return NextResponse.json(
-        { success: false, error: '이미지 파일만 업로드 가능합니다' },
+        { success: false, error: "이미지 파일만 업로드 가능합니다" },
         { status: 400 },
       );
     }
 
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
-        { success: false, error: '파일 크기는 10MB 이하여야 합니다' },
+        { success: false, error: "파일 크기는 10MB 이하여야 합니다" },
         { status: 400 },
       );
     }
 
     if (!/^\d+$/.test(screenId)) {
       return NextResponse.json(
-        { success: false, error: '유효하지 않은 screenId입니다' },
+        { success: false, error: "유효하지 않은 screenId입니다" },
         { status: 400 },
       );
     }
@@ -50,11 +50,11 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const resized = await sharp(buffer)
-      .resize(640, 400, { fit: 'cover' })
+      .resize(640, 360, { fit: "inside" })
       .png()
       .toBuffer();
 
-    const thumbnailDir = path.join(process.cwd(), 'public', 'thumbnails');
+    const thumbnailDir = path.join(process.cwd(), "public", "thumbnails");
     await mkdir(thumbnailDir, { recursive: true });
 
     const filePath = path.join(thumbnailDir, `${screenId}.png`);
@@ -65,9 +65,9 @@ export async function POST(request: NextRequest) {
       path: `/thumbnails/${screenId}.png`,
     });
   } catch (error) {
-    console.error('Thumbnail upload error:', error);
+    console.error("Thumbnail upload error:", error);
     return NextResponse.json(
-      { success: false, error: '이미지 업로드에 실패했습니다' },
+      { success: false, error: "이미지 업로드에 실패했습니다" },
       { status: 500 },
     );
   }
