@@ -34,7 +34,11 @@
     "32": "Stencil Management",
     "34": "Vision Defects",
     "37": "Temperature Management",
-    "38": "Humidity Management"
+    "38": "Humidity Management",
+    "40": "SPI Chart Analysis",
+    "41": "AOI Chart Analysis",
+    "42": "FCT Chart Analysis",
+    "43": "VISION Chart Analysis"
   },
   "display": {
     "refreshInterval": "Refresh: {seconds}s",
@@ -217,5 +221,27 @@
     "importConfirm": "Overwrite current data with backup?\n(Existing data will be lost)",
     "importComplete": "Data import complete!",
     "importReadFail": "Failed to read file"
+  },
+  "help": {
+    "title": "Help",
+    "backToMenu": "Back to Menu",
+    "searchPlaceholder": "Search help...",
+    "overview": "System Overview",
+    "menuSystem": "Menu System",
+    "smdMonitoring": "SMD Monitoring",
+    "pbaMonitoring": "PBA Monitoring",
+    "equipment": "Equipment Monitoring",
+    "quality": "Quality Control",
+    "settings": "Settings & Options",
+    "shortcuts": "Keyboard Shortcuts",
+    "screenId": "Screen ID",
+    "route": "Route",
+    "dataSource": "Data Source",
+    "refreshCycle": "Refresh Cycle",
+    "columns": "Displayed Columns",
+    "features": "Key Features",
+    "shortcutKey": "Shortcut",
+    "action": "Action",
+    "description": "Description"
   }
 }

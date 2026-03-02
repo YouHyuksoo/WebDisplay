@@ -34,7 +34,11 @@
     "32": "Gestión de Stencil",
     "34": "Defectos de visión",
     "37": "Gestión de temperatura",
-    "38": "Gestión de humedad"
+    "38": "Gestión de humedad",
+    "40": "Análisis de gráficos SPI",
+    "41": "Análisis de gráficos AOI",
+    "42": "Análisis de gráficos FCT",
+    "43": "Análisis de gráficos VISION"
   },
   "display": {
     "refreshInterval": "Actualización: {seconds}s",
@@ -217,5 +221,27 @@
     "importConfirm": "¿Sobrescribir datos actuales con el respaldo?\n(Los datos existentes se perderán)",
     "importComplete": "¡Importación de datos completada!",
     "importReadFail": "Error al leer el archivo"
+  },
+  "help": {
+    "title": "Ayuda",
+    "backToMenu": "Volver al menú",
+    "searchPlaceholder": "Buscar ayuda...",
+    "overview": "Descripción del sistema",
+    "menuSystem": "Sistema de menú",
+    "smdMonitoring": "Monitoreo SMD",
+    "pbaMonitoring": "Monitoreo PBA",
+    "equipment": "Monitoreo de equipos",
+    "quality": "Control de calidad",
+    "settings": "Configuración y opciones",
+    "shortcuts": "Atajos de teclado",
+    "screenId": "ID de pantalla",
+    "route": "Ruta",
+    "dataSource": "Fuente de datos",
+    "refreshCycle": "Ciclo de actualización",
+    "columns": "Columnas mostradas",
+    "features": "Funciones principales",
+    "shortcutKey": "Atajo",
+    "action": "Acción",
+    "description": "Descripción"
   }
 }

@@ -34,7 +34,11 @@
     "32": "Stencil 관리",
     "34": "비전 불량",
     "37": "온도 관리",
-    "38": "습도 관리"
+    "38": "습도 관리",
+    "40": "SPI 차트분석",
+    "41": "AOI 차트분석",
+    "42": "FCT 차트분석",
+    "43": "VISION 차트분석"
   },
   "display": {
     "refreshInterval": "새로고침: {seconds}초",
@@ -217,5 +221,27 @@
     "importConfirm": "현재 데이터를 백업 파일로 덮어쓸까요?\n(기존 데이터는 사라집니다)",
     "importComplete": "데이터 가져오기 완료!",
     "importReadFail": "파일 읽기 실패"
+  },
+  "help": {
+    "title": "도움말",
+    "backToMenu": "메뉴로 돌아가기",
+    "searchPlaceholder": "도움말 검색...",
+    "overview": "시스템 개요",
+    "menuSystem": "메뉴 시스템",
+    "smdMonitoring": "SMD 모니터링",
+    "pbaMonitoring": "PBA 모니터링",
+    "equipment": "설비 모니터링",
+    "quality": "품질 관리",
+    "settings": "설정 & 옵션",
+    "shortcuts": "키보드 단축키",
+    "screenId": "화면 ID",
+    "route": "경로",
+    "dataSource": "데이터 소스",
+    "refreshCycle": "갱신 주기",
+    "columns": "표시 컬럼",
+    "features": "주요 기능",
+    "shortcutKey": "단축키",
+    "action": "동작",
+    "description": "설명"
   }
 }
