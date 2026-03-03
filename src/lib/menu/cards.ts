@@ -32,6 +32,7 @@ import {
   saveShortcuts,
   showToast,
 } from './ui';
+import { addDeletedDefault } from './storage';
 import type { Shortcut, Category } from './types';
 import { t, getScreenTitle } from './i18n';
 
@@ -56,6 +57,10 @@ function toggleFavorite(shortcut: Shortcut): boolean {
   );
 
   if (existing) {
+    // 기본 항목(fav-/menu-)을 제거하면 auto-merge 복원을 방지
+    if (existing.id.startsWith('fav-') || existing.id.startsWith('menu-')) {
+      addDeletedDefault(existing.id);
+    }
     state.shortcuts = state.shortcuts.filter((s) => s !== existing);
     saveShortcuts();
     showToast(t('menuUI.favRemoved'));
@@ -263,6 +268,10 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
       danger: true,
     });
     if (confirmed) {
+      // 기본 항목(fav-/menu-)을 삭제하면 auto-merge 복원을 방지
+      if (shortcut.id.startsWith('fav-') || shortcut.id.startsWith('menu-')) {
+        addDeletedDefault(shortcut.id);
+      }
       state.shortcuts = state.shortcuts.filter((x) => x.id !== shortcut.id);
       saveShortcuts();
       renderCards();
@@ -448,6 +457,10 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
       danger: true,
     });
     if (confirmed) {
+      // 기본 항목(fav-/menu-)을 삭제하면 auto-merge 복원을 방지
+      if (shortcut.id.startsWith('fav-') || shortcut.id.startsWith('menu-')) {
+        addDeletedDefault(shortcut.id);
+      }
       state.shortcuts = state.shortcuts.filter((x) => x.id !== shortcut.id);
       saveShortcuts();
       renderCards();

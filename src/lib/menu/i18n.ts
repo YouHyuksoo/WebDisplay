@@ -9,8 +9,8 @@
  *    ```ts
  *    import { t } from '@/lib/menu/i18n';
  *    t('menuUI.edit');              // → '수정' (ko) / 'Edit' (en) / 'Editar' (es)
- *    t('screens.24');               // → 'SMD 생산현황' (ko)
  *    t('menuUI.minutesAgo', {n:5}); // → '5분 전' (ko) / '5 min ago' (en)
+ *    getScreenTitle(shortcut);      // → screens.ts에서 로케일별 제목 반환
  *    ```
  * 3. **로케일 소스**: localStorage의 'mes-display-locale' 키 (LocaleProvider와 동일)
  */
@@ -19,6 +19,7 @@ import koMessages from '@/i18n/messages/ko.json';
 import enMessages from '@/i18n/messages/en.json';
 import esMessages from '@/i18n/messages/es.json';
 import { KEYS } from './storage';
+import { SCREENS } from '@/lib/screens';
 
 const allMessages: Record<string, Record<string, unknown>> = {
   ko: koMessages,
@@ -37,7 +38,7 @@ function getLocale(): string {
 
 /**
  * 메뉴 시스템용 번역 함수
- * @param key - 점(.)으로 구분된 메시지 키 (예: 'screens.24', 'menuUI.edit')
+ * @param key - 점(.)으로 구분된 메시지 키 (예: 'menuUI.edit', 'menuUI.catName0')
  * @param params - ICU 스타일 보간 파라미터 (예: \{ n: 5 \})
  * @returns 번역된 문자열, 키를 못 찾으면 key 그대로 반환
  */
@@ -45,7 +46,7 @@ export function t(key: string, params?: Record<string, string | number>): string
   const locale = getLocale();
   const messages = allMessages[locale] ?? allMessages.ko;
 
-  // 'screens.24' → messages['screens']['24']
+  // 'menuUI.edit' → messages['menuUI']['edit']
   const parts = key.split('.');
   let value: unknown = messages;
   for (const part of parts) {
@@ -70,16 +71,22 @@ export function t(key: string, params?: Record<string, string | number>): string
 }
 
 /**
- * 바로가기 URL에서 screen ID를 추출하여 번역된 제목 반환
+ * 바로가기 URL에서 screen ID를 추출하여 번역된 제목 반환.
+ * Single Source of Truth: screens.ts의 제목을 직접 참조한다.
+ *
  * @param shortcut - 바로가기 객체 (url, title 포함)
  * @returns 번역된 화면 제목. 매칭 실패 시 원본 title 반환.
  */
 export function getScreenTitle(shortcut: { url: string; title: string }): string {
   const match = shortcut.url.match(/\/display\/(\d+)/);
   if (match) {
-    const translated = t(`screens.${match[1]}`);
-    // t()가 키 자체를 반환하면 fallback
-    if (translated !== `screens.${match[1]}`) return translated;
+    const screen = SCREENS[match[1]];
+    if (screen) {
+      const locale = getLocale();
+      if (locale === 'ko') return screen.titleKo;
+      if (locale === 'es' && screen.titleEs) return screen.titleEs;
+      return screen.title; // 영문 기본
+    }
   }
   return shortcut.title;
 }

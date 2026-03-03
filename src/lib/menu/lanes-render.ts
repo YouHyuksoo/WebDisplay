@@ -327,7 +327,7 @@ function executeToolAction(action: string): void {
 
       window.dispatchEvent(
         new CustomEvent('mes-navigate', {
-          detail: { url: '/display/18', title: t('screens.18') },
+          detail: { url: '/display/18', title: getScreenTitle({ url: '/display/18', title: 'Option' }) },
         }),
       );
       break;
