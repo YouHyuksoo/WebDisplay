@@ -8,26 +8,46 @@
 import oracledb from 'oracledb';
 import fs from 'fs';
 import path from 'path';
-import type { DatabaseConfig } from '@/types/option';
+import type { DatabaseConfig, DatabaseFileConfig } from '@/types/option';
 
 let poolPromise: Promise<oracledb.Pool> | null = null;
 
 const CONFIG_PATH = path.join(process.cwd(), 'config', 'database.json');
 
 /**
- * config/database.json 파일에서 DB 설정을 읽는다.
- * 파일이 없으면 null 반환 (env fallback).
+ * config/database.json 파일 전체를 읽는다.
+ * 파일이 없으면 null 반환.
  */
-function loadFileConfig(): DatabaseConfig | null {
+export function loadFileConfig(): DatabaseFileConfig | null {
   try {
     if (fs.existsSync(CONFIG_PATH)) {
       const raw = fs.readFileSync(CONFIG_PATH, 'utf-8');
-      return JSON.parse(raw) as DatabaseConfig;
+      const data = JSON.parse(raw);
+      // 레거시 단일 설정 마이그레이션 (profiles 배열이 없는 경우)
+      if (!data.profiles) {
+        const legacy = data as DatabaseConfig;
+        return {
+          activeProfile: 'default',
+          profiles: [{ ...legacy, name: 'default' }],
+        };
+      }
+      return data as DatabaseFileConfig;
     }
   } catch {
     console.warn('config/database.json 읽기 실패, env 변수로 대체');
   }
   return null;
+}
+
+/**
+ * 활성 프로필의 DB 설정을 반환한다.
+ * 파일이 없으면 null (env fallback).
+ */
+function loadActiveConfig(): DatabaseConfig | null {
+  const fileData = loadFileConfig();
+  if (!fileData || fileData.profiles.length === 0) return null;
+  const active = fileData.profiles.find((p) => p.name === fileData.activeProfile);
+  return active ?? fileData.profiles[0];
 }
 
 /**
@@ -48,7 +68,7 @@ export function buildConnectString(cfg: DatabaseConfig): string {
  */
 function getPool(): Promise<oracledb.Pool> {
   if (!poolPromise) {
-    const fileCfg = loadFileConfig();
+    const fileCfg = loadActiveConfig();
     if (fileCfg) {
       poolPromise = oracledb.createPool({
         user: fileCfg.username,

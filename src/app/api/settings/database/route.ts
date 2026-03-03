@@ -1,34 +1,37 @@
 /**
  * @file route.ts
- * @description DB 설정 API. 현재 설정 조회, 연결 테스트, 설정 저장 & 풀 재시작.
+ * @description DB 프로필 관리 API. 다중 프로필 조회/추가/삭제/테스트/활성화.
  * 초보자 가이드:
- *   GET  → 현재 설정 반환 (비밀번호 마스킹)
- *   POST { action:'test', config } → 임시 연결 시도
- *   POST { action:'save', config } → config/database.json 저장 + 풀 재시작
+ *   GET  → 전체 프로필 목록 + 활성 프로필 반환 (비밀번호 마스킹)
+ *   POST { action:'test', config }    → 임시 연결 시도
+ *   POST { action:'save', profiles, activeProfile } → 전체 프로필 저장 + 풀 재시작
  */
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import oracledb from 'oracledb';
-import { buildConnectString, resetPool } from '@/lib/db';
-import type { DatabaseConfig } from '@/types/option';
+import { buildConnectString, loadFileConfig, resetPool } from '@/lib/db';
+import type { DatabaseConfig, DatabaseFileConfig, DatabaseProfile } from '@/types/option';
 
 const CONFIG_PATH = path.join(process.cwd(), 'config', 'database.json');
 
-/** GET: 현재 DB 설정 반환 (비밀번호 마스킹) */
+/** GET: 전체 프로필 목록 반환 (비밀번호 마스킹) */
 export async function GET() {
   try {
-    if (fs.existsSync(CONFIG_PATH)) {
-      const raw = fs.readFileSync(CONFIG_PATH, 'utf-8');
-      const cfg = JSON.parse(raw) as DatabaseConfig;
-      return NextResponse.json({
-        ...cfg,
-        password: cfg.password ? '****' : '',
-        source: 'file',
-      });
+    const fileData = loadFileConfig();
+
+    if (fileData && fileData.profiles.length > 0) {
+      const masked: DatabaseFileConfig = {
+        activeProfile: fileData.activeProfile,
+        profiles: fileData.profiles.map((p) => ({
+          ...p,
+          password: p.password ? '****' : '',
+        })),
+      };
+      return NextResponse.json({ ...masked, source: 'file' });
     }
 
-    // .env.local 기반 파싱
+    // .env.local 기반 파싱 → 단일 프로필로 변환
     const connStr = process.env.ORACLE_CONNECT_STRING ?? '';
     let host = '';
     let port = 1521;
@@ -36,10 +39,8 @@ export async function GET() {
     let connectionType: 'SID' | 'SERVICE_NAME' = 'SERVICE_NAME';
 
     if (connStr) {
-      // 1. 형식 판별: '/'가 포함되면 SERVICE_NAME, ':'가 2개 이상이면 SID (host:port:sid)
       if (connStr.includes('/')) {
         connectionType = 'SERVICE_NAME';
-        // host:port/service
         const [hp, service] = connStr.split('/');
         sidOrService = service || '';
         if (hp.includes(':')) {
@@ -51,13 +52,11 @@ export async function GET() {
         }
       } else if ((connStr.match(/:/g) || []).length >= 2) {
         connectionType = 'SID';
-        // host:port:sid
         const [h, p, s] = connStr.split(':');
         host = h || '';
         port = parseInt(p) || 1521;
         sidOrService = s || '';
       } else if (connStr.includes(':')) {
-        // host:port 또는 host:sid (애매하지만 여기서는 host:port로 가정)
         const [h, p] = connStr.split(':');
         host = h;
         port = parseInt(p) || 1521;
@@ -66,13 +65,19 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({
+    const envProfile: DatabaseProfile = {
+      name: 'default',
       host,
       port,
       connectionType,
       sidOrService,
       username: process.env.ORACLE_USER ?? '',
       password: process.env.ORACLE_PASSWORD ? '****' : '',
+    };
+
+    return NextResponse.json({
+      activeProfile: 'default',
+      profiles: [envProfile],
       source: 'env',
     });
   } catch (e) {
@@ -80,18 +85,23 @@ export async function GET() {
   }
 }
 
-/** POST: action='test' → 연결 테스트, action='save' → 저장 & 풀 재시작 */
+/** POST: 프로필 테스트/저장 */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { action, config } = body as { action: string; config: DatabaseConfig };
+    const { action } = body as { action: string };
 
     if (action === 'test') {
+      const { config } = body as { config: DatabaseConfig };
       return await testConnection(config);
     }
 
     if (action === 'save') {
-      return await saveAndRestart(config);
+      const { profiles, activeProfile } = body as {
+        profiles: DatabaseProfile[];
+        activeProfile: string;
+      };
+      return await saveProfiles(profiles, activeProfile);
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
@@ -121,11 +131,13 @@ async function testConnection(cfg: DatabaseConfig) {
   }
 }
 
-/** 설정 파일 저장 후 풀 재시작 */
-async function saveAndRestart(cfg: DatabaseConfig) {
+/** 전체 프로필 저장 후 풀 재시작 */
+async function saveProfiles(profiles: DatabaseProfile[], activeProfile: string) {
   const dir = path.dirname(CONFIG_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf-8');
+
+  const data: DatabaseFileConfig = { activeProfile, profiles };
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf-8');
 
   await resetPool();
   return NextResponse.json({ success: true, message: 'Saved & pool restarted' });

@@ -24,6 +24,20 @@ export interface DatabaseConfig {
   password: string;
 }
 
+/** 이름이 부여된 DB 프로필 (DatabaseConfig + name) */
+export interface DatabaseProfile extends DatabaseConfig {
+  /** 프로필 고유 이름 (예: '생산서버', '테스트') */
+  name: string;
+}
+
+/** config/database.json 파일 구조 */
+export interface DatabaseFileConfig {
+  /** 현재 활성 프로필 이름 */
+  activeProfile: string;
+  /** 등록된 프로필 목록 */
+  profiles: DatabaseProfile[];
+}
+
 /** RollingConfig 기본값 */
 export const DEFAULT_ROLLING_CONFIG: RollingConfig = {
   enabled: false,
