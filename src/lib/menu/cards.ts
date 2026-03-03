@@ -33,6 +33,7 @@ import {
   showToast,
 } from './ui';
 import type { Shortcut, Category } from './types';
+import { t, getScreenTitle } from './i18n';
 
 /** FAVORITES 카테고리의 layer ID — config.ts에서 관리 */
 const FAVORITES_LAYER = FAVORITES_CATEGORY_ID;
@@ -57,7 +58,7 @@ function toggleFavorite(shortcut: Shortcut): boolean {
   if (existing) {
     state.shortcuts = state.shortcuts.filter((s) => s !== existing);
     saveShortcuts();
-    showToast('즐겨찾기에서 제거됨');
+    showToast(t('menuUI.favRemoved'));
     return false;
   }
 
@@ -67,7 +68,7 @@ function toggleFavorite(shortcut: Shortcut): boolean {
     layer: FAVORITES_LAYER,
   });
   saveShortcuts();
-  showToast('즐겨찾기에 등록됨');
+  showToast(t('menuUI.favAdded'));
   return true;
 }
 
@@ -219,16 +220,16 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
   const favored = isFavorited(shortcut.url);
   card.innerHTML = `
     <div class="shortcut-icon">${iconContent}</div>
-    <div class="shortcut-title">${shortcut.title}</div>
+    <div class="shortcut-title">${getScreenTitle(shortcut)}</div>
     <div class="shortcut-url">${getDomain(shortcut.url)}</div>
     <div class="card-actions">
-      <button class="card-btn fav-btn${favored ? ' active' : ''}" data-tooltip="즐겨찾기">
+      <button class="card-btn fav-btn${favored ? ' active' : ''}" data-tooltip="${t('menuUI.favorites')}">
         <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
       </button>
-      <button class="card-btn edit-btn" data-tooltip="수정">
+      <button class="card-btn edit-btn" data-tooltip="${t('menuUI.edit')}">
         <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
       </button>
-      <button class="card-btn delete-btn" data-tooltip="삭제">
+      <button class="card-btn delete-btn" data-tooltip="${t('menuUI.delete')}">
         <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
       </button>
     </div>
@@ -257,8 +258,8 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
   // 삭제 버튼
   card.querySelector('.delete-btn')!.addEventListener('click', async (e) => {
     e.stopPropagation();
-    const confirmed = await showConfirm('삭제할까요?', {
-      title: '바로가기 삭제',
+    const confirmed = await showConfirm(t('menuUI.shortcutDeleteConfirm'), {
+      title: t('menuUI.shortcutDelete'),
       danger: true,
     });
     if (confirmed) {
@@ -379,7 +380,7 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
   // 업로드 버튼
   const uploadBtn = document.createElement('button');
   uploadBtn.className = 'thumbnail-upload-btn';
-  uploadBtn.textContent = '이미지 등록';
+  uploadBtn.textContent = t('menuUI.imageRegister');
   uploadBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     triggerThumbnailUpload(screenId, card);
@@ -394,10 +395,10 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
       img.remove();
       imageArea.classList.add('empty');
       imageArea.insertBefore(createPlaceholder(), uploadBtn);
-      uploadBtn.textContent = '이미지 등록';
+      uploadBtn.textContent = t('menuUI.imageRegister');
     };
     img.onload = () => {
-      uploadBtn.textContent = '이미지 변경';
+      uploadBtn.textContent = t('menuUI.imageChange');
     };
     imageArea.appendChild(img);
   } else {
@@ -410,20 +411,20 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
   // 제목 영역
   const titleArea = document.createElement('div');
   titleArea.className = 'thumbnail-title';
-  titleArea.textContent = shortcut.title;
+  titleArea.textContent = getScreenTitle(shortcut);
 
   // 액션 버튼 (즐겨찾기 / 수정 / 삭제)
   const favored = isFavorited(shortcut.url);
   const actions = document.createElement('div');
   actions.className = 'card-actions';
   actions.innerHTML = `
-    <button class="card-btn fav-btn${favored ? ' active' : ''}" data-tooltip="즐겨찾기">
+    <button class="card-btn fav-btn${favored ? ' active' : ''}" data-tooltip="${t('menuUI.favorites')}">
       <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
     </button>
-    <button class="card-btn edit-btn" data-tooltip="수정">
+    <button class="card-btn edit-btn" data-tooltip="${t('menuUI.edit')}">
       <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
     </button>
-    <button class="card-btn delete-btn" data-tooltip="삭제">
+    <button class="card-btn delete-btn" data-tooltip="${t('menuUI.delete')}">
       <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
     </button>
   `;
@@ -442,8 +443,8 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
 
   actions.querySelector('.delete-btn')!.addEventListener('click', async (e) => {
     e.stopPropagation();
-    const confirmed = await showConfirm('삭제할까요?', {
-      title: '바로가기 삭제',
+    const confirmed = await showConfirm(t('menuUI.shortcutDeleteConfirm'), {
+      title: t('menuUI.shortcutDelete'),
       danger: true,
     });
     if (confirmed) {
@@ -497,7 +498,7 @@ function createPlaceholder(): HTMLElement {
     <svg viewBox="0 0 24 24" fill="currentColor">
       <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
     </svg>
-    <span>스크린샷 미등록</span>
+    <span>${t('menuUI.screenshotNotRegistered')}</span>
   `;
   return placeholder;
 }
@@ -505,7 +506,7 @@ function createPlaceholder(): HTMLElement {
 /** 이미지 업로드 트리거 */
 function triggerThumbnailUpload(screenId: string, card: HTMLDivElement): void {
   if (!screenId) {
-    import('./ui').then(({ showToast }) => showToast('이 화면은 이미지 등록을 지원하지 않습니다'));
+    import('./ui').then(({ showToast }) => showToast(t('menuUI.imageNotSupported')));
     return;
   }
 
@@ -541,15 +542,15 @@ function triggerThumbnailUpload(screenId: string, card: HTMLDivElement): void {
           img.src = `${data.path}?t=${Date.now()}`;
 
           const btn = imageArea.querySelector('.thumbnail-upload-btn');
-          if (btn) btn.textContent = '이미지 변경';
+          if (btn) btn.textContent = t('menuUI.imageChange');
         }
 
-        import('./ui').then(({ showToast }) => showToast('스크린샷이 등록되었습니다'));
+        import('./ui').then(({ showToast }) => showToast(t('menuUI.screenshotRegistered')));
       } else {
-        import('./ui').then(({ showToast }) => showToast(data.error || '업로드 실패'));
+        import('./ui').then(({ showToast }) => showToast(data.error || t('menuUI.uploadFailed')));
       }
     } catch {
-      import('./ui').then(({ showToast }) => showToast('업로드 중 오류가 발생했습니다'));
+      import('./ui').then(({ showToast }) => showToast(t('menuUI.uploadError')));
     }
   };
   input.click();

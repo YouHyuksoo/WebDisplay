@@ -1,3 +1,23 @@
 {
-  "css.lint.unknownAtRules": "ignore"
+  "css.lint.unknownAtRules": "ignore",
+  "sqltools.connections": [
+    {
+      "connectionTimeout": 15,
+      "mssqlOptions": {
+        "appName": "SQLTools",
+        "useUTC": true,
+        "encrypt": true,
+        "trustServerCertificate": true
+      },
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "20.13.24.30",
+      "port": 1433,
+      "driver": "MSSQL",
+      "name": "HANHWA",
+      "database": "SQUAD",
+      "username": "t-admin",
+      "password": "t-admin123!"
+    }
+  ]
 }

@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { KEYS } from '@/lib/menu/storage';
 import { SCREENS } from '@/lib/screens';
 import type { RollingConfig } from '@/types/option';
@@ -17,6 +18,8 @@ const SCREEN_OPTIONS = Object.values(SCREENS)
   .map((s) => ({ id: s.id, label: `${s.titleKo} (${s.id})` }));
 
 export default function PageRollingPanel() {
+  const t = useTranslations('option');
+  const tCommon = useTranslations('common');
   const [config, setConfig] = useState<RollingConfig>(DEFAULT_ROLLING_CONFIG);
   const [selectedScreen, setSelectedScreen] = useState('');
   const [saved, setSaved] = useState(false);
@@ -63,14 +66,14 @@ export default function PageRollingPanel() {
           <div className="peer h-6 w-11 rounded-full bg-zinc-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-blue-600 peer-checked:after:translate-x-full dark:bg-zinc-600" />
         </label>
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-          페이지 순환 활성화
+          {t('rollingEnabled')}
         </span>
       </div>
 
       {/* 전환 간격 */}
       <div>
         <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          전환 간격 (초)
+          {t('rollingInterval')}
         </label>
         <input
           type="number"
@@ -88,7 +91,7 @@ export default function PageRollingPanel() {
       {/* 화면 추가 */}
       <div>
         <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          순환 화면 목록
+          {t('rollingScreens')}
         </label>
         <div className="flex gap-2">
           <select
@@ -96,7 +99,7 @@ export default function PageRollingPanel() {
             onChange={(e) => setSelectedScreen(e.target.value)}
             className="flex-1 rounded border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
           >
-            <option value="">화면 선택...</option>
+            <option value="">{t('selectScreen')}</option>
             {SCREEN_OPTIONS.filter((s) => !config.screens.includes(s.id)).map((s) => (
               <option key={s.id} value={s.id}>{s.label}</option>
             ))}
@@ -106,7 +109,7 @@ export default function PageRollingPanel() {
             disabled={!selectedScreen}
             className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
-            + 추가
+            {t('add')}
           </button>
         </div>
       </div>
@@ -139,10 +142,10 @@ export default function PageRollingPanel() {
           onClick={() => save(config)}
           className="rounded bg-emerald-600 px-6 py-2 text-sm font-medium text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
         >
-          저장
+          {tCommon('save')}
         </button>
         {saved && (
-          <span className="text-sm text-emerald-600 dark:text-emerald-400">저장 완료!</span>
+          <span className="text-sm text-emerald-600 dark:text-emerald-400">{t('saved')}</span>
         )}
       </div>
     </div>

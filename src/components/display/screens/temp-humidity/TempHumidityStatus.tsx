@@ -11,6 +11,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import useSWR from 'swr';
+import { useTranslations } from 'next-intl';
 import DisplayLayout from '../../DisplayLayout';
 import NgAlertBanner from '../../NgAlertBanner';
 import TempHumidityCard, { type SensorRow } from './TempHumidityCard';
@@ -29,6 +30,7 @@ interface TempHumidityStatusProps {
 export default function TempHumidityStatus({
   screenId,
 }: TempHumidityStatusProps) {
+  const t = useTranslations('display');
   const timing = useDisplayTiming();
   const [selectedMachines, setSelectedMachines] = useState(() => getSelectedSensors(screenId));
 
@@ -83,7 +85,7 @@ export default function TempHumidityStatus({
     return (
       <DisplayLayout screenId={screenId} renderSettingsModal={renderSettingsModal}>
         <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
-          데이터 로딩 중...
+          {t('loading')}
         </div>
       </DisplayLayout>
     );
@@ -93,7 +95,7 @@ export default function TempHumidityStatus({
     return (
       <DisplayLayout screenId={screenId} renderSettingsModal={renderSettingsModal}>
         <div className="flex h-full items-center justify-center text-red-400 dark:text-red-500">
-          데이터 로드 실패
+          {t('loadError')}
         </div>
       </DisplayLayout>
     );
@@ -112,7 +114,7 @@ export default function TempHumidityStatus({
       renderSettingsModal={renderSettingsModal}
     >
       <div className="flex h-full flex-col overflow-hidden">
-        {ngCount > 0 && <NgAlertBanner message={`Temperature / Humidity NG: ${ngCount}건 발생`} />}
+        {ngCount > 0 && <NgAlertBanner message={t('tempNgWarning', { count: ngCount })} />}
 
         <div className="min-h-0 flex-1 overflow-hidden p-2">
           <div className="grid h-full grid-cols-4 grid-rows-3 gap-2">

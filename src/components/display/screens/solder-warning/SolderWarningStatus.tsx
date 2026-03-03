@@ -9,6 +9,7 @@
 
 import { useCallback } from 'react';
 import useSWR from 'swr';
+import { useTranslations } from 'next-intl';
 import DisplayLayout from '../../DisplayLayout';
 import NgAlertBanner from '../../NgAlertBanner';
 import SolderWarningGrid from './SolderWarningGrid';
@@ -29,6 +30,7 @@ interface SolderWarningStatusProps {
 export default function SolderWarningStatus({
   screenId,
 }: SolderWarningStatusProps) {
+  const t = useTranslations('display');
   const timing = useDisplayTiming();
   const thresholds = useSolderThresholds();
 
@@ -50,7 +52,7 @@ export default function SolderWarningStatus({
   return (
     <DisplayLayout screenId={screenId} renderSettingsModal={renderSettingsModal}>
       <div className="flex h-full flex-col overflow-hidden">
-        {ngCount > 0 && <NgAlertBanner message={`Solder Paste NG 경고: ${ngCount}건 발생`} />}
+        {ngCount > 0 && <NgAlertBanner message={t('solderNgWarning', { count: ngCount })} />}
         <div className="min-h-0 flex-1 overflow-hidden p-2">
           <SolderWarningGrid
             rows={data?.warningList ?? []}

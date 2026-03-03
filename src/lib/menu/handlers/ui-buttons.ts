@@ -20,6 +20,7 @@ import {
   update3DLabel,
 } from '../ui';
 import { toggleClickFx } from './click';
+import { t } from '../i18n';
 
 /**
  * 이스터에그, 리플 토글, 카드 수면, 아이콘 색상 등의 버튼 핸들러 등록
@@ -141,7 +142,7 @@ export function setupUtilityButtonHandlers(): void {
   });
   document.getElementById('exit-confirm')?.addEventListener('click', () => {
     window.close();
-    import('../ui').then((UI) => UI.showToast('⚠️ 브라우저에서 직접 닫아주세요'));
+    import('../ui').then((UI) => UI.showToast(t('menuUI.browserCloseHint')));
   });
 
   // ===== 최근 사용 바로가기 =====
@@ -160,7 +161,7 @@ export function setupUtilityButtonHandlers(): void {
       import('../sections').then((S) => S.goToSection(prev));
       state.sectionHistory.pop();
     } else {
-      import('../ui').then((UI) => UI.showToast('이전 메뉴가 없습니다'));
+      import('../ui').then((UI) => UI.showToast(t('menuUI.noPreviousMenu')));
     }
   });
 

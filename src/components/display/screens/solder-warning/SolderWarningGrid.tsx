@@ -17,6 +17,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useGridResizer } from '@/hooks/useGridResizer';
 import { useGridPaging } from '@/hooks/useGridPaging';
 import PageIndicator from '../../shared/PageIndicator';
@@ -51,18 +52,18 @@ interface SolderWarningGridProps {
   thresholds?: SolderThresholdConfig;
 }
 
-/** 헤더 정의 */
-const HEADERS = [
-  { key: 'LINE_CODE', label: 'Line', align: 'left' as const },
-  { key: 'LOT_NO', label: 'Lot No', align: 'left' as const },
-  { key: 'ITEM_CODE', label: 'Item Code', align: 'left' as const },
-  { key: 'ISSUE_DATE', label: 'Issue Date', align: 'center' as const },
-  { key: 'GAP1', label: '해동후경과', align: 'center' as const },
-  { key: 'MIX_TIME', label: '교반시간', align: 'center' as const },
-  { key: 'AFTR', label: '해동후경과시간', align: 'center' as const },
-  { key: 'INPUT', label: '투입일시', align: 'center' as const },
-  { key: 'GAP3', label: '개봉후경과', align: 'center' as const },
-  { key: 'VALID', label: '유효기간', align: 'center' as const },
+/** 헤더 정의 — labelKey로 solderTable 번역 참조 */
+const HEADER_KEYS = [
+  { key: 'LINE_CODE', labelKey: 'line' as const, align: 'left' as const },
+  { key: 'LOT_NO', labelKey: 'lotNo' as const, align: 'left' as const },
+  { key: 'ITEM_CODE', labelKey: 'itemCode' as const, align: 'left' as const },
+  { key: 'ISSUE_DATE', labelKey: 'issueDate' as const, align: 'center' as const },
+  { key: 'GAP1', labelKey: 'unfreezing' as const, align: 'center' as const },
+  { key: 'MIX_TIME', labelKey: 'stirTime' as const, align: 'center' as const },
+  { key: 'AFTR', labelKey: 'unfreezingTime' as const, align: 'center' as const },
+  { key: 'INPUT', labelKey: 'inputDate' as const, align: 'center' as const },
+  { key: 'GAP3', labelKey: 'gap3' as const, align: 'center' as const },
+  { key: 'VALID', labelKey: 'validDate' as const, align: 'center' as const },
 ] as const;
 
 /** 초기 컬럼 폭 (px) */
@@ -93,6 +94,8 @@ function formatValidDate(val?: string): string {
 
 /** Solder Paste Warning 그리드 테이블 */
 export default function SolderWarningGrid({ rows, isLoading, error, scrollSeconds = 5, thresholds }: SolderWarningGridProps) {
+  const t = useTranslations('solderTable');
+  const tDisplay = useTranslations('display');
   const { widths, handleMouseDown } = useGridResizer('grid-widths-solder-warning', INITIAL_WIDTHS);
   const { bodyRef, startIndex, endIndex, page, totalPages } = useGridPaging({ totalRows: rows.length, scrollSeconds });
 
@@ -102,7 +105,7 @@ export default function SolderWarningGrid({ rows, isLoading, error, scrollSecond
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-zinc-700 bg-zinc-950">
       {/* 헤더 */}
       <div className="flex shrink-0 border-b border-zinc-700 bg-emerald-800">
-        {HEADERS.map((h, i) => (
+        {HEADER_KEYS.map((h, i) => (
           <div
             key={h.key}
             className={`relative shrink-0 px-2 py-3 text-base font-black text-white ${
@@ -110,7 +113,7 @@ export default function SolderWarningGrid({ rows, isLoading, error, scrollSecond
             }`}
             style={{ width: widths[i] }}
           >
-            {h.label}
+            {t(h.labelKey)}
             <div className="resize-handle" onMouseDown={(e) => handleMouseDown(i, e)} />
           </div>
         ))}
@@ -119,18 +122,18 @@ export default function SolderWarningGrid({ rows, isLoading, error, scrollSecond
       {/* 상태 메시지 (로딩/에러/빈 데이터) */}
       {isLoading && (
         <div className="flex shrink-0 items-center justify-center py-8 text-xl text-zinc-400">
-          데이터 로딩 중...
+          {tDisplay('loading')}
         </div>
       )}
       {!isLoading && error && (
         <div className="flex shrink-0 flex-col items-center justify-center gap-2 py-8">
-          <span className="text-xl text-red-400">데이터 조회 실패</span>
+          <span className="text-xl text-red-400">{tDisplay('loadError')}</span>
           <span className="text-sm text-zinc-500">{error}</span>
         </div>
       )}
       {!isLoading && !error && rows.length === 0 && (
         <div className="flex shrink-0 items-center justify-center py-8 text-xl text-zinc-500">
-          Solder Paste 경고 항목 없음
+          {tDisplay('solderNoWarning')}
         </div>
       )}
 
@@ -181,7 +184,7 @@ export default function SolderWarningGrid({ rows, isLoading, error, scrollSecond
                   {formatValidDate(row.VALID_DATE)}
                   {validCheck <= (thresholds?.validWarning ?? 2) && (
                     <span className="ml-2 text-base">
-                      ({validCheck <= (thresholds?.validExpired ?? 0) ? '만료' : `D-${validCheck}`})
+                      ({validCheck <= (thresholds?.validExpired ?? 0) ? tDisplay('expired') : `D-${validCheck}`})
                     </span>
                   )}
                 </div>

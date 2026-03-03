@@ -22,6 +22,7 @@ import {
   hideCardStyleSubmenu,
   hideSettingsMenu,
 } from '../ui';
+import { t } from '../i18n';
 
 /**
  * 아이콘 색상 모드 전환
@@ -34,7 +35,7 @@ export function toggleIconColor(): void {
     Cards.renderCards();
   });
 
-  showToast(state.iconColorMode === 'brand' ? '\uD83C\uDFA8 브랜드 색상' : '\u26AA 흰색 아이콘');
+  showToast(state.iconColorMode === 'brand' ? t('menuUI.toastBrandColor') : t('menuUI.toastWhiteIcon'));
 }
 
 /**
@@ -64,9 +65,9 @@ export function changeSpaceType(): void {
   updateSpaceMenu();
 
   const toastMessages: Record<string, string> = {
-    tunnel: '\uD83D\uDD3A 클래식 터널',
-    warp: '\uD83C\uDF0C 코스믹 워프',
-    aurora: '\u2728 오로라',
+    tunnel: t('menuUI.toastTunnel'),
+    warp: t('menuUI.toastWarp'),
+    aurora: t('menuUI.toastAurora'),
   };
   showToast(toastMessages[newType]);
   hideSettingsMenu();
@@ -91,12 +92,12 @@ export function changeTunnelShape(shape: string): void {
   hideTunnelSubmenu();
 
   const shapeNames: Record<string, string> = {
-    triangle: '\uD83D\uDD3A 삼각형',
-    circle: '\u2B55 원형',
-    square: '\u2B1C 사각형',
-    hexagon: '\u2B21 육각형',
-    star: '\u2B50 별',
-    infinity: '\u221E 무한',
+    triangle: t('menuUI.shapeTriangle'),
+    circle: t('menuUI.shapeCircle'),
+    square: t('menuUI.shapeSquare'),
+    hexagon: t('menuUI.shapeHexagon'),
+    star: t('menuUI.shapeStar'),
+    infinity: t('menuUI.shapeInfinity'),
   };
   showToast(shapeNames[shape] || shape);
 }
@@ -117,15 +118,15 @@ export function changeCardStyle(style: string): void {
   hideCardStyleSubmenu();
 
   const styleNames: Record<string, string> = {
-    glass: '\uD83D\uDD2E 글래스',
-    rainbow: '\uD83C\uDF08 무지개',
-    gradient: '\uD83C\uDFA8 그라데이션',
-    dark: '\uD83C\uDF11 다크',
-    neon: '\uD83D\uDCA1 네온',
-    hermes: '\uD83E\uDDE1 헤르메스',
-    cyberpunk: '\uD83E\uDD16 사이버펑크',
-    apple: '\uD83C\uDF4E 애플',
-    luxury: '\uD83D\uDC8E 럭셔리',
+    glass: t('menuUI.styleGlass'),
+    rainbow: t('menuUI.styleRainbow'),
+    gradient: t('menuUI.styleGradient'),
+    dark: t('menuUI.styleDark'),
+    neon: t('menuUI.styleNeon'),
+    hermes: t('menuUI.styleHermes'),
+    cyberpunk: t('menuUI.styleCyberpunk'),
+    apple: t('menuUI.styleApple'),
+    luxury: t('menuUI.styleLuxury'),
   };
   showToast(styleNames[style] || style);
 }

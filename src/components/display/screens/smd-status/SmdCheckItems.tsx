@@ -17,6 +17,7 @@ import { useGridResizer } from '@/hooks/useGridResizer';
 import { getCheckBadgeClass } from '../../shared/status-styles';
 
 
+
 /** 라인 1건의 점검 데이터 행 */
 interface CheckItemRow {
   LINE_NAME?: string;
@@ -42,13 +43,13 @@ interface SmdCheckItemsProps {
 }
 
 const CHECK_ITEMS = [
-  { label: '메탈마스크', statusKey: 'MASK_CHECK', dateKey: 'MASK_CHECK_DATE' },
-  { label: '스퀴지', statusKey: 'SQUEEZE_CHECK', dateKey: 'SQUEEZE_CHECK_DATE' },
-  { label: 'Solder/Epoxy', statusKey: 'SOLDER_CHECK', dateKey: 'SOLDER_CHECK_VAL' },
-  { label: 'First Check', statusKey: 'CCS_CHECK', dateKey: 'CCS_CHECK_DATE' },
-  { label: '풀체크', statusKey: 'FULL_CHECK', dateKey: 'FULL_CHECK_DATE' },
-  { label: 'Master Check', statusKey: 'XRAY_CHECK', dateKey: 'XRAY_CHECK_DATE' },
-  { label: '프로파일검사', statusKey: 'SPEC_CHECK', dateKey: 'SPEC_CHECK_DATE' },
+  { labelKey: 'metalMask', statusKey: 'MASK_CHECK', dateKey: 'MASK_CHECK_DATE' },
+  { labelKey: 'squeegee', statusKey: 'SQUEEZE_CHECK', dateKey: 'SQUEEZE_CHECK_DATE' },
+  { labelKey: 'solderEpoxy', statusKey: 'SOLDER_CHECK', dateKey: 'SOLDER_CHECK_VAL' },
+  { labelKey: 'firstCheck', statusKey: 'CCS_CHECK', dateKey: 'CCS_CHECK_DATE' },
+  { labelKey: 'fullCheck', statusKey: 'FULL_CHECK', dateKey: 'FULL_CHECK_DATE' },
+  { labelKey: 'masterCheck', statusKey: 'XRAY_CHECK', dateKey: 'XRAY_CHECK_DATE' },
+  { labelKey: 'profileInsp', statusKey: 'SPEC_CHECK', dateKey: 'SPEC_CHECK_DATE' },
 ] as const;
 
 /** 라인에 NG 항목이 하나라도 있는지 판별 */
@@ -62,6 +63,7 @@ const INITIAL_WIDTHS = [160, 150, 150, 150, 150, 150, 150];
 /** SMD 점검 항목 매트릭스 테이블 (행=항목, 열=라인) */
 export default function SmdCheckItems({ rows }: SmdCheckItemsProps) {
   const t = useTranslations('display');
+  const tCheck = useTranslations('checkItem');
   const { widths, handleMouseDown } = useGridResizer('grid-widths-smd-check', INITIAL_WIDTHS);
 
   // 데이터 없을 때 빈 상태 표시
@@ -86,7 +88,7 @@ export default function SmdCheckItems({ rows }: SmdCheckItemsProps) {
           <tr className="bg-zinc-900 dark:bg-zinc-900">
             {/* 항목명 열 헤더 */}
             <th className="relative border-b border-zinc-700 px-4 py-3 text-center text-lg font-black text-white dark:border-zinc-700 dark:text-white">
-              Check Items
+              {t('checkItems')}
               <div className="resize-handle" onMouseDown={(e) => handleMouseDown(0, e)} />
             </th>
 
@@ -127,7 +129,7 @@ export default function SmdCheckItems({ rows }: SmdCheckItemsProps) {
                     : 'bg-zinc-700 text-zinc-100 dark:bg-zinc-700 dark:text-zinc-100'
                 }`}
               >
-                {item.label}
+                {tCheck(item.labelKey)}
               </td>
 
               {/* 각 라인별 상태+값 셀 */}

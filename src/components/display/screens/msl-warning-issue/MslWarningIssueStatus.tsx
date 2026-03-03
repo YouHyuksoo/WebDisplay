@@ -8,6 +8,7 @@
 'use client';
 
 import useSWR from 'swr';
+import { useTranslations } from 'next-intl';
 import DisplayLayout from '../../DisplayLayout';
 import NgAlertBanner from '../../NgAlertBanner';
 import MslWarningIssueGrid from './MslWarningIssueGrid';
@@ -22,6 +23,7 @@ interface MslWarningIssueStatusProps {
 export default function MslWarningIssueStatus({
   screenId,
 }: MslWarningIssueStatusProps) {
+  const t = useTranslations('display');
   const timing = useDisplayTiming();
 
   const { data, error, isLoading } = useSWR(
@@ -34,7 +36,7 @@ export default function MslWarningIssueStatus({
     return (
       <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
-          데이터 로딩 중...
+          {t('loading')}
         </div>
       </DisplayLayout>
     );
@@ -44,7 +46,7 @@ export default function MslWarningIssueStatus({
     return (
       <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-red-400 dark:text-red-500">
-          데이터 로드 실패
+          {t('loadError')}
         </div>
       </DisplayLayout>
     );
@@ -58,7 +60,7 @@ export default function MslWarningIssueStatus({
       screenId={screenId}
     >
       <div className="flex h-full flex-col overflow-hidden">
-        {ngCount > 0 && <NgAlertBanner message={`MSL NG 경고: ${ngCount}건 발생`} />}
+        {ngCount > 0 && <NgAlertBanner message={t('mslNgWarning', { count: ngCount })} />}
         <div className="min-h-0 flex-1 overflow-hidden p-2">
           <MslWarningIssueGrid rows={data?.warningList ?? []} scrollSeconds={timing.scrollSeconds} />
         </div>

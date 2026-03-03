@@ -8,6 +8,7 @@
 'use client';
 
 import useSWR from 'swr';
+import { useTranslations } from 'next-intl';
 import DisplayLayout from '../../DisplayLayout';
 import NgAlertBanner from '../../NgAlertBanner';
 import SmtPickupRateGrid from '../smt-pickup-rate/SmtPickupRateGrid';
@@ -22,6 +23,7 @@ interface SmtPickupRateHeadStatusProps {
 export default function SmtPickupRateHeadStatus({
   screenId,
 }: SmtPickupRateHeadStatusProps) {
+  const t = useTranslations('display');
   const timing = useDisplayTiming();
 
   const { data, error, isLoading } = useSWR(
@@ -35,7 +37,7 @@ export default function SmtPickupRateHeadStatus({
   return (
     <DisplayLayout screenId={screenId}>
       <div className="flex h-full flex-col overflow-hidden">
-        {ngCount > 0 && <NgAlertBanner message={`Pickup Rate (Head) NG Warning: ${ngCount} line(s) detected`} showIcon={false} compact />}
+        {ngCount > 0 && <NgAlertBanner message={t('pickupHeadNgWarning', { count: ngCount })} showIcon={false} compact />}
         <div className="min-h-0 flex-1 overflow-hidden p-2">
           <SmtPickupRateGrid rows={data?.pickupList ?? []} isLoading={isLoading} error={error} storageKey="grid-widths-smt-pickup-head" scrollSeconds={timing.scrollSeconds} />
         </div>

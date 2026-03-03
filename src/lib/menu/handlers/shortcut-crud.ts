@@ -14,6 +14,7 @@
 import { state } from '../state';
 import { showToast, showConfirm, closeModal, saveShortcuts } from '../ui';
 import { addDeletedDefault } from '../storage';
+import { t } from '../i18n';
 
 /**
  * 바로가기 저장
@@ -25,7 +26,7 @@ export function saveShortcut(): void {
   const icon = (document.getElementById('shortcut-icon') as HTMLInputElement)?.value.trim();
 
   if (!title || !url) {
-    showToast('제목과 URL을 입력해주세요');
+    showToast(t('menuUI.titleUrlRequired'));
     return;
   }
 
@@ -62,7 +63,7 @@ export function saveShortcut(): void {
   });
 
   closeModal();
-  showToast(state.editingId ? '수정 완료!' : '추가 완료!');
+  showToast(state.editingId ? t('menuUI.shortcutEdited') : t('menuUI.shortcutAdded'));
 }
 
 /**
@@ -70,7 +71,7 @@ export function saveShortcut(): void {
  * @param id - 삭제할 바로가기 ID
  */
 export async function deleteShortcut(id: string): Promise<void> {
-  const confirmed = await showConfirm('삭제할까요?', { title: '바로가기 삭제', danger: true });
+  const confirmed = await showConfirm(t('menuUI.shortcutDeleteConfirm'), { title: t('menuUI.shortcutDelete'), danger: true });
   if (confirmed) {
     // 기본 항목(fav-/menu-)을 삭제하면 auto-merge 복원을 방지
     if (id.startsWith('fav-') || id.startsWith('menu-')) {
@@ -84,6 +85,6 @@ export async function deleteShortcut(id: string): Promise<void> {
     });
 
     closeModal();
-    showToast('삭제 완료!');
+    showToast(t('menuUI.shortcutDeleted'));
   }
 }

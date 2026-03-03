@@ -22,6 +22,7 @@
 import gsap from 'gsap';
 import { state } from './state';
 import { showToast, saveSettings } from './ui';
+import { t } from './i18n';
 
 // ---------------------------------------------------------------------------
 // 상수
@@ -114,7 +115,7 @@ export function renderCarouselSlots(): void {
   const totalCards = shortcuts.length;
 
   if (totalCards === 0) {
-    activeSection.innerHTML = '<div class="empty-message">바로가기가 없습니다</div>';
+    activeSection.innerHTML = '<div class="empty-message">' + t('menuUI.noShortcuts') + '</div>';
     return;
   }
 
@@ -274,9 +275,9 @@ export function changeCardLayout(layout: string): void {
   updateNavArrowsVisibility();
 
   const toastMap: Record<string, string> = {
-    carousel: '🎠 캐러셀 배치',
-    grid: '📦 그리드 배치',
-    thumbnail: '🖼️ 썸네일 배치',
+    carousel: t('menuUI.layoutCarousel'),
+    grid: t('menuUI.layoutGrid'),
+    thumbnail: t('menuUI.layoutThumbnail'),
   };
   showToast(toastMap[layout] || layout);
 }
@@ -288,11 +289,11 @@ export function updateCardLayoutLabel(): void {
   const label = document.getElementById('card-layout-label');
   if (label) {
     const labelMap: Record<string, string> = {
-      carousel: '배치: 캐러셀',
-      grid: '배치: 그리드',
-      thumbnail: '배치: 썸네일',
+      carousel: t('menuUI.layoutCarousel'),
+      grid: t('menuUI.layoutGrid'),
+      thumbnail: t('menuUI.layoutThumbnail'),
     };
-    label.textContent = labelMap[state.cardLayout] || `배치: ${state.cardLayout}`;
+    label.textContent = labelMap[state.cardLayout] || state.cardLayout;
   }
 }
 

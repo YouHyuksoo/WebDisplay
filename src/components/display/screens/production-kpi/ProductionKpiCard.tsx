@@ -7,6 +7,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { getKpiRateStyle } from '../../shared/status-styles';
 
 /** 라인 KPI 데이터 행 */
@@ -37,6 +38,7 @@ function fmt(val?: number): string {
  * 화면을 꽉 채우고 큰 글씨로 표시한다.
  */
 export default function ProductionKpiCard({ row }: ProductionKpiCardProps) {
+  const t = useTranslations('table');
   const rate = row.ACHIEVEMENT_RATE ?? 0;
   const diff = row.DIFF_QTY ?? 0;
   const color = getKpiRateStyle(rate);
@@ -63,13 +65,13 @@ export default function ProductionKpiCard({ row }: ProductionKpiCardProps) {
 
       {/* 데이터 행 — flex-1로 남은 공간 균등 분배 */}
       <div className="flex min-h-0 flex-1 flex-col divide-y-2 divide-zinc-800">
-        <KpiRow label="계획수량" value={fmt(row.PLAN_QTY)} />
-        <KpiRow label="목표" value={fmt(row.TARGET_QTY)} />
-        <KpiRow label="결과" value={fmt(row.OUTPUT_QTY)} valueClass="text-white" />
+        <KpiRow label={t('planQty')} value={fmt(row.PLAN_QTY)} />
+        <KpiRow label={t('targetQty')} value={fmt(row.TARGET_QTY)} />
+        <KpiRow label={t('resultQty')} value={fmt(row.OUTPUT_QTY)} valueClass="text-white" />
         {/* Diff + 달성률 */}
         <div className={`flex flex-1 items-center ${color.bg}`}>
           <div className="w-1/3 px-10 text-5xl font-black text-zinc-400">
-            Diff
+            {t('diff')}
           </div>
           <div className="flex flex-1 items-center justify-end gap-10 px-10">
             <span className={`text-8xl font-black ${diff >= 0 ? 'text-cyan-400' : 'text-red-400'}`}>

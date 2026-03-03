@@ -11,6 +11,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { getCheckBadgeClass } from '../../shared/status-styles';
 
 /** 라인 1건의 점검 데이터 */
@@ -43,14 +44,14 @@ export interface FoolproofRow {
 
 /** 점검 항목 정의 — PB DataWindow 컬럼 순서 매핑 */
 const CHECK_ITEMS = [
-  { label: '메탈마스크', statusKey: 'MASK_CHECK', dateKey: 'MASK_CHECK_DATE' },
-  { label: '스퀴지', statusKey: 'SQUEEZE_CHECK', dateKey: 'SQUEEZE_CHECK_DATE' },
-  { label: 'Solder/Epoxy', statusKey: 'SOLDER_CHECK', dateKey: 'SOLDER_CHECK_VAL' },
-  { label: 'First Check', statusKey: 'CCS_CHECK', dateKey: 'CCS_CHECK_DATE' },
-  { label: '풀체크', statusKey: 'FULL_CHECK', dateKey: 'FULL_CHECK_DATE' },
-  { label: 'Master Check', statusKey: 'XRAY_CHECK', dateKey: 'XRAY_CHECK_DATE' },
-  { label: '프로파일검사', statusKey: 'SPEC_CHECK', dateKey: 'SPEC_CHECK_DATE' },
-  { label: 'AOI Sample', statusKey: 'AOI_SAMPLE_CHECK', dateKey: 'AOI_SAMPLE_CHECK_DATE' },
+  { labelKey: 'metalMask' as const, statusKey: 'MASK_CHECK', dateKey: 'MASK_CHECK_DATE' },
+  { labelKey: 'squeegee' as const, statusKey: 'SQUEEZE_CHECK', dateKey: 'SQUEEZE_CHECK_DATE' },
+  { labelKey: 'solderEpoxy' as const, statusKey: 'SOLDER_CHECK', dateKey: 'SOLDER_CHECK_VAL' },
+  { labelKey: 'firstCheck' as const, statusKey: 'CCS_CHECK', dateKey: 'CCS_CHECK_DATE' },
+  { labelKey: 'fullCheck' as const, statusKey: 'FULL_CHECK', dateKey: 'FULL_CHECK_DATE' },
+  { labelKey: 'masterCheck' as const, statusKey: 'XRAY_CHECK', dateKey: 'XRAY_CHECK_DATE' },
+  { labelKey: 'profileInsp' as const, statusKey: 'SPEC_CHECK', dateKey: 'SPEC_CHECK_DATE' },
+  { labelKey: 'aoiSample' as const, statusKey: 'AOI_SAMPLE_CHECK', dateKey: 'AOI_SAMPLE_CHECK_DATE' },
 ] as const;
 
 /** 라인에 NG 항목이 하나라도 있는지 판별 */
@@ -63,6 +64,7 @@ interface FoolproofCardProps {
 }
 
 export default function FoolproofCard({ row }: FoolproofCardProps) {
+  const tCheck = useTranslations('checkItem');
   const lineName = String(row.LINE_NAME ?? row.LINE_CODE ?? '-');
   const ng = hasNg(row);
 
@@ -99,7 +101,7 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
             >
               {/* 항목명 */}
               <span className="w-28 shrink-0 truncate text-sm font-bold text-white">
-                {item.label}
+                {tCheck(item.labelKey)}
               </span>
 
               {isActive ? (

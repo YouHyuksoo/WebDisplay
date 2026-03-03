@@ -20,6 +20,7 @@ import SmtPickupRateHeadStatus from '@/components/display/screens/smt-pickup-rat
 import AssyProductionStatus from '@/components/display/screens/assy-production/AssyProductionStatus';
 import FoolproofStatus from '@/components/display/screens/foolproof-status/FoolproofStatus';
 import SmdDualProductionStatus from '@/components/display/screens/smd-dual-production/SmdDualProductionStatus';
+import SpiChartStatus from '@/components/display/screens/spi-chart/SpiChartStatus';
 
 interface PageProps {
   params: Promise<{ screenId: string }>;
@@ -76,6 +77,10 @@ export default async function DisplayPage({ params }: PageProps) {
 
   if (screenId === '27') {
     return <SmdDualProductionStatus screenId={screenId} />;
+  }
+
+  if (screenId === '40') {
+    return <SpiChartStatus screenId={screenId} />;
   }
 
   return (

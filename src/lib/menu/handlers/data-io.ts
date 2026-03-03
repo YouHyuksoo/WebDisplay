@@ -20,6 +20,7 @@ import {
   applyGlowTheme,
 } from '../ui';
 import * as Storage from '../storage';
+import { t } from '../i18n';
 
 /**
  * 데이터 내보내기 (JSON 파일 다운로드)
@@ -55,7 +56,7 @@ export function exportData(): void {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  showToast('데이터 내보내기 완료!');
+  showToast(t('menuUI.exportComplete'));
 }
 
 /**
@@ -82,14 +83,11 @@ export function importData(): void {
         const data = JSON.parse(result);
 
         if (!data.version) {
-          showToast('잘못된 백업 파일입니다');
+          showToast(t('menuUI.importInvalidFile'));
           return;
         }
 
-        const confirmed = await showConfirm(
-          '현재 데이터를 백업 파일로 덮어쓸까요?\n(기존 데이터는 사라집니다)',
-          { title: '데이터 가져오기', danger: true },
-        );
+        const confirmed = await showConfirm(t('menuUI.importConfirm'), { title: t('menuUI.dataImportTitle'), danger: true });
         if (!confirmed) return;
 
         // 데이터 복원
@@ -131,10 +129,10 @@ export function importData(): void {
           Categories.updateCategorySelect();
         });
 
-        showToast('데이터 가져오기 완료!');
+        showToast(t('menuUI.importComplete'));
       } catch (err) {
         console.error('Import error:', err);
-        showToast('파일 읽기 실패');
+        showToast(t('menuUI.importReadFail'));
       }
     };
 

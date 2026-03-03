@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import Modal from '@/components/ui/Modal';
 import { DEFAULT_SOLDER_THRESHOLDS } from '@/types/option';
 import type { SolderThresholdConfig } from '@/types/option';
@@ -98,6 +99,8 @@ function SectionHeader({ title, description }: { title: string; description?: st
 
 /** Solder Paste 임계값 설정 모달 */
 export default function SolderThresholdModal({ isOpen, onClose }: SolderThresholdModalProps) {
+  const t = useTranslations('solderTable');
+  const tCommon = useTranslations('common');
   const [config, setConfig] = useState<SolderThresholdConfig>(() => {
     try {
       const raw = localStorage.getItem('solder-thresholds');
@@ -116,23 +119,23 @@ export default function SolderThresholdModal({ isOpen, onClose }: SolderThreshol
 
   const handleSave = useCallback(() => {
     if (!isValidTime(config.gap3Danger) || !isValidTime(config.gap3Warning)) {
-      alert('개봉후경과 시간 형식이 올바르지 않습니다. (HH:MM)');
+      alert(t('invalidGap3'));
       return;
     }
     if (!isValidTime(config.unfreezingDanger) || !isValidTime(config.unfreezingWarning)) {
-      alert('해동후경과 시간 형식이 올바르지 않습니다. (HH:MM)');
+      alert(t('invalidUnfreezing'));
       return;
     }
     saveSolderThresholds(config);
     onClose();
-  }, [config, onClose]);
+  }, [config, onClose, t]);
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Solder Paste 경고 임계값 설정"
-      subtitle="현장 상황에 맞게 경고 기준을 조정합니다"
+      title={t('thresholdTitle')}
+      subtitle={t('thresholdDesc')}
       size="md"
       footer={
         <>
@@ -141,21 +144,21 @@ export default function SolderThresholdModal({ isOpen, onClose }: SolderThreshol
             className="mr-auto rounded-md border border-zinc-600 px-4 py-2 text-sm font-medium
               text-zinc-300 transition hover:bg-zinc-700"
           >
-            초기화
+            {t('reset')}
           </button>
           <button
             onClick={onClose}
             className="rounded-md border border-zinc-600 px-4 py-2 text-sm font-medium
               text-zinc-300 transition hover:bg-zinc-700"
           >
-            취소
+            {tCommon('cancel')}
           </button>
           <button
             onClick={handleSave}
             className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white
               transition hover:bg-emerald-500"
           >
-            저장
+            {tCommon('save')}
           </button>
         </>
       }
@@ -163,28 +166,28 @@ export default function SolderThresholdModal({ isOpen, onClose }: SolderThreshol
       <div className="flex flex-col gap-6">
         {/* 개봉후경과 (GAP3) */}
         <section>
-          <SectionHeader title="개봉후경과 (GAP3)" description="HH:MM 형식, 초과 시 경고 표시" />
+          <SectionHeader title={`${t('gap3Section')} (GAP3)`} description="HH:MM" />
           <div className="grid grid-cols-2 gap-4">
-            <TimeInput label="위험 (빨강)" color="red" value={config.gap3Danger} onChange={(v) => update('gap3Danger', v)} />
-            <TimeInput label="주의 (주황)" color="amber" value={config.gap3Warning} onChange={(v) => update('gap3Warning', v)} />
+            <TimeInput label={t('danger')} color="red" value={config.gap3Danger} onChange={(v) => update('gap3Danger', v)} />
+            <TimeInput label={t('warning')} color="amber" value={config.gap3Warning} onChange={(v) => update('gap3Warning', v)} />
           </div>
         </section>
 
         {/* 해동후경과시간 */}
         <section>
-          <SectionHeader title="해동후경과시간" description="HH:MM 형식, 초과 시 경고 표시" />
+          <SectionHeader title={t('unfreezingSection')} description="HH:MM" />
           <div className="grid grid-cols-2 gap-4">
-            <TimeInput label="위험 (빨강)" color="red" value={config.unfreezingDanger} onChange={(v) => update('unfreezingDanger', v)} />
-            <TimeInput label="주의 (주황)" color="amber" value={config.unfreezingWarning} onChange={(v) => update('unfreezingWarning', v)} />
+            <TimeInput label={t('danger')} color="red" value={config.unfreezingDanger} onChange={(v) => update('unfreezingDanger', v)} />
+            <TimeInput label={t('warning')} color="amber" value={config.unfreezingWarning} onChange={(v) => update('unfreezingWarning', v)} />
           </div>
         </section>
 
         {/* 유효기간 */}
         <section>
-          <SectionHeader title="유효기간 (일)" description="잔여일 기준, 이하 시 경고 표시" />
+          <SectionHeader title={t('validSection')} />
           <div className="grid grid-cols-2 gap-4">
-            <NumberInput label="만료 (빨강)" color="red" value={config.validExpired} onChange={(v) => update('validExpired', v)} suffix="일 이하" />
-            <NumberInput label="주의 (주황)" color="amber" value={config.validWarning} onChange={(v) => update('validWarning', v)} suffix="일 이하" />
+            <NumberInput label={t('danger')} color="red" value={config.validExpired} onChange={(v) => update('validExpired', v)} />
+            <NumberInput label={t('warning')} color="amber" value={config.validWarning} onChange={(v) => update('validWarning', v)} />
           </div>
         </section>
       </div>

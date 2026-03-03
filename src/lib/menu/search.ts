@@ -14,6 +14,7 @@
 import { state } from './state';
 import type { Shortcut } from './types';
 import { openModal } from './ui';
+import { t, getScreenTitle } from './i18n';
 
 // ---------------------------------------------------------------------------
 // 내부 상태
@@ -222,7 +223,7 @@ function renderResults(
   if (!searchResults) return;
 
   if (results.length === 0) {
-    searchResults.innerHTML = '<div class="search-no-results">검색 결과가 없습니다</div>';
+    searchResults.innerHTML = '<div class="search-no-results">' + t('menuUI.noSearchResults') + '</div>';
     searchResults.classList.add('active');
     return;
   }

@@ -6,6 +6,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import DisplayLayout from '../../DisplayLayout';
 import PageRollingPanel from './PageRollingPanel';
 import DatabasePanel from './DatabasePanel';
@@ -13,10 +14,10 @@ import AutoLaunchPanel from './AutoLaunchPanel';
 
 type Tab = 'rolling' | 'database' | 'autolaunch';
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'rolling', label: '페이지 순환' },
-  { key: 'database', label: 'DB 설정' },
-  { key: 'autolaunch', label: '시작페이지 설정' },
+const TAB_KEYS: { key: Tab; labelKey: 'pageRolling' | 'dbSettings' | 'autoLaunch' }[] = [
+  { key: 'rolling', labelKey: 'pageRolling' },
+  { key: 'database', labelKey: 'dbSettings' },
+  { key: 'autolaunch', labelKey: 'autoLaunch' },
 ];
 
 interface DisplayOptionProps {
@@ -25,13 +26,14 @@ interface DisplayOptionProps {
 
 export default function DisplayOption({ screenId }: DisplayOptionProps) {
   const [activeTab, setActiveTab] = useState<Tab>('rolling');
+  const t = useTranslations('option');
 
   return (
     <DisplayLayout screenId={screenId}>
       <div className="flex h-full flex-col overflow-hidden">
         {/* 탭 헤더 */}
         <div className="flex border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-          {TABS.map(({ key, label }) => (
+          {TAB_KEYS.map(({ key, labelKey }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
@@ -41,7 +43,7 @@ export default function DisplayOption({ screenId }: DisplayOptionProps) {
                   : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'
               }`}
             >
-              {label}
+              {t(labelKey)}
             </button>
           ))}
         </div>

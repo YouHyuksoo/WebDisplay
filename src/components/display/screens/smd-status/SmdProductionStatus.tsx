@@ -8,6 +8,7 @@
 
 import useSWR from 'swr';
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import DisplayLayout from '../../DisplayLayout';
 import SmdStatusGrid from './SmdStatusGrid';
 import SmdCheckItems from './SmdCheckItems';
@@ -26,6 +27,7 @@ interface SmdProductionStatusProps {
 export default function SmdProductionStatus({
   screenId,
 }: SmdProductionStatusProps) {
+  const t = useTranslations('display');
   const timing = useDisplayTiming();
   const [lines, setLines] = useState(() => getSelectedLines(screenId));
 
@@ -50,7 +52,7 @@ export default function SmdProductionStatus({
     return (
       <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
-          데이터 로딩 중...
+          {t('loading')}
         </div>
       </DisplayLayout>
     );
@@ -60,7 +62,7 @@ export default function SmdProductionStatus({
     return (
       <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-red-400 dark:text-red-500">
-          데이터 로드 실패
+          {t('loadError')}
         </div>
       </DisplayLayout>
     );

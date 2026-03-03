@@ -27,6 +27,7 @@ import {
   openModal,
 } from './ui';
 import type { Shortcut } from './types';
+import { t, getScreenTitle } from './i18n';
 
 // ---------------------------------------------------------------------------
 // 도구 카드 설정
@@ -36,19 +37,19 @@ import type { Shortcut } from './types';
 const TOOLS_CONFIG = [
   {
     id: 'tool-settings',
-    title: '설정',
+    titleKey: 'menuUI.toolSettings',
     icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>',
     action: 'openSettings',
   },
   {
     id: 'tool-categories',
-    title: '카테고리',
+    titleKey: 'menuUI.toolCategories',
     icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>',
     action: 'openCategories',
   },
   {
     id: 'tool-theme',
-    title: '테마',
+    titleKey: 'menuUI.toolTheme',
     icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>',
     action: 'cycleTheme',
   },
@@ -83,10 +84,10 @@ function getTimeAgo(timestamp?: number): string {
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
 
-  if (minutes < 1) return '방금 전';
-  if (minutes < 60) return `${minutes}분 전`;
-  if (hours < 24) return `${hours}시간 전`;
-  return `${days}일 전`;
+  if (minutes < 1) return t('menuUI.justNow');
+  if (minutes < 60) return t('menuUI.minutesAgo', { n: minutes });
+  if (hours < 24) return t('menuUI.hoursAgo', { n: hours });
+  return t('menuUI.daysAgo', { n: days });
 }
 
 // ---------------------------------------------------------------------------
@@ -106,8 +107,8 @@ export function renderHistoryLane(): void {
     container.innerHTML = `
       <div class="lane-empty">
         <div class="lane-empty-icon">🕐</div>
-        <div class="lane-empty-title">히스토리가 비어있습니다</div>
-        <div class="lane-empty-subtitle">바로가기를 사용하면 여기에 기록됩니다</div>
+        <div class="lane-empty-title">${t('menuUI.recentEmpty')}</div>
+        <div class="lane-empty-subtitle">${t('menuUI.recentEmptyHint')}</div>
       </div>
     `;
     return;
@@ -116,7 +117,7 @@ export function renderHistoryLane(): void {
   container.innerHTML = `
     <div class="lane-header">
       <span class="lane-header-icon">🕐</span>
-      <span class="lane-header-title">최근 사용</span>
+      <span class="lane-header-title">${t('menuUI.recentTitle')}</span>
     </div>
     <div class="lane-cards"></div>
   `;
@@ -163,10 +164,10 @@ function createHistoryCard(
   card.innerHTML = `
     <div class="history-icon" data-tooltip="${item.title}">${iconContent}</div>
     <div class="history-info">
-      <div class="history-title">${item.title}</div>
+      <div class="history-title">${getScreenTitle(item)}</div>
       <div class="history-time">${timeAgo}</div>
     </div>
-    <button class="history-delete-btn" data-tooltip="삭제">
+    <button class="history-delete-btn" data-tooltip="${t('menuUI.delete')}">
       <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
       </svg>
@@ -248,7 +249,7 @@ function removeFromHistory(itemId: string, cardElement: HTMLDivElement): void {
         renderHistoryLane();
       }
 
-      showToast('삭제되었습니다');
+      showToast(t('menuUI.deleted'));
     },
   });
 }
@@ -267,7 +268,7 @@ export function renderToolsLane(): void {
   container.innerHTML = `
     <div class="lane-header">
       <span class="lane-header-icon">🔧</span>
-      <span class="lane-header-title">도구</span>
+      <span class="lane-header-title">${t('menuUI.tools')}</span>
     </div>
     <div class="lane-cards tools-cards"></div>
   `;
@@ -294,11 +295,11 @@ function createToolCard(
   const card = document.createElement('div');
   card.className = 'tool-card';
   card.dataset.action = tool.action;
-  card.setAttribute('data-tooltip', tool.title);
+  card.setAttribute('data-tooltip', t(tool.titleKey));
 
   card.innerHTML = `
     <div class="tool-icon">${tool.icon}</div>
-    <div class="tool-title">${tool.title}</div>
+    <div class="tool-title">${t(tool.titleKey)}</div>
   `;
 
   card.addEventListener('click', () => {
@@ -326,7 +327,7 @@ function executeToolAction(action: string): void {
 
       window.dispatchEvent(
         new CustomEvent('mes-navigate', {
-          detail: { url: '/display/18', title: '시스템 옵션 설정' },
+          detail: { url: '/display/18', title: t('screens.18') },
         }),
       );
       break;
@@ -341,7 +342,7 @@ function executeToolAction(action: string): void {
       const nextTheme = themes[(currentIndex + 1) % themes.length];
       applyGlowTheme(nextTheme);
       state.glowIntensity = 1;
-      showToast(`테마: ${nextTheme}`);
+      showToast(t('menuUI.themeLabel', { theme: nextTheme }));
       break;
     }
   }

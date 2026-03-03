@@ -8,6 +8,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useGridResizer } from '@/hooks/useGridResizer';
 import { formatNumber } from '../../shared/DataBadges';
 
@@ -54,17 +55,17 @@ const ALIGN: Record<string, string> = {
   right: 'text-right',
 };
 
-/** 메인행 헤더 정의 */
+/** 메인행 헤더 정의 (label은 'table' 네임스페이스의 번역 키) */
 const MAIN_HEADERS = [
-  { label: '상태', align: 'center' },
-  { label: '라인', align: 'left' },
-  { label: '모델명', align: 'left' },
-  { label: 'Step', align: 'center' },
-  { label: '계획일자', align: 'center' },
-  { label: '제조번호', align: 'center' },
-  { label: '계획', align: 'right' },
-  { label: '실적', align: 'right' },
-  { label: '비율', align: 'right' },
+  { label: 'status', align: 'center' },
+  { label: 'line', align: 'left' },
+  { label: 'model', align: 'left' },
+  { label: 'step', align: 'center' },
+  { label: 'planDate', align: 'center' },
+  { label: 'mfgNo', align: 'center' },
+  { label: 'plan', align: 'right' },
+  { label: 'actual', align: 'right' },
+  { label: 'rate', align: 'right' },
 ] as const;
 
 /** 초기 폭 설정 (상태 + 8개 컬럼) */
@@ -92,12 +93,14 @@ function calcRate(plan?: number, actual?: number): string {
  * 각 라인마다 메인행 + 서브행 2줄 구조로 표시한다.
  */
 export default function SmdStatusGrid({ rows }: SmdStatusGridProps) {
+  const t = useTranslations('display');
+  const tTable = useTranslations('table');
   const { widths, handleMouseDown } = useGridResizer('grid-widths-smd-status', INITIAL_WIDTHS);
 
   if (!rows || rows.length === 0) {
     return (
       <div className="flex h-32 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-400 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-500">
-        데이터 없음
+        {t('noDataShort')}
       </div>
     );
   }
@@ -113,19 +116,19 @@ export default function SmdStatusGrid({ rows }: SmdStatusGridProps) {
           className="relative flex shrink-0 items-center justify-center text-lg font-black text-zinc-100 dark:text-zinc-100"
           style={{ width: widths[0] }}
         >
-          상태
+          {tTable('status')}
           <div className="resize-handle" onMouseDown={(e) => handleMouseDown(0, e)} />
         </div>
         <div 
           className="grid min-w-0 flex-1 gap-px px-1"
           style={{ gridTemplateColumns: gridTemplate }}
         >
-          {MAIN_HEADERS.filter((h) => h.label !== '상태').map((h, i) => (
+          {MAIN_HEADERS.filter((h) => h.label !== 'status').map((h, i) => (
             <div
               key={h.label}
               className={`relative px-2 py-3 text-lg font-black text-zinc-100 dark:text-zinc-100 ${ALIGN[h.align]}`}
             >
-              {h.label}
+              {tTable(h.label)}
               <div className="resize-handle" onMouseDown={(e) => handleMouseDown(i + 1, e)} />
             </div>
           ))}

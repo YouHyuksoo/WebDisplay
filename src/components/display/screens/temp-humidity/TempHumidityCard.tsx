@@ -8,6 +8,8 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 /** Oracle 조회 결과 행 타입 (컬럼명 대문자) */
 export interface SensorRow {
   MACHINE_NAME: string;
@@ -63,6 +65,7 @@ function HumiIcon() {
 }
 
 export default function TempHumidityCard({ sensor }: TempHumidityCardProps) {
+  const tTable = useTranslations('table');
   const showHumidity = sensor.HUMIDITY_YN !== 'N';
   const stale = isStaleData(sensor.LAST_TIME, sensor.MACHINE_CODE);
 
@@ -85,7 +88,7 @@ export default function TempHumidityCard({ sensor }: TempHumidityCardProps) {
         </div>
         <div className="flex items-center gap-3">
           <TempIcon />
-          <span className="text-sm font-bold text-zinc-400 dark:text-zinc-500">TEMP</span>
+          <span className="text-sm font-bold text-zinc-400 dark:text-zinc-500">{tTable('temp')}</span>
           <span className="ml-auto text-2xl font-black tabular-nums text-zinc-900 dark:text-zinc-100">
             {sensor.ROOM_TEMPERATURE != null ? `${sensor.ROOM_TEMPERATURE}°C` : '-'}
           </span>
@@ -108,7 +111,7 @@ export default function TempHumidityCard({ sensor }: TempHumidityCardProps) {
           </div>
           <div className="flex items-center gap-3">
             <HumiIcon />
-            <span className="text-sm font-bold text-zinc-400 dark:text-zinc-500">HUMI</span>
+            <span className="text-sm font-bold text-zinc-400 dark:text-zinc-500">{tTable('humidity')}</span>
             <span className="ml-auto text-2xl font-black tabular-nums text-zinc-900 dark:text-zinc-100">
               {sensor.HUMIDITY != null ? `${sensor.HUMIDITY}%` : '-'}
             </span>

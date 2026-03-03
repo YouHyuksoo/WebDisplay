@@ -22,6 +22,7 @@ import gsap from 'gsap';
 import { state } from './state';
 import { COLORS, GLOW_THEMES } from './config';
 import * as Storage from './storage';
+import { t } from './i18n';
 
 // ---------------------------------------------------------------------------
 // Modal (바로가기 추가/수정)
@@ -59,7 +60,7 @@ export function openModal(target: string | Shortcut | null = null): void {
     }
 
     if (s) {
-      title.textContent = isShortcutObj ? 'Add Shortcut' : 'Edit Shortcut';
+      title.textContent = isShortcutObj ? t('menuUI.addShortcut') : t('menuUI.editShortcut');
       (document.getElementById('shortcut-title') as HTMLInputElement).value = s.title;
       (document.getElementById('shortcut-url') as HTMLInputElement).value = s.url;
       (document.getElementById('shortcut-layer') as HTMLSelectElement).value = String(s.layer);
@@ -68,7 +69,7 @@ export function openModal(target: string | Shortcut | null = null): void {
       deleteBtn.style.display = isShortcutObj ? 'none' : 'block';
     }
   } else {
-    title.textContent = 'Add Shortcut';
+    title.textContent = t('menuUI.addShortcut');
     (document.getElementById('shortcut-title') as HTMLInputElement).value = '';
     (document.getElementById('shortcut-url') as HTMLInputElement).value = '';
     // 현재 섹션의 카테고리 ID로 설정
@@ -230,9 +231,9 @@ export function updateSpaceMenu(): void {
   const label = document.getElementById('space-type-label');
   if (label) {
     const spaceLabels: Record<string, string> = {
-      tunnel: '공간: 클래식 터널',
-      warp: '공간: 코스믹 워프',
-      aurora: '공간: 오로라',
+      tunnel: t('menuUI.spaceClassic'),
+      warp: t('menuUI.spaceCosmic'),
+      aurora: t('menuUI.spaceAurora'),
     };
     label.textContent = spaceLabels[state.spaceType] || spaceLabels.tunnel;
   }
@@ -254,7 +255,7 @@ export function updateCardStyleMenu(): void {
 export function updateIconColorLabel(): void {
   const label = document.getElementById('icon-color-label');
   if (label) {
-    label.textContent = state.iconColorMode === 'brand' ? '아이콘: 브랜드 색상' : '아이콘: 흰색';
+    label.textContent = state.iconColorMode === 'brand' ? t('menuUI.iconBrand') : t('menuUI.iconWhite');
   }
 }
 
@@ -264,14 +265,14 @@ export function updateIconColorLabel(): void {
 export function updateCardLayoutLabel(): void {
   const label = document.getElementById('card-layout-label');
   if (label) {
-    label.textContent = state.cardLayout === 'carousel' ? '배치: 캐러셀' : '배치: 그리드';
+    label.textContent = state.cardLayout === 'carousel' ? t('menuUI.layoutCarousel') : t('menuUI.layoutGrid');
   }
 }
 
 export function updateVirtualizationLabel(): void {
   const label = document.getElementById('virtualization-label');
   if (label) {
-    label.textContent = state.simpleVirtualization ? '성능: 고성능 (가상화)' : '성능: 일반 (전체 로드)';
+    label.textContent = state.simpleVirtualization ? t('menuUI.virtualizationOn') : t('menuUI.virtualizationOff');
   }
 }
 
@@ -281,7 +282,7 @@ export function updateVirtualizationLabel(): void {
 export function update3DLabel(): void {
   const label = document.getElementById('enable-3d-label');
   if (label) {
-    label.textContent = state.enable3D ? '3D 배경: 켜짐' : '3D 배경: 꺼짐';
+    label.textContent = state.enable3D ? t('menuUI.bg3dOn') : t('menuUI.bg3dOff');
   }
 
   // 우측 상단 유틸리티 아이콘 업데이트
@@ -299,7 +300,7 @@ export function update3DLabel(): void {
 export function updateAutoRollingLabel(): void {
   const label = document.getElementById('auto-rolling-label');
   if (label) {
-    label.textContent = state.autoRolling ? '자동 롤링: 켜짐' : '자동 롤링: 꺼짐';
+    label.textContent = state.autoRolling ? t('menuUI.autoRollingOn') : t('menuUI.autoRollingOff');
   }
 }
 
@@ -487,10 +488,10 @@ export function showDialog(options: {
       return;
     }
 
-    titleEl.textContent = options.title || '확인';
+    titleEl.textContent = options.title || t('menuUI.dialogConfirm');
     message.textContent = options.message || '';
-    confirmBtn.textContent = options.confirmText || '확인';
-    cancelBtn.textContent = options.cancelText || '취소';
+    confirmBtn.textContent = options.confirmText || t('menuUI.dialogConfirm');
+    cancelBtn.textContent = options.cancelText || t('common.cancel');
 
     if (options.type === 'prompt') {
       inputField.style.display = 'block';
@@ -544,10 +545,10 @@ export function showConfirm(
 ): Promise<unknown> {
   return showDialog({
     type: 'confirm',
-    title: options.title || '확인',
+    title: options.title || t('menuUI.dialogConfirm'),
     message,
-    confirmText: options.confirmText || '확인',
-    cancelText: options.cancelText || '취소',
+    confirmText: options.confirmText || t('menuUI.dialogConfirm'),
+    cancelText: options.cancelText || t('common.cancel'),
     danger: options.danger || false,
   });
 }
@@ -566,12 +567,12 @@ export function showPrompt(
 ): Promise<unknown> {
   return showDialog({
     type: 'prompt',
-    title: options.title || '입력',
+    title: options.title || t('menuUI.dialogInput'),
     message,
     defaultValue,
     placeholder: options.placeholder || '',
-    confirmText: options.confirmText || '확인',
-    cancelText: options.cancelText || '취소',
+    confirmText: options.confirmText || t('menuUI.dialogConfirm'),
+    cancelText: options.cancelText || t('common.cancel'),
   });
 }
 
@@ -587,9 +588,9 @@ export function showAlert(
 ): Promise<unknown> {
   return showDialog({
     type: 'alert',
-    title: options.title || '알림',
+    title: options.title || t('menuUI.dialogAlert'),
     message,
-    confirmText: options.confirmText || '확인',
+    confirmText: options.confirmText || t('menuUI.dialogConfirm'),
   });
 }
 

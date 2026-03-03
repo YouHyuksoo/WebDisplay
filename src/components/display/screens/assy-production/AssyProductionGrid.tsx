@@ -11,6 +11,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useGridResizer } from '@/hooks/useGridResizer';
 import { useGridPaging } from '@/hooks/useGridPaging';
 import PageIndicator from '../../shared/PageIndicator';
@@ -77,13 +78,14 @@ interface AssyProductionGridProps {
 }
 
 export default function AssyProductionGrid({ rows, isLoading, error, scrollSeconds = 5 }: AssyProductionGridProps) {
+  const t = useTranslations('display');
   const { widths, handleMouseDown } = useGridResizer('grid-widths-assy-production', INITIAL_WIDTHS);
   const { bodyRef, startIndex, endIndex, page, totalPages } = useGridPaging({ totalRows: rows.length, scrollSeconds });
 
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
-        데이터 로딩 중...
+        {t('loading')}
       </div>
     );
   }
@@ -91,7 +93,7 @@ export default function AssyProductionGrid({ rows, isLoading, error, scrollSecon
   if (error) {
     return (
       <div className="flex h-full items-center justify-center text-red-400 dark:text-red-500">
-        데이터 로드 실패
+        {t('loadError')}
       </div>
     );
   }
@@ -99,7 +101,7 @@ export default function AssyProductionGrid({ rows, isLoading, error, scrollSecon
   if (rows.length === 0) {
     return (
       <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
-        조회된 데이터가 없습니다
+        {t('noData')}
       </div>
     );
   }

@@ -29,6 +29,7 @@ import { DEFAULT_CATEGORIES } from './config';
 import * as Storage from './storage';
 import { state } from './state';
 import { showToast, showConfirm, saveShortcuts } from './ui';
+import { t } from './i18n';
 
 // ---------------------------------------------------------------------------
 // 상수
@@ -238,11 +239,11 @@ export function renderManagerList(): void {
       </div>
       ${
         isDefault
-          ? '<span class="category-badge">기본</span>'
+          ? '<span class="category-badge">' + t('menuUI.categoryDefault') + '</span>'
           : `
           <div class="category-actions">
-            <button class="category-edit-btn" data-tooltip="수정">✏️</button>
-            <button class="category-delete-btn" data-tooltip="삭제">🗑️</button>
+            <button class="category-edit-btn" data-tooltip="${t('menuUI.edit')}">✏️</button>
+            <button class="category-delete-btn" data-tooltip="${t('menuUI.delete')}">🗑️</button>
           </div>
         `
       }
@@ -263,14 +264,14 @@ export function renderManagerList(): void {
       deleteBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         const confirmed = await showConfirm(
-          `"${cat.name}" 카테고리를 삭제할까요?\n해당 카테고리의 바로가기는 FAVORITES로 이동됩니다.`,
-          { title: '카테고리 삭제', danger: true },
+          t('menuUI.categoryDeleteConfirm', { name: cat.name }),
+          { title: t('menuUI.categoryDelete'), danger: true },
         );
         if (confirmed) {
           remove(cat.id);
           renderManagerList();
           refreshUI();
-          showToast('카테고리 삭제됨');
+          showToast(t('menuUI.categoryDeleted'));
         }
       });
     }
@@ -293,13 +294,13 @@ export function openEditDialog(category: Category | null = null): void {
   if (!dialog || !nameInput || !subtitleInput || !iconInput) return;
 
   if (category) {
-    if (title) title.textContent = '카테고리 수정';
+    if (title) title.textContent = t('menuUI.categoryEdit');
     nameInput.value = category.name;
     subtitleInput.value = category.subtitle;
     iconInput.value = category.icon || '◻';
     dialog.dataset.editId = String(category.id);
   } else {
-    if (title) title.textContent = '새 카테고리';
+    if (title) title.textContent = t('menuUI.categoryNew');
     nameInput.value = '';
     subtitleInput.value = '';
     iconInput.value = '◻';
@@ -333,7 +334,7 @@ export function saveFromDialog(): void {
 
   const name = nameInput.value.trim();
   if (!name) {
-    showToast('카테고리 이름을 입력해주세요');
+    showToast(t('menuUI.categoryNameRequired'));
     return;
   }
 
@@ -345,11 +346,11 @@ export function saveFromDialog(): void {
       subtitle: subtitleInput.value.trim(),
       icon: iconInput.value.trim() || '◻',
     });
-    showToast('카테고리 수정됨');
+    showToast(t('menuUI.categoryEdited'));
   } else {
     // 추가
     add(name, subtitleInput.value.trim(), iconInput.value.trim() || '◻');
-    showToast('카테고리 추가됨');
+    showToast(t('menuUI.categoryAdded'));
   }
 
   closeEditDialog();

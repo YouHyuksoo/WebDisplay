@@ -7,6 +7,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useGridResizer } from '@/hooks/useGridResizer';
 import { useGridPaging } from '@/hooks/useGridPaging';
 import PageIndicator from '../../shared/PageIndicator';
@@ -70,13 +71,14 @@ function formatDate(val?: string): string {
 const INITIAL_WIDTHS = [120, 140, 200, 240, 180, 200, 100, 100, 100];
 
 export default function MslWarningIssueGrid({ rows, scrollSeconds = 5 }: MslWarningIssueGridProps) {
+  const t = useTranslations('display');
   const { widths, handleMouseDown } = useGridResizer('grid-widths-msl-warning-issue', INITIAL_WIDTHS);
   const { bodyRef, startIndex, endIndex, page, totalPages } = useGridPaging({ totalRows: rows.length, scrollSeconds });
 
   if (!rows || rows.length === 0) {
     return (
       <div className="flex h-full items-center justify-center rounded-lg border border-zinc-200 bg-white text-2xl text-zinc-400 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-500">
-        MSL 경고 항목 없음 (출고기준)
+        {t('mslNoWarningIssue')}
       </div>
     );
   }

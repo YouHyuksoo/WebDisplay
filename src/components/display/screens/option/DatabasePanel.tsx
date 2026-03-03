@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import type { DatabaseConfig } from '@/types/option';
 
 type Status = 'idle' | 'testing' | 'saving' | 'success' | 'error';
@@ -20,6 +21,7 @@ const EMPTY_CONFIG: DatabaseConfig = {
 };
 
 export default function DatabasePanel() {
+  const t = useTranslations('option');
   const [config, setConfig] = useState<DatabaseConfig>(EMPTY_CONFIG);
   const [status, setStatus] = useState<Status>('idle');
   const [message, setMessage] = useState('');
@@ -83,7 +85,7 @@ export default function DatabasePanel() {
       const data = await res.json();
       if (data.success) {
         setStatus('success');
-        setMessage('설정 저장 및 풀 재시작 완료');
+        setMessage(t('dbSaveSuccess'));
       } else {
         setStatus('error');
         setMessage(data.error);
@@ -105,7 +107,7 @@ export default function DatabasePanel() {
     <div className="space-y-5 p-6">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold text-zinc-800 dark:text-zinc-100">
-          Oracle 데이터베이스 연결 설정
+          {t('dbTitle')}
         </h3>
         {source !== 'unknown' && (
           <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -113,7 +115,7 @@ export default function DatabasePanel() {
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
               : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
           }`}>
-            {source === 'env' ? '.env.local 기반' : '설정 파일 기반'}
+            {source === 'env' ? t('envBased') : t('configBased')}
           </span>
         )}
       </div>
@@ -121,7 +123,7 @@ export default function DatabasePanel() {
       {/* 호스트 + 포트 */}
       <div className="grid grid-cols-3 gap-4">
         <div className="col-span-2">
-          <label className={labelClass}>호스트 / IP</label>
+          <label className={labelClass}>{t('host')}</label>
           <input
             value={config.host}
             onChange={(e) => update({ host: e.target.value })}
@@ -130,7 +132,7 @@ export default function DatabasePanel() {
           />
         </div>
         <div>
-          <label className={labelClass}>포트</label>
+          <label className={labelClass}>{t('port')}</label>
           <input
             type="number"
             value={config.port}
@@ -142,7 +144,7 @@ export default function DatabasePanel() {
 
       {/* 연결 방식 */}
       <div>
-        <label className={labelClass}>연결 방식</label>
+        <label className={labelClass}>{t('connectType')}</label>
         <div className="flex gap-6">
           {(['SID', 'SERVICE_NAME'] as const).map((type) => (
             <label key={type} className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-200">
@@ -175,7 +177,7 @@ export default function DatabasePanel() {
       {/* 사용자 */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className={labelClass}>사용자명</label>
+          <label className={labelClass}>{t('username')}</label>
           <input
             value={config.username}
             onChange={(e) => update({ username: e.target.value })}
@@ -184,7 +186,7 @@ export default function DatabasePanel() {
           />
         </div>
         <div>
-          <label className={labelClass}>비밀번호</label>
+          <label className={labelClass}>{t('password')}</label>
           <input
             type="password"
             value={config.password}
@@ -196,7 +198,7 @@ export default function DatabasePanel() {
 
       {/* 미리보기 */}
       <div className="rounded bg-zinc-100 px-3 py-2 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-        미리보기: {connectString || '(입력 필요)'}
+        {t('preview')}: {connectString || t('inputRequired')}
       </div>
 
       {/* 버튼 */}
@@ -206,14 +208,14 @@ export default function DatabasePanel() {
           disabled={status === 'testing' || status === 'saving'}
           className="rounded bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40 dark:bg-blue-500 dark:hover:bg-blue-600"
         >
-          {status === 'testing' ? '테스트 중...' : '연결 테스트'}
+          {status === 'testing' ? t('testing') : t('connTest')}
         </button>
         <button
           onClick={handleSave}
           disabled={status === 'testing' || status === 'saving'}
           className="rounded bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-40 dark:bg-emerald-500 dark:hover:bg-emerald-600"
         >
-          {status === 'saving' ? '저장 중...' : '적용 & 재연결'}
+          {status === 'saving' ? t('saving') : t('applyReconnect')}
         </button>
       </div>
 

@@ -26,6 +26,7 @@ import { DEFAULT_CATEGORIES } from './config';
 import * as Categories from './categories';
 import * as Carousel from './carousel';
 import type { Category } from './types';
+import { t } from './i18n';
 
 // ---------------------------------------------------------------------------
 // 상수
@@ -263,7 +264,11 @@ export function updateSectionInfo(): void {
   const subtitleEl = document.getElementById('section-subtitle');
 
   if (titleEl) titleEl.textContent = section.name;
-  if (subtitleEl) subtitleEl.textContent = section.subtitle;
+  if (subtitleEl) {
+    const subtitleKey = `menuUI.catSub${section.id}`;
+    const translated = t(subtitleKey);
+    subtitleEl.textContent = translated !== subtitleKey ? translated : section.subtitle;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -353,7 +358,7 @@ export function createDepthIndicator(): void {
   const addBtn = document.createElement('button');
   addBtn.className = 'depth-add-btn';
   addBtn.id = 'depth-add-btn';
-  addBtn.title = '새 카테고리 추가';
+  addBtn.title = t('menuUI.newCategory');
   addBtn.textContent = '+';
   addBtn.addEventListener('click', () => {
     Categories.openEditDialog();

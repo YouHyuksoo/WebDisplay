@@ -10,6 +10,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import useSWR from 'swr';
+import { useTranslations } from 'next-intl';
 import DisplayLayout from '../../DisplayLayout';
 import NgAlertBanner from '../../NgAlertBanner';
 import FoolproofCard from './FoolproofCard';
@@ -34,6 +35,7 @@ interface FoolproofStatusProps {
 export default function FoolproofStatus({
   screenId,
 }: FoolproofStatusProps) {
+  const t = useTranslations('display');
   const timing = useDisplayTiming();
   const [selectedLines, setSelectedLines] = useState(() => getSelectedLines(screenId));
   const [currentPage, setCurrentPage] = useState(0);
@@ -85,21 +87,21 @@ export default function FoolproofStatus({
   return (
     <DisplayLayout screenId={screenId}>
       <div className="flex h-full flex-col overflow-hidden">
-        {ngCount > 0 && <NgAlertBanner message={`Foolproof NG Warning: ${ngCount} line(s) detected`} showIcon={false} compact />}
+        {ngCount > 0 && <NgAlertBanner message={t('foolproofNgWarning', { count: ngCount })} showIcon={false} compact />}
 
         {/* 카드 그리드 — 현재 페이지만 표시 */}
         <div className="min-h-0 flex-1 p-3">
           {isLoading ? (
             <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
-              데이터 로딩 중...
+              {t('loading')}
             </div>
           ) : error ? (
             <div className="flex h-full items-center justify-center text-red-400 dark:text-red-500">
-              데이터 로드 실패
+              {t('loadError')}
             </div>
           ) : rows.length === 0 ? (
             <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
-              조회된 데이터가 없습니다
+              {t('noData')}
             </div>
           ) : (
             <div className="grid h-full grid-cols-2 grid-rows-3 gap-3 xl:grid-cols-3 xl:grid-rows-2">
@@ -122,7 +124,7 @@ export default function FoolproofStatus({
                     ? 'scale-125 bg-cyan-400'
                     : 'bg-zinc-600 hover:bg-zinc-500'
                 }`}
-                aria-label={`페이지 ${i + 1}`}
+                aria-label={t('page', { n: i + 1 })}
               />
             ))}
             <span className="ml-2 text-sm text-zinc-500">

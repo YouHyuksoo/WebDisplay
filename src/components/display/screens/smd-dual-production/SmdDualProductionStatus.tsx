@@ -9,6 +9,7 @@
 
 import useSWR from 'swr';
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import DisplayLayout from '../../DisplayLayout';
 import SmdDualProductionGrid from './SmdDualProductionGrid';
 import SmdCheckItems from '../smd-status/SmdCheckItems';
@@ -27,6 +28,7 @@ interface SmdDualProductionStatusProps {
 export default function SmdDualProductionStatus({
   screenId,
 }: SmdDualProductionStatusProps) {
+  const t = useTranslations('display');
   const timing = useDisplayTiming();
   const [lines, setLines] = useState(() => getSelectedLines(screenId));
 
@@ -52,7 +54,7 @@ export default function SmdDualProductionStatus({
     return (
       <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
-          데이터 로딩 중...
+          {t('loading')}
         </div>
       </DisplayLayout>
     );
@@ -62,7 +64,7 @@ export default function SmdDualProductionStatus({
     return (
       <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-red-400 dark:text-red-500">
-          데이터 로드 실패
+          {t('loadError')}
         </div>
       </DisplayLayout>
     );
@@ -73,7 +75,7 @@ export default function SmdDualProductionStatus({
       <div className="flex h-full flex-col overflow-hidden">
         {ngCount > 0 && (
           <div className="shrink-0 animate-pulse bg-red-600 px-4 py-1 text-center text-lg font-black text-white">
-            NG {ngCount}건 발생
+            {t('ngWarning', { count: ngCount })}
           </div>
         )}
         <div className="flex min-h-0 flex-1 flex-col gap-1 p-2">

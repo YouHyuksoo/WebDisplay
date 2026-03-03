@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import useSWR from 'swr';
+import { useTranslations } from 'next-intl';
 import DisplayLayout from '../../DisplayLayout';
 import ProductionKpiCard from './ProductionKpiCard';
 import type { ProductionKpiRow } from './ProductionKpiCard';
@@ -28,6 +29,7 @@ interface ProductionKpiStatusProps {
 export default function ProductionKpiStatus({
   screenId,
 }: ProductionKpiStatusProps) {
+  const t = useTranslations('display');
   const timing = useDisplayTiming();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedLines, setSelectedLines] = useState(() => getSelectedLines(screenId));
@@ -73,7 +75,7 @@ export default function ProductionKpiStatus({
     return (
       <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-3xl text-zinc-400 dark:text-zinc-500">
-          데이터 로딩 중...
+          {t('loading')}
         </div>
       </DisplayLayout>
     );
@@ -83,7 +85,7 @@ export default function ProductionKpiStatus({
     return (
       <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-3xl text-red-400 dark:text-red-500">
-          데이터 로드 실패
+          {t('loadError')}
         </div>
       </DisplayLayout>
     );
@@ -93,7 +95,7 @@ export default function ProductionKpiStatus({
     return (
       <DisplayLayout screenId={screenId}>
         <div className="flex h-full items-center justify-center text-3xl text-zinc-400 dark:text-zinc-500">
-          데이터 없음
+          {t('noDataShort')}
         </div>
       </DisplayLayout>
     );
@@ -119,7 +121,7 @@ export default function ProductionKpiStatus({
                     ? 'scale-125 bg-cyan-400'
                     : 'bg-zinc-600 hover:bg-zinc-500'
                 }`}
-                aria-label={`라인 ${idx + 1}`}
+                aria-label={t('line', { n: idx + 1 })}
               />
             ))}
           </div>

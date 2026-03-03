@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { KEYS } from '@/lib/menu/storage';
 import { SCREENS } from '@/lib/screens';
 import { Rocket, Power, Trash2, CheckCircle2 } from 'lucide-react';
@@ -16,6 +17,7 @@ const SCREEN_OPTIONS = Object.values(SCREENS)
   .map((s) => ({ id: s.id, label: `${s.titleKo} (${s.id})` }));
 
 export default function AutoLaunchPanel() {
+  const t = useTranslations('option');
   const [autoLaunchId, setAutoLaunchId] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -35,7 +37,7 @@ export default function AutoLaunchPanel() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const selectedLabel = SCREEN_OPTIONS.find((s) => s.id === autoLaunchId)?.label ?? '지정되지 않음';
+  const selectedLabel = SCREEN_OPTIONS.find((s) => s.id === autoLaunchId)?.label ?? t('notSet');
 
   return (
     <div className="space-y-8 p-8">
@@ -46,10 +48,10 @@ export default function AutoLaunchPanel() {
             <Rocket className="text-blue-600 dark:text-blue-400" size={24} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 mb-1">시작 페이지란?</h3>
+            <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 mb-1">{t('launchTitle')}</h3>
             <p className="text-sm text-blue-800/70 dark:text-blue-300/70 leading-relaxed">
-              프로그램을 최초 실행하거나 새로고침했을 때, 메뉴 화면을 거치지 않고 바로 해당 화면을 표시합니다.<br />
-              지정해두면 매번 메뉴에서 찾아 들어갈 필요 없이 즉시 모니터링을 시작할 수 있습니다.
+              {t('launchDesc1')}<br />
+              {t('launchDesc2')}
             </p>
           </div>
         </div>
@@ -59,7 +61,7 @@ export default function AutoLaunchPanel() {
       <div className="grid gap-6">
         <div className="flex flex-col gap-2">
           <label className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-            현재 설정된 시작 페이지
+            {t('currentLaunch')}
           </label>
           <div className="flex items-center gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
             {autoLaunchId ? (
@@ -75,7 +77,7 @@ export default function AutoLaunchPanel() {
                 <button
                   onClick={() => save(null)}
                   className="p-2 text-zinc-400 hover:text-red-500 transition-colors"
-                  title="설정 해제"
+                  title={t('clearSetting')}
                 >
                   <Trash2 size={20} />
                 </button>
@@ -85,7 +87,7 @@ export default function AutoLaunchPanel() {
                 <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
                   <Power size={20} className="opacity-50" />
                 </div>
-                <span>설정된 시작 페이지가 없습니다. 메뉴 화면이 먼저 표시됩니다.</span>
+                <span>{t('noLaunch')}</span>
               </div>
             )}
           </div>
@@ -94,7 +96,7 @@ export default function AutoLaunchPanel() {
         {/* 페이지 선택 창 */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-            새로운 시작 페이지 등록
+            {t('newLaunch')}
           </label>
           <div className="flex gap-2">
             <select
@@ -103,7 +105,7 @@ export default function AutoLaunchPanel() {
               className="flex-1 rounded-xl border border-zinc-200 bg-white px-4 py-3 text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 transition-all appearance-none"
               style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.2rem' }}
             >
-              <option value="">(없음) 메뉴 화면으로 시작</option>
+              <option value="">{t('noneOption')}</option>
               {SCREEN_OPTIONS.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}
@@ -117,7 +119,7 @@ export default function AutoLaunchPanel() {
       {/* 저장 완료 알림 */}
       <div className={`flex items-center gap-2 text-emerald-600 dark:text-emerald-400 transition-opacity duration-300 ${saved ? 'opacity-100' : 'opacity-0'}`}>
         <CheckCircle2 size={18} />
-        <span className="text-sm font-medium">설정이 저장되었습니다. 다음 접속부터 적용됩니다.</span>
+        <span className="text-sm font-medium">{t('launchSaved')}</span>
       </div>
     </div>
   );
