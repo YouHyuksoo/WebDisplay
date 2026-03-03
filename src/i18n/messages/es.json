@@ -377,6 +377,12 @@
     "spaceEffectToggle": "Cambiar efecto espacial",
     "iconColorToggle": "Cambiar color de icono",
 
+    "catName0": "FAVORITOS",
+    "catName1": "MONITOREO SMD",
+    "catName2": "MONITOREO PBA",
+    "catName3": "EQUIPOS",
+    "catName4": "CALIDAD",
+    "catName6": "GRÁFICOS",
     "catSub0": "Favoritos",
     "catSub1": "Monitoreo SMD",
     "catSub2": "Monitoreo PBA",

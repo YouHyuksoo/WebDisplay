@@ -263,7 +263,11 @@ export function updateSectionInfo(): void {
   const titleEl = document.getElementById('section-title');
   const subtitleEl = document.getElementById('section-subtitle');
 
-  if (titleEl) titleEl.textContent = section.name;
+  if (titleEl) {
+    const nameKey = `menuUI.catName${section.id}`;
+    const translatedName = t(nameKey);
+    titleEl.textContent = translatedName !== nameKey ? translatedName : section.name;
+  }
   if (subtitleEl) {
     const subtitleKey = `menuUI.catSub${section.id}`;
     const translated = t(subtitleKey);
@@ -349,7 +353,10 @@ export function createDepthIndicator(): void {
     const dot = document.createElement('div');
     dot.className = 'depth-dot' + (i === state.currentSection ? ' active' : '');
     const icon = 'icon' in section ? (section as Category).icon : '';
-    dot.dataset.label = `${icon || ''} ${section.name}`;
+    const nameKey = `menuUI.catName${section.id}`;
+    const translatedName = t(nameKey);
+    const displayName = translatedName !== nameKey ? translatedName : section.name;
+    dot.dataset.label = `${icon || ''} ${displayName}`;
     dot.addEventListener('click', () => goToSection(i));
     container.appendChild(dot);
   });

@@ -377,6 +377,12 @@
     "spaceEffectToggle": "Switch Space Effect",
     "iconColorToggle": "Switch Icon Color",
 
+    "catName0": "FAVORITES",
+    "catName1": "SMD MONITORING",
+    "catName2": "PBA MONITORING",
+    "catName3": "EQUIPMENT",
+    "catName4": "QUALITY",
+    "catName6": "CHARTS",
     "catSub0": "Favorites",
     "catSub1": "SMD Monitoring",
     "catSub2": "PBA Monitoring",

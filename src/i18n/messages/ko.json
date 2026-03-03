@@ -377,6 +377,12 @@
     "spaceEffectToggle": "배경 공간 효과 전환",
     "iconColorToggle": "아이콘 색상 모드 전환",
 
+    "catName0": "즐겨찾기",
+    "catName1": "SMD 모니터링",
+    "catName2": "PBA 모니터링",
+    "catName3": "설비 모니터링",
+    "catName4": "품질 관리",
+    "catName6": "차트",
     "catSub0": "즐겨찾기",
     "catSub1": "SMD 모니터링",
     "catSub2": "PBA 모니터링",
