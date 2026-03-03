@@ -6,6 +6,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
+import { SCREENS } from '@/lib/screens';
 
 interface DisplayPlaceholderProps {
   screenId: string;
@@ -14,12 +16,17 @@ interface DisplayPlaceholderProps {
 /** 미구현 화면 플레이스홀더 (다국어 지원) */
 export default function DisplayPlaceholder({ screenId }: DisplayPlaceholderProps) {
   const t = useTranslations();
+  const locale = useLocale();
+  const screen = SCREENS[screenId];
+  const screenTitle = screen
+    ? (locale === 'ko' ? screen.titleKo : locale === 'es' && screen.titleEs ? screen.titleEs : screen.title)
+    : screenId;
 
   return (
     <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
       <div className="text-center">
         <p className="text-4xl font-bold" style={{ color: 'var(--glow-primary)' }}>
-          {t(`screens.${screenId}`)}
+          {screenTitle}
         </p>
         <p className="mt-2 text-sm">
           {t('display.placeholder')} ({t('display.menuId', { id: screenId })})
