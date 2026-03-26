@@ -115,6 +115,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'fav-41', title: 'AOI 차트분석', url: '/display/41', color: '#06b6d4', icon: 'svg:chart', layer: 0 },
   { id: 'fav-42', title: 'FCT 차트분석', url: '/display/42', color: '#f59e0b', icon: 'svg:chart', layer: 0 },
   { id: 'fav-43', title: 'VISION 차트분석', url: '/display/43', color: '#10b981', icon: 'svg:chart', layer: 0 },
+  { id: 'fav-50', title: '설비로그검색', url: '/display/50', color: '#64748b', icon: 'svg:chip-smd', layer: 0 },
 
   // SMD Monitoring (layer: 1)
   { id: 'menu-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 1 },
@@ -128,6 +129,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   // Equipment (layer: 3)
   { id: 'menu-34', title: '픽업률현황(BASE)', url: '/display/34', color: '#f59e0b', icon: 'svg:chip-smd', layer: 3 },
   { id: 'menu-35', title: '픽업률현황(HEAD)', url: '/display/35', color: '#eab308', icon: 'svg:chip-smd', layer: 3 },
+  { id: 'menu-50', title: '설비로그검색', url: '/display/50', color: '#64748b', icon: 'svg:chip-smd', layer: 3 },
 
   // Quality (layer: 4)
   { id: 'menu-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 4 },

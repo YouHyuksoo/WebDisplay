@@ -41,4 +41,6 @@ export const SCREENS: Record<string, ScreenConfig> = {
   '41': { id: '41', title: 'AOI Chart Analysis', titleKo: 'AOI 차트분석', titleEs: 'Análisis de gráficos AOI', window: 'w_display_aoi_chart', group: 'charts' },
   '42': { id: '42', title: 'FCT Chart Analysis', titleKo: 'FCT 차트분석', titleEs: 'Análisis de gráficos FCT', window: 'w_display_fct_chart', group: 'charts' },
   '43': { id: '43', title: 'VISION Chart Analysis', titleKo: 'VISION 차트분석', titleEs: 'Análisis de gráficos VISION', window: 'w_display_vision_chart', group: 'charts' },
+
+  '50': { id: '50', title: 'Equipment Log Search', titleKo: '설비로그검색', titleEs: 'Búsqueda de registro de equipos', window: 'w_display_equipment_log', group: 'equipment' },
 };

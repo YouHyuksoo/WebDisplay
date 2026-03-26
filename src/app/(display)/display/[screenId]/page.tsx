@@ -21,6 +21,8 @@ import AssyProductionStatus from '@/components/display/screens/assy-production/A
 import FoolproofStatus from '@/components/display/screens/foolproof-status/FoolproofStatus';
 import SmdDualProductionStatus from '@/components/display/screens/smd-dual-production/SmdDualProductionStatus';
 import SpiChartStatus from '@/components/display/screens/spi-chart/SpiChartStatus';
+import AoiChartStatus from '@/components/display/screens/aoi-chart/AoiChartStatus';
+import EquipmentLogStatus from '@/components/display/screens/equipment-log/EquipmentLogStatus';
 
 interface PageProps {
   params: Promise<{ screenId: string }>;
@@ -81,6 +83,14 @@ export default async function DisplayPage({ params }: PageProps) {
 
   if (screenId === '40') {
     return <SpiChartStatus screenId={screenId} />;
+  }
+
+  if (screenId === '41') {
+    return <AoiChartStatus screenId={screenId} />;
+  }
+
+  if (screenId === '50') {
+    return <EquipmentLogStatus screenId={screenId} />;
   }
 
   return (

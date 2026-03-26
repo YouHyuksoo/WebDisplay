@@ -133,3 +133,71 @@ export async function executeQuery<T = Record<string, unknown>>(
     await conn.close();
   }
 }
+
+// ---------------------------------------------------------------------------
+// 프로필 기반 보조 커넥션 풀 (SVEHICLEPDB 등 다른 DB 인스턴스 접속용)
+// ---------------------------------------------------------------------------
+
+/** 프로필 이름별 보조 커넥션 풀 캐시 */
+const secondaryPools = new Map<string, Promise<oracledb.Pool>>();
+
+/**
+ * database.json에서 이름으로 프로필을 찾아 커넥션 풀을 반환한다.
+ * 메인 풀(getPool)과 독립적으로 관리된다.
+ */
+function getPoolByProfile(profileName: string): Promise<oracledb.Pool> {
+  const existing = secondaryPools.get(profileName);
+  if (existing) return existing;
+
+  const alias = `secondary_${profileName}`;
+
+  // HMR 재로드 시 이미 생성된 풀이 있으면 재사용
+  try {
+    const pool = oracledb.getPool(alias);
+    const resolved = Promise.resolve(pool);
+    secondaryPools.set(profileName, resolved);
+    return resolved;
+  } catch { /* 풀이 없으면 새로 생성 */ }
+
+  const fileData = loadFileConfig();
+  const cfg = fileData?.profiles.find((p) => p.name === profileName);
+  if (!cfg) throw new Error(`DB 프로필 "${profileName}"을 찾을 수 없습니다`);
+
+  const promise = oracledb.createPool({
+    user: cfg.username,
+    password: cfg.password,
+    connectString: buildConnectString(cfg),
+    poolMin: 1,
+    poolMax: 5,
+    poolIncrement: 1,
+    connectTimeout: 10,
+    queueTimeout: 10000,
+    poolAlias: alias,
+  });
+  secondaryPools.set(profileName, promise);
+  return promise;
+}
+
+/**
+ * 특정 프로필의 DB에서 SQL 쿼리를 실행한다.
+ * 메인 DB가 아닌 다른 인스턴스(예: SVEHICLEPDB)에 접속할 때 사용.
+ * @param profileName - database.json의 프로필 이름
+ * @param sql - 실행할 SQL 문
+ * @param binds - 바인드 변수
+ */
+export async function executeQueryByProfile<T = Record<string, unknown>>(
+  profileName: string,
+  sql: string,
+  binds: oracledb.BindParameters = {},
+): Promise<T[]> {
+  const pool = await getPoolByProfile(profileName);
+  const conn = await pool.getConnection();
+  try {
+    const result = await conn.execute(sql, binds, {
+      outFormat: oracledb.OUT_FORMAT_OBJECT,
+    });
+    return (result.rows as T[]) ?? [];
+  } finally {
+    await conn.close();
+  }
+}

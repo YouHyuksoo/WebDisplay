@@ -19,6 +19,9 @@ import { sqlSmtPickupRateBaseList, sqlSmtPickupRateBaseNgCount } from './smt-pic
 import { sqlSmtPickupRateHeadList, sqlSmtPickupRateHeadNgCount } from './smt-pickup-rate-head';
 import { sqlTempHumidityStatus, sqlTempHumidityNgCount } from './temperature-humidity';
 import { sqlProductionKpiList } from './production-kpi';
+import { sqlSpiByLine, sqlSpiFpyTrend, sqlSpiSummary, sqlSpiTopLines } from './spi-chart';
+import { sqlAoiByLine, sqlAoiFpyTrend, sqlAoiSummary, sqlAoiTopLines } from './aoi-chart';
+import { sqlEquipmentLogList, sqlEquipmentLogCount } from './equipment-log';
 
 export interface SqlEntry {
   label: string;
@@ -118,6 +121,34 @@ const SCREEN_SQL_BUILDERS: Record<string, () => ScreenSqlInfo> = {
     queries: [
       { label: '온습도 현황', sql: sqlTempHumidityStatus() },
       { label: 'NG 건수', sql: sqlTempHumidityNgCount() },
+    ],
+  }),
+  '40': () => ({
+    screenId: '40',
+    title: 'SPI 차트분석 (SPI Chart Analysis)',
+    queries: [
+      { label: '라인별 불량현황', sql: sqlSpiByLine('/* AND LINE_CODE IN (:line0, ...) */') },
+      { label: '직행율 7일 추이', sql: sqlSpiFpyTrend('/* AND LINE_CODE IN (:line0, ...) */') },
+      { label: '당일 요약', sql: sqlSpiSummary('/* AND LINE_CODE IN (:line0, ...) */') },
+      { label: '라인별 불량 TOP5', sql: sqlSpiTopLines('/* AND LINE_CODE IN (:line0, ...) */') },
+    ],
+  }),
+  '41': () => ({
+    screenId: '41',
+    title: 'AOI 차트분석 (AOI Chart Analysis)',
+    queries: [
+      { label: '라인별 불량현황', sql: sqlAoiByLine('/* AND LINE_CODE IN (:line0, ...) */') },
+      { label: '직행율 7일 추이', sql: sqlAoiFpyTrend('/* AND LINE_CODE IN (:line0, ...) */') },
+      { label: '당일 요약', sql: sqlAoiSummary('/* AND LINE_CODE IN (:line0, ...) */') },
+      { label: '라인별 불량 TOP5', sql: sqlAoiTopLines('/* AND LINE_CODE IN (:line0, ...) */') },
+    ],
+  }),
+  '50': () => ({
+    screenId: '50',
+    title: '설비로그검색 (Equipment Log Search)',
+    queries: [
+      { label: '로그 목록', sql: sqlEquipmentLogList('/* AND keyword LIKE ... */') },
+      { label: '로그 건수', sql: sqlEquipmentLogCount('/* AND keyword LIKE ... */') },
     ],
   }),
 };
