@@ -1,6 +1,6 @@
 /**
- * @file SpiChartStatus.tsx
- * @description SPI 차트분석 메인 컴포넌트. SWR polling + 스포트라이트 순환 애니메이션.
+ * @file AoiChartStatus.tsx
+ * @description AOI 차트분석 메인 컴포넌트. SWR polling + 스포트라이트 순환 애니메이션.
  * 초보자 가이드: 4개 차트를 2x2 그리드로 배치하고, scrollSeconds 간격으로
  * [전체 보기] → [개별 스포트라이트 0~3] 5단계 순환 애니메이션을 적용한다.
  * phase -1: 4개 동시 표시 (일반 그리드) / phase 0~3: 해당 차트 확대 + 나머지 축소.
@@ -19,9 +19,9 @@ import TopDefectChart from './TopDefectChart';
 import useDisplayTiming from '@/hooks/useDisplayTiming';
 import { fetcher } from '@/lib/fetcher';
 import { buildDisplayApiUrl, getSelectedLines } from '@/lib/display-helpers';
-import type { SpiChartApiResponse } from '@/lib/queries/spi-chart';
+import type { AoiChartApiResponse } from '@/lib/queries/aoi-chart';
 
-interface SpiChartStatusProps {
+interface AoiChartStatusProps {
   screenId: string;
 }
 
@@ -30,9 +30,8 @@ const PHASE_COUNT = 5;
 
 /**
  * 그리드 위치별 transform-origin.
- * 각 셀이 화면 중앙 방향으로 확대되도록 모서리를 고정점으로 사용한다.
- * [0] 좌상 → 좌상 고정, 우하로 확대 / [1] 우상 → 우상 고정, 좌하로 확대
- * [2] 좌하 → 좌하 고정, 우상로 확대 / [3] 우하 → 우하 고정, 좌상으로 확대
+ * [0] 좌상 → 우하로 확대 / [1] 우상 → 좌하로 확대
+ * [2] 좌하 → 우상로 확대 / [3] 우하 → 좌상으로 확대
  */
 const ORIGINS = [
   'origin-top-left',
@@ -41,7 +40,7 @@ const ORIGINS = [
   'origin-bottom-right',
 ];
 
-export default function SpiChartStatus({ screenId }: SpiChartStatusProps) {
+export default function AoiChartStatus({ screenId }: AoiChartStatusProps) {
   const t = useTranslations('display');
   const timing = useDisplayTiming();
   /** phase: -1 = 전체 보기, 0~3 = 개별 스포트라이트 */
@@ -74,7 +73,7 @@ export default function SpiChartStatus({ screenId }: SpiChartStatusProps) {
 
   /** 라인 미선택('%')이면 SWR 키를 null로 두어 API 호출을 보류 */
   const hasLines = lines !== '%';
-  const { data, error, isLoading } = useSWR<SpiChartApiResponse>(
+  const { data, error, isLoading } = useSWR<AoiChartApiResponse>(
     hasLines ? buildDisplayApiUrl(screenId, { lines: encodeURIComponent(lines) }) : null,
     fetcher,
     { refreshInterval: timing.refreshSeconds * 1000 },
@@ -128,7 +127,7 @@ export default function SpiChartStatus({ screenId }: SpiChartStatusProps) {
           if (isAllView) {
             cellClass = 'z-10 scale-100 opacity-100 saturate-100';
           } else if (isSpotlight) {
-            cellClass = 'z-20 scale-[1.55] shadow-[0_0_40px_rgba(34,211,238,0.3)]';
+            cellClass = 'z-20 scale-[1.55] shadow-[0_0_40px_rgba(167,139,250,0.3)]';
           } else {
             cellClass = 'z-10 scale-[0.92] opacity-50 saturate-[0.6]';
           }

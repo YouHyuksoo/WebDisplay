@@ -1,6 +1,6 @@
 /**
  * @file DefectRatePanel.tsx
- * @description 불량율 현황 패널. Donut 차트 + KPI 수치 카드. 실제 DB 데이터 사용.
+ * @description AOI 불량율 현황 패널. Donut 차트 + KPI 수치 카드. 실제 DB 데이터 사용.
  * 초보자 가이드: Recharts PieChart(도넛)로 양품/불량 비율을 시각화하고,
  * 핵심 KPI 수치(검사수, 불량수, 불량율, 직행율)를 함께 표시한다.
  */
@@ -9,9 +9,9 @@
 import { useTranslations } from 'next-intl';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import ChartCard from './ChartCard';
-import type { SpiSummaryRow } from '@/lib/queries/spi-chart';
+import type { AoiSummaryRow } from '@/lib/queries/aoi-chart';
 
-const PIE_COLORS = ['#22d3ee', '#f87171'];
+const PIE_COLORS = ['#a78bfa', '#f87171'];
 const DEFECT_TARGET = 0.50;
 
 /** KPI 수치 카드 */
@@ -50,11 +50,11 @@ function CenterLabel({ defectRate, statusText, rateLabel }: {
 }
 
 interface DefectRatePanelProps {
-  summary: SpiSummaryRow | null;
+  summary: AoiSummaryRow | null;
 }
 
 export default function DefectRatePanel({ summary }: DefectRatePanelProps) {
-  const t = useTranslations('spiChart');
+  const t = useTranslations('aoiChart');
 
   const totalInspected = summary?.TOTAL_INSPECTED ?? 0;
   const totalDefects = summary?.TOTAL_DEFECTS ?? 0;
@@ -76,7 +76,6 @@ export default function DefectRatePanel({ summary }: DefectRatePanelProps) {
         </div>
       ) : (
         <div className="flex h-full gap-3">
-          {/* 도넛 차트 */}
           <div className="flex w-1/2 items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -104,8 +103,6 @@ export default function DefectRatePanel({ summary }: DefectRatePanelProps) {
               </PieChart>
             </ResponsiveContainer>
           </div>
-
-          {/* KPI 수치 */}
           <div className="grid w-1/2 grid-cols-2 gap-2 content-center">
             <KpiItem label={t('totalInspected')} value={totalInspected.toLocaleString()} />
             <KpiItem label={t('totalDefects')} value={totalDefects.toLocaleString()} />

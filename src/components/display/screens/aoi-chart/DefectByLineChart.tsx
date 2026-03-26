@@ -1,8 +1,8 @@
 /**
  * @file DefectByLineChart.tsx
- * @description 라인별 불량현황 Bar Chart. 실제 DB 데이터 사용.
+ * @description AOI 라인별 불량현황 Bar Chart. 실제 DB 데이터 사용.
  * 초보자 가이드: Recharts BarChart로 라인별 NG 건수를 표시.
- * 각 바 위에 NG 건수를 라벨로 보여주고, 툴팁에서 상세 정보를 표시한다.
+ * NG 비율 구간별 색상 코딩으로 심각도를 직관적으로 전달한다.
  */
 'use client';
 
@@ -12,7 +12,7 @@ import {
   ResponsiveContainer, Cell, LabelList,
 } from 'recharts';
 import ChartCard from './ChartCard';
-import type { SpiLineRow } from '@/lib/queries/spi-chart';
+import type { AoiLineRow } from '@/lib/queries/aoi-chart';
 
 /** 바 색상 — NG 비율 구간별 색상 (낮을수록 좋음) */
 function getBarColor(ngRate: number): string {
@@ -25,7 +25,7 @@ function getBarColor(ngRate: number): string {
 /** 커스텀 툴팁 */
 function CustomTooltip({ active, payload, label, t }: {
   active?: boolean;
-  payload?: Array<{ payload: SpiLineRow }>;
+  payload?: Array<{ payload: AoiLineRow }>;
   label?: string;
   t: (key: string, params?: Record<string, string | number>) => string;
 }) {
@@ -51,11 +51,11 @@ function CustomTooltip({ active, payload, label, t }: {
 }
 
 interface DefectByLineChartProps {
-  data: SpiLineRow[];
+  data: AoiLineRow[];
 }
 
 export default function DefectByLineChart({ data }: DefectByLineChartProps) {
-  const t = useTranslations('spiChart');
+  const t = useTranslations('aoiChart');
 
   return (
     <ChartCard title={t('defectByLine')} subtitle={t('defectByLineSub')}>

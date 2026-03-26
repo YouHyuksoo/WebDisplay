@@ -1,6 +1,6 @@
 /**
  * @file TopDefectChart.tsx
- * @description 라인별 불량 TOP5 Horizontal Bar Chart. 실제 DB 데이터 사용.
+ * @description AOI 라인별 불량 TOP5 Horizontal Bar Chart. 실제 DB 데이터 사용.
  * 초보자 가이드: Recharts BarChart(layout="vertical")로 NG 건수 기준 상위 5개 라인을 표시.
  * 각 바에 그라데이션 색상과 불량건수를 함께 보여준다.
  */
@@ -11,15 +11,15 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
 import ChartCard from './ChartCard';
-import type { SpiTopLineRow } from '@/lib/queries/spi-chart';
+import type { AoiTopLineRow } from '@/lib/queries/aoi-chart';
 
-/** 그라데이션 색상 — 1위(빨강)부터 5위(시안)까지 */
-const RANK_COLORS = ['#f87171', '#fb923c', '#facc15', '#4ade80', '#22d3ee'];
+/** 그라데이션 색상 — 1위(빨강)부터 5위(보라)까지 */
+const RANK_COLORS = ['#f87171', '#fb923c', '#facc15', '#4ade80', '#a78bfa'];
 
 /** 커스텀 툴팁 */
 function CustomTooltip({ active, payload, t }: {
   active?: boolean;
-  payload?: Array<{ payload: SpiTopLineRow }>;
+  payload?: Array<{ payload: AoiTopLineRow }>;
   t: (key: string) => string;
 }) {
   if (!active || !payload?.[0]) return null;
@@ -59,11 +59,11 @@ function RenderLabel({ x, y, width, height, value }: {
 }
 
 interface TopDefectChartProps {
-  data: SpiTopLineRow[];
+  data: AoiTopLineRow[];
 }
 
 export default function TopDefectChart({ data }: TopDefectChartProps) {
-  const t = useTranslations('spiChart');
+  const t = useTranslations('aoiChart');
 
   return (
     <ChartCard title={t('topDefect')} subtitle={t('topDefectSub')}>

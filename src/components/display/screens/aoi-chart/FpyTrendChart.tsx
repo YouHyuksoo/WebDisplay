@@ -1,6 +1,6 @@
 /**
  * @file FpyTrendChart.tsx
- * @description 직행율(FPY) 7일 추이 Area Chart. 실제 DB 데이터 사용.
+ * @description AOI 직행율(FPY) 7일 추이 Area Chart. 실제 DB 데이터 사용.
  * 초보자 가이드: Recharts AreaChart로 최근 7일간 직행율 추이와 목표선을 표시.
  * 그라데이션 fill로 시각적 깊이감을 주고, 목표 달성 여부에 따라 dot 색상이 변한다.
  */
@@ -12,7 +12,7 @@ import {
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import ChartCard from './ChartCard';
-import type { SpiFpyRow } from '@/lib/queries/spi-chart';
+import type { AoiFpyRow } from '@/lib/queries/aoi-chart';
 
 const FPY_TARGET = 98.0;
 
@@ -41,7 +41,7 @@ function CustomTooltip({ active, payload, label, t }: {
 
 /** 커스텀 dot — 목표 달성 시 초록, 미달 시 노랑 */
 function CustomDot({ cx, cy, payload }: {
-  cx?: number; cy?: number; payload?: SpiFpyRow;
+  cx?: number; cy?: number; payload?: AoiFpyRow;
 }) {
   if (cx == null || cy == null || !payload || payload.FPY == null) return null;
   const achieved = payload.FPY >= FPY_TARGET;
@@ -56,13 +56,12 @@ function CustomDot({ cx, cy, payload }: {
 }
 
 interface FpyTrendChartProps {
-  data: SpiFpyRow[];
+  data: AoiFpyRow[];
 }
 
 export default function FpyTrendChart({ data }: FpyTrendChartProps) {
-  const t = useTranslations('spiChart');
+  const t = useTranslations('aoiChart');
 
-  /** FPY null을 제거하여 Y축 domain 계산 */
   const validFpy = data.map((d) => d.FPY).filter((v): v is number => v != null);
   const minFpy = validFpy.length > 0 ? Math.floor(Math.min(...validFpy) - 2) : 90;
   const yMin = Math.max(minFpy, 0);
@@ -77,9 +76,9 @@ export default function FpyTrendChart({ data }: FpyTrendChartProps) {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
             <defs>
-              <linearGradient id="fpyGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#22d3ee" stopOpacity={0.02} />
+              <linearGradient id="aoiFpyGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#a78bfa" stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
@@ -112,11 +111,11 @@ export default function FpyTrendChart({ data }: FpyTrendChartProps) {
             <Area
               type="monotone"
               dataKey="FPY"
-              stroke="#22d3ee"
+              stroke="#a78bfa"
               strokeWidth={2.5}
-              fill="url(#fpyGradient)"
+              fill="url(#aoiFpyGradient)"
               dot={<CustomDot />}
-              activeDot={{ r: 6, stroke: '#22d3ee', strokeWidth: 2, fill: '#0e7490' }}
+              activeDot={{ r: 6, stroke: '#a78bfa', strokeWidth: 2, fill: '#6d28d9' }}
               connectNulls
             />
           </AreaChart>
