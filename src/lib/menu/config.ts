@@ -140,6 +140,8 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
 
   // Anomaly Monitoring (layer: 5) — SOLUMCTQ 이상점 모니터링
   { id: 'ctq-repeat', title: '반복성연속', url: '/ctq/repeatability', color: '#ef4444', icon: 'svg:msl-warning', layer: 5 },
+  { id: 'ctq-non-consec', title: '반복성동일', url: '/ctq/non-consecutive', color: '#f97316', icon: 'svg:msl-warning', layer: 5 },
+  { id: 'ctq-accident', title: '사고성', url: '/ctq/accident', color: '#dc2626', icon: 'svg:msl-warning', layer: 5 },
 
   // Charts (layer: 6)
   { id: 'menu-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 6 },

@@ -580,6 +580,16 @@
         "title": "CTQ Repeatability Monitoring",
         "gradeALabel": "Grade A (Line Stop)",
         "okLabel": "Normal"
+      },
+      "nonConsecutive": {
+        "title": "CTQ Repeatability (Non-consecutive)",
+        "gradeBLabel": "Grade B (Ship Hold)",
+        "okLabel": "Normal"
+      },
+      "accident": {
+        "title": "CTQ Accident Monitoring",
+        "gradeALabel": "Grade A (Line Stop)",
+        "gradeBLabel": "Grade B (Ship Hold)"
       }
     },
     "settings": {

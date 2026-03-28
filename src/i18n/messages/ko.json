@@ -580,6 +580,16 @@
         "title": "CTQ 반복성 모니터링",
         "gradeALabel": "A급 (Line Stop)",
         "okLabel": "정상"
+      },
+      "nonConsecutive": {
+        "title": "CTQ 반복성 모니터링 (비연속)",
+        "gradeBLabel": "B급 (출하중지)",
+        "okLabel": "정상"
+      },
+      "accident": {
+        "title": "CTQ 사고성 모니터링",
+        "gradeALabel": "A급 (Line Stop)",
+        "gradeBLabel": "B급 (출하중지)"
       }
     },
     "settings": {
