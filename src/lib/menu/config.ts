@@ -138,6 +138,9 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 1 },
   { id: 'menu-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 1 },
 
+  // Anomaly Monitoring (layer: 5) — SOLUMCTQ 이상점 모니터링
+  { id: 'ctq-repeat', title: '반복성연속', url: '/ctq/repeatability', color: '#ef4444', icon: 'svg:msl-warning', layer: 5 },
+
   // Charts (layer: 6)
   { id: 'menu-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 6 },
   { id: 'menu-41', title: 'AOI 차트분석', url: '/display/41', color: '#06b6d4', icon: 'svg:chart', layer: 6 },

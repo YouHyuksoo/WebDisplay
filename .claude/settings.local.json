@@ -5,7 +5,9 @@
       "Bash(grep:*)",
       "Bash(curl:*)",
       "Bash(find C:\\\\Project\\\\WebDisplay\\\\src\\\\lib\\\\menu:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "mcp__ide__getDiagnostics"
     ]
-  }
+  },
+  "outputStyle": "Explanatory"
 }
