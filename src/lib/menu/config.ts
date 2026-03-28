@@ -62,7 +62,8 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 1, name: 'SMD MONITORING', subtitle: 'SMD 모니터링', icon: '❖' },
   { id: 2, name: 'PBA MONITORING', subtitle: 'PBA 모니터링', icon: '▤' },
   { id: 3, name: 'EQUIPMENT', subtitle: '설비 모니터링', icon: '⌂' },
-  { id: 4, name: 'QUALITY', subtitle: '품질 관리', icon: '✔' },
+  { id: 4, name: 'SPC MONITORING', subtitle: 'SPC 모니터링', icon: '✔' },
+  { id: 5, name: 'ANOMALY', subtitle: '이상점 모니터링', icon: '⚠' },
   { id: 6, name: 'CHARTS', subtitle: '차트 보기', icon: '▦' },
 ];
 
@@ -131,11 +132,11 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'menu-35', title: '픽업률현황(HEAD)', url: '/display/35', color: '#eab308', icon: 'svg:chip-smd', layer: 3 },
   { id: 'menu-50', title: '설비로그검색', url: '/display/50', color: '#64748b', icon: 'svg:chip-smd', layer: 3 },
 
-  // Quality (layer: 4)
-  { id: 'menu-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 4 },
-  { id: 'menu-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:msl-warning', layer: 4 },
-  { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 4 },
-  { id: 'menu-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 4 },
+  // Quality (layer: 4) — 카드를 SMD 모니터링(layer: 1)으로 이동
+  { id: 'menu-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 1 },
+  { id: 'menu-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:msl-warning', layer: 1 },
+  { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 1 },
+  { id: 'menu-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 1 },
 
   // Charts (layer: 6)
   { id: 'menu-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 6 },

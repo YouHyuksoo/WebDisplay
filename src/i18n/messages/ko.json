@@ -368,13 +368,15 @@
     "catName1": "SMD 모니터링",
     "catName2": "PBA 모니터링",
     "catName3": "설비 모니터링",
-    "catName4": "품질 관리",
+    "catName4": "SPC 모니터링",
+    "catName5": "이상점 모니터링",
     "catName6": "차트",
     "catSub0": "즐겨찾기",
     "catSub1": "SMD 모니터링",
     "catSub2": "PBA 모니터링",
     "catSub3": "설비 모니터링",
-    "catSub4": "품질 관리",
+    "catSub4": "SPC 모니터링",
+    "catSub5": "이상점 모니터링",
     "catSub6": "차트 보기"
   },
   "spiChart": {

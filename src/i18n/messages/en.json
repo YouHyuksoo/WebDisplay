@@ -368,13 +368,15 @@
     "catName1": "SMD MONITORING",
     "catName2": "PBA MONITORING",
     "catName3": "EQUIPMENT",
-    "catName4": "QUALITY",
+    "catName4": "SPC MONITORING",
+    "catName5": "ANOMALY",
     "catName6": "CHARTS",
     "catSub0": "Favorites",
     "catSub1": "SMD Monitoring",
     "catSub2": "PBA Monitoring",
     "catSub3": "Equipment Monitoring",
-    "catSub4": "Quality Control",
+    "catSub4": "SPC Monitoring",
+    "catSub5": "Anomaly Monitoring",
     "catSub6": "Charts"
   },
   "spiChart": {
