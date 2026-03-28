@@ -600,6 +600,18 @@
         "title": "CTQ 공용부품 Open/Short",
         "gradeBLabel": "B급 (출하중지)",
         "noData": "금일 Open/Short 불량이 없습니다."
+      },
+      "fpy": {
+        "title": "직행율",
+        "gradeALabel": "A급 (Line Stop)",
+        "gradeDesc": "직행율 90% 미만 → Line Stop",
+        "noData": "현재 조건에 해당하는 검사 데이터가 없습니다."
+      },
+      "equipment": {
+        "title": "CTQ 설비이상 모니터링",
+        "noData": "현재 조건에 해당하는 설비이상 데이터가 없습니다.",
+        "minuteUnit": "분",
+        "gradeDesc": "일 정지시간 60분 이상 → 불량개선"
       }
     },
     "settings": {

@@ -144,6 +144,8 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'ctq-accident', title: '사고성', url: '/ctq/accident', color: '#dc2626', icon: 'svg:msl-warning', layer: 5 },
   { id: 'ctq-material', title: '원자재동일부품', url: '/ctq/material', color: '#8b5cf6', icon: 'svg:msl-warning', layer: 5 },
   { id: 'ctq-open-short', title: '원자재공용부품', url: '/ctq/open-short', color: '#06b6d4', icon: 'svg:msl-warning', layer: 5 },
+  { id: 'ctq-fpy', title: '직행율', url: '/ctq/fpy', color: '#22c55e', icon: 'svg:chart', layer: 5 },
+  { id: 'ctq-equipment', title: '설비이상', url: '/ctq/equipment', color: '#f59e0b', icon: 'svg:chip-smd', layer: 5 },
 
   // Charts (layer: 6)
   { id: 'menu-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 6 },

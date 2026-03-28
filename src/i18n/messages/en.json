@@ -600,6 +600,18 @@
         "title": "CTQ Open/Short",
         "gradeBLabel": "Grade B (Ship Hold)",
         "noData": "No Open/Short defects today."
+      },
+      "fpy": {
+        "title": "FPY",
+        "gradeALabel": "Grade A (Line Stop)",
+        "gradeDesc": "FPY below 90% → Line Stop",
+        "noData": "No inspection data matching the current criteria."
+      },
+      "equipment": {
+        "title": "CTQ Equipment Monitoring",
+        "noData": "No equipment anomaly data matching the current criteria.",
+        "minuteUnit": "min",
+        "gradeDesc": "Daily stop time 60min+ → Quality improvement"
       }
     },
     "settings": {
