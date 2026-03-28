@@ -612,6 +612,24 @@
         "noData": "No equipment anomaly data matching the current criteria.",
         "minuteUnit": "min",
         "gradeDesc": "Daily stop time 60min+ → Quality improvement"
+      },
+      "equipmentHistory": {
+        "title": "Equipment Inspection History",
+        "noData": "No equipment inspection history matching the current criteria.",
+        "startTime": "Start Time",
+        "endTime": "End Time",
+        "duration": "Duration",
+        "rowCount": " rows"
+      },
+      "repairStatus": {
+        "title": "Repair Status",
+        "noData": "No repair data matching the current criteria.",
+        "tableSource": "IP_PRODUCT_WORK_QC",
+        "periodDesc": "Today 08:00 ~ Next day 08:00",
+        "workstage": "Workstage",
+        "repairWorkstage": "Repair Stage",
+        "qcResult": "QC Result",
+        "badReasonName": "Reason Name"
       }
     },
     "settings": {

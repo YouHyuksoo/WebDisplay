@@ -612,6 +612,24 @@
         "noData": "현재 조건에 해당하는 설비이상 데이터가 없습니다.",
         "minuteUnit": "분",
         "gradeDesc": "일 정지시간 60분 이상 → 불량개선"
+      },
+      "equipmentHistory": {
+        "title": "설비점검이력",
+        "noData": "현재 조건에 해당하는 설비점검 이력이 없습니다.",
+        "startTime": "시작시간",
+        "endTime": "종료시간",
+        "duration": "정지시간",
+        "rowCount": "건"
+      },
+      "repairStatus": {
+        "title": "수리상태",
+        "noData": "현재 조건에 해당하는 수리 데이터가 없습니다.",
+        "tableSource": "IP_PRODUCT_WORK_QC",
+        "periodDesc": "당일 08:00 ~ 익일 08:00",
+        "workstage": "공정",
+        "repairWorkstage": "수리공정",
+        "qcResult": "검사결과",
+        "badReasonName": "불량사유명"
       }
     },
     "settings": {

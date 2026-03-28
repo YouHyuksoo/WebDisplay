@@ -319,7 +319,8 @@ export function updateAuroraAnimation(): void {
     }
   }
 
-  // FOV 부드러운 변화 (변화량이 미미하면 행렬 재계산 스킵)
+  // [최적화] FOV 미세 변화 비활성화 — 매 프레임 updateProjectionMatrix() 호출 시 미세한 깜빡임(Jitter) 유발 가능
+  /*
   if (_i.camera) {
     const targetFov = 75 + Math.sin(_i.auroraTime * 0.15) * 2;
     const fovDelta = (targetFov - _i.camera.fov) * 0.01;
@@ -328,4 +329,5 @@ export function updateAuroraAnimation(): void {
       _i.camera.updateProjectionMatrix();
     }
   }
+  */
 }
