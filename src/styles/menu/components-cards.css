@@ -120,10 +120,10 @@
   position: relative;
   width: 160px;
   height: 170px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 15, 25, 0.18); /* 더 묵직한 어두운 톤 + 투명도 상향 */
+  backdrop-filter: blur(30px); /* 블러 강도 상향으로 배경 분리감 개선 */
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
   padding: 20px;
   cursor: pointer;
@@ -133,7 +133,7 @@
   justify-content: center;
   gap: 12px;
   color: var(--text-primary);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* 그림자 강화 */
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               box-shadow 0.3s ease;
@@ -151,9 +151,9 @@
 .section-cards.active .shortcut-card:hover {
   transform: scale(1.15) translateZ(50px);
   box-shadow: 0 0 40px color-mix(in srgb, var(--card-color) 50%, transparent),
-              0 20px 40px rgba(0,0,0,0.3);
+              0 20px 40px rgba(0,0,0,0.4);
   border-color: var(--card-color);
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.15); /* 호버 시에만 살짝 밝게 */
 }
 
 .shortcut-card.pressing {

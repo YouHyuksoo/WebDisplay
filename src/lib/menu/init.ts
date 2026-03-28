@@ -154,7 +154,7 @@ export async function initMenuSystem(): Promise<void> {
     Categories.load();
 
     // 1-2. 바로가기 및 설정 로드
-    state.shortcutVersion = 1; // 버전 관리 (필요 시)
+    state.shortcutVersion = 2; // [업데이트] 아이콘 변경 반영을 위해 버전 업
     state.shortcuts = Storage.loadShortcuts();
     const settings = Storage.loadSettings();
 

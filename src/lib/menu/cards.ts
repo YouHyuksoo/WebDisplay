@@ -127,6 +127,18 @@ export function getSvgIcon(name: string, color = 'white'): string {
     temperature: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M15 13V5c0-1.66-1.34-3-3-3S9 3.34 9 5v8c-1.21.91-2 2.37-2 4 0 2.76 2.24 5 5 5s5-2.24 5-5c0-1.63-.79-3.09-2-4zm-4-8c0-.55.45-1 1-1s1 .45 1 1h-1v1h1v2h-1v1h1v2h-2V5z"/></svg>`,
     humidity: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2C20 10.48 17.33 6.55 12 2zm0 18c-3.35 0-6-2.57-6-6.2 0-2.34 1.95-5.44 6-9.14 4.05 3.7 6 6.79 6 9.14 0 3.63-2.65 6.2-6 6.2z"/></svg>`,
     chart: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>`,
+    // 추가된 전용 아이콘들
+    repeat: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M17 17H7v-3l-4 4 4 4v-3h12v-6h-2v4zM7 7h10v3l4-4-4-4v3H5v6h2V7z"/></svg>`,
+    accident: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>`,
+    material: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/></svg>`,
+    layers: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/></svg>`,
+    wrench: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M21.71 20.29l-18-18A.996.996 0 102.3 3.7l18 18c.39.39 1.02.39 1.41 0 .38-.39.39-1.03 0-1.41zM6.91 15.68l-3.8 3.8a.996.996 0 101.41 1.41l3.8-3.8-1.41-1.41zM11.14 12.55l6.7-6.7c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-6.7 6.7c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41z"/></svg>`,
+    target: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-12.5c-2.48 0-4.5 2.02-4.5 4.5s2.02 4.5 4.5 4.5 4.5-2.02 4.5-4.5-2.02-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
+    clipboard: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1-1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>`,
+    // 추가된 분석 전용 아이콘들
+    'pie-chart': `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2 0v8.2l7.6 4.7c.3-.9.4-1.9.4-2.9 0-5.52-4.48-10-10-10zm0 10.2V22c4.74-.47 8.5-4.06 8.9-8.8l-8.9-1z"/></svg>`,
+    activity: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z"/></svg>`,
+    'bar-chart': `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M4 9h4v11H4zm6-5h4v16h-4zm6 9h4v7h-4z"/></svg>`,
   };
   return (
     icons[name] ||

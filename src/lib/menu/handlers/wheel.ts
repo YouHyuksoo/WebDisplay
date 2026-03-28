@@ -17,8 +17,8 @@
 import { state } from '../state';
 import { addTracked } from './tracker';
 
-/** 전환 간 최소 간격 (ms) — 전환 애니메이션(700ms) + 쿨다운(500ms) */
-const MIN_TRANSITION_GAP = 1200;
+/** 전환 간 최소 간격 (ms) — 전환 애니메이션(600ms) + 최소 쿨다운 */
+const MIN_TRANSITION_GAP = 700;
 
 /**
  * 휠 이벤트 리스너 등록
@@ -30,7 +30,7 @@ export function setupWheelHandlers(): void {
   let wheelTimeout: ReturnType<typeof setTimeout>;
   let lastWheelTime = 0;
   let decayRafId: number | null = null;
-  const WHEEL_THRESHOLD = 150;
+  const WHEEL_THRESHOLD = 120; // 150 -> 120으로 낮춤 (더 민감하게)
   const WHEEL_DECAY = 0.92;
 
   /** 마지막 전환을 트리거한 시각 (디바운스 기준) */
@@ -93,9 +93,9 @@ export function setupWheelHandlers(): void {
     }
 
     // ── 3D 효과: 전환만 아니면 항상 반응 (쿨다운 중에도) ──
-    const speedMultiplier = Math.min(Math.abs(e.deltaY) / 50, 1);
-    state.targetSpeed = (e.deltaY > 0 ? 8 : -8) * speedMultiplier;
-    state.glowIntensity = Math.min(1, state.glowIntensity + Math.abs(e.deltaY) * 0.005);
+    const speedMultiplier = Math.min(Math.abs(e.deltaY) / 50, 1.5);
+    state.targetSpeed = (e.deltaY > 0 ? 10 : -10) * speedMultiplier;
+    state.glowIntensity = Math.min(1, state.glowIntensity + Math.abs(e.deltaY) * 0.008);
 
     clearTimeout(wheelTimeout);
     wheelTimeout = setTimeout(() => {
@@ -109,11 +109,11 @@ export function setupWheelHandlers(): void {
       return;
     }
 
-    // ── 섹션 전환 누적 ──
+    // ── 섹션 전환 누적 (감도 대폭 상향) ──
     if (timeDelta < 200) {
-      wheelAccumulator += e.deltaY * 0.5;
+      wheelAccumulator += e.deltaY * 0.8; // 0.5 -> 0.8 상향
     } else {
-      wheelAccumulator = e.deltaY * 0.8;
+      wheelAccumulator = e.deltaY; // 0.8 -> 1.0 상향
     }
 
     if (wheelAccumulator > WHEEL_THRESHOLD) {
