@@ -590,6 +590,16 @@
         "title": "CTQ 사고성 모니터링",
         "gradeALabel": "A급 (Line Stop)",
         "gradeBLabel": "B급 (출하중지)"
+      },
+      "material": {
+        "title": "CTQ 원자재 동일부품",
+        "gradeALabel": "A급 (Line Stop)",
+        "gradeCLabel": "C급 (불량개선)"
+      },
+      "openShort": {
+        "title": "CTQ 공용부품 Open/Short",
+        "gradeBLabel": "B급 (출하중지)",
+        "noData": "금일 Open/Short 불량이 없습니다."
       }
     },
     "settings": {

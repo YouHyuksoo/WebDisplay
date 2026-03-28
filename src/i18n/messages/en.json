@@ -590,6 +590,16 @@
         "title": "CTQ Accident Monitoring",
         "gradeALabel": "Grade A (Line Stop)",
         "gradeBLabel": "Grade B (Ship Hold)"
+      },
+      "material": {
+        "title": "CTQ Material Parts",
+        "gradeALabel": "Grade A (Line Stop)",
+        "gradeCLabel": "Grade C (Improve)"
+      },
+      "openShort": {
+        "title": "CTQ Open/Short",
+        "gradeBLabel": "Grade B (Ship Hold)",
+        "noData": "No Open/Short defects today."
       }
     },
     "settings": {

@@ -13,7 +13,7 @@
  */
 
 /** 번역 함수 타입 — next-intl의 t() 또는 SOLUMCTQ의 t()와 호환 */
-type TranslateFn = (key: string) => string | readonly string[];
+type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
 /**
  * API에서 내려오는 코드형 detail 문자열을 현재 언어로 번역
@@ -27,32 +27,35 @@ export function translateDetail(detail: string | null, t: TranslateFn): string |
   // consecutive:2(LOC_CODE)
   const consMatch = detail.match(/^consecutive:(\d+)\((.+)\)$/);
   if (consMatch) {
-    return (t("table.consecutiveFmt") as string)
-      .replace("{count}", consMatch[1])
-      .replace("{loc}", consMatch[2]);
+    return t("table.consecutiveFmt", {
+      count: consMatch[1],
+      loc: consMatch[2]
+    });
   }
 
   // consecutive(LOC_CODE) - monitoring route format
   const consSimple = detail.match(/^consecutive\((.+)\)$/);
   if (consSimple) {
-    return `${t("table.consecutive") as string}(${consSimple[1]})`;
+    return `${t("table.consecutive")}(${consSimple[1]})`;
   }
 
   // sameLoc:3(LOC_CODE)
   const sameMatch = detail.match(/^sameLoc:(\d+)\((.+)\)$/);
   if (sameMatch) {
-    return (t("table.sameLocFmt") as string)
-      .replace("{count}", sameMatch[1])
-      .replace("{loc}", sameMatch[2]);
+    return t("table.sameLocFmt", {
+      count: sameMatch[1],
+      loc: sameMatch[2]
+    });
   }
 
   // NG:5(A) or NG:5(B)
   const ngMatch = detail.match(/^NG:(\d+)\(([AB])\)$/);
   if (ngMatch) {
-    const gradeLabel = t(`grade.${ngMatch[2].toLowerCase()}`) as string;
-    return (t("table.ngGradeFmt") as string)
-      .replace("{count}", ngMatch[1])
-      .replace("{grade}", gradeLabel);
+    const gradeLabel = t(`grade.${ngMatch[2].toLowerCase()}`);
+    return t("table.ngGradeFmt", {
+      count: ngMatch[1],
+      grade: gradeLabel
+    });
   }
 
   // NG:5 (monitoring route)
