@@ -63,6 +63,7 @@ export const state: MenuState = {
   simpleVirtualization: DEFAULT_MENU_SETTINGS.simpleVirtualization,
   enable3D: DEFAULT_MENU_SETTINGS.enable3D,
   autoRolling: DEFAULT_MENU_SETTINGS.autoRolling,
+  editMode: false,
   lastActivityTime: Date.now(),
 
   // Three.js (런타임 할당)

@@ -336,6 +336,7 @@
     "clickRipple": "클릭 리플 ON/OFF",
     "cardSleep": "카드 수면 ON/OFF",
     "autoRollingToggle": "자동 롤링 ON/OFF",
+    "editModeToggle": "수정 모드 ON/OFF",
     "bgToggle": "배경 ON/OFF",
     "themeToggle": "테마 전환",
     "exitSystem": "시스템 종료",

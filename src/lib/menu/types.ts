@@ -206,6 +206,7 @@ export interface MenuState {
   simpleVirtualization: boolean;
   enable3D: boolean;
   autoRolling: boolean;
+  editMode: boolean;
   lastActivityTime: number;
 
   // Three.js (런타임 할당)

@@ -40,6 +40,49 @@ let clockIntervalId: ReturnType<typeof setInterval> | null = null;
 let autoRollingIntervalId: ReturnType<typeof setInterval> | null = null;
 
 // ---------------------------------------------------------------------------
+// 즉시 정지 (동기) — 페이지 전환 직전 호출
+// ---------------------------------------------------------------------------
+
+/**
+ * 메뉴 시스템을 동기적으로 즉시 정지
+ *
+ * router.push() 호출 전에 반드시 실행하여
+ * Three.js 렌더 루프, GSAP 트윈, 인터벌을 한번에 멈춘다.
+ * async destroyMenuSystem()과 달리 동적 import 없이 동기 실행되므로
+ * 페이지 전환 중 깜빡임을 방지한다.
+ */
+export function haltMenuSystem(): void {
+  // 1. Three.js 애니메이션 루프 정지 (이미 로드된 모듈만 사용)
+  // space/index.ts의 _animFrameId를 직접 import할 수 없으므로
+  // stopAnimate를 동기 호출할 수 있도록 캐시된 모듈 사용
+  if (_spaceModule) {
+    _spaceModule.stopAnimate();
+  }
+
+  // 2. 모든 GSAP 트윈 즉시 정지
+  gsap.globalTimeline.kill();
+
+  // 3. 인터벌 정리
+  if (clockIntervalId) {
+    clearInterval(clockIntervalId);
+    clockIntervalId = null;
+  }
+  if (autoRollingIntervalId) {
+    clearInterval(autoRollingIntervalId);
+    autoRollingIntervalId = null;
+  }
+
+  // 4. 상태 초기화 (잔류 휠/전환 상태 제거)
+  state.targetSpeed = 0;
+  state.isTransitioning = false;
+  state.isLaneTransitioning = false;
+  state.glowIntensity = 0;
+}
+
+/** Space 모듈 캐시 (init 시 저장, halt에서 동기 접근) */
+let _spaceModule: typeof import('./space') | null = null;
+
+// ---------------------------------------------------------------------------
 // 자동 롤링 관리
 // ---------------------------------------------------------------------------
 
@@ -133,8 +176,8 @@ export async function initMenuSystem(): Promise<void> {
 
   // 2. Three.js 공간 초기화 (매 mount 마다 수행 - 캔버스 컨테이너가 새로 생성됨)
   if (state.enable3D) {
-    const Space = await import('./space');
-    Space.init();
+    _spaceModule = await import('./space');
+    _spaceModule.init();
   }
 
   // 3. 이전 섹션 위치 복원 (디스플레이 → 메뉴 복귀 시)
@@ -189,9 +232,8 @@ export async function initMenuSystem(): Promise<void> {
   // 9. 테마 및 애니메이션 적용
   applyGlowTheme(state.glowTheme);
 
-  if (state.enable3D) {
-    const Space = await import('./space');
-    Space.animate();
+  if (state.enable3D && _spaceModule) {
+    _spaceModule.animate();
   }
 
   // 10. 자동 롤링 시작 (설정된 경우)

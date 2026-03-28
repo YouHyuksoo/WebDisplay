@@ -40,7 +40,7 @@ export const DEFAULT_MENU_SETTINGS: MenuSettings = {
   spaceType: 'aurora',
   cardLayout: 'grid',
   auroraBrightness: 1.0,
-  simpleVirtualization: true,
+  simpleVirtualization: false,
   enable3D: true,
   autoRolling: true,
 };

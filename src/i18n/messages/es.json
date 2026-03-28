@@ -336,6 +336,7 @@
     "clickRipple": "Efecto clic ON/OFF",
     "cardSleep": "Suspensión ON/OFF",
     "autoRollingToggle": "Auto desplazamiento ON/OFF",
+    "editModeToggle": "Modo edición ON/OFF",
     "bgToggle": "Fondo ON/OFF",
     "themeToggle": "Cambiar tema",
     "exitSystem": "Salir del sistema",

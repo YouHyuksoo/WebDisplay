@@ -47,7 +47,7 @@ import {
   addGlowIntensity,
   registerCreators,
 } from './core';
-import { createTunnel, updateTunnelAnimation, pulseRings, getShapeVertices } from './tunnel';
+import { createTunnel, updateTunnelAnimation, pulseRings, getShapeVertices, resetParticleCache } from './tunnel';
 import { createCosmicWarp, updateCosmicWarp } from './warp';
 import {
   createAurora,
@@ -66,6 +66,7 @@ registerCreators({
   createTunnel,
   createCosmicWarp,
   createAurora,
+  onClearSpace: resetParticleCache,
 });
 
 // ---------------------------------------------------------------------------
@@ -75,45 +76,67 @@ registerCreators({
 /** requestAnimationFrame ID (stopAnimate에서 취소용) */
 let _animFrameId: number | null = null;
 
-/** 마지막 렌더링 시간 (FPS 제어용) */
-let _lastRenderTime = 0;
+/** 마지막 렌더링 타임스탬프 (rAF timestamp 기반) */
+let _lastFrameTime = 0;
+
+/** 목표 프레임 간격 (ms): 활성 시 ~30fps, 절전 시 ~15fps */
+const ACTIVE_FRAME_INTERVAL = 1000 / 30;
+const IDLE_FRAME_INTERVAL = 1000 / 15;
 
 /**
  * 메인 애니메이션 루프
  *
- * requestAnimationFrame으로 매 프레임 호출.
- * state에서 targetSpeed/glowIntensity/spaceType을 읽어 반영하고,
- * 현재 spaceType에 맞는 업데이트 함수를 호출한 뒤 renderer.render() 실행.
+ * requestAnimationFrame의 timestamp를 사용해 일정한 프레임 간격을 보장.
+ * delta time 기반 보간으로 프레임 드롭 시에도 움직임이 일정하게 유지됨.
  *
- * [최적화] 사용자가 조작하지 않을 때는 프레임워크를 '절전 모드'로 전환하여 CPU/GPU 점유율을 낮춥니다.
+ * [최적화]
+ * - rAF timestamp 기반 프레임 제어 (Date.now() 제거)
+ * - 활성 시 30fps, 절전 시 15fps로 GPU 부하 감소
+ * - delta time 보간으로 프레임 독립적 애니메이션
  */
-export function animate(): void {
+export function animate(timestamp = 0): void {
   _animFrameId = requestAnimationFrame(animate);
 
-  const now = Date.now();
-  const inactiveTime = now - state.lastActivityTime;
-  
-  // 조작 중인지 여부 (속도가 있거나 글로우가 살아있어도 조작 중으로 간주)
+  // 첫 프레임 초기화
+  if (_lastFrameTime === 0) {
+    _lastFrameTime = timestamp;
+    return;
+  }
+
+  const deltaMs = timestamp - _lastFrameTime;
+  const inactiveTime = timestamp - state.lastActivityTime;
+
+  // 조작 중인지 여부
   const isMoving = Math.abs(_i.tunnelSpeed) > 0.01 || Math.abs(state.targetSpeed) > 0.01 || _i.glowIntensity > 0.1;
 
-  // 10초 이상 입력이 없으면 절전 모드 (1초에 약 20프레임으로 제한)
-  if (!isMoving && inactiveTime > 10000) {
-    if (now - _lastRenderTime < 50) return; // 약 20fps
+  // [최적화] 섹션/레인 전환 중에는 Three.js 렌더링 일시정지
+  // → GPU/CPU를 DOM 애니메이션(GSAP)에 100% 집중시켜 끊김 방지
+  if (state.isTransitioning || state.isLaneTransitioning) {
+    _lastFrameTime = timestamp;
+    return;
   }
-  
-  _lastRenderTime = now;
 
-  // state에서 값 읽기 (외부에서 설정한 값 반영)
+  // 프레임 간격 제어: 활성 시 30fps, 절전(10초 비활동) 시 15fps
+  const frameInterval = (!isMoving && inactiveTime > 10000) ? IDLE_FRAME_INTERVAL : ACTIVE_FRAME_INTERVAL;
+  if (deltaMs < frameInterval) return;
+
+  // delta factor: 33.3ms(30fps) 기준 1.0, 프레임 드롭 시 비례 증가
+  const delta = Math.min(deltaMs / 33.3, 3); // 최대 3배까지 보상 (10fps 이하 방지)
+  _lastFrameTime = timestamp;
+
+  // state에서 값 읽기
   const stateTargetSpeed = state.targetSpeed || 0;
   const stateGlowIntensity = state.glowIntensity || 0;
 
-  // 속도 보간 (더 부드럽게)
-  _i.tunnelSpeed += (stateTargetSpeed - _i.tunnelSpeed) * 0.08;
+  // 속도 보간 (delta 기반)
+  const lerpFactor = 1 - Math.pow(0.92, delta);
+  _i.tunnelSpeed += (stateTargetSpeed - _i.tunnelSpeed) * lerpFactor;
 
-  // 조명 강도 감쇠
+  // 조명 강도 감쇠 (delta 기반)
+  const decayFactor = Math.pow(0.95, delta);
   _i.glowIntensity = Math.max(
-    _i.glowIntensity * 0.95,
-    stateGlowIntensity * 0.95,
+    _i.glowIntensity * decayFactor,
+    stateGlowIntensity * decayFactor,
   );
   state.glowIntensity = _i.glowIntensity;
 
@@ -242,6 +265,7 @@ export {
   updateTunnelAnimation,
   pulseRings,
   getShapeVertices,
+  resetParticleCache,
   // warp
   createCosmicWarp,
   updateCosmicWarp,

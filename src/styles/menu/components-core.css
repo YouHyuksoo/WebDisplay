@@ -484,6 +484,14 @@
   to { transform: rotate(360deg); }
 }
 
+/* 수정모드 활성화 버튼 */
+#edit-mode-toggle-btn.edit-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  opacity: 1;
+}
+
 /* ===== Locale Dropdown ===== */
 #locale-wrapper {
   position: relative;

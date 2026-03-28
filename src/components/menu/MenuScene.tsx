@@ -23,6 +23,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { haltMenuSystem } from '@/lib/menu/init';
 import MenuCanvas from './MenuCanvas';
 import MenuWidgets from './MenuWidgets';
 import MenuControls from './MenuControls';
@@ -62,6 +63,9 @@ export default function MenuScene() {
     const handleNavigate = (e: Event) => {
       const detail = (e as CustomEvent<{ url: string; title: string }>).detail;
       if (detail?.url) {
+        // 페이지 전환 전 동기적으로 모든 애니메이션/인터벌 즉시 정지
+        // → Three.js 루프, GSAP 트윈, 시계/자동롤링 인터벌, 휠 감쇠 잔류 제거
+        haltMenuSystem();
         router.push(detail.url);
       }
     };

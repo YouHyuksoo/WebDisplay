@@ -273,8 +273,25 @@ export function setupClickHandlers(): void {
   document.getElementById('auto-rolling-toggle-btn')?.addEventListener('click', toggleAutoRolling);
   document.getElementById('bg-toggle-btn')?.addEventListener('click', toggleBackground3D);
 
-  /** 가상화 토글 공통 핸들러 */
-  const toggleVirtualization = (e: Event) => {
+  /** 수정모드 토글 — body에 data-edit-mode 속성으로 CSS 제어 */
+  const toggleEditMode = (e: Event) => {
+    e.stopPropagation();
+    state.editMode = !state.editMode;
+    document.body.setAttribute('data-edit-mode', state.editMode ? 'on' : 'off');
+    const on = document.getElementById('edit-mode-icon-on');
+    const off = document.getElementById('edit-mode-icon-off');
+    const btn = document.getElementById('edit-mode-toggle-btn');
+    if (on) on.style.display = state.editMode ? '' : 'none';
+    if (off) off.style.display = state.editMode ? 'none' : '';
+    if (btn) btn.classList.toggle('edit-active', state.editMode);
+    import('../ui').then((UI) => UI.showToast(state.editMode ? '수정 모드 ON' : '수정 모드 OFF'));
+  };
+  document.getElementById('edit-mode-toggle-btn')?.addEventListener('click', toggleEditMode);
+  // 초기 상태 반영
+  document.body.setAttribute('data-edit-mode', state.editMode ? 'on' : 'off');
+
+  /** 라이트 모드(성능 우선) 토글 — 블러/애니메이션/Three.js 품질 일괄 제어 */
+  const toggleVirtualization = async (e: Event) => {
     e.stopPropagation();
     state.simpleVirtualization = !state.simpleVirtualization;
     updateVirtualizationLabel();
@@ -283,9 +300,27 @@ export function setupClickHandlers(): void {
     if (on) on.style.display = state.simpleVirtualization ? '' : 'none';
     if (off) off.style.display = state.simpleVirtualization ? 'none' : '';
 
-    import('../ui').then((UI) => UI.saveSettings());
+    // body 속성으로 CSS 라이트 모드 제어
+    document.body.setAttribute('data-lite-mode', state.simpleVirtualization ? 'on' : 'off');
+
+    // Three.js antialias 재설정 (변경 시 renderer 재생성 필요)
+    if (state.enable3D) {
+      const Space = await import('../space');
+      Space.stopAnimate();
+      Space.dispose();
+      Space.init();
+      Space.animate();
+    }
+
+    import('../ui').then((UI) => {
+      UI.saveSettings();
+      UI.showToast(state.simpleVirtualization ? '라이트 모드 ON (블러/애니메이션 감소)' : '라이트 모드 OFF (풀 이펙트)');
+    });
     import('../sections').then((S) => S.updateCardsDepth());
   };
+
+  // 초기 상태 반영
+  document.body.setAttribute('data-lite-mode', state.simpleVirtualization ? 'on' : 'off');
 
   document.getElementById('menu-virtualization')?.addEventListener('click', toggleVirtualization);
   document.getElementById('virtualization-toggle-btn')?.addEventListener('click', toggleVirtualization);

@@ -26,6 +26,8 @@ import { GLOW_THEMES } from '../config';
 let _createTunnel: (() => void) | null = null;
 let _createCosmicWarp: (() => void) | null = null;
 let _createAurora: (() => void) | null = null;
+/** clearSpace 시 호출되는 콜백 (파티클 캐시 리셋 등) */
+let _onClearSpace: (() => void) | null = null;
 
 /**
  * 순환 참조 방지를 위해 생성 함수를 등록
@@ -37,10 +39,12 @@ export function registerCreators(creators: {
   createTunnel: () => void;
   createCosmicWarp: () => void;
   createAurora: () => void;
+  onClearSpace?: () => void;
 }): void {
   _createTunnel = creators.createTunnel;
   _createCosmicWarp = creators.createCosmicWarp;
   _createAurora = creators.createAurora;
+  if (creators.onClearSpace) _onClearSpace = creators.onClearSpace;
 }
 
 // ---------------------------------------------------------------------------
@@ -101,9 +105,16 @@ export function initCore(): void {
   );
   _i.camera.position.z = 0;
 
-  _i.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  // 라이트 모드 또는 모바일: antialias OFF, pixelRatio 제한
+  const isMobile = window.innerWidth <= 768;
+  const isLiteMode = state.simpleVirtualization;
+  _i.renderer = new THREE.WebGLRenderer({
+    antialias: !isMobile && !isLiteMode,
+    alpha: true,
+    powerPreference: 'high-performance',
+  });
   _i.renderer.setSize(window.innerWidth, window.innerHeight);
-  _i.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  _i.renderer.setPixelRatio(Math.min(window.devicePixelRatio, (isMobile || isLiteMode) ? 1 : 1.5));
 
   const container = document.getElementById('canvas-container');
   if (container) {
@@ -119,19 +130,10 @@ export function clearSpace(): void {
   if (!_i.scene) return;
 
   // 터널 링 제거
-  _i.tunnelRings.forEach(function (ring) {
-    _i.scene!.remove(ring);
-  });
+  for (let i = _i.tunnelRings.length - 1; i >= 0; i--) {
+    _i.scene.remove(_i.tunnelRings[i]);
+  }
   _i.tunnelRings = [];
-
-  // 파티클 제거
-  _i.scene.children
-    .filter(function (c) {
-      return c.userData.isParticle;
-    })
-    .forEach(function (p) {
-      _i.scene!.remove(p);
-    });
 
   // 별 필드 제거
   if (_i.starField) {
@@ -145,28 +147,18 @@ export function clearSpace(): void {
     _i.auroraParticles = null;
   }
 
-  // 오로라 스프라이트들 제거
-  _i.scene.children
-    .filter(function (c) {
-      return (
-        c.userData.isAuroraGlow ||
-        c.userData.isAuroraSmall ||
-        c.userData.isAuroraBackground ||
-        c.userData.isAuroraSphere
-      );
-    })
-    .forEach(function (s) {
-      _i.scene!.remove(s);
-    });
+  // 파티클/오로라/배경별을 역순 1회 순회로 일괄 제거 (filter+forEach 반복 제거)
+  const children = _i.scene.children;
+  for (let i = children.length - 1; i >= 0; i--) {
+    const ud = children[i].userData;
+    if (ud.isParticle || ud.isAuroraGlow || ud.isAuroraSmall ||
+        ud.isAuroraBackground || ud.isAuroraSphere || ud.isBackgroundStar) {
+      _i.scene.remove(children[i]);
+    }
+  }
 
-  // 배경 별 제거
-  _i.scene.children
-    .filter(function (c) {
-      return c.userData.isBackgroundStar;
-    })
-    .forEach(function (s) {
-      _i.scene!.remove(s);
-    });
+  // 파티클 캐시 리셋 콜백
+  _onClearSpace?.();
 }
 
 /**

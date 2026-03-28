@@ -126,7 +126,7 @@ export function createAurora(): void {
 
   const sharedTexture = getSharedGlowTexture();
 
-  // 큰 빛 덩어리들 (12개)
+  // 큰 빛 덩어리들 (12개) — opacity 낮춰서 카드 뒤 반짝임 감소
   for (let i = 0; i < 12; i++) {
     const t = Math.random();
     const color = new THREE.Color().lerpColors(primaryColor, secondaryColor, t);
@@ -135,7 +135,7 @@ export function createAurora(): void {
       map: sharedTexture,
       color,
       transparent: true,
-      opacity: 0.4 + Math.random() * 0.3,
+      opacity: 0.25 + Math.random() * 0.2,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -277,11 +277,11 @@ export function updateAuroraAnimation(): void {
       _reuseColor.lerpColors(_reusePrimary, _reuseSecondary, colorPhase);
       mat.color.copy(_reuseColor);
 
-      // 투명도 맥동 (auroraBrightness 적용)
-      mat.opacity = (0.3 + Math.sin(_i.auroraTime * 0.5 + phase) * 0.15 + _i.glowIntensity * 0.2) * state.auroraBrightness;
+      // 투명도 맥동 — 변화폭 줄여서 카드 뒤 깜빡임 감소
+      mat.opacity = (0.2 + Math.sin(_i.auroraTime * 0.3 + phase) * 0.08 + _i.glowIntensity * 0.15) * state.auroraBrightness;
 
-      // 크기 맥동
-      const scalePulse = 1 + Math.sin(_i.auroraTime * 0.3 + phase) * 0.15;
+      // 크기 맥동 — 변화폭 줄임
+      const scalePulse = 1 + Math.sin(_i.auroraTime * 0.2 + phase) * 0.08;
       const finalScale = baseScale * scalePulse;
       child.scale.set(finalScale, finalScale, 1);
     }
@@ -303,7 +303,7 @@ export function updateAuroraAnimation(): void {
       _reuseColor.lerpColors(_reusePrimary, _reuseSecondary, colorPhase);
       mat.color.copy(_reuseColor);
 
-      mat.opacity = (0.15 + Math.sin(_i.auroraTime * speed + phase) * 0.1 + _i.glowIntensity * 0.15) * state.auroraBrightness;
+      mat.opacity = (0.1 + Math.sin(_i.auroraTime * speed * 0.5 + phase) * 0.05 + _i.glowIntensity * 0.1) * state.auroraBrightness;
     }
 
     // 배경 빛
@@ -319,10 +319,13 @@ export function updateAuroraAnimation(): void {
     }
   }
 
-  // FOV 부드러운 변화
+  // FOV 부드러운 변화 (변화량이 미미하면 행렬 재계산 스킵)
   if (_i.camera) {
     const targetFov = 75 + Math.sin(_i.auroraTime * 0.15) * 2;
-    _i.camera.fov += (targetFov - _i.camera.fov) * 0.01;
-    _i.camera.updateProjectionMatrix();
+    const fovDelta = (targetFov - _i.camera.fov) * 0.01;
+    if (Math.abs(fovDelta) > 0.005) {
+      _i.camera.fov += fovDelta;
+      _i.camera.updateProjectionMatrix();
+    }
   }
 }

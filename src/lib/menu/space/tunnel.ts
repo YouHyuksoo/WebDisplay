@@ -24,6 +24,14 @@ import { state } from '../state';
 import { TUNNEL, GLOW_THEMES } from '../config';
 import { _i, clearSpace } from './core';
 
+/** 파티클 직접 참조 캐시 — scene.children 전체 순회 방지 */
+let _cachedParticles: THREE.Points | null = null;
+
+/** 파티클 캐시 리셋 (clearSpace 시 호출) */
+export function resetParticleCache(): void {
+  _cachedParticles = null;
+}
+
 // ---------------------------------------------------------------------------
 // 터널 모양 버텍스 계산
 // ---------------------------------------------------------------------------
@@ -182,6 +190,9 @@ export function createTunnel(): void {
   const particles = new THREE.Points(particleGeometry, particleMaterial);
   particles.userData.isParticle = true;
   _i.scene.add(particles);
+
+  // 캐시에 저장 (updateTunnelAnimation에서 직접 참조)
+  _cachedParticles = particles;
 }
 
 // ---------------------------------------------------------------------------
@@ -221,31 +232,22 @@ export function updateTunnelAnimation(): void {
     );
   });
 
-  // 파티클 이동
-  if (_i.scene) {
-    _i.scene.children.forEach(function (child) {
-      if (child.userData.isParticle) {
-        const positions = (
-          (child as THREE.Points).geometry as THREE.BufferGeometry
-        ).attributes.position.array as Float32Array;
-        for (let i = 0; i < positions.length / 3; i++) {
-          positions[i * 3 + 2] += _i.tunnelSpeed;
-          if (positions[i * 3 + 2] > 100) {
-            positions[i * 3 + 2] -= config.LENGTH;
-          }
-          if (positions[i * 3 + 2] < -config.LENGTH + 100) {
-            positions[i * 3 + 2] += config.LENGTH;
-          }
-        }
-        (
-          (child as THREE.Points).geometry as THREE.BufferGeometry
-        ).attributes.position.needsUpdate = true;
-
-        // 파티클 밝기도 휠에 반응
-        ((child as THREE.Points).material as THREE.PointsMaterial).opacity =
-          0.5 + _i.glowIntensity * 0.3;
+  // 파티클 이동 (캐시된 참조로 직접 접근 — scene 전체 순회 제거)
+  if (_cachedParticles) {
+    const positions = _cachedParticles.geometry.attributes.position.array as Float32Array;
+    const len = positions.length / 3;
+    for (let i = 0; i < len; i++) {
+      positions[i * 3 + 2] += _i.tunnelSpeed;
+      if (positions[i * 3 + 2] > 100) {
+        positions[i * 3 + 2] -= config.LENGTH;
       }
-    });
+      if (positions[i * 3 + 2] < -config.LENGTH + 100) {
+        positions[i * 3 + 2] += config.LENGTH;
+      }
+    }
+    _cachedParticles.geometry.attributes.position.needsUpdate = true;
+    (_cachedParticles.material as THREE.PointsMaterial).opacity =
+      0.5 + _i.glowIntensity * 0.3;
   }
 }
 

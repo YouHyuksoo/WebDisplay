@@ -39,6 +39,11 @@ import { t, getScreenTitle } from './i18n';
 /** FAVORITES 카테고리의 layer ID — config.ts에서 관리 */
 const FAVORITES_LAYER = FAVORITES_CATEGORY_ID;
 
+/** 썸네일 404 캐시 — 한번 실패한 screenId는 재요청 방지 */
+const _failedThumbnails = new Set<string>();
+/** 썸네일 업로드 타임스탬프 — 업로드 시에만 캐시 갱신 */
+const _thumbnailTimestamps = new Map<string, number>();
+
 /**
  * 해당 URL이 즐겨찾기에 등록되어 있는지 확인
  */
@@ -326,8 +331,9 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
           }
         });
 
-        // 카드 상태 복원
+        // 카드 상태 복원 (네비게이션으로 DOM이 제거되면 자동 무시)
         setTimeout(() => {
+          if (!card.isConnected) return;
           card.classList.remove('opening');
           gsap.to(card, {
             scale: 1,
@@ -380,7 +386,8 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
   // screenId 추출 (url에서 /display/XX 형태)
   const screenIdMatch = shortcut.url.match(/\/display\/(\d+)/);
   const screenId = screenIdMatch ? screenIdMatch[1] : '';
-  const hasImage = !!screenId;
+  // 404 반복 방지: 한번 실패한 screenId는 캐싱하여 재요청 안 함
+  const hasImage = !!screenId && !_failedThumbnails.has(screenId);
 
   // 이미지 영역
   const imageArea = document.createElement('div');
@@ -397,10 +404,14 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
 
   if (hasImage) {
     const img = document.createElement('img');
-    img.src = `/thumbnails/${screenId}.png?t=${Date.now()}`;
+    // 업로드 시에만 캐시 무효화 (Date.now() 매번 호출 제거)
+    const ts = _thumbnailTimestamps.get(screenId) || '';
+    img.src = `/thumbnails/${screenId}.png${ts ? `?t=${ts}` : ''}`;
     img.alt = shortcut.title;
     img.loading = 'lazy';
     img.onerror = () => {
+      // 404 캐시에 기록 — 다음 렌더 시 요청 자체를 안 보냄
+      _failedThumbnails.add(screenId);
       img.remove();
       imageArea.classList.add('empty');
       imageArea.insertBefore(createPlaceholder(), uploadBtn);
@@ -552,7 +563,11 @@ function triggerThumbnailUpload(screenId: string, card: HTMLDivElement): void {
             img.loading = 'lazy';
             imageArea.insertBefore(img, imageArea.querySelector('.thumbnail-upload-btn'));
           }
-          img.src = `${data.path}?t=${Date.now()}`;
+          const now = Date.now();
+          img.src = `${data.path}?t=${now}`;
+          // 업로드 성공: 404 캐시에서 제거 + 타임스탬프 갱신
+          _failedThumbnails.delete(screenId);
+          _thumbnailTimestamps.set(screenId, now);
 
           const btn = imageArea.querySelector('.thumbnail-upload-btn');
           if (btn) btn.textContent = t('menuUI.imageChange');
@@ -577,11 +592,6 @@ function triggerThumbnailUpload(screenId: string, card: HTMLDivElement): void {
  * 특정 섹션의 카드들을 생성하여 컨테이너에 추가 (가상화 지원)
  */
 export function populateSection(container: HTMLElement, sectionIndex: number): void {
-  // 이미 카드가 있으면 리턴 (단, 썸네일 모드가 아니어야 함)
-  if (state.cardLayout !== 'thumbnail' && state.cardLayout !== 'carousel' && container.querySelector('.shortcut-card')) {
-    return;
-  }
-
   const sections = getSections();
   const section = sections[sectionIndex];
   if (!section) return;
@@ -597,8 +607,18 @@ export function populateSection(container: HTMLElement, sectionIndex: number): v
     pageSlice.forEach((shortcut, i) => {
       container.appendChild(createThumbnailCard(shortcut, i));
     });
+  } else if (state.cardLayout === 'carousel') {
+    // 캐러셀: 기존 로직 유지
+    container.innerHTML = '';
+    sectionShortcuts.forEach((shortcut, i) => {
+      container.appendChild(createCard(shortcut, i));
+    });
   } else {
-    // 그리드: 컨테이너 비우고 전부 생성 (레이아웃 보존용)
+    // [최적화] 그리드: 카드가 이미 있고 개수가 같으면 DOM 재활용 (재생성 스킵)
+    const existingCards = container.querySelectorAll('.shortcut-card');
+    if (existingCards.length === sectionShortcuts.length && existingCards.length > 0) {
+      return; // DOM 재활용 — 재생성 불필요
+    }
     container.innerHTML = '';
     sectionShortcuts.forEach((shortcut, i) => {
       container.appendChild(createCard(shortcut, i));

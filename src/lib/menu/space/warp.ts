@@ -170,10 +170,13 @@ export function updateCosmicWarp(): void {
     baseOpacity,
   );
 
-  // FOV 변화로 워프 느낌 강화
+  // FOV 변화로 워프 느낌 강화 (변화량이 미미하면 행렬 재계산 스킵)
   if (_i.camera) {
     const targetFov = 75 + Math.abs(_i.tunnelSpeed) * 1.5;
-    _i.camera.fov += (targetFov - _i.camera.fov) * 0.1;
-    _i.camera.updateProjectionMatrix();
+    const fovDelta = (targetFov - _i.camera.fov) * 0.1;
+    if (Math.abs(fovDelta) > 0.01) {
+      _i.camera.fov += fovDelta;
+      _i.camera.updateProjectionMatrix();
+    }
   }
 }

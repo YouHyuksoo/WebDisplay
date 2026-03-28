@@ -336,6 +336,7 @@
     "clickRipple": "Click Ripple ON/OFF",
     "cardSleep": "Card Sleep ON/OFF",
     "autoRollingToggle": "Auto Rolling ON/OFF",
+    "editModeToggle": "Edit Mode ON/OFF",
     "bgToggle": "Background ON/OFF",
     "themeToggle": "Toggle Theme",
     "exitSystem": "System Exit",

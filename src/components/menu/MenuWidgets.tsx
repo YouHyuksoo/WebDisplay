@@ -10,7 +10,7 @@
 
 'use client';
 
-import { Search, History, ArrowLeft, Globe, Moon, Power, Image, ImageOff, RotateCw, CircleStop } from 'lucide-react';
+import { Search, History, ArrowLeft, Globe, Moon, Power, Image, ImageOff, RotateCw, CircleStop, Pencil, PencilOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import DbStatusBadge from './DbStatusBadge';
 
@@ -74,6 +74,10 @@ export default function MenuWidgets() {
         <button className="util-btn" id="auto-rolling-toggle-btn" data-tooltip={t('autoRollingToggle')}>
           <RotateCw id="rolling-icon-on" size={20} style={{ display: 'none' }} />
           <CircleStop id="rolling-icon-off" size={20} />
+        </button>
+        <button className="util-btn" id="edit-mode-toggle-btn" data-tooltip={t('editModeToggle')}>
+          <Pencil id="edit-mode-icon-on" size={20} style={{ display: 'none' }} />
+          <PencilOff id="edit-mode-icon-off" size={20} />
         </button>
         <button className="util-btn" id="bg-toggle-btn" data-tooltip={t('bgToggle')}>
           <Image id="bg-icon-on" size={20} />

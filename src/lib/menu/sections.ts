@@ -28,6 +28,13 @@ import * as Carousel from './carousel';
 import type { Category } from './types';
 import { t } from './i18n';
 
+/** 동적 import 캐시 (매 전환마다 import() 반복 방지) */
+let _cardsModule: typeof import('./cards') | null = null;
+function getCardsModule(): Promise<typeof import('./cards')> {
+  if (_cardsModule) return Promise.resolve(_cardsModule);
+  return import('./cards').then((m) => { _cardsModule = m; return m; });
+}
+
 // ---------------------------------------------------------------------------
 // 상수
 // ---------------------------------------------------------------------------
@@ -89,6 +96,9 @@ export function goToSection(index: number, forceDirection: number | null = null)
   // 터널 가속
   state.targetSpeed = direction * 30;
 
+  // [최적화] 기존 타이틀 트윈 정리
+  gsap.killTweensOf('#section-info');
+
   // 섹션 타이틀 애니메이션
   gsap.to('#section-info', {
     opacity: 0,
@@ -120,9 +130,11 @@ export function goToSection(index: number, forceDirection: number | null = null)
     },
   });
 
+  // 라이트 모드: 즉시 해제, 일반: 애니메이션 완료 후 해제
+  const transitionDuration = state.simpleVirtualization ? 100 : 700;
   setTimeout(() => {
     state.isTransitioning = false;
-  }, 800);
+  }, transitionDuration);
 
   // 스크롤 힌트 숨기기
   gsap.to('#scroll-hint', { opacity: 0, duration: 0.5 });
@@ -169,81 +181,105 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
     const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -40 : offset < 0 ? 40 : 0;
 
-    // 가상화 옵션: 현재 섹션과 앞/뒤 1개만 보이게, 나머지는 숨김
-    // 비활성화 시 모든 섹션 표시
-    const opacity = state.simpleVirtualization
-      ? absOffset <= 1 ? (offset === 0 ? 1 : 0.1) : 0
-      : (offset === 0 ? 1 : 0.1 / Math.max(1, absOffset));
-
-    // z-index로 렌더링 순서 강제
+    // 썸네일/캐러셀 모드: 활성 섹션만 표시 (뒤쪽 섹션 깜빡임 방지)
+    // 그리드 모드: ±1까지 표시 (3D 깊이 프리뷰)
+    const isGridMode = state.cardLayout === 'grid';
+    const visibleRange = isGridMode ? 1 : 0;
+    const opacity = absOffset <= visibleRange ? (offset === 0 ? 1 : 0.1) : 0;
     const zIndex = 100 - absOffset;
 
-    // 애니메이션 전에 보여야 할 섹션은 display 먼저 설정
-    // 애니메이션 전에 보여야 할 섹션은 display 먼저 설정 및 카드 로드
-    if (!state.simpleVirtualization || absOffset <= 1) {
-      // 카드 동적 로드 (가상화)
-      import('./cards').then((Cards) => {
-        Cards.populateSection(section as HTMLElement, i);
-      });
+    // [최적화] 기존 트윈 정리 — 빠른 휠 시 트윈 충돌 방지
+    gsap.killTweensOf(section);
 
-      if (state.cardLayout === 'thumbnail' && (section as HTMLElement).classList.contains('thumbnail-layout')) {
-        gsap.set(section, { display: 'grid' });
-      } else {
-        gsap.set(section, { display: 'flex' });
-      }
+    // 보이지 않는 섹션은 즉시 숨김
+    if (absOffset > visibleRange) {
+      gsap.set(section, {
+        z: zPos, scale, opacity, y: yOffset, zIndex,
+        display: 'none',
+      });
+      return;
     }
 
-    gsap.to(section, {
-      z: zPos,
-      scale: scale,
-      opacity: opacity,
-      y: yOffset,
-      zIndex: zIndex,
-      duration: 0.8,
-      ease: 'power2.out',
-      onComplete: () => {
-        if (offset === 0) {
-          section.classList.add('active');
-          // 스크롤 위치 초기화
-          (section as HTMLElement).scrollTop = 0;
-          // 캐러셀 모드면 슬롯 재렌더링 (가상화)
-          if (state.cardLayout === 'carousel') {
-            state.carouselIndex = 0;
-            Carousel.renderCarouselSlots();
-            Carousel.updateCarouselUI();
-          }
-          // 썸네일 모드면 페이지 리셋 + 재렌더
-          if (state.cardLayout === 'thumbnail') {
-            import('./cards').then((Cards) => {
-              Cards.resetThumbnailPage();
-              Cards.renderThumbnailPage();
-              Cards.updateThumbnailArrowsVisibility();
-            });
-          }
-        }
-        // 애니메이션 끝난 후 멀리 있는 섹션 숨김 (가상화 On 일 때만)
-        if (state.simpleVirtualization && absOffset > 1) {
-          gsap.set(section, { display: 'none' });
-        }
-      },
-    });
+    // 가까운 섹션: display 설정 + 그리드 모드만 사전 카드 로드
+    // (썸네일/캐러셀은 onSectionComplete에서 렌더 — 이중 렌더 방지)
+    if (state.cardLayout === 'grid') {
+      getCardsModule().then((Cards) => {
+        Cards.populateSection(section as HTMLElement, i);
+      });
+    }
 
-    // 현재 섹션 카드들 등장 애니메이션
+    if (state.cardLayout === 'thumbnail' && (section as HTMLElement).classList.contains('thumbnail-layout')) {
+      gsap.set(section, { display: 'grid' });
+    } else {
+      gsap.set(section, { display: 'flex' });
+    }
+
+    // [라이트 모드] 즉시 전환 vs [일반] 부드러운 애니메이션
+    const sectionProps = { z: zPos, scale, opacity, y: yOffset, zIndex };
+    const onSectionComplete = () => {
+      if (offset === 0) {
+        section.classList.add('active');
+        (section as HTMLElement).scrollTop = 0;
+        if (state.cardLayout === 'carousel') {
+          state.carouselIndex = 0;
+          Carousel.renderCarouselSlots();
+          Carousel.updateCarouselUI();
+        }
+        if (state.cardLayout === 'thumbnail') {
+          getCardsModule().then((Cards) => {
+            Cards.resetThumbnailPage();
+            Cards.renderThumbnailPage();
+            Cards.updateThumbnailArrowsVisibility();
+          });
+        }
+      }
+    };
+
+    if (state.simpleVirtualization) {
+      // 라이트 모드: 즉시 전환 (GSAP 트윈 0개)
+      gsap.set(section, sectionProps);
+      onSectionComplete();
+    } else {
+      gsap.to(section, {
+        ...sectionProps,
+        duration: 0.6,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        onComplete: onSectionComplete,
+      });
+    }
+
+    // 현재 섹션 카드 등장 처리
     if (offset === 0) {
       const cards = section.querySelectorAll('.shortcut-card');
-      cards.forEach((card, ci) => {
-        gsap.fromTo(
-          card,
-          { scale: 0.5, opacity: 0 },
-          {
-            scale: 1,
-            opacity: 1,
-            duration: 0.4,
-            delay: 0.3 + ci * 0.05,
-            ease: 'back.out(1.7)',
-          },
-        );
-      });
+
+      // [최적화] 이미 렌더된 카드(data-shown)는 가벼운 fade만,
+      // 최초 등장 카드만 scale 애니메이션 (DOM 재활용 시 부하 대폭 감소)
+      const isFirstRender = !section.hasAttribute('data-rendered');
+      if (isFirstRender) section.setAttribute('data-rendered', '1');
+
+      if (state.simpleVirtualization) {
+        // 라이트 모드: 카드 애니메이션 전체 스킵
+        gsap.set(cards, { scale: 1, opacity: 1 });
+      } else if (isFirstRender) {
+        // 최초 등장: scale 애니메이션 (최대 8개)
+        const maxAnimCards = Math.min(cards.length, 8);
+        for (let ci = 0; ci < maxAnimCards; ci++) {
+          gsap.fromTo(
+            cards[ci],
+            { scale: 0.5, opacity: 0 },
+            {
+              scale: 1, opacity: 1,
+              duration: 0.35, delay: 0.15 + ci * 0.03,
+              ease: 'back.out(1.7)', overwrite: 'auto',
+            },
+          );
+        }
+        for (let ci = maxAnimCards; ci < cards.length; ci++) {
+          gsap.set(cards[ci], { scale: 1, opacity: 1 });
+        }
+      }
+      // 재방문 + 일반 모드: 애니메이션 없음 (섹션 자체 opacity 전환으로 충분)
     }
   });
 }
@@ -297,18 +333,14 @@ export function updateCardsDepth(): void {
     const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -30 : offset < 0 ? 30 : 0;
 
-    // 가상화 옵션: 현재 섹션과 앞/뒤 1개만 보이게, 나머지는 숨김
-    // 비활성화 시 모든 섹션 표시
-    const opacity = state.simpleVirtualization
-      ? absOffset <= 1 ? (offset === 0 ? 1 : 0.1) : 0
-      : (offset === 0 ? 1 : 0.1 / Math.max(1, absOffset));
-
-    // z-index로 렌더링 순서 강제 (현재 섹션이 가장 위)
+    const isGridMode = state.cardLayout === 'grid';
+    const visibleRange = isGridMode ? 1 : 0;
+    const opacity = absOffset <= visibleRange ? (offset === 0 ? 1 : 0.1) : 0;
     const zIndex = 100 - absOffset;
 
-    // GSAP.set으로 초기 상태 설정
-    if (!state.simpleVirtualization || absOffset <= 1) {
-      import('./cards').then((Cards) => {
+    // 보이는 범위의 섹션만 카드 로드
+    if (absOffset <= visibleRange) {
+      getCardsModule().then((Cards) => {
         Cards.populateSection(section as HTMLElement, i);
       });
     }
@@ -319,7 +351,7 @@ export function updateCardsDepth(): void {
       opacity: opacity,
       y: yOffset,
       zIndex: zIndex,
-      display: (!state.simpleVirtualization || absOffset <= 1)
+      display: absOffset <= visibleRange
         ? ((section as HTMLElement).classList.contains('thumbnail-layout') ? 'grid' : 'flex')
         : 'none',
     });
