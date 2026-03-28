@@ -148,6 +148,8 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'ctq-equipment', title: '설비이상', url: '/ctq/equipment', color: '#f59e0b', icon: 'svg:chip-smd', layer: 5 },
   { id: 'ctq-repair', title: '수리상태', url: '/ctq/repair-status', color: '#14b8a6', icon: 'svg:chip-smd', layer: 5 },
   { id: 'ctq-equip-hist', title: '설비점검이력', url: '/ctq/equipment-history', color: '#64748b', icon: 'svg:chip-smd', layer: 5 },
+  { id: 'ctq-indicator', title: '지표', url: '/ctq/indicator', color: '#a855f7', icon: 'svg:chart', layer: 5 },
+  { id: 'ctq-dashboard', title: '품질분석', url: '/ctq/quality-dashboard', color: '#3b82f6', icon: 'svg:chart', layer: 5 },
 
   // Charts (layer: 6)
   { id: 'menu-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 6 },

@@ -109,13 +109,6 @@ export function animate(timestamp = 0): void {
   // 조작 중인지 여부
   const isMoving = Math.abs(_i.tunnelSpeed) > 0.01 || Math.abs(state.targetSpeed) > 0.01 || _i.glowIntensity > 0.1;
 
-  // [최적화] 섹션/레인 전환 중에는 Three.js 렌더링 일시정지
-  // → GPU/CPU를 DOM 애니메이션(GSAP)에 100% 집중시켜 끊김 방지
-  if (state.isTransitioning || state.isLaneTransitioning) {
-    _lastFrameTime = timestamp;
-    return;
-  }
-
   // 프레임 간격 제어: 활성 시 30fps, 절전(10초 비활동) 시 15fps
   const frameInterval = (!isMoving && inactiveTime > 10000) ? IDLE_FRAME_INTERVAL : ACTIVE_FRAME_INTERVAL;
   if (deltaMs < frameInterval) return;

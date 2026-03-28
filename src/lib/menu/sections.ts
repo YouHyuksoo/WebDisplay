@@ -183,18 +183,24 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
 
     // 썸네일/캐러셀 모드: 활성 섹션만 표시 (뒤쪽 섹션 깜빡임 방지)
     // 그리드 모드: ±1까지 표시 (3D 깊이 프리뷰)
+    // [수정] 이동 중에는 현재 섹션과 목표 섹션 사이의 모든 카드가 보여야 부드러움
     const isGridMode = state.cardLayout === 'grid';
     const visibleRange = isGridMode ? 1 : 0;
-    const opacity = absOffset <= visibleRange ? (offset === 0 ? 1 : 0.1) : 0;
+    
+    // 이동 중(state.isTransitioning)에는 더 넓은 범위를 보여줌
+    const currentAbsOffset = Math.abs(i - state.currentSection);
+    const isVisible = absOffset <= visibleRange || currentAbsOffset <= visibleRange || state.isTransitioning;
+    
+    const opacity = absOffset === 0 ? 1 : (isVisible ? 0.1 : 0);
     const zIndex = 100 - absOffset;
 
     // [최적화] 기존 트윈 정리 — 빠른 휠 시 트윈 충돌 방지
     gsap.killTweensOf(section);
 
-    // 보이지 않는 섹션은 즉시 숨김
-    if (absOffset > visibleRange) {
+    // 보이지 않는 섹션은 즉시 숨김 (이동 중이 아닐 때만)
+    if (!isVisible) {
       gsap.set(section, {
-        z: zPos, scale, opacity, y: yOffset, zIndex,
+        z: zPos, scale, opacity: 0, y: yOffset, zIndex,
         display: 'none',
       });
       return;
