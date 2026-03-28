@@ -102,27 +102,27 @@ export const COLORS: string[] = [
 export const DEFAULT_SHORTCUTS: Shortcut[] = [
   // Favorites (layer: 0) — 모든 메뉴 즐겨찾기 등록
   { id: 'fav-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 0 },
-  { id: 'fav-25', title: '종합F/P현황', url: '/display/25', color: '#a78bfa', icon: 'svg:chip-smd', layer: 0 },
-  { id: 'fav-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:chip-smd', layer: 0 },
-  { id: 'fav-27', title: 'SMD 듀얼생산현황', url: '/display/27', color: '#818cf8', icon: 'svg:chip-smd', layer: 0 },
+  { id: 'fav-25', title: '종합F/P현황', url: '/display/25', color: '#a78bfa', icon: 'svg:stencil', layer: 0 },
+  { id: 'fav-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:production', layer: 0 },
+  { id: 'fav-27', title: 'SMD 듀얼생산현황', url: '/display/27', color: '#818cf8', icon: 'svg:monitor', layer: 0 },
   { id: 'fav-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:pba-production', layer: 0 },
   { id: 'fav-34', title: '픽업률현황(BASE)', url: '/display/34', color: '#f59e0b', icon: 'svg:chip-smd', layer: 0 },
   { id: 'fav-35', title: '픽업률현황(HEAD)', url: '/display/35', color: '#eab308', icon: 'svg:chip-smd', layer: 0 },
   { id: 'fav-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 0 },
-  { id: 'fav-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:msl-warning', layer: 0 },
+  { id: 'fav-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:material', layer: 0 },
   { id: 'fav-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 0 },
   { id: 'fav-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 0 },
   { id: 'fav-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 0 },
-  { id: 'fav-41', title: 'AOI 차트분석', url: '/display/41', color: '#06b6d4', icon: 'svg:chart', layer: 0 },
-  { id: 'fav-42', title: 'FCT 차트분석', url: '/display/42', color: '#f59e0b', icon: 'svg:chart', layer: 0 },
-  { id: 'fav-43', title: 'VISION 차트분석', url: '/display/43', color: '#10b981', icon: 'svg:chart', layer: 0 },
-  { id: 'fav-50', title: '설비로그검색', url: '/display/50', color: '#64748b', icon: 'svg:chip-smd', layer: 0 },
+  { id: 'fav-41', title: 'AOI 차트분석', url: '/display/41', color: '#06b6d4', icon: 'svg:vision', layer: 0 },
+  { id: 'fav-42', title: 'FCT 차트분석', url: '/display/42', color: '#f59e0b', icon: 'svg:operation-rate', layer: 0 },
+  { id: 'fav-43', title: 'VISION 차트분석', url: '/display/43', color: '#10b981', icon: 'svg:vision', layer: 0 },
+  { id: 'fav-50', title: '설비로그검색', url: '/display/50', color: '#64748b', icon: 'svg:error-log', layer: 0 },
 
   // SMD Monitoring (layer: 1)
   { id: 'menu-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 1 },
-  { id: 'menu-25', title: '종합F/P현황', url: '/display/25', color: '#a78bfa', icon: 'svg:chip-smd', layer: 1 },
-  { id: 'menu-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:chip-smd', layer: 1 },
-  { id: 'menu-27', title: 'SMD 듀얼생산현황', url: '/display/27', color: '#818cf8', icon: 'svg:chip-smd', layer: 1 },
+  { id: 'menu-25', title: '종합F/P현황', url: '/display/25', color: '#a78bfa', icon: 'svg:stencil', layer: 1 },
+  { id: 'menu-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:production', layer: 1 },
+  { id: 'menu-27', title: 'SMD 듀얼생산현황', url: '/display/27', color: '#818cf8', icon: 'svg:monitor', layer: 1 },
 
   // PBA Monitoring (layer: 2)
   { id: 'menu-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:pba-production', layer: 2 },
@@ -130,32 +130,33 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   // Equipment (layer: 3)
   { id: 'menu-34', title: '픽업률현황(BASE)', url: '/display/34', color: '#f59e0b', icon: 'svg:chip-smd', layer: 3 },
   { id: 'menu-35', title: '픽업률현황(HEAD)', url: '/display/35', color: '#eab308', icon: 'svg:chip-smd', layer: 3 },
-  { id: 'menu-50', title: '설비로그검색', url: '/display/50', color: '#64748b', icon: 'svg:chip-smd', layer: 3 },
+  { id: 'menu-50', title: '설비로그검색', url: '/display/50', color: '#64748b', icon: 'svg:error-log', layer: 3 },
 
   // Quality (layer: 4) — 카드를 SMD 모니터링(layer: 1)으로 이동
   { id: 'menu-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 1 },
-  { id: 'menu-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:msl-warning', layer: 1 },
+  { id: 'menu-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:material', layer: 1 },
   { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 1 },
   { id: 'menu-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 1 },
 
   // Anomaly Monitoring (layer: 5) — SOLUMCTQ 이상점 모니터링
-  { id: 'ctq-repeat', title: '반복성연속', url: '/ctq/repeatability', color: '#ef4444', icon: 'svg:msl-warning', layer: 5 },
-  { id: 'ctq-non-consec', title: '반복성동일', url: '/ctq/non-consecutive', color: '#f97316', icon: 'svg:msl-warning', layer: 5 },
+  { id: 'ctq-repeat', title: '반복성연속', url: '/ctq/repeatability', color: '#ef4444', icon: 'svg:clock', layer: 5 },
+  { id: 'ctq-non-consec', title: '반복성동일', url: '/ctq/non-consecutive', color: '#f97316', icon: 'svg:clock', layer: 5 },
   { id: 'ctq-accident', title: '사고성', url: '/ctq/accident', color: '#dc2626', icon: 'svg:msl-warning', layer: 5 },
-  { id: 'ctq-material', title: '원자재동일부품', url: '/ctq/material', color: '#8b5cf6', icon: 'svg:msl-warning', layer: 5 },
-  { id: 'ctq-open-short', title: '원자재공용부품', url: '/ctq/open-short', color: '#06b6d4', icon: 'svg:msl-warning', layer: 5 },
-  { id: 'ctq-fpy', title: '직행율', url: '/ctq/fpy', color: '#22c55e', icon: 'svg:chart', layer: 5 },
-  { id: 'ctq-equipment', title: '설비이상', url: '/ctq/equipment', color: '#f59e0b', icon: 'svg:chip-smd', layer: 5 },
-  { id: 'ctq-repair', title: '수리상태', url: '/ctq/repair-status', color: '#14b8a6', icon: 'svg:chip-smd', layer: 5 },
-  { id: 'ctq-equip-hist', title: '설비점검이력', url: '/ctq/equipment-history', color: '#64748b', icon: 'svg:chip-smd', layer: 5 },
+  { id: 'ctq-material', title: '원자재동일부품', url: '/ctq/material', color: '#8b5cf6', icon: 'svg:material', layer: 5 },
+  { id: 'ctq-open-short', title: '원자재공용부품', url: '/ctq/open-short', color: '#06b6d4', icon: 'svg:material', layer: 5 },
+  { id: 'ctq-fpy', title: '직행율', url: '/ctq/fpy', color: '#22c55e', icon: 'svg:yield', layer: 5 },
+  { id: 'ctq-equipment', title: '설비이상', url: '/ctq/equipment', color: '#f59e0b', icon: 'svg:settings', layer: 5 },
+  { id: 'ctq-repair', title: '수리상태', url: '/ctq/repair-status', color: '#14b8a6', icon: 'svg:scissors', layer: 5 },
+  { id: 'ctq-equip-hist', title: '설비점검이력', url: '/ctq/equipment-history', color: '#64748b', icon: 'svg:error-log', layer: 5 },
   { id: 'ctq-indicator', title: '지표', url: '/ctq/indicator', color: '#a855f7', icon: 'svg:chart', layer: 5 },
   { id: 'ctq-dashboard', title: '품질분석', url: '/ctq/quality-dashboard', color: '#3b82f6', icon: 'svg:chart', layer: 5 },
+  { id: 'ctq-analysis', title: '종합분석', url: '/ctq/analysis', color: '#6366f1', icon: 'svg:chart', layer: 5 },
 
   // Charts (layer: 6)
   { id: 'menu-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 6 },
-  { id: 'menu-41', title: 'AOI 차트분석', url: '/display/41', color: '#06b6d4', icon: 'svg:chart', layer: 6 },
-  { id: 'menu-42', title: 'FCT 차트분석', url: '/display/42', color: '#f59e0b', icon: 'svg:chart', layer: 6 },
-  { id: 'menu-43', title: 'VISION 차트분석', url: '/display/43', color: '#10b981', icon: 'svg:chart', layer: 6 },
+  { id: 'menu-41', title: 'AOI 차트분석', url: '/display/41', color: '#06b6d4', icon: 'svg:vision', layer: 6 },
+  { id: 'menu-42', title: 'FCT 차트분석', url: '/display/42', color: '#f59e0b', icon: 'svg:operation-rate', layer: 6 },
+  { id: 'menu-43', title: 'VISION 차트분석', url: '/display/43', color: '#10b981', icon: 'svg:vision', layer: 6 },
 ];
 
 // ---------------------------------------------------------------------------

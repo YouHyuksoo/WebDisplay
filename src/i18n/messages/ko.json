@@ -697,6 +697,15 @@
         "inspCount": "검사량",
         "pidCount": "PID수",
         "retestRatePercent": "재검사율(%)"
+      },
+      "analysis": {
+        "title": "종합분석",
+        "noIssues": "이상 없음",
+        "overallStatus": "전체 현황",
+        "abnormalLines": "이상 라인",
+        "reportTime": "분석 시점",
+        "fetchError": "조회 실패",
+        "section": "상세 보고서"
       }
     },
     "settings": {

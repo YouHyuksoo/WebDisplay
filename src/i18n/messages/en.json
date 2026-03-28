@@ -697,6 +697,15 @@
         "inspCount": "Inspections",
         "pidCount": "PIDs",
         "retestRatePercent": "Retest Rate(%)"
+      },
+      "analysis": {
+        "title": "Comprehensive Analysis",
+        "noIssues": "No Issues",
+        "overallStatus": "Overall Status",
+        "abnormalLines": "Abnormal Lines",
+        "reportTime": "Report Time",
+        "fetchError": "Fetch Failed",
+        "section": "Detail Report"
       }
     },
     "settings": {
