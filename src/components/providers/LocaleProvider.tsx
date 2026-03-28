@@ -47,6 +47,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   return (
     <NextIntlClientProvider
       locale={locale}
+      timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone}
       messages={allMessages[locale] as Record<string, string>}
     >
       {children}

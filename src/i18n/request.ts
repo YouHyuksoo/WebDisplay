@@ -15,6 +15,7 @@ export default getRequestConfig(async () => {
 
   return {
     locale,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     messages: (await import(`./messages/${locale}.json`)).default,
   };
 });

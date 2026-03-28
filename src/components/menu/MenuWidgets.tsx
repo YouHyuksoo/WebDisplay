@@ -12,6 +12,7 @@
 
 import { Search, History, ArrowLeft, Globe, Moon, Power, Image, ImageOff, RotateCw, CircleStop } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import DbStatusBadge from './DbStatusBadge';
 
 /**
  * 검색창 + 시계 + 이스터에그 패널 + 기능 아이콘(다국어/테마/종료)
@@ -44,10 +45,11 @@ export default function MenuWidgets() {
         </button>
       </div>
 
-      {/* 시계 위젯 */}
+      {/* 시계 위젯 + DB 상태 */}
       <div id="clock-widget">
         <div className="time" id="clock-time">00:00:00</div>
         <div className="date" id="clock-date">0000-00-00</div>
+        <DbStatusBadge />
       </div>
 
       {/* 이스터에그 패널 (✨ 클릭 시 토글) */}
