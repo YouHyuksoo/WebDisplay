@@ -12,7 +12,7 @@
 import { useState, useCallback } from "react";
 import type { EquipmentHistoryResponse } from "@/types/ctq/equipment-history";
 
-export function useEquipmentHistory(selectedLines: string[], fromDate: string, toDate: string) {
+export function useEquipmentHistory(selectedLines: string, fromDate: string, toDate: string) {
   const [data, setData] = useState<EquipmentHistoryResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ export function useEquipmentHistory(selectedLines: string[], fromDate: string, t
     setError(null);
     try {
       const params = new URLSearchParams();
-      if (selectedLines.length > 0) params.set("lines", selectedLines.join(","));
+      if (selectedLines) params.set("lines", selectedLines);
       if (fromDate) params.set("from", fromDate);
       if (toDate) params.set("to", toDate);
       const res = await fetch(`/api/ctq/equipment-history?${params.toString()}`);

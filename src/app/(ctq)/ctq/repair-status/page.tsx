@@ -11,14 +11,14 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
+import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { useRepairStatus } from "@/hooks/ctq/useRepairStatus";
 import RepairStatusTable from "@/components/ctq/RepairStatusTable";
-import type { RepairStatusResponse } from "@/types/ctq/repair-status";
 
 const SCREEN_ID = "ctq-repair";
 
@@ -26,27 +26,7 @@ export default function RepairStatusPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
 
-  /* -- 라인 선택 상태 (localStorage + window event) -- */
-  const [selectedLines, setSelectedLines] = useState<string[]>([]);
-
-  const readLines = useCallback(() => {
-    try {
-      const saved = localStorage.getItem(`display-lines-${SCREEN_ID}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setSelectedLines(parsed.includes("%") ? [] : parsed);
-        }
-      }
-    } catch { /* 무시 */ }
-  }, []);
-
-  useEffect(() => {
-    readLines();
-    const handler = () => readLines();
-    window.addEventListener(`line-config-changed-${SCREEN_ID}`, handler);
-    return () => window.removeEventListener(`line-config-changed-${SCREEN_ID}`, handler);
-  }, [readLines]);
+  const selectedLines = useSelectedLines(SCREEN_ID);
 
   /* -- PID 검색 필터 -- */
   const [pidInput, setPidInput] = useState("");

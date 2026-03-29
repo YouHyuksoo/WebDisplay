@@ -13,12 +13,13 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import { useAutoRolling } from "@/hooks/ctq/useAutoRolling";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
+import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import MaterialLineCard from "@/components/ctq/MaterialLineCard";
 import type { MaterialResponse } from "@/types/ctq/material";
 
@@ -29,27 +30,8 @@ export default function MaterialPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
 
-  /* -- 라인 선택 상태 (localStorage + window event) -- */
-  const [selectedLines, setSelectedLines] = useState<string>("%");
-
-  const readLines = useCallback(() => {
-    try {
-      const saved = localStorage.getItem(`display-lines-${SCREEN_ID}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setSelectedLines(parsed.includes("%") ? "%" : parsed.join(","));
-        }
-      }
-    } catch { /* 무시 */ }
-  }, []);
-
-  useEffect(() => {
-    readLines();
-    const handler = () => readLines();
-    window.addEventListener(`line-config-changed-${SCREEN_ID}`, handler);
-    return () => window.removeEventListener(`line-config-changed-${SCREEN_ID}`, handler);
-  }, [readLines]);
+  /* -- 라인 선택 상태 -- */
+  const selectedLines = useSelectedLines(SCREEN_ID);
 
   /* -- 데이터 폴링 -- */
   const [data, setData] = useState<MaterialResponse | null>(null);

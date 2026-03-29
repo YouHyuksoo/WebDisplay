@@ -11,11 +11,12 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
+import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { useEquipment } from "@/hooks/ctq/useEquipment";
 import EquipmentTable from "@/components/ctq/EquipmentTable";
 import EquipmentWeeklyChart from "@/components/ctq/EquipmentWeeklyChart";
@@ -27,27 +28,8 @@ export default function EquipmentPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
 
-  /* -- 라인 선택 상태 (localStorage + window event) -- */
-  const [selectedLines, setSelectedLines] = useState<string>("%");
-
-  const readLines = useCallback(() => {
-    try {
-      const saved = localStorage.getItem(`display-lines-${SCREEN_ID}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setSelectedLines(parsed.includes("%") ? "%" : parsed.join(","));
-        }
-      }
-    } catch { /* 무시 */ }
-  }, []);
-
-  useEffect(() => {
-    readLines();
-    const handler = () => readLines();
-    window.addEventListener(`line-config-changed-${SCREEN_ID}`, handler);
-    return () => window.removeEventListener(`line-config-changed-${SCREEN_ID}`, handler);
-  }, [readLines]);
+  /* -- 라인 선택 상태 -- */
+  const selectedLines = useSelectedLines(SCREEN_ID);
 
   /* -- 데이터 폴링 -- */
   const { data, error, loading, fetchData } = useEquipment(selectedLines);

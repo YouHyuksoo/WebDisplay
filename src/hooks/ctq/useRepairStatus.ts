@@ -12,7 +12,7 @@
 import { useState, useCallback } from "react";
 import type { RepairStatusResponse } from "@/types/ctq/repair-status";
 
-export function useRepairStatus(selectedLines: string[], pidFilter: string = "") {
+export function useRepairStatus(selectedLines: string, pidFilter: string = "") {
   const [data, setData] = useState<RepairStatusResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,8 +22,8 @@ export function useRepairStatus(selectedLines: string[], pidFilter: string = "")
     setError(null);
     try {
       const params = new URLSearchParams();
-      if (selectedLines.length > 0) {
-        params.set("lines", selectedLines.join(","));
+      if (selectedLines) {
+        params.set("lines", selectedLines);
       }
       if (pidFilter.trim()) {
         params.set("pid", pidFilter.trim());
