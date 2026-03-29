@@ -550,6 +550,7 @@
       "equipmentHistory": "테이블: IP_LINE_DAILY_OPERATION_HIST\n내용: 당일 설비 가동/정지 개별 이력\n기간: 당일 (F_GET_WORK_ACTUAL_DATE)",
       "repairStatus": "테이블: IP_PRODUCT_WORK_QC\n내용: 당일 불량 감지 PID 수리 현황\n기간: 당일 08:00 ~ 익일 08:00",
       "qualityDashboard": "테이블: IP_PRODUCT_WORK_QC\n내용: 공정별/불량코드/라인별/모델별/시간대별 차트\n기간: 당일 08:00 ~ 익일 08:00",
+      "qualityDashboardStatus": "차트 색상: 프리셋별 색상 팔레트 적용\n레이아웃: 2열/3열/2열+풀하단 선택 가능\n프리셋: 기본/관리자/라인/품질/전체",
       "analysis": "내용: 8개 모니터링 종합 분석 보고"
     },
     "table": {

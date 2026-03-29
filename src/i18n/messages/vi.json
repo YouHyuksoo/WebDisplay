@@ -550,6 +550,7 @@
       "equipmentHistory": "Bảng: IP_LINE_DAILY_OPERATION_HIST\nNội dung: Lịch sử vận hành/dừng thiết bị trong ngày\nThời gian: Hôm nay (F_GET_WORK_ACTUAL_DATE)",
       "repairStatus": "Bảng: IP_PRODUCT_WORK_QC\nNội dung: Trạng thái sửa chữa PID lỗi trong ngày\nThời gian: Hôm nay 08:00 ~ Ngày mai 08:00",
       "qualityDashboard": "Bảng: IP_PRODUCT_WORK_QC\nNội dung: Biểu đồ công đoạn/mã lỗi/line/model/theo giờ\nThời gian: Hôm nay 08:00 ~ Ngày mai 08:00",
+      "qualityDashboardStatus": "Màu biểu đồ: Bảng màu theo preset\nBố cục: 2 cột / 3 cột / 2 cột + đáy đầy đủ\nPreset: Cơ bản / Quản trị / Line / Chất lượng / Tất cả",
       "analysis": "Nội dung: Phân tích tổng hợp 8 màn hình giám sát"
     },
     "table": {

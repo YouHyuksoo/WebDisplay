@@ -550,6 +550,7 @@
       "equipmentHistory": "Table: IP_LINE_DAILY_OPERATION_HIST\nContent: Daily equipment operation/stop history records\nPeriod: Today (F_GET_WORK_ACTUAL_DATE)",
       "repairStatus": "Table: IP_PRODUCT_WORK_QC\nContent: Daily defect PID repair status\nPeriod: Today 08:00 ~ Next day 08:00",
       "qualityDashboard": "Table: IP_PRODUCT_WORK_QC\nContent: Process/defect code/line/model/hourly charts\nPeriod: Today 08:00 ~ Next day 08:00",
+      "qualityDashboardStatus": "Chart colors: Color palette applied per preset\nLayout: 2-col / 3-col / 2-col + full bottom\nPresets: Default / Admin / Line / Quality / All",
       "analysis": "Content: Comprehensive analysis of all 8 monitors"
     },
     "table": {

@@ -550,6 +550,7 @@
       "equipmentHistory": "Tabla: IP_LINE_DAILY_OPERATION_HIST\nContenido: Registros diarios de operación/parada de equipo\nPeríodo: Hoy (F_GET_WORK_ACTUAL_DATE)",
       "repairStatus": "Tabla: IP_PRODUCT_WORK_QC\nContenido: Estado de reparación PID defectuoso diario\nPeríodo: Hoy 08:00 ~ Día siguiente 08:00",
       "qualityDashboard": "Tabla: IP_PRODUCT_WORK_QC\nContenido: Gráficos proceso/código defecto/línea/modelo/por hora\nPeríodo: Hoy 08:00 ~ Día siguiente 08:00",
+      "qualityDashboardStatus": "Colores: Paleta de colores por preset\nDiseño: 2 col / 3 col / 2 col + inferior completo\nPresets: Básico / Admin / Línea / Calidad / Todos",
       "analysis": "Contenido: Análisis integral de los 8 monitores"
     },
     "table": {
