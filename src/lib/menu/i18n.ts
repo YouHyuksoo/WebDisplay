@@ -110,7 +110,8 @@ export function getScreenTitle(shortcut: { id?: string; url: string; title: stri
       const locale = getLocale();
       if (locale === 'ko') return screen.titleKo;
       if (locale === 'es' && screen.titleEs) return screen.titleEs;
-      return screen.title; // 영문 기본 (vi도 여기)
+      if (locale === 'vi' && screen.titleVi) return screen.titleVi;
+      return screen.title; // 영문 기본
     }
   }
   return shortcut.title;
