@@ -16,8 +16,7 @@ import {
   sqlTimeZoneActual,
   sqlTotalActual,
   sqlCurrentShift,
-  mapTimeZoneToGroup,
-  TIME_LABELS,
+  SHIFT_ZONES,
 } from '@/lib/queries/product-io-status';
 
 /** WORKSTAGE_CODE — 포장 공정 */
@@ -31,14 +30,11 @@ export async function GET(request: Request) {
 
   /* 라인 미선택 시 빈 응답 */
   if (!lineCode || lineCode === '%') {
+    const zones = SHIFT_ZONES.A;
     return NextResponse.json({
-      plan: null,
-      timeZones: [0, 0, 0, 0, 0, 0],
-      targets: [0, 0, 0, 0, 0, 0],
-      totalActual: 0,
-      timeLabels: TIME_LABELS.A,
-      shift: 'A',
-      timestamp: new Date().toISOString(),
+      plan: null, timeZones: zones.map(() => 0), targets: zones.map(() => 0),
+      totalActual: 0, zoneLabels: zones.map((z) => z.zone), timeLabels: zones.map((z) => z.label),
+      shift: 'A', timestamp: new Date().toISOString(),
     });
   }
 
@@ -46,10 +42,10 @@ export async function GET(request: Request) {
     /* 서버 시간 기준 shift/작업일 조회 */
     const shiftRows = await executeQuery<{ SHIFT_CODE: string; WORK_DATE: string }>(sqlCurrentShift(), {});
     const shift = shiftRows[0]?.SHIFT_CODE ?? 'A';
-    const commonBinds = {
-      lineCode,
-      orgId: Number(orgId),
-    };
+    const zones = SHIFT_ZONES[shift] ?? SHIFT_ZONES.A;
+    const zoneCount = zones.length;
+
+    const commonBinds = { lineCode, orgId: Number(orgId) };
 
     /* 3개 쿼리 병렬 실행 */
     const [planRows, tzRows, totalRows] = await Promise.all([
@@ -58,40 +54,36 @@ export async function GET(request: Request) {
       executeQuery(sqlTotalActual(), { ...commonBinds, workstageCode: WORKSTAGE_CODE }),
     ]);
 
-    /* 계획 데이터 (첫 번째 행) */
     const plan = (planRows as Record<string, unknown>[])[0] ?? null;
 
-    /* 시간대별 실적 그룹핑 (6구간) */
-    const timeZones = [0, 0, 0, 0, 0, 0];
-    for (const row of tzRows as { WORK_TIME_ZONE: string; QTY: number }[]) {
-      const idx = mapTimeZoneToGroup(row.WORK_TIME_ZONE);
-      if (idx >= 0 && idx < 6) {
+    /* 시간대별 실적 — TIME_SLOT(A~E) → 인덱스 매핑 */
+    const slotMap: Record<string, number> = { A: 0, B: 1, C: 2, D: 3, E: 4 };
+    const timeZones = new Array(zoneCount).fill(0);
+    for (const row of tzRows as { TIME_SLOT: string; QTY: number }[]) {
+      const idx = slotMap[row.TIME_SLOT];
+      if (idx != null && idx < zoneCount) {
         timeZones[idx] += Number(row.QTY) || 0;
       }
     }
 
-    /* 총 실적 */
     const totalActual = Number((totalRows as { TOTAL_QTY: number }[])[0]?.TOTAL_QTY) || 0;
 
-    /* 목표 분배: PLAN_QTY ÷ 6 (나머지는 마지막 구간에) */
+    /* 목표 균등 분배 */
     const planQty = Number((plan as Record<string, unknown> | null)?.PLAN_QTY) || 0;
-    const targets = [0, 0, 0, 0, 0, 0];
+    const targets = new Array(zoneCount).fill(0);
     if (planQty > 0) {
-      const base = Math.floor(planQty / 6);
-      const remainder = planQty - base * 6;
-      for (let i = 0; i < 6; i++) {
-        targets[i] = base + (i === 5 ? remainder : 0);
+      const base = Math.floor(planQty / zoneCount);
+      const remainder = planQty - base * zoneCount;
+      for (let i = 0; i < zoneCount; i++) {
+        targets[i] = base + (i === zoneCount - 1 ? remainder : 0);
       }
     }
 
     return NextResponse.json({
-      plan,
-      timeZones,
-      targets,
-      totalActual,
-      timeLabels: TIME_LABELS[shift],
-      shift,
-      timestamp: new Date().toISOString(),
+      plan, timeZones, targets, totalActual,
+      zoneLabels: zones.map((z) => z.zone),
+      timeLabels: zones.map((z) => z.label),
+      shift, timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error('[API /display/23] Error:', error);

@@ -9,12 +9,12 @@
  */
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import useSWR, { mutate } from 'swr';
 import DisplayLayout from '@/components/display/DisplayLayout';
 import RunCardSelectModal from './RunCardSelectModal';
 import { fetcher } from '@/lib/fetcher';
-import { buildDisplayApiUrl, DEFAULT_ORG_ID, fmtNum } from '@/lib/display-helpers';
+import { buildDisplayApiUrl, DEFAULT_ORG_ID, fmtNum, getSelectedLines } from '@/lib/display-helpers';
 
 /** 라인 목록 API 응답 타입 */
 interface LineItem { lineCode: string; lineName: string }
@@ -72,6 +72,8 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
   const [editMode, setEditMode] = useState(false);
   const [selectedDate, setSelectedDate] = useState(EMPTY_FORM.planDate);
   const [runCardModalOpen, setRunCardModalOpen] = useState(false);
+  const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const [selectedLinesCsv, setSelectedLinesCsv] = useState(() => getSelectedLines(screenId));
 
   const apiUrl = buildDisplayApiUrl('20', {
     orgId: DEFAULT_ORG_ID,
@@ -87,7 +89,24 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
   const { data: lineData } = useSWR<{ groups: LineGroup[] }>(
     `/api/display/lines?orgId=${DEFAULT_ORG_ID}`, fetcher, { refreshInterval: 0 },
   );
-  const lineGroups = lineData?.groups ?? [];
+  const allGroups = lineData?.groups ?? [];
+
+  /* 헤더에서 선택한 라인만 필터링 */
+  const selectedSet = selectedLinesCsv === '%'
+    ? null  /* 전체 */
+    : new Set(selectedLinesCsv.split(',').map((s) => s.trim()));
+  const lineGroups = selectedSet
+    ? allGroups
+        .map((g) => ({ ...g, lines: g.lines.filter((l) => selectedSet.has(l.lineCode)) }))
+        .filter((g) => g.lines.length > 0)
+    : allGroups;
+
+  /* 라인 선택 변경 이벤트 감지 */
+  useEffect(() => {
+    const handler = () => setSelectedLinesCsv(getSelectedLines(screenId));
+    window.addEventListener(`line-config-changed-${screenId}`, handler);
+    return () => window.removeEventListener(`line-config-changed-${screenId}`, handler);
+  }, [screenId]);
 
   /** 폼 필드 변경 핸들러 */
   const onChange = useCallback(
@@ -106,7 +125,7 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
   /** 저장/수정 */
   const handleSave = async () => {
     if (!form.planDate || !form.lineCode) {
-      alert('계획일자와 라인코드는 필수입니다.');
+      setMessage({ type: 'error', text: '계획일자와 라인코드는 필수입니다.' });
       return;
     }
     const method = editMode ? 'PUT' : 'POST';
@@ -122,14 +141,14 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
       handleNew();
     } catch (err) {
       console.error(err);
-      alert(editMode ? '수정 실패' : '등록 실패');
+      setMessage({ type: 'error', text: editMode ? '수정 실패' : '등록 실패' });
     }
   };
 
   /** 삭제 */
   const handleDelete = async () => {
     if (!editMode) return;
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+    /* confirm 대신 삭제 버튼이 editMode일 때만 보이므로 바로 실행 */
     try {
       const params = new URLSearchParams({
         planDate: form.planDate,
@@ -142,7 +161,7 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
       handleNew();
     } catch (err) {
       console.error(err);
-      alert('삭제 실패');
+      setMessage({ type: 'error', text: '삭제 실패' });
     }
   };
 
@@ -220,7 +239,8 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
                 <input type="text" name="modelName" value={form.modelName} onChange={onChange} className={`${inputCls} flex-1`} readOnly />
                 <button
                   type="button"
-                  onClick={() => { if (form.lineCode) setRunCardModalOpen(true); else alert('라인을 먼저 선택하세요.'); }}
+                  disabled={!form.lineCode}
+                  onClick={() => setRunCardModalOpen(true)}
                   className="shrink-0 rounded border border-zinc-300 bg-zinc-100 px-2 text-xs hover:bg-zinc-200 dark:border-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600"
                 >
                   검색
@@ -250,8 +270,8 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
             </Field>
           </div>
 
-          {/* 버튼 */}
-          <div className="mt-3 flex gap-2">
+          {/* 버튼 + 메시지 */}
+          <div className="mt-3 flex items-center gap-2">
             <button onClick={handleNew} className={`${btnBase} bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600`}>
               신규
             </button>
@@ -262,6 +282,11 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
               <button onClick={handleDelete} className={`${btnBase} bg-red-600 text-white hover:bg-red-700`}>
                 삭제
               </button>
+            )}
+            {message && (
+              <span className={`ml-2 text-xs ${message.type === 'error' ? 'text-red-500' : 'text-green-500'}`}>
+                {message.text}
+              </span>
             )}
           </div>
         </section>

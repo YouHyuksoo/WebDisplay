@@ -14,32 +14,28 @@
 /*  시간대 레이블                                                      */
 /* ------------------------------------------------------------------ */
 
-/** 시간대별 레이블 (A: 주간, B: 야간) — 2시간 묶음 6구간 */
-export const TIME_LABELS: Record<string, string[]> = {
-  A: ['08-10', '10-12', '12-14', '14-16', '16-18', '18-20'],
-  B: ['20-22', '22-00', '00-02', '02-04', '04-06', '06-08'],
-};
-
-/* ------------------------------------------------------------------ */
-/*  시간대 매핑                                                        */
-/* ------------------------------------------------------------------ */
-
-/** WORK_TIME_ZONE → 2시간 묶음 인덱스 매핑 테이블 */
-const ZONE_MAP: Record<string, number> = {
-  AA: 0, AB: 0, AC: 1, AD: 1, AE: 2, AF: 2,
-  AG: 3, AH: 3, AI: 4, AJ: 4, AK: 5, AL: 5,
-  BA: 0, BB: 0, BC: 1, BD: 1, BE: 2, BF: 2,
-  BG: 3, BH: 3, BI: 4, BJ: 4, BK: 5, BL: 5,
-};
-
 /**
- * WORK_TIME_ZONE(AA~BL)을 2시간 묶음 인덱스(0~5)로 변환한다.
- * @param zone - 시간대 코드 (예: 'AA', 'BC')
- * @returns 0~5 인덱스, 매칭 안 되면 -1
+ * 시프트별 5타임 구간 정보.
+ * IO_DATE의 실제 시각(HH24MI)으로 매핑한다.
+ *   주간: A(08:00~10:00), B(10:10~12:00), C(13:00~15:00), D(15:10~17:00), E(17:30~19:50)
+ *   야간: A(20:00~22:00), B(22:10~00:00), C(01:00~03:00), D(03:10~05:00), E(05:30~07:50)
  */
-export function mapTimeZoneToGroup(zone: string): number {
-  return ZONE_MAP[zone] ?? -1;
-}
+export const SHIFT_ZONES: Record<string, { zone: string; label: string }[]> = {
+  A: [
+    { zone: 'A', label: '08:00~10:00' },
+    { zone: 'B', label: '10:10~12:00' },
+    { zone: 'C', label: '13:00~15:00' },
+    { zone: 'D', label: '15:10~17:00' },
+    { zone: 'E', label: '17:30~19:50' },
+  ],
+  B: [
+    { zone: 'A', label: '20:00~22:00' },
+    { zone: 'B', label: '22:10~00:00' },
+    { zone: 'C', label: '01:00~03:00' },
+    { zone: 'D', label: '03:10~05:00' },
+    { zone: 'E', label: '05:30~07:50' },
+  ],
+};
 
 /* ------------------------------------------------------------------ */
 /*  현재 시프트 판별                                                    */
@@ -85,16 +81,35 @@ SELECT t.PLAN_DATE, t.LINE_CODE,
 }
 
 /**
- * 시간대별 실적 조회 (WORK_TIME_ZONE 별 합계).
+ * 시간대별 실적 조회 — IO_DATE 시각 기반 5타임 CASE 분류.
+ * 주간: A(08:00~10:09), B(10:10~12:59), C(13:00~15:09), D(15:10~17:29), E(17:30~19:59)
+ * 야간: A(20:00~22:09), B(22:10~00:59), C(01:00~03:09), D(03:10~05:29), E(05:30~07:59)
  * @returns SQL 문자열 (바인드: lineCode, workstageCode, orgId)
  */
 export function sqlTimeZoneActual(): string {
   return `
-SELECT WORK_TIME_ZONE, SUM(IO_QTY) AS QTY
+SELECT TIME_SLOT, SUM(IO_QTY) AS QTY FROM (
+  SELECT IO_QTY,
+    CASE
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0800' AND '1009' THEN 'A'
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '1010' AND '1259' THEN 'B'
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '1300' AND '1509' THEN 'C'
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '1510' AND '1729' THEN 'D'
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '1730' AND '1959' THEN 'E'
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '2000' AND '2209' THEN 'A'
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '2210' AND '2359' THEN 'B'
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0000' AND '0059' THEN 'B'
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0100' AND '0309' THEN 'C'
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0310' AND '0529' THEN 'D'
+      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0530' AND '0759' THEN 'E'
+      ELSE 'X'
+    END AS TIME_SLOT
   FROM IP_PRODUCT_WORKSTAGE_IO
- WHERE LINE_CODE = :lineCode AND WORKSTAGE_CODE = :workstageCode
-   AND ORGANIZATION_ID = :orgId AND ACTUAL_DATE = F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A')
- GROUP BY WORK_TIME_ZONE ORDER BY WORK_TIME_ZONE
+  WHERE LINE_CODE = :lineCode AND WORKSTAGE_CODE = :workstageCode
+    AND ORGANIZATION_ID = :orgId AND ACTUAL_DATE = F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A')
+)
+WHERE TIME_SLOT != 'X'
+GROUP BY TIME_SLOT ORDER BY TIME_SLOT
 `;
 }
 

@@ -30,7 +30,7 @@ export const SCREENS: Record<string, ScreenConfig> = {
   '26': { id: '26', title: 'Line Production KPI', titleKo: '라인별생산현황', titleEs: 'KPI de producción por línea', titleVi: 'KPI sản xuất theo Line', window: 'w_display_product_kpi_status', group: 'smd-monitoring', lineFilter: true },
   '27': { id: '27', title: 'SMD Dual Production Status', titleKo: 'SMD 듀얼생산현황', titleEs: 'Estado de producción dual SMD', titleVi: 'Tình trạng sản xuất kép SMD', window: 'w_display_machine_status_single_smd', group: 'smd-monitoring', lineFilter: true },
 
-  '20': { id: '20', title: 'Production Plan Register', titleKo: '생산계획등록', titleVi: 'Đăng ký kế hoạch sản xuất', window: '', group: 'pba-monitoring' },
+  '20': { id: '20', title: 'Production Plan Register', titleKo: '생산계획등록', titleVi: 'Đăng ký kế hoạch sản xuất', window: '', group: 'pba-monitoring', lineFilter: true },
   '21': { id: '21', title: 'PBA Production Status', titleKo: '제품생산현황', titleEs: 'Estado de producción PBA', titleVi: 'Tình trạng sản xuất PBA', window: 'w_display_assy_production_status', group: 'pba-monitoring', lineFilter: true },
   '22': { id: '22', title: 'Product Input Status', titleKo: '제품투입현황', titleVi: 'Tình trạng nhập sản phẩm', window: '', group: 'pba-monitoring', lineFilter: true },
   '23': { id: '23', title: 'Product Packaging Status', titleKo: '제품포장현황', titleVi: 'Tình trạng đóng gói sản phẩm', window: '', group: 'pba-monitoring', lineFilter: true },
