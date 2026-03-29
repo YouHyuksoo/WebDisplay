@@ -22,6 +22,20 @@ import { sqlProductionKpiList } from './production-kpi';
 import { sqlSpiByLine, sqlSpiFpyTrend, sqlSpiSummary, sqlSpiTopLines } from './spi-chart';
 import { sqlAoiByLine, sqlAoiFpyTrend, sqlAoiSummary, sqlAoiTopLines } from './aoi-chart';
 import { sqlEquipmentLogList, sqlEquipmentLogCount } from './equipment-log';
+import {
+  sqlCtqRepeatFtSummary, sqlCtqRepeatFtLocations,
+  sqlCtqNonConsecutive,
+  sqlCtqAccidentSummary, sqlCtqAccidentBurnin,
+  sqlCtqMaterial,
+  sqlCtqOpenShort,
+  sqlCtqFpy,
+  sqlCtqEquipment, sqlCtqEquipmentWeekly, sqlCtqEquipmentHistory,
+  sqlCtqRepairStatus,
+  sqlCtqNgDetailsRaw, sqlCtqNgDetailsMaterial,
+  sqlCtqIndicator, sqlCtqIndicatorCache,
+  sqlCtqDashboardProcess, sqlCtqDashboardBadCode, sqlCtqDashboardRepair,
+  sqlCtqDashboardRawUnion, sqlCtqDashboardRawNgMatrix, sqlCtqDashboardRawWeeklyTrend,
+} from './ctq-queries';
 
 export interface SqlEntry {
   label: string;
@@ -149,6 +163,102 @@ const SCREEN_SQL_BUILDERS: Record<string, () => ScreenSqlInfo> = {
     queries: [
       { label: '로그 목록', sql: sqlEquipmentLogList('/* AND keyword LIKE ... */') },
       { label: '로그 건수', sql: sqlEquipmentLogCount('/* AND keyword LIKE ... */') },
+    ],
+  }),
+
+  /* ---- CTQ 이상점 모니터링 ---- */
+
+  'ctq-repeat': () => ({
+    screenId: 'ctq-repeat',
+    title: 'CTQ 반복성연속 (Repeatability)',
+    queries: [
+      { label: 'FT 요약', sql: sqlCtqRepeatFtSummary() },
+      { label: 'FT 위치분석 (LAG)', sql: sqlCtqRepeatFtLocations() },
+    ],
+  }),
+  'ctq-non-consec': () => ({
+    screenId: 'ctq-non-consec',
+    title: 'CTQ 비연속 (Non-Consecutive)',
+    queries: [
+      { label: 'B급 비연속 위치', sql: sqlCtqNonConsecutive() },
+    ],
+  }),
+  'ctq-accident': () => ({
+    screenId: 'ctq-accident',
+    title: 'CTQ 사고성 (Accident)',
+    queries: [
+      { label: 'HIPOT/ATE 요약', sql: sqlCtqAccidentSummary() },
+      { label: 'BURNIN 전용 집계', sql: sqlCtqAccidentBurnin() },
+    ],
+  }),
+  'ctq-material': () => ({
+    screenId: 'ctq-material',
+    title: 'CTQ 원자재 동일부품 (Material)',
+    queries: [
+      { label: '부품별 NG 집계', sql: sqlCtqMaterial() },
+    ],
+  }),
+  'ctq-open-short': () => ({
+    screenId: 'ctq-open-short',
+    title: 'CTQ Open/Short (ICT)',
+    queries: [
+      { label: 'Open/Short 집계', sql: sqlCtqOpenShort() },
+    ],
+  }),
+  'ctq-fpy': () => ({
+    screenId: 'ctq-fpy',
+    title: 'CTQ 직행율 (FPY)',
+    queries: [
+      { label: '공정별 직행율 (전일/당일)', sql: sqlCtqFpy() },
+    ],
+  }),
+  'ctq-equipment': () => ({
+    screenId: 'ctq-equipment',
+    title: 'CTQ 설비이상 (Equipment)',
+    queries: [
+      { label: '일일 정지시간', sql: sqlCtqEquipment() },
+      { label: '주간 추이 (차트)', sql: sqlCtqEquipmentWeekly() },
+    ],
+  }),
+  'ctq-equip-hist': () => ({
+    screenId: 'ctq-equip-hist',
+    title: 'CTQ 설비점검이력 (Equipment History)',
+    queries: [
+      { label: '가동/정지 이력', sql: sqlCtqEquipmentHistory() },
+    ],
+  }),
+  'ctq-repair': () => ({
+    screenId: 'ctq-repair',
+    title: 'CTQ 수리상태 (Repair Status)',
+    queries: [
+      { label: '수리 현황', sql: sqlCtqRepairStatus() },
+    ],
+  }),
+  'ctq-indicator': () => ({
+    screenId: 'ctq-indicator',
+    title: 'CTQ 지표 (Indicator PPM)',
+    queries: [
+      { label: '월간 PPM 집계 (MERGE)', sql: sqlCtqIndicator() },
+      { label: '캐시 조회', sql: sqlCtqIndicatorCache() },
+    ],
+  }),
+  'ctq-dashboard': () => ({
+    screenId: 'ctq-dashboard',
+    title: 'CTQ 품질 대시보드 (Quality Dashboard)',
+    queries: [
+      { label: '공정별 불량', sql: sqlCtqDashboardProcess() },
+      { label: '불량코드 TOP10', sql: sqlCtqDashboardBadCode() },
+      { label: '수리완료율', sql: sqlCtqDashboardRepair() },
+      { label: 'RAW 공정별 검사량', sql: sqlCtqDashboardRawUnion() },
+      { label: 'RAW 라인x공정 NG', sql: sqlCtqDashboardRawNgMatrix() },
+      { label: 'RAW 주간 직행율', sql: sqlCtqDashboardRawWeeklyTrend() },
+    ],
+  }),
+  'ctq-analysis': () => ({
+    screenId: 'ctq-analysis',
+    title: 'CTQ 종합분석 (Analysis)',
+    queries: [
+      { label: '종합분석', sql: '-- 종합분석 화면은 다른 CTQ API(반복성/사고성/원자재 등)를 조합하여 표시합니다.\n-- 개별 SQL은 각 CTQ 화면을 참조하세요.' },
     ],
   }),
 };

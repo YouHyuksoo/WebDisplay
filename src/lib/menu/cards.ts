@@ -130,7 +130,7 @@ export function getSvgIcon(name: string, color = 'white'): string {
     // 추가된 전용 아이콘들
     repeat: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M17 17H7v-3l-4 4 4 4v-3h12v-6h-2v4zM7 7h10v3l4-4-4-4v3H5v6h2V7z"/></svg>`,
     accident: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>`,
-    material: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/></svg>`,
+    'material-ctq': `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/></svg>`,
     layers: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/></svg>`,
     wrench: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M21.71 20.29l-18-18A.996.996 0 102.3 3.7l18 18c.39.39 1.02.39 1.41 0 .38-.39.39-1.03 0-1.41zM6.91 15.68l-3.8 3.8a.996.996 0 101.41 1.41l3.8-3.8-1.41-1.41zM11.14 12.55l6.7-6.7c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-6.7 6.7c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41z"/></svg>`,
     target: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-12.5c-2.48 0-4.5 2.02-4.5 4.5s2.02 4.5 4.5 4.5 4.5-2.02 4.5-4.5-2.02-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
