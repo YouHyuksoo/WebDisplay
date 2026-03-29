@@ -312,7 +312,8 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
   });
 
   // 클릭 - MES: dispatch navigation event instead of opening URL
-  card.addEventListener('click', () => {
+  // Ctrl+클릭: 새 탭에서 열기
+  card.addEventListener('click', (e: MouseEvent) => {
     const parent = card.closest('.section-cards');
     if (!parent?.classList.contains('active')) return;
     if (card.classList.contains('opening')) return; // 중복 클릭 방지
@@ -322,6 +323,13 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
 
     // 현재 섹션 위치 즉시 저장 (GSAP 애니메이션 전 — 페이지 전환 시 유실 방지)
     try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
+
+    // Ctrl+클릭: 새 탭에서 열기
+    if (e.ctrlKey || e.metaKey) {
+      window.open(shortcut.url, '_blank');
+      card.classList.remove('opening');
+      return;
+    }
 
     // 짧은 애니메이션 후 내비게이션 이벤트 발생
     gsap.to(card, {
