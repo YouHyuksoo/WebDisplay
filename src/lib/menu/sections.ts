@@ -182,9 +182,9 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
     const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -40 : offset < 0 ? 40 : 0;
 
-    const isGridMode = state.cardLayout === 'grid';
-    const visibleRange = isGridMode ? 1 : 0;
-    const opacity = absOffset <= visibleRange ? (offset === 0 ? 1 : 0.15) : 0;
+    // 활성 섹션(offset=0)만 표시 — ±1 미리보기 제거 (display 전환 시 플래시 방지)
+    const visibleRange = 0;
+    const opacity = offset === 0 ? 1 : 0;
     const zIndex = 100 - absOffset;
 
     gsap.killTweensOf(section);
@@ -331,9 +331,8 @@ export function updateCardsDepth(): void {
     const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -30 : offset < 0 ? 30 : 0;
 
-    const isGridMode = state.cardLayout === 'grid';
-    const visibleRange = isGridMode ? 1 : 0;
-    const opacity = absOffset <= visibleRange ? (offset === 0 ? 1 : 0.1) : 0;
+    const visibleRange = 0;
+    const opacity = offset === 0 ? 1 : 0;
     const zIndex = 100 - absOffset;
 
     // 보이는 범위의 섹션만 카드 로드
