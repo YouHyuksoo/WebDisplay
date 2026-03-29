@@ -201,3 +201,22 @@ export async function executeQueryByProfile<T = Record<string, unknown>>(
     await conn.close();
   }
 }
+
+/**
+ * DML(INSERT/UPDATE/DELETE) 실행 헬퍼. autoCommit 포함.
+ * @param sql - 실행할 DML 문
+ * @param binds - 바인드 변수
+ */
+export async function executeDml(
+  sql: string,
+  binds: oracledb.BindParameters = {},
+): Promise<oracledb.Result<unknown>> {
+  const pool = await getPool();
+  const conn = await pool.getConnection();
+  try {
+    const result = await conn.execute(sql, binds, { autoCommit: true });
+    return result;
+  } finally {
+    await conn.close();
+  }
+}
