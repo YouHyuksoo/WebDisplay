@@ -262,6 +262,7 @@ function ProcessCells({
   onOpenModal: () => void;
   onOpenDetail: () => void;
 }) {
+  const t = useTranslations("ctq");
   const prevPpm = prev?.ppm ?? 0;
   const currPpm = curr?.ppm ?? 0;
   const color = getRatioColor(prevPpm, currPpm);
@@ -282,14 +283,14 @@ function ProcessCells({
               onClick={onOpenModal}
               className="ml-1 px-1.5 py-0.5 text-[10px] rounded bg-red-600 hover:bg-red-500 text-white font-medium"
             >
-              등록
+              {t('pages.indicator.register')}
             </button>
           )}
           {needsAction && hasCountermeasure && (
             <button
               onClick={onOpenDetail}
               className="ml-1 px-1.5 py-0.5 text-[10px] rounded bg-green-700 hover:bg-green-600 text-green-100 font-medium cursor-pointer"
-              title={`대책서: ${curr!.countermeasureNo!} (클릭하여 상세 조회)`}
+              title={`${t('pages.indicator.countermeasure')}: ${curr!.countermeasureNo!}`}
             >
               OK
             </button>
@@ -310,6 +311,7 @@ function CountermeasureModal({
   onSubmit: (countermeasureNo: string) => Promise<void>;
   onClose: () => void;
 }) {
+  const t = useTranslations("ctq");
   const [inputVal, setInputVal] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -333,15 +335,15 @@ function CountermeasureModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="w-full max-w-md bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-6">
-        <h3 className="text-lg font-bold text-white mb-1">대책서 등록</h3>
+        <h3 className="text-lg font-bold text-white mb-1">{t('pages.indicator.countermeasure')} {t('pages.indicator.register')}</h3>
         <p className="text-sm text-gray-400 mb-4">
           <span className="text-gray-200 font-medium">{itemCode}</span>
           <span className="mx-2 text-gray-600">|</span>
           <span className="text-cyan-400">{processLabel}</span>
           <span className="mx-2 text-gray-600">|</span>
-          <span className="text-red-400">200% 초과</span>
+          <span className="text-red-400">{t('pages.indicator.exceeded200')}</span>
         </p>
-        <label className="block text-xs text-gray-400 mb-1.5">대책서번호</label>
+        <label className="block text-xs text-gray-400 mb-1.5">{t('pages.indicator.countermeasureNo')}</label>
         <input
           autoFocus
           value={inputVal}
@@ -350,7 +352,7 @@ function CountermeasureModal({
             if (e.key === "Enter") handleSubmit();
             if (e.key === "Escape") onClose();
           }}
-          placeholder="대책서번호를 입력하세요"
+          placeholder={t('pages.indicator.enterCountermeasure')}
           disabled={submitting}
           className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-sm text-gray-200 focus:outline-none focus:border-blue-500 disabled:opacity-50"
         />
@@ -359,14 +361,14 @@ function CountermeasureModal({
             onClick={onClose}
             className="px-4 py-2 text-sm rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700"
           >
-            취소
+            {t('pages.indicator.cancel')}
           </button>
           <button
             onClick={handleSubmit}
             disabled={submitting || !inputVal.trim()}
             className="px-4 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium disabled:opacity-50"
           >
-            {submitting ? "등록 중..." : "등록"}
+            {submitting ? t('pages.indicator.registering') : t('pages.indicator.register')}
           </button>
         </div>
       </div>

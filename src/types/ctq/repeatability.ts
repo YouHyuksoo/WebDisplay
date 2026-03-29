@@ -8,23 +8,14 @@
  * - OK: 정상
  */
 
+import type { NgDetailRecord } from './monitoring';
+export type { NgDetailRecord };
+
 /** 반복성 대상 공정 */
 export type RepeatProcessType = "FT" | "ATE";
 
 /** 등급 */
 export type RepeatGrade = "A" | "B" | "OK";
-
-/** NG 상세 레코드 (툴팁용) */
-export interface NgDetailRecord {
-  time: string;
-  pid: string;
-  model: string;
-  receiptDeficit: string;
-  locationCode: string;
-  repairResult: string;
-  qcHandling: string;
-  defectItem: string;
-}
 
 /** 공정별 상태 */
 export interface RepeatProcessStatus {

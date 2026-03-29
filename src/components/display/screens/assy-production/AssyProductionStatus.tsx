@@ -13,6 +13,7 @@ import useSWR from 'swr';
 import DisplayLayout from '../../DisplayLayout';
 import AssyProductionGrid from './AssyProductionGrid';
 import useDisplayTiming from '@/hooks/useDisplayTiming';
+import { useSyncFooterStatus } from '@/components/providers/FooterProvider';
 import { fetcher } from '@/lib/fetcher';
 import { getSelectedLines, buildDisplayApiUrl, DEFAULT_ORG_ID } from '@/lib/display-helpers';
 
@@ -25,12 +26,22 @@ export default function AssyProductionStatus({
 }: AssyProductionStatusProps) {
   const timing = useDisplayTiming();
   const [selectedLines, setSelectedLines] = useState(() => getSelectedLines(screenId));
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const { data, error, isLoading } = useSWR(
     buildDisplayApiUrl(screenId, { orgId: DEFAULT_ORG_ID, lines: encodeURIComponent(selectedLines) }),
     fetcher,
-    { refreshInterval: timing.refreshSeconds * 1000 },
+    { 
+      refreshInterval: timing.refreshSeconds * 1000,
+      onSuccess: () => setLastUpdated(new Date()),
+    },
   );
+
+  // 하단바 상태 동기화
+  useSyncFooterStatus({
+    loading: isLoading,
+    lastUpdated: lastUpdated,
+  });
 
   const handleLineChange = useCallback(() => {
     setSelectedLines(getSelectedLines(screenId));

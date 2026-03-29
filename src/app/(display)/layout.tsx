@@ -7,6 +7,8 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import { TooltipProvider } from "@/components/providers/TooltipProvider";
+import { FooterProvider } from "@/components/providers/FooterProvider";
+import DisplayFooter from "@/components/display/DisplayFooter";
 import "../globals.css";
 import "./display-theme.css";
 
@@ -24,7 +26,14 @@ export default function DisplayLayout({
         <ThemeProvider>
           <LocaleProvider>
             <TooltipProvider>
-              {children}
+              <FooterProvider>
+                <div className="flex flex-col h-screen overflow-hidden">
+                  <div className="flex-1 overflow-hidden">
+                    {children}
+                  </div>
+                  <DisplayFooter />
+                </div>
+              </FooterProvider>
             </TooltipProvider>
           </LocaleProvider>
         </ThemeProvider>

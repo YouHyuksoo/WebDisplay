@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import type { NotifyRecord } from "@/types/ctq/indicator";
 
 interface Props {
@@ -42,6 +43,8 @@ function Field({ label, value, highlight }: { label: string; value: string | num
 export default function IndicatorDetailModal({
   open, month, itemCode, processCode, processLabel, countermeasureNo, onClose, onUpdate, onDelete,
 }: Props) {
+  const t = useTranslations("ctq");
+  const tc = useTranslations("common");
   const [records, setRecords] = useState<NotifyRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -78,14 +81,14 @@ export default function IndicatorDetailModal({
         <div className="px-6 py-4 border-b border-gray-700 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h2 className="text-xl font-bold text-white">불량 상세 이력</h2>
+              <h2 className="text-xl font-bold text-white">{t('table.ngDetail')}</h2>
               <span className="text-white font-bold text-lg">{itemCode}</span>
               <span className="text-gray-600">|</span>
               <span className="text-cyan-400 font-semibold text-lg">{processLabel}</span>
               <span className="text-gray-600">|</span>
               <span className="text-gray-300">{month}</span>
               <span className="text-gray-600">|</span>
-              <span className="text-sm text-gray-400">{loading ? "조회 중..." : `${total}건`}</span>
+              <span className="text-sm text-gray-400">{loading ? t('pages.indicator.searching') : t('pages.indicator.totalCount', { count: total })}</span>
             </div>
             <button onClick={onClose} className="p-1 rounded hover:bg-gray-800 text-gray-400 hover:text-white">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,20 +99,20 @@ export default function IndicatorDetailModal({
           <div className="flex items-center gap-3 mt-2">
             {!editing ? (
               <>
-                <span className="text-sm text-green-400 font-medium">대책서: {countermeasureNo}</span>
+                <span className="text-sm text-green-400 font-medium">{t('pages.indicator.countermeasure')}: {countermeasureNo}</span>
                 <button
                   onClick={() => { setEditing(true); setEditVal(countermeasureNo); }}
                   className="px-2.5 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-gray-300"
-                >수정</button>
+                >{tc('edit')}</button>
                 <button
                   onClick={async () => {
-                    if (!confirm("대책서번호를 삭제하시겠습니까?")) return;
+                    if (!confirm(t('pages.indicator.deleteConfirm'))) return;
                     setSubmitting(true);
                     try { await onDelete(); } finally { setSubmitting(false); }
                   }}
                   disabled={submitting}
                   className="px-2.5 py-1 text-xs rounded bg-red-800 hover:bg-red-700 text-red-200 disabled:opacity-50"
-                >삭제</button>
+                >{tc('delete')}</button>
               </>
             ) : (
               <>
@@ -135,8 +138,8 @@ export default function IndicatorDetailModal({
                   }}
                   disabled={submitting || !editVal.trim()}
                   className="px-3 py-1 text-xs rounded bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50"
-                >저장</button>
-                <button onClick={() => setEditing(false)} className="px-3 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-gray-300">취소</button>
+                >{tc('save')}</button>
+                <button onClick={() => setEditing(false)} className="px-3 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-gray-300">{t('pages.indicator.cancel')}</button>
               </>
             )}
           </div>
@@ -145,11 +148,11 @@ export default function IndicatorDetailModal({
         {/* 본문 -- 카드 리스트 */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {loading ? (
-            <div className="flex items-center justify-center h-32 text-gray-500">데이터 조회 중...</div>
+            <div className="flex items-center justify-center h-32 text-gray-500">{t('pages.indicator.searching')}</div>
           ) : error ? (
-            <div className="flex items-center justify-center h-32 text-red-400 text-sm">조회 실패: {error}</div>
+            <div className="flex items-center justify-center h-32 text-red-400 text-sm">{t('common.dataError')}: {error}</div>
           ) : records.length === 0 ? (
-            <div className="flex items-center justify-center h-32 text-gray-500 text-sm">해당 기간 데이터가 없습니다</div>
+            <div className="flex items-center justify-center h-32 text-gray-500 text-sm">{t('pages.indicator.noData')}</div>
           ) : (
             records.map((r, i) => (
               <div key={i} className="border border-gray-700 rounded-lg bg-gray-800/50 p-4">
@@ -159,7 +162,7 @@ export default function IndicatorDetailModal({
                   <span className={`ml-auto text-xs px-2 py-0.5 rounded font-medium ${
                     r.completeYn === "Y" ? "bg-green-800 text-green-200" : "bg-orange-800 text-orange-200"
                   }`}>
-                    {r.completeYn === "Y" ? "완료" : "진행중"}
+                    {r.completeYn === "Y" ? t('pages.indicator.complete') : t('pages.indicator.inProgress')}
                   </span>
                 </div>
                 {/* 3단 레이아웃 */}
@@ -167,29 +170,29 @@ export default function IndicatorDetailModal({
                   {/* 좌측 -- 기본 정보 */}
                   <div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                      <Field label="발생일자" value={r.actionDate} />
-                      <Field label="시작시간" value={r.startTime} />
-                      <Field label="라인" value={r.lineName} />
-                      <Field label="종료시간" value={r.endTime} />
-                      <Field label="공정" value={r.workstageName} highlight />
-                      <Field label="품목코드" value={r.itemCode} />
-                      <Field label="설비" value={r.machineCode} />
-                      <Field label="런번호" value={r.runNo} />
-                      <Field label="모델명" value={r.modelName} />
-                      <Field label="검출위치" value={r.detectLocation} />
+                      <Field label={t('pages.indicator.occurDate')} value={r.actionDate} />
+                      <Field label={t('pages.indicator.startTime')} value={r.startTime} />
+                      <Field label={t('pages.indicator.lineName')} value={r.lineName} />
+                      <Field label={t('pages.indicator.endTime')} value={r.endTime} />
+                      <Field label={t('pages.indicator.processName')} value={r.workstageName} highlight />
+                      <Field label={t('pages.indicator.itemCode')} value={r.itemCode} />
+                      <Field label={t('pages.indicator.machineCode')} value={r.machineCode} />
+                      <Field label={t('pages.indicator.runNo')} value={r.runNo} />
+                      <Field label={t('pages.indicator.modelName')} value={r.modelName} />
+                      <Field label={t('pages.indicator.detectLocation')} value={r.detectLocation} />
                     </div>
-                    <div className="mt-1.5"><Field label="위치정보" value={r.locationInfo} /></div>
-                    <div className="mt-1.5"><Field label="PID번호" value={r.serialNo} highlight /></div>
+                    <div className="mt-1.5"><Field label={t('pages.indicator.locationCode')} value={r.locationInfo} /></div>
+                    <div className="mt-1.5"><Field label={t('pages.indicator.serialNo')} value={r.serialNo} highlight /></div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-2">
-                      <Field label="등급" value={r.grade} />
-                      <Field label="불량원인" value={r.badReasonName} />
-                      <Field label="불량수량" value={r.inspectBadQty} />
-                      <Field label="불량내용" value={r.badDescription} />
-                      <Field label="검사수량" value={r.inspectQty} />
-                      <Field label="원자재메이커" value={r.materialMaker} />
+                      <Field label={t('pages.indicator.grade')} value={r.grade} />
+                      <Field label={t('pages.indicator.badReason')} value={r.badReasonName} />
+                      <Field label={t('pages.indicator.badQty')} value={r.inspectBadQty} />
+                      <Field label={t('pages.indicator.badDesc')} value={r.badDescription} />
+                      <Field label={t('pages.indicator.inspQty')} value={r.inspectQty} />
+                      <Field label={t('pages.indicator.materialMaker')} value={r.materialMaker} />
                     </div>
                     <div className="mt-3">
-                      <span className="text-gray-500 text-xs">이상발생내역</span>
+                      <span className="text-gray-500 text-xs">{t('pages.indicator.anomalyDetail')}</span>
                       <div className="mt-1 p-2 rounded bg-gray-900 border border-gray-700 min-h-[50px] text-sm text-gray-200 whitespace-pre-wrap">
                         {r.lineStatusNotify === "-" ? "" : r.lineStatusNotify}
                       </div>
@@ -197,23 +200,23 @@ export default function IndicatorDetailModal({
                   </div>
                   {/* 중간 -- 상태 */}
                   <div className="space-y-1.5">
-                    <Field label="통보상태" value={r.notifyStatusName} />
-                    <Field label="처리완료" value={r.completeYn === "Y" ? "완료" : "미완료"} />
-                    <Field label="완료일자" value={r.completeDate} />
-                    <Field label="검사담당" value={r.inspectCharger} />
-                    <Field label="품질관리자" value={r.inspectManager} />
-                    <Field label="책임부서" value={r.departmentName} />
+                    <Field label={t('pages.indicator.notifyStatus')} value={r.notifyStatusName} />
+                    <Field label={t('pages.indicator.processComplete')} value={r.completeYn === "Y" ? t('pages.indicator.complete') : t('pages.indicator.incomplete')} />
+                    <Field label={t('pages.indicator.completeDate')} value={r.completeDate} />
+                    <Field label={t('pages.indicator.inspCharger')} value={r.inspectCharger} />
+                    <Field label={t('pages.indicator.qualityManager')} value={r.inspectManager} />
+                    <Field label={t('pages.indicator.department')} value={r.departmentName} />
                   </div>
                   {/* 우측 -- 조치내역 + 품질의견 */}
                   <div className="space-y-3">
                     <div>
-                      <span className="text-gray-500 text-xs">조치내역</span>
+                      <span className="text-gray-500 text-xs">{t('pages.indicator.actionDetail')}</span>
                       <div className="mt-1 p-2 rounded bg-gray-900 border border-gray-700 min-h-[60px] text-sm text-gray-200 whitespace-pre-wrap">
                         {r.comments === "-" ? "" : r.comments}
                       </div>
                     </div>
                     <div>
-                      <span className="text-gray-500 text-xs">품질의견</span>
+                      <span className="text-gray-500 text-xs">{t('pages.indicator.qcComments')}</span>
                       <div className="mt-1 p-2 rounded bg-gray-900 border border-gray-700 min-h-[60px] text-sm text-gray-200 whitespace-pre-wrap">
                         {r.qcComments === "-" ? "" : r.qcComments}
                       </div>
@@ -228,7 +231,7 @@ export default function IndicatorDetailModal({
 
         {/* 푸터 */}
         <div className="flex items-center justify-end px-6 py-3 border-t border-gray-700 shrink-0">
-          <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700">닫기</button>
+          <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700">{tc('close')}</button>
         </div>
       </div>
     </div>,
@@ -243,12 +246,13 @@ function buildImageUrl(r: NotifyRecord, type: string): string {
 
 /** 첨부 이미지 섹션 */
 function ImageSection({ record: r }: { record: NotifyRecord }) {
+  const t = useTranslations("ctq");
   const [viewImg, setViewImg] = useState<string | null>(null);
 
   const images = [
-    { type: "inspect", label: "검사 이미지", fileName: r.inspectImageFileName },
-    { type: "document", label: "문서 이미지", fileName: r.documentImageFileName },
-    { type: "ng", label: "불량 이미지", fileName: r.ngImageFileName },
+    { type: "inspect", label: t('pages.indicator.inspImage'), fileName: r.inspectImageFileName },
+    { type: "document", label: t('pages.indicator.docImage'), fileName: r.documentImageFileName },
+    { type: "ng", label: t('pages.indicator.ngImage'), fileName: r.ngImageFileName },
   ].filter((img) => img.fileName !== "-" && img.fileName !== "*" && img.fileName !== "");
 
   if (images.length === 0) return null;
@@ -256,7 +260,7 @@ function ImageSection({ record: r }: { record: NotifyRecord }) {
   return (
     <>
       <div className="mt-3 pt-3 border-t border-gray-700">
-        <span className="text-gray-500 text-xs">첨부 이미지</span>
+        <span className="text-gray-500 text-xs">{t('pages.indicator.attachedImages')}</span>
         <div className="flex gap-3 mt-2">
           {images.map((img) => {
             const url = buildImageUrl(r, img.type);
@@ -295,7 +299,7 @@ function ImageSection({ record: r }: { record: NotifyRecord }) {
           className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 cursor-pointer"
           onClick={() => setViewImg(null)}
         >
-          <img src={viewImg} alt="확대" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+          <img src={viewImg} alt="zoom" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" />
         </div>,
         document.body
       )}

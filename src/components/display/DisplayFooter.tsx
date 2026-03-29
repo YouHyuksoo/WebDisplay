@@ -6,15 +6,22 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useFooter } from "@/components/providers/FooterProvider";
 
 interface Props {
   loading?: boolean;
   lastUpdated?: string | number | Date | null;
-  statusText?: string;
+  statusText?: string | null;
 }
 
-export default function DisplayFooter({ loading, lastUpdated, statusText }: Props) {
-  const t = useTranslations("ctq"); // CTQ 네임스페이스 사용 (공통 항목 포함됨)
+export default function DisplayFooter(props: Props) {
+  const t = useTranslations("ctq");
+  const globalState = useFooter();
+
+  // Props가 있으면 우선 사용, 없으면 전역 상태 사용
+  const loading = props.loading !== undefined ? props.loading : globalState.loading;
+  const lastUpdated = props.lastUpdated !== undefined ? props.lastUpdated : globalState.lastUpdated;
+  const statusText = props.statusText !== undefined ? props.statusText : globalState.statusText;
 
   const formattedTime = lastUpdated 
     ? new Date(lastUpdated).toLocaleTimeString() 
@@ -23,7 +30,6 @@ export default function DisplayFooter({ loading, lastUpdated, statusText }: Prop
   return (
     <footer className="shrink-0 bg-gray-900 border-t border-gray-700 px-6 py-1.5 z-30">
       <div className="flex items-center justify-between max-w-[1920px] mx-auto">
-        {/* 왼쪽: 상태 표시등 및 텍스트 */}
         <div className="flex items-center gap-3 text-xs text-gray-400">
           <span className={`w-2.5 h-2.5 rounded-full transition-colors duration-500 ${
             loading ? "bg-yellow-500 animate-pulse" : "bg-green-500"
@@ -33,7 +39,6 @@ export default function DisplayFooter({ loading, lastUpdated, statusText }: Prop
           </span>
         </div>
 
-        {/* 오른쪽: 마지막 갱신 시간 */}
         <div className="flex items-center gap-4 text-xs text-gray-500 font-mono">
           {formattedTime && (
             <div className="flex items-center gap-1.5">

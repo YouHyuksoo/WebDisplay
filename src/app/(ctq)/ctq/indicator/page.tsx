@@ -89,14 +89,14 @@ export default function IndicatorPage() {
             {/* 대책서 등록/미등록 건수 */}
             {data && (countermeasureCounts.registered > 0 || countermeasureCounts.unregistered > 0) && (
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-gray-400">대책서</span>
+                <span className="text-gray-400">{t('pages.indicator.countermeasure')}</span>
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-green-900/50 border border-green-700/50">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  <span className="text-green-300 font-medium">등록 {countermeasureCounts.registered}</span>
+                  <span className="text-green-300 font-medium">{t('pages.indicator.registered', { count: countermeasureCounts.registered })}</span>
                 </span>
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-900/50 border border-red-700/50">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                  <span className="text-red-300 font-medium">미등록 {countermeasureCounts.unregistered}</span>
+                  <span className="text-red-300 font-medium">{t('pages.indicator.unregistered', { count: countermeasureCounts.unregistered })}</span>
                 </span>
               </div>
             )}
@@ -106,7 +106,7 @@ export default function IndicatorPage() {
               disabled={loading}
               className="px-3 py-1.5 rounded bg-orange-600 hover:bg-orange-500 text-sm text-white font-medium transition-colors disabled:opacity-50"
             >
-              {loading ? t("common.dataLoading") : "재생성"}
+              {loading ? t("common.dataLoading") : t("pages.indicator.regenerate")}
             </button>
             {/* 새로고침 버튼 */}
             <button
@@ -135,7 +135,7 @@ export default function IndicatorPage() {
                     ? "bg-blue-600 text-white"
                     : "bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white"
                 }`}
-                title="모수 설정"
+                title={t("pages.indicator.minVolumeSettings")}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -160,10 +160,10 @@ export default function IndicatorPage() {
               {showSettings && (
                 <div className="absolute right-0 top-full mt-2 w-64 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 p-4">
                   <div className="text-sm font-medium text-gray-200 mb-3">
-                    모수 필터 설정
+                    {t("pages.indicator.minVolumeFilter")}
                   </div>
                   <label className="block text-xs text-gray-400 mb-1">
-                    최소 검사 수량 (기본: 200)
+                    {t("pages.indicator.minVolumeLabel")}
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -192,11 +192,11 @@ export default function IndicatorPage() {
                       }}
                       className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-sm text-white font-medium"
                     >
-                      적용
+                      {t("pages.indicator.apply")}
                     </button>
                   </div>
                   <p className="mt-2 text-xs text-gray-500">
-                    검사 수량이 이 값 미만인 모델은 목록에서 제외됩니다
+                    {t("pages.indicator.minVolumeDesc")}
                   </p>
                 </div>
               )}

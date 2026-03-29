@@ -8,19 +8,10 @@
  * - A급: 일 3건+, C급: 90일 누적 3건+
  */
 
-export type MaterialGrade = "A" | "C" | "OK";
+import type { NgDetailRecord } from './monitoring';
+export type { NgDetailRecord };
 
-/** NG 상세 레코드 (툴팁용) */
-export interface NgDetailRecord {
-  time: string;
-  pid: string;
-  model: string;
-  receiptDeficit: string;
-  locationCode: string;
-  repairResult: string;
-  qcHandling: string;
-  defectItem: string;
-}
+export type MaterialGrade = "A" | "C" | "OK";
 
 export interface MaterialDefectItem {
   defectItem: string;

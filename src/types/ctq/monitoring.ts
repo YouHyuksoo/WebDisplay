@@ -1,6 +1,6 @@
 /**
  * @file src/types/ctq/monitoring.ts
- * @description CQT 모니터링 페이지 타입 정의
+ * @description CTQ 모니터링 공통 타입 정의 — 전체 CTQ 페이지에서 공유
  */
 
 /** 공정 종류 */
@@ -10,7 +10,19 @@ export type ProcessType = "ICT" | "HIPOT" | "FT1" | "BURNIN" | "ATE";
 export type AlertGrade = "A" | "B" | "C" | "OK";
 
 /** 대항목 */
-export type CategoryType = "반복성" | "사고성" | "사고성+반복성";
+export type CategoryType = "repeatability" | "accident" | "combined";
+
+/** NG 상세 레코드 (툴팁/모달 공용) */
+export interface NgDetailRecord {
+  time: string;
+  pid: string;
+  model: string;
+  receiptDeficit: string;
+  locationCode: string;
+  repairResult: string;
+  qcHandling: string;
+  defectItem: string;
+}
 
 /** 공정별 상태 */
 export interface ProcessStatus {
