@@ -12,6 +12,7 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { useEquipmentHistory } from "@/hooks/ctq/useEquipmentHistory";
+import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import EquipmentHistoryTable from "@/components/ctq/EquipmentHistoryTable";
 
 const SCREEN_ID = "ctq-equip-hist";
@@ -49,6 +50,7 @@ export default function EquipmentHistoryPage() {
       <header className="shrink-0 bg-gray-800 border-b border-gray-700 px-6 py-3">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
+            <CriteriaTooltip pageKey="equipmentHistory" />
             <span>IP_LINE_DAILY_OPERATION_HIST</span>
           </div>
           <div className="flex items-center gap-2">

@@ -12,6 +12,7 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import { useAutoRolling } from "@/hooks/ctq/useAutoRolling";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
+import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import OpenShortLineCard from "@/components/ctq/OpenShortLineCard";
 import type { OpenShortResponse } from "@/types/ctq/open-short";
 
@@ -68,6 +69,7 @@ export default function OpenShortPage() {
       <div className="bg-gray-900 border-b border-gray-700 px-6 py-2 shrink-0">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
+            <CriteriaTooltip pageKey="openShort" />
             <span>{t("table.process")}: ICT</span>
             <span>
               <span className="text-orange-400 font-bold">{t("grade.b")}</span>: {t("table.sameComponent")} + {t("table.sameBadCode")} {t("table.dailyNg")} 2+

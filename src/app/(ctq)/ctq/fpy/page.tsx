@@ -18,6 +18,7 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import { useAutoRolling } from "@/hooks/ctq/useAutoRolling";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
+import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import FpyLineCard from "@/components/ctq/FpyLineCard";
 import type { FpyResponse } from "@/types/ctq/fpy";
 
@@ -79,6 +80,7 @@ export default function FpyPage() {
       <div className="bg-gray-900 border-b border-gray-700 px-6 py-2">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
+            <CriteriaTooltip pageKey="fpy" />
             <span>{t("table.process")}: ICT, Hi-Pot, FT, Burn-In, ATE</span>
             <span>
               <span className="text-red-400 font-bold">{t("grade.a")}</span>: {t("pages.fpy.gradeDesc")}

@@ -18,6 +18,7 @@ import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { usePersistedState } from "@/hooks/ctq/usePersistedState";
 import { useQualityDashboard } from "@/hooks/ctq/useQualityDashboard";
+import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import DashboardSidebar from "@/components/ctq/DashboardSidebar";
 import DashboardCharts from "@/components/ctq/DashboardCharts";
 import DisplayFooter from "@/components/display/DisplayFooter";
@@ -56,6 +57,13 @@ export default function QualityDashboardPage() {
     <div className="h-screen flex flex-col bg-gray-950 text-white overflow-hidden">
       {/* -- WebDisplay 공통 헤더 -- */}
       <DisplayHeader title={t("pages.qualityDashboard.title")} screenId={SCREEN_ID} />
+
+      {/* -- 요약 바 -- */}
+      <div className="shrink-0 bg-gray-900 border-b border-gray-700 px-6 py-2">
+        <div className="flex items-center max-w-[1920px] mx-auto">
+          <CriteriaTooltip pageKey="qualityDashboard" />
+        </div>
+      </div>
 
       <div className="flex flex-1 min-h-0 relative">
         {/* 접혔을 때 나타나는 펴기 버튼 */}

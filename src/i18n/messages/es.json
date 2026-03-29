@@ -528,6 +528,22 @@
       "qualityDashboard": "Dashboard",
       "analysis": "Análisis"
     },
+    "navTooltip": {
+      "criteria": "Criterios de clasificación",
+      "statusGuide": "Guía de estados",
+      "repeatability": "Proceso: FT#1, ATE\nCondición: Misma ubicación NG consecutivo 2+\nGrado: A (Line Stop)\nPeríodo: Hoy 08:00 ~ Día siguiente 08:00",
+      "nonConsecutive": "Proceso: FT#1, ATE\nCondición: Misma ubicación 2+ (no consecutivo)\nGrado: B (Retención), excluye A\nPeríodo: Hoy 08:00 ~ Día siguiente 08:00",
+      "accident": "Proceso: HIPOT, BURN-IN, ATE\nHIPOT: NG 1+ → Grado A\nBURNIN/ATE: 2+ → A, 1 → B\nPeríodo: Hoy 08:00 ~ Día siguiente 08:00",
+      "material": "Objetivo: Mismo DEFECT_ITEM_CODE\nGrado A: Mismo componente diario 3+ NG\nGrado C: Acumulado 90 días 3+\nPeríodo: A=diario, C=90 días",
+      "openShort": "Proceso: ICT\nObjetivo: OPEN(B2020) / SHORT(B2030)\nGrado: Mismo código defecto diario 2+ → B\nPeríodo: Hoy 08:00~",
+      "fpy": "Objetivo: Todos los procesos\nCriterio: FPY inferior a 90% → Grado A (Line Stop)\nPeríodo: Hoy 10:00~",
+      "equipment": "Objetivo: Tiempo de parada por línea/proceso\nCriterio: Parada diaria 60min+ → Grado C\nPeríodo: Hoy",
+      "repairStatus": "Tabla: IP_PRODUCT_WORK_QC\nContenido: Estado de reparación PID defectuoso\nPeríodo: Hoy 08:00 ~ Día siguiente 08:00",
+      "equipmentHistory": "Contenido: Historial diario de operación/parada\nPeríodo: Hoy",
+      "indicator": "Objetivo: 5 procesos (ICT, Hi-Pot, FT, Burn-In, ATE)\nCriterio: 200%+ vs período anterior → Rojo\nCiclo: Semanal/Mensual seleccionable",
+      "qualityDashboard": "Tabla: IP_PRODUCT_WORK_QC\nContenido: Gráficos proceso/defecto/línea/modelo\nPeríodo: Hoy 08:00 ~ Día siguiente 08:00",
+      "analysis": "Contenido: Análisis integral de los 8 monitores"
+    },
     "table": {
       "process": "Proceso",
       "status": "Estado",

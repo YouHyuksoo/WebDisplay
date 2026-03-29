@@ -528,6 +528,22 @@
       "qualityDashboard": "품질분석",
       "analysis": "종합분석"
     },
+    "navTooltip": {
+      "criteria": "판정 기준",
+      "statusGuide": "상태 표시 안내",
+      "repeatability": "공정: FT#1, ATE\n조건: 동일 Location 연속 NG 2건+\n판정: A급 (Line Stop)\n기간: 당일 08:00 ~ 익일 08:00",
+      "nonConsecutive": "공정: FT#1, ATE\n조건: 동일 Location 2건+ (비연속)\n판정: B급 (출하중지), A급 제외\n기간: 당일 08:00 ~ 익일 08:00",
+      "accident": "공정: HIPOT, BURN-IN, ATE\nHIPOT: NG 1건+ → A급\nBURNIN/ATE: 2건+ → A급, 1건 → B급\n기간: 당일 08:00 ~ 익일 08:00",
+      "material": "대상: 동일 DEFECT_ITEM_CODE\nA급: 동일 부품 일 3건+ NG\nC급: 동일 부품 90일 누적 3건+\n기간: A급=당일, C급=90일",
+      "openShort": "공정: ICT\n대상: OPEN(B2020) / SHORT(B2030)\n판정: 동일 불량코드 일 2건+ → B급\n기간: 당일 08:00~",
+      "fpy": "대상: 모든 공정\n기준: 직행율 90% 미만 → A급 (Line Stop)\n기간: 당일 10:00~",
+      "equipment": "대상: 라인별 공정별 설비 정지시간\n기준: 일 정지시간 60분 이상 → C급\n기간: 당일",
+      "repairStatus": "테이블: IP_PRODUCT_WORK_QC\n내용: 당일 불량 감지 PID 수리 현황\n기간: 당일 08:00 ~ 익일 08:00",
+      "equipmentHistory": "내용: 당일 설비 가동/정지 개별 이력\n기간: 당일",
+      "indicator": "대상: 5개 공정 (ICT, Hi-Pot, FT, Burn-In, ATE)\n기준: 전기 대비 200% 이상 → 빨강 표시\n주기: 주간/월간 선택 가능",
+      "qualityDashboard": "테이블: IP_PRODUCT_WORK_QC\n내용: 공정별/불량코드/라인별/모델별 차트\n기간: 당일 08:00 ~ 익일 08:00",
+      "analysis": "내용: 8개 모니터링 종합 분석 보고"
+    },
     "table": {
       "process": "공정",
       "status": "상태",

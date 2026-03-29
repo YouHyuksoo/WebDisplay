@@ -18,6 +18,7 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { useRepairStatus } from "@/hooks/ctq/useRepairStatus";
+import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import RepairStatusTable from "@/components/ctq/RepairStatusTable";
 
 const SCREEN_ID = "ctq-repair";
@@ -51,6 +52,7 @@ export default function RepairStatusPage() {
       <div className="shrink-0 bg-gray-900 border-b border-gray-700 px-6 py-2">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
+            <CriteriaTooltip pageKey="repairStatus" />
             <span>{t("pages.repairStatus.tableSource")}</span>
             <span>{t("pages.repairStatus.periodDesc")}</span>
           </div>

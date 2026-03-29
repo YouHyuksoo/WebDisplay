@@ -11,6 +11,7 @@ import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useIndicator } from "@/hooks/ctq/useIndicator";
+import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import IndicatorTable from "@/components/ctq/IndicatorTable";
 import type { IndicatorProcessKey, MonthlyProcessData } from "@/types/ctq/indicator";
 
@@ -74,6 +75,7 @@ export default function IndicatorPage() {
       <header className="shrink-0 bg-gray-800 border-b border-gray-700 px-6 py-3">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4">
+            <CriteriaTooltip pageKey="indicator" />
             {data && data.models.length > 0 && (
               <div className="flex items-center gap-4 text-xs text-gray-400">
                 <span>

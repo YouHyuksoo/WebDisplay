@@ -20,6 +20,7 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import { useAutoRolling } from "@/hooks/ctq/useAutoRolling";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
+import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import AccidentLineCard from "@/components/ctq/AccidentLineCard";
 import type { AccidentResponse } from "@/types/ctq/accident";
 
@@ -83,6 +84,7 @@ export default function AccidentPage() {
       <div className="bg-gray-900 border-b border-gray-700 px-6 py-2">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
+            <CriteriaTooltip pageKey="accident" />
             <span>{t("table.process")}: HIPOT, BURN-IN, ATE</span>
             <span>
               <span className="text-red-400 font-bold">{t("grade.a")}</span>: HIPOT 1+, BURN-IN/ATE 2+

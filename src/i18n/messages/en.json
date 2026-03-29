@@ -528,6 +528,22 @@
       "qualityDashboard": "Dashboard",
       "analysis": "Analysis"
     },
+    "navTooltip": {
+      "criteria": "Grading Criteria",
+      "statusGuide": "Status Guide",
+      "repeatability": "Process: FT#1, ATE\nCondition: Same Location consecutive NG 2+\nGrade: A (Line Stop)\nPeriod: Today 08:00 ~ Next day 08:00",
+      "nonConsecutive": "Process: FT#1, ATE\nCondition: Same Location 2+ (non-consecutive)\nGrade: B (Ship Hold), excludes A\nPeriod: Today 08:00 ~ Next day 08:00",
+      "accident": "Process: HIPOT, BURN-IN, ATE\nHIPOT: NG 1+ → Grade A\nBURNIN/ATE: 2+ → A, 1 → B\nPeriod: Today 08:00 ~ Next day 08:00",
+      "material": "Target: Same DEFECT_ITEM_CODE\nGrade A: Same part daily 3+ NG\nGrade C: 90-day cumulative 3+\nPeriod: A=daily, C=90-day",
+      "openShort": "Process: ICT\nTarget: OPEN(B2020) / SHORT(B2030)\nGrade: Same defect code daily 2+ → B\nPeriod: Today 08:00~",
+      "fpy": "Target: All processes\nCriteria: FPY below 90% → Grade A (Line Stop)\nPeriod: Today 10:00~",
+      "equipment": "Target: Equipment stop time per line/process\nCriteria: Daily stop 60min+ → Grade C\nPeriod: Today",
+      "repairStatus": "Table: IP_PRODUCT_WORK_QC\nContent: Daily defect PID repair status\nPeriod: Today 08:00 ~ Next day 08:00",
+      "equipmentHistory": "Content: Daily equipment operation/stop history\nPeriod: Today",
+      "indicator": "Target: 5 processes (ICT, Hi-Pot, FT, Burn-In, ATE)\nCriteria: 200%+ vs previous period → Red\nCycle: Weekly/Monthly selectable",
+      "qualityDashboard": "Table: IP_PRODUCT_WORK_QC\nContent: Process/defect/line/model charts\nPeriod: Today 08:00 ~ Next day 08:00",
+      "analysis": "Content: Comprehensive analysis of all 8 monitors"
+    },
     "table": {
       "process": "Process",
       "status": "Status",

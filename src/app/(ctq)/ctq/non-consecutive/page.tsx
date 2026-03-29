@@ -18,6 +18,7 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import { useAutoRolling } from "@/hooks/ctq/useAutoRolling";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
+import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import RepeatLineCard from "@/components/ctq/RepeatLineCard";
 import type { RepeatabilityResponse } from "@/types/ctq/non-consecutive";
 
@@ -80,6 +81,7 @@ export default function NonConsecutivePage() {
       <div className="bg-gray-900 border-b border-gray-700 px-6 py-2">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
+            <CriteriaTooltip pageKey="nonConsecutive" />
             <span>{t("table.process")}: FT#1, ATE</span>
             <span>
               <span className="text-orange-400 font-bold">{t("grade.b")}</span>: {t("table.sameLocationNg")}

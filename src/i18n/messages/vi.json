@@ -528,6 +528,22 @@
       "qualityDashboard": "Bảng CL",
       "analysis": "Phân tích"
     },
+    "navTooltip": {
+      "criteria": "Tiêu chí phân loại",
+      "statusGuide": "Hướng dẫn trạng thái",
+      "repeatability": "Công đoạn: FT#1, ATE\nĐiều kiện: Cùng vị trí NG liên tiếp 2+\nCấp: A (Dừng Line)\nThời gian: Hôm nay 08:00 ~ Ngày mai 08:00",
+      "nonConsecutive": "Công đoạn: FT#1, ATE\nĐiều kiện: Cùng vị trí 2+ (không liên tiếp)\nCấp: B (Tạm dừng XK), loại trừ A\nThời gian: Hôm nay 08:00 ~ Ngày mai 08:00",
+      "accident": "Công đoạn: HIPOT, BURN-IN, ATE\nHIPOT: NG 1+ → Cấp A\nBURNIN/ATE: 2+ → A, 1 → B\nThời gian: Hôm nay 08:00 ~ Ngày mai 08:00",
+      "material": "Đối tượng: Cùng DEFECT_ITEM_CODE\nCấp A: Cùng linh kiện ngày 3+ NG\nCấp C: Tích lũy 90 ngày 3+\nThời gian: A=ngày, C=90 ngày",
+      "openShort": "Công đoạn: ICT\nĐối tượng: OPEN(B2020) / SHORT(B2030)\nCấp: Cùng mã lỗi ngày 2+ → B\nThời gian: Hôm nay 08:00~",
+      "fpy": "Đối tượng: Tất cả công đoạn\nTiêu chí: Tỷ lệ đạt dưới 90% → Cấp A (Dừng Line)\nThời gian: Hôm nay 10:00~",
+      "equipment": "Đối tượng: Thời gian dừng TB theo line/công đoạn\nTiêu chí: Dừng ngày 60 phút+ → Cấp C\nThời gian: Hôm nay",
+      "repairStatus": "Bảng: IP_PRODUCT_WORK_QC\nNội dung: Trạng thái sửa chữa PID lỗi trong ngày\nThời gian: Hôm nay 08:00 ~ Ngày mai 08:00",
+      "equipmentHistory": "Nội dung: Lịch sử vận hành/dừng TB trong ngày\nThời gian: Hôm nay",
+      "indicator": "Đối tượng: 5 công đoạn (ICT, Hi-Pot, FT, Burn-In, ATE)\nTiêu chí: 200%+ so với kỳ trước → Đỏ\nChu kỳ: Tuần/Tháng tùy chọn",
+      "qualityDashboard": "Bảng: IP_PRODUCT_WORK_QC\nNội dung: Biểu đồ CĐ/lỗi/line/model\nThời gian: Hôm nay 08:00 ~ Ngày mai 08:00",
+      "analysis": "Nội dung: Phân tích tổng hợp 8 màn hình giám sát"
+    },
     "table": {
       "process": "Công đoạn",
       "status": "Trạng thái",

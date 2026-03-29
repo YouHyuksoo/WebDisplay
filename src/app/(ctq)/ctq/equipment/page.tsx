@@ -18,6 +18,7 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { useEquipment } from "@/hooks/ctq/useEquipment";
+import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import EquipmentTable from "@/components/ctq/EquipmentTable";
 import EquipmentWeeklyChart from "@/components/ctq/EquipmentWeeklyChart";
 import EquipmentPieChart from "@/components/ctq/EquipmentPieChart";
@@ -57,6 +58,7 @@ export default function EquipmentPage() {
       <div className="bg-gray-900 border-b border-gray-700 px-6 py-2">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
+            <CriteriaTooltip pageKey="equipment" />
             <span>{t("table.process")}: ICT, Hi-Pot, FT, Burn-In, ATE</span>
             <span>
               <span className="text-purple-400 font-bold">{t("grade.c")}</span>: {t("pages.equipment.gradeDesc")}
