@@ -18,6 +18,7 @@
 import koMessages from '@/i18n/messages/ko.json';
 import enMessages from '@/i18n/messages/en.json';
 import esMessages from '@/i18n/messages/es.json';
+import viMessages from '@/i18n/messages/vi.json';
 import { KEYS } from './storage';
 import { SCREENS } from '@/lib/screens';
 
@@ -25,6 +26,7 @@ const allMessages: Record<string, Record<string, unknown>> = {
   ko: koMessages,
   en: enMessages,
   es: esMessages,
+  vi: viMessages,
 };
 
 /**
