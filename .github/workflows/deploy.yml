@@ -60,7 +60,7 @@ jobs:
 
           robocopy $src $dst /MIR /NFL /NDL /NJH /NJS /NC /NS `
             /XF ".env" ".env.local" ".env.production" `
-            /XD ".git" "logs"
+            /XD ".git" "logs" "config"
 
           if ($LASTEXITCODE -le 7) { exit 0 } else { exit $LASTEXITCODE }
 
