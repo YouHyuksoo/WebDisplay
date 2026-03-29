@@ -177,30 +177,35 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
     if (offset < -sectionCount / 2) offset += sectionCount;
 
     const absOffset = Math.abs(offset);
-    const zPos = -offset * DEPTH_SPACING;
-    const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
+
+    // 떠나는 섹션(offset = -direction): 확대되며 카메라 쪽으로 날아와 사라짐
+    // 다가오는 섹션(offset = 0): 뒤에서 다가옴
+    // 대기 섹션(offset > 0): 뒤에서 작게 대기
+    const isDeparting = (offset === -direction) && absOffset === 1;
+    const zPos = isDeparting
+      ? direction * DEPTH_SPACING * 0.5    // 카메라 방향으로 이동
+      : -offset * DEPTH_SPACING;
+    const scale = isDeparting
+      ? 1.4                                // 확대되며 사라짐
+      : offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -40 : offset < 0 ? 40 : 0;
 
-    // 썸네일/캐러셀 모드: 활성 섹션만 표시 (뒤쪽 섹션 깜빡임 방지)
+    // 썸네일/캐러셀 모드: 활성 섹션만 표시
     // 그리드 모드: ±1까지 표시 (3D 깊이 프리뷰)
-    // [수정] 이동 중에는 현재 섹션과 목표 섹션 사이의 모든 카드가 보여야 부드러움
     const isGridMode = state.cardLayout === 'grid';
     const visibleRange = isGridMode ? 1 : 0;
-    
-    // 이동 중(state.isTransitioning)에는 더 넓은 범위를 보여줌
-    const currentAbsOffset = Math.abs(i - state.currentSection);
-    const isVisible = absOffset <= visibleRange || currentAbsOffset <= visibleRange || state.isTransitioning;
-    
-    const opacity = absOffset === 0 ? 1 : (isVisible ? 0.1 : 0);
-    const zIndex = 100 - absOffset;
+    const opacity = isDeparting
+      ? 0                                  // 날아가며 페이드아웃
+      : absOffset <= visibleRange ? (offset === 0 ? 1 : 0.15) : 0;
+    const zIndex = isDeparting ? 200 : 100 - absOffset;  // 떠나는 섹션이 맨 앞
 
     // [최적화] 기존 트윈 정리 — 빠른 휠 시 트윈 충돌 방지
     gsap.killTweensOf(section);
 
-    // 보이지 않는 섹션은 즉시 숨김 (이동 중이 아닐 때만)
-    if (!isVisible) {
+    // 보이지 않는 섹션은 즉시 숨김 (떠나는 섹션 제외)
+    if (absOffset > visibleRange && !isDeparting) {
       gsap.set(section, {
-        z: zPos, scale, opacity: 0, y: yOffset, zIndex,
+        z: zPos, scale: scale, opacity: 0, y: yOffset, zIndex,
         display: 'none',
       });
       return;
@@ -223,6 +228,10 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
     // [라이트 모드] 즉시 전환 vs [일반] 부드러운 애니메이션
     const sectionProps = { z: zPos, scale, opacity, y: yOffset, zIndex };
     const onSectionComplete = () => {
+      if (isDeparting) {
+        // 떠나는 섹션: 애니메이션 완료 후 숨김
+        gsap.set(section, { display: 'none', opacity: 0 });
+      }
       if (offset === 0) {
         section.classList.add('active');
         (section as HTMLElement).scrollTop = 0;
