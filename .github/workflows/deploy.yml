@@ -7,54 +7,94 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted, Windows]
 
     defaults:
       run:
-        working-directory: D:\Project\WebDisplay
+        shell: powershell -ExecutionPolicy Bypass -Command ". '{0}'"
 
     steps:
-      - name: Check current user
+      - name: Verify DEPLOY_DIR_WEBDISPLAY
         run: |
-          echo "=== Current User ==="
-          whoami
-          echo "=== PM2 Home ==="
-          echo %PM2_HOME%
-          echo %USERPROFILE%
-        shell: cmd
+          if (-not $env:DEPLOY_DIR_WEBDISPLAY) {
+            Write-Host "##[error]DEPLOY_DIR_WEBDISPLAY is not set! Run on the server:"
+            Write-Host "  [System.Environment]::SetEnvironmentVariable('DEPLOY_DIR_WEBDISPLAY', 'F:\Project\WebDisplay', 'Machine')"
+            exit 1
+          }
+          Write-Host "[WebDisplay] Deploy target: $env:DEPLOY_DIR_WEBDISPLAY"
 
-      - name: Configure Git safe directory
-        run: git config --global --add safe.directory D:/Project/WebDisplay
+      - name: Disable autocrlf
+        run: git config --global core.autocrlf false
 
-      - name: Stop MES Display process only
-        run: |
-          set PM2_HOME=C:\Users\Administrator\.pm2
-          echo "=== Stopping mes-display only (not killing PM2) ==="
-          pm2 stop mes-display 2>nul || echo "mes-display not running"
-          pm2 delete mes-display 2>nul || echo "mes-display not registered"
-        shell: cmd
-        continue-on-error: true
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Pull latest code
-        run: |
-          git fetch origin main
-          git reset --hard origin/main
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build Next.js
         run: npm run build
 
-      - name: Start MES Display PM2 process
+      - name: Stop PM2 before sync
         run: |
-          $env:PM2_HOME = "C:\Users\Administrator\.pm2"
-          $ErrorActionPreference = 'SilentlyContinue'
-          pm2 delete mes-display 2>&1 | Out-Null
-          $ErrorActionPreference = 'Stop'
-          Set-Location D:\Project\WebDisplay
-          pm2 start ecosystem.config.js --update-env
+          if (Test-Path "$env:DEPLOY_DIR_WEBDISPLAY\ecosystem.config.js") {
+            try {
+              Set-Location $env:DEPLOY_DIR_WEBDISPLAY
+              pm2 stop mes-display 2>$null
+            } catch {}
+          } else {
+            Write-Host "First deploy, skipping PM2 stop"
+          }
+
+      - name: Sync to deploy directory
+        run: |
+          $src = "${{ github.workspace }}"
+          $dst = $env:DEPLOY_DIR_WEBDISPLAY
+
+          if (!(Test-Path $dst)) { New-Item -ItemType Directory -Path $dst -Force }
+
+          robocopy $src $dst /MIR /NFL /NDL /NJH /NJS /NC /NS `
+            /XF ".env" ".env.local" ".env.production" `
+            /XD ".git" "logs"
+
+          if ($LASTEXITCODE -le 7) { exit 0 } else { exit $LASTEXITCODE }
+
+      - name: Create logs directory
+        run: |
+          $logsDir = "$env:DEPLOY_DIR_WEBDISPLAY\logs"
+          if (!(Test-Path $logsDir)) { New-Item -ItemType Directory -Path $logsDir -Force }
+
+      - name: Restart services with PM2
+        run: |
+          Set-Location $env:DEPLOY_DIR_WEBDISPLAY
+          $ErrorActionPreference = "SilentlyContinue"
+          pm2 describe mes-display 2>$null | Out-Null
+          $running = ($LASTEXITCODE -eq 0)
+          $ErrorActionPreference = "Stop"
+          if ($running) {
+            Write-Host "Reloading existing PM2 process..."
+            pm2 reload ecosystem.config.js --update-env
+          } else {
+            Write-Host "Starting PM2 process for the first time..."
+            pm2 start ecosystem.config.js
+          }
           pm2 save
-          Start-Sleep 5
-          pm2 list
-        shell: powershell
+
+      - name: Health check
+        run: |
+          Start-Sleep -Seconds 5
+          try {
+            $r = Invoke-WebRequest -Uri "http://localhost:3000" -UseBasicParsing -TimeoutSec 10
+            Write-Host "[WebDisplay] App OK (status: $($r.StatusCode))"
+          } catch {
+            Write-Host "[WebDisplay] App not ready yet — may need a few more seconds"
+          }
+
+      - name: Show PM2 status
+        if: always()
+        run: pm2 status
