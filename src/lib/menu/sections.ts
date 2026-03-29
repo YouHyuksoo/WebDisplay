@@ -178,19 +178,30 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
 
     const absOffset = Math.abs(offset);
 
-    const zPos = -offset * DEPTH_SPACING;
-    const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
+    // 떠나는 섹션: 이전에 보고 있던 섹션 (확대+페이드아웃)
+    const isDeparting = (i === state.currentSection) && (i !== targetIndex);
+
+    const zPos = isDeparting
+      ? direction * DEPTH_SPACING * 0.4
+      : -offset * DEPTH_SPACING;
+    const scale = isDeparting
+      ? 1.3
+      : offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -40 : offset < 0 ? 40 : 0;
 
-    // 활성 섹션(offset=0)만 표시 — ±1 미리보기 제거 (display 전환 시 플래시 방지)
-    const visibleRange = 0;
-    const opacity = offset === 0 ? 1 : 0;
+    // 그리드 모드: ±1 미리보기 (3D 깊이 프리뷰)
+    const isGridMode = state.cardLayout === 'grid';
+    const visibleRange = isGridMode ? 1 : 0;
+    const opacity = isDeparting ? 0
+      : offset === 0 ? 1
+      : absOffset <= visibleRange ? 0.12 : 0;
+    // zIndex: 떠나는 섹션은 일반 값 사용 (200 금지 — 잔류 방지)
     const zIndex = 100 - absOffset;
 
     gsap.killTweensOf(section);
 
-    // 보이지 않는 섹션은 즉시 숨김
-    if (absOffset > visibleRange) {
+    // 보이지 않는 섹션은 즉시 숨김 (떠나는 섹션은 애니메이션 후 숨김)
+    if (absOffset > visibleRange && !isDeparting) {
       gsap.set(section, {
         z: zPos, scale: scale, opacity: 0, y: yOffset, zIndex,
         display: 'none',
@@ -198,9 +209,15 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
       return;
     }
 
+    // ★ 플래시 방지: display 전환 전에 opacity를 먼저 0으로 설정
+    // display:none → flex 시 이전 스타일이 한 프레임 보이는 것을 차단
+    const wasHidden = (section as HTMLElement).style.display === 'none';
+    if (wasHidden) {
+      gsap.set(section, { opacity: 0 });
+    }
+
     // 가까운 섹션: display 설정 + 그리드 모드만 사전 카드 로드
-    // (썸네일/캐러셀은 onSectionComplete에서 렌더 — 이중 렌더 방지)
-    if (state.cardLayout === 'grid') {
+    if (state.cardLayout === 'grid' && !isDeparting) {
       getCardsModule().then((Cards) => {
         Cards.populateSection(section as HTMLElement, i);
       });
@@ -215,6 +232,10 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
     // [라이트 모드] 즉시 전환 vs [일반] 부드러운 애니메이션
     const sectionProps = { z: zPos, scale, opacity, y: yOffset, zIndex };
     const onSectionComplete = () => {
+      // 떠나는 섹션: 애니메이션 완료 후 완전 숨김 + 스타일 리셋
+      if (isDeparting) {
+        gsap.set(section, { display: 'none', opacity: 0, scale: 1, z: 0, y: 0, zIndex: 0 });
+      }
       if (offset === 0) {
         section.classList.add('active');
         (section as HTMLElement).scrollTop = 0;
@@ -331,8 +352,9 @@ export function updateCardsDepth(): void {
     const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -30 : offset < 0 ? 30 : 0;
 
-    const visibleRange = 0;
-    const opacity = offset === 0 ? 1 : 0;
+    const isGridMode = state.cardLayout === 'grid';
+    const visibleRange = isGridMode ? 1 : 0;
+    const opacity = absOffset <= visibleRange ? (offset === 0 ? 1 : 0.1) : 0;
     const zIndex = 100 - absOffset;
 
     // 보이는 범위의 섹션만 카드 로드
