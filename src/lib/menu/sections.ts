@@ -181,12 +181,12 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
     // 떠나는 섹션: 이전에 보고 있던 섹션 (확대+페이드아웃)
     const isDeparting = (i === state.currentSection) && (i !== targetIndex);
 
-    // 떠나는 섹션은 항상 카메라 쪽(+z)으로 날아와 사라짐 (방향 무관)
+    // 떠나는 섹션: 앞으로→커지며 뒤로 사라짐, 뒤로→작아지며 앞으로 빠짐
     const zPos = isDeparting
-      ? DEPTH_SPACING * 0.4
+      ? direction * DEPTH_SPACING * 0.4
       : -offset * DEPTH_SPACING;
     const scale = isDeparting
-      ? 1.3
+      ? (direction > 0 ? 1.3 : 0.5)
       : offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -40 : offset < 0 ? 40 : 0;
 
