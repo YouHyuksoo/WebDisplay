@@ -8,6 +8,7 @@
  */
 import type { Metadata } from 'next';
 import { LocaleProvider } from '@/components/providers/LocaleProvider';
+import { FooterProvider } from '@/components/providers/FooterProvider';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -22,7 +23,9 @@ export default function CtqLayout({
     <html lang="ko" suppressHydrationWarning>
       <body className="min-h-screen bg-gray-950 text-white antialiased">
         <LocaleProvider>
-          {children}
+          <FooterProvider>
+            {children}
+          </FooterProvider>
         </LocaleProvider>
       </body>
     </html>
