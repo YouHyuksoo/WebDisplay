@@ -23,6 +23,8 @@ import SmdDualProductionStatus from '@/components/display/screens/smd-dual-produ
 import SpiChartStatus from '@/components/display/screens/spi-chart/SpiChartStatus';
 import AoiChartStatus from '@/components/display/screens/aoi-chart/AoiChartStatus';
 import EquipmentLogStatus from '@/components/display/screens/equipment-log/EquipmentLogStatus';
+import ProductIoStatus from '@/components/display/screens/product-io/ProductIoStatus';
+import ProductionPlanRegister from '@/components/display/screens/production-plan/ProductionPlanRegister';
 
 interface PageProps {
   params: Promise<{ screenId: string }>;
@@ -91,6 +93,18 @@ export default async function DisplayPage({ params }: PageProps) {
 
   if (screenId === '50') {
     return <EquipmentLogStatus screenId={screenId} />;
+  }
+
+  if (screenId === '20') {
+    return <ProductionPlanRegister screenId={screenId} />;
+  }
+
+  if (screenId === '22') {
+    return <ProductIoStatus screenId={screenId} workstageCode="W310" />;
+  }
+
+  if (screenId === '23') {
+    return <ProductIoStatus screenId={screenId} workstageCode="W220" />;
   }
 
   return (

@@ -139,6 +139,9 @@ export function getSvgIcon(name: string, color = 'white'): string {
     'pie-chart': `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2 0v8.2l7.6 4.7c.3-.9.4-1.9.4-2.9 0-5.52-4.48-10-10-10zm0 10.2V22c4.74-.47 8.5-4.06 8.9-8.8l-8.9-1z"/></svg>`,
     activity: `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z"/></svg>`,
     'bar-chart': `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M4 9h4v11H4zm6-5h4v16h-4zm6 9h4v7h-4z"/></svg>`,
+    'pba-input': `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M9 3L5 6.99h3V14h2V6.99h3L9 3zm7 14.01V10h-2v7.01h-3L15 21l4-3.99h-3z"/></svg>`,
+    'pba-package': `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H4V4h4v4h8V4h4v16zM11 6h2v2h-2z"/></svg>`,
+    'plan-register': `<svg viewBox="0 0 24 24" fill="${color}" width="36" height="36"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>`,
   };
   return (
     icons[name] ||

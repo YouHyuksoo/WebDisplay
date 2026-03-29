@@ -126,6 +126,9 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
 
   // PBA Monitoring (layer: 2)
   { id: 'menu-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:pba-production', layer: 2 },
+  { id: 'menu-22', title: '제품투입현황', url: '/display/22', color: '#14b8a6', icon: 'svg:pba-input', layer: 2 },
+  { id: 'menu-23', title: '제품포장현황', url: '/display/23', color: '#8b5cf6', icon: 'svg:pba-package', layer: 2 },
+  { id: 'menu-20', title: '생산계획등록', url: '/display/20', color: '#3b82f6', icon: 'svg:plan-register', layer: 2 },
 
   // Equipment (layer: 3)
   { id: 'menu-34', title: '픽업률현황(BASE)', url: '/display/34', color: '#f59e0b', icon: 'svg:chip-smd', layer: 3 },

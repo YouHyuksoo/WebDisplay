@@ -58,7 +58,11 @@ const inputCls =
 const labelCls = 'block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-0.5';
 const btnBase = 'rounded px-3 py-1.5 text-sm font-semibold transition-colors';
 
-export default function ProductionPlanRegister() {
+interface ProductionPlanRegisterProps {
+  screenId: string;
+}
+
+export default function ProductionPlanRegister({ screenId }: ProductionPlanRegisterProps) {
   const [form, setForm] = useState<FormState>({ ...EMPTY_FORM });
   const [editMode, setEditMode] = useState(false);
   const [selectedDate, setSelectedDate] = useState(EMPTY_FORM.planDate);
@@ -153,7 +157,7 @@ export default function ProductionPlanRegister() {
   };
 
   return (
-    <DisplayLayout title="생산계획등록" screenId="20">
+    <DisplayLayout screenId={screenId}>
       <div className="flex h-full flex-col gap-3 overflow-auto p-3">
         {/* ── 입력 폼 ── */}
         <section className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900">
