@@ -1,12 +1,6 @@
 /**
  * @file src/app/(ctq)/ctq/equipment-history/page.tsx
  * @description 설비점검이력 페이지 — 날짜 구간 선택 + 이력 테이블
- *
- * 초보자 가이드:
- * 1. 기본 당일, 시작일~종료일 구간 조회 가능
- * 2. 수동 새로고침 (자동 롤링 불필요 — 테이블 기반 페이지)
- * 3. h-screen flex 레이아웃 — 테이블만 스크롤
- * 4. DisplayHeader: WebDisplay 공통 헤더 사용 (라인선택, 타이밍 설정 통합)
  */
 
 "use client";
@@ -14,6 +8,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
+import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useEquipmentHistory } from "@/hooks/ctq/useEquipmentHistory";
 import EquipmentHistoryTable from "@/components/ctq/EquipmentHistoryTable";
@@ -29,7 +24,6 @@ export default function EquipmentHistoryPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
 
-  /* -- 라인 선택 상태 (localStorage + window event) -- */
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
 
   const readLines = useCallback(() => {
@@ -51,13 +45,11 @@ export default function EquipmentHistoryPage() {
     return () => window.removeEventListener(`line-config-changed-${SCREEN_ID}`, handler);
   }, [readLines]);
 
-  /* -- 날짜 범위 -- */
   const [fromDate, setFromDate] = useState(getToday());
   const [toDate, setToDate] = useState(getToday());
 
   const { data, error, loading, fetchData } = useEquipmentHistory(selectedLines, fromDate, toDate);
 
-  /* -- 라인/날짜 변경 시 자동 조회 -- */
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -70,10 +62,8 @@ export default function EquipmentHistoryPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-white overflow-hidden">
-      {/* -- WebDisplay 공통 헤더 -- */}
       <DisplayHeader title={t("pages.equipmentHistory.title")} screenId={SCREEN_ID} />
 
-      {/* -- 날짜 선택 바 -- */}
       <header className="shrink-0 bg-gray-800 border-b border-gray-700 px-6 py-3">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
@@ -119,7 +109,6 @@ export default function EquipmentHistoryPage() {
         </div>
       </header>
 
-      {/* -- 본문 -- */}
       <main className="flex-1 min-h-0 max-w-[1920px] w-full mx-auto">
         {error && (
           <div className="mx-6 mt-4 p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
@@ -150,21 +139,11 @@ export default function EquipmentHistoryPage() {
         )}
       </main>
 
-      {/* -- 푸터 -- */}
-      <footer className="shrink-0 bg-gray-900 border-t border-gray-700 px-6 py-1.5">
-        <div className="flex items-center justify-between max-w-[1920px] mx-auto">
-          <div className="flex items-center gap-3 text-xs text-gray-400">
-            <span className={`w-2 h-2 rounded-full ${loading ? "bg-yellow-500 animate-pulse" : "bg-green-500"}`} />
-            <span>{loading ? t("common.dataLoading") : t("common.statusNormal")}</span>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            <span>{fromDate} ~ {toDate} ({data?.rows.length ?? 0}{t("pages.equipmentHistory.rowCount")})</span>
-            {data && (
-              <span>{t("common.refresh")}: {new Date(data.lastUpdated).toLocaleTimeString()}</span>
-            )}
-          </div>
-        </div>
-      </footer>
+      <DisplayFooter 
+        loading={loading} 
+        lastUpdated={data?.lastUpdated} 
+        statusText={`${fromDate} ~ ${toDate} (${data?.rows.length ?? 0}${t("pages.equipmentHistory.rowCount")})`}
+      />
     </div>
   );
 }

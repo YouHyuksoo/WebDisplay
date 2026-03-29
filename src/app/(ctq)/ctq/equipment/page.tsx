@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
+import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useEquipment } from "@/hooks/ctq/useEquipment";
 import EquipmentTable from "@/components/ctq/EquipmentTable";
@@ -125,6 +126,8 @@ export default function EquipmentPage() {
           </div>
         </div>
       </main>
+
+      <DisplayFooter loading={loading} lastUpdated={data?.lastUpdated} />
     </div>
   );
 }

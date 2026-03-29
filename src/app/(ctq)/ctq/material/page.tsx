@@ -16,6 +16,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
+import DisplayFooter from "@/components/display/DisplayFooter";
 import { useAutoRolling } from "@/hooks/ctq/useAutoRolling";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import MaterialLineCard from "@/components/ctq/MaterialLineCard";
@@ -172,6 +173,8 @@ export default function MaterialPage() {
           </>
         )}
       </main>
+
+      <DisplayFooter loading={loading} lastUpdated={data?.lastUpdated} />
     </div>
   );
 }

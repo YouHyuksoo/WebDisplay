@@ -19,12 +19,14 @@ import { defaultLocale, type Locale, locales } from '@/i18n/config';
 import koMessages from '@/i18n/messages/ko.json';
 import enMessages from '@/i18n/messages/en.json';
 import esMessages from '@/i18n/messages/es.json';
+import viMessages from '@/i18n/messages/vi.json';
 
 /** 언어별 메시지 맵 */
 const allMessages: Record<Locale, Record<string, unknown>> = {
   ko: koMessages,
   en: enMessages,
   es: esMessages,
+  vi: viMessages,
 };
 
 /** localStorage 키 */
@@ -57,7 +59,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 
 /**
  * 언어를 변경하고 페이지를 새로고침한다.
- * @param locale - 변경할 언어 코드 ('ko' | 'en' | 'es')
+ * @param locale - 변경할 언어 코드 ('ko' | 'en' | 'es' | 'vi')
  */
 export function changeLocale(locale: Locale) {
   localStorage.setItem(STORAGE_KEY, locale);

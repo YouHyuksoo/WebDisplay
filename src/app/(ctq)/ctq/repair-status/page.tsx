@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
+import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useRepairStatus } from "@/hooks/ctq/useRepairStatus";
 import RepairStatusTable from "@/components/ctq/RepairStatusTable";
@@ -140,23 +141,7 @@ export default function RepairStatusPage() {
         )}
       </main>
 
-      {/* -- 풋터 -- */}
-      <footer className="shrink-0 bg-gray-900 border-t border-gray-700 px-6 py-1.5">
-        <div className="flex items-center justify-between max-w-[1920px] mx-auto">
-          <div className="flex items-center gap-3 text-xs text-gray-400">
-            <span className={`w-2 h-2 rounded-full ${loading ? "bg-yellow-500 animate-pulse" : "bg-green-500"}`} />
-            <span>{loading ? t("common.dataLoading") : t("common.statusNormal")}</span>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            {data && (
-              <>
-                <span>{t("common.refresh")}: {new Date(data.lastUpdated).toLocaleTimeString()}</span>
-                <span>({data.total}{t("table.cases")})</span>
-              </>
-            )}
-          </div>
-        </div>
-      </footer>
+      <DisplayFooter loading={loading} lastUpdated={data?.lastUpdated} />
     </div>
   );
 }

@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
+import DisplayFooter from "@/components/display/DisplayFooter";
 import { useAutoRolling } from "@/hooks/ctq/useAutoRolling";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import RepeatLineCard from "@/components/ctq/RepeatLineCard";
@@ -167,6 +168,8 @@ export default function RepeatabilityPage() {
           </>
         )}
       </main>
+
+      <DisplayFooter loading={loading} lastUpdated={data?.lastUpdated} />
     </div>
   );
 }

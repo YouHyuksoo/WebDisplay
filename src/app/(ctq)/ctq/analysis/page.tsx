@@ -1,13 +1,6 @@
 /**
  * @file src/app/(ctq)/ctq/analysis/page.tsx
  * @description CTQ 종합분석 페이지 — 8개 모니터링 요약 + 상세 보고서
- *
- * 초보자 가이드:
- * 1. **useAnalysis 훅**: 8개 CTQ API를 병렬 호출하여 등급 집계
- * 2. **SummaryCards**: 요약 카드 8개 + 전체 현황 바
- * 3. **DetailReport**: 이상 라인 상세 보고서 8섹션
- * 4. **자동 갱신**: useDisplayTiming 기반 polling (수동 새로고침도 가능)
- * 5. **DisplayHeader**: WebDisplay 공통 헤더 사용 (라인선택, 타이밍 설정 통합)
  */
 
 "use client";
@@ -15,6 +8,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
+import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import AnalysisSummaryCards from "@/components/ctq/AnalysisSummaryCards";
 import AnalysisDetailReport from "@/components/ctq/AnalysisDetailReport";
@@ -26,7 +20,6 @@ export default function AnalysisPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
 
-  /* ── 라인 선택 상태 (localStorage + window event) ── */
   const [selectedLines, setSelectedLines] = useState<string>("%");
 
   const readLines = useCallback(() => {
@@ -38,23 +31,18 @@ export default function AnalysisPage() {
           setSelectedLines(parsed.includes("%") ? "%" : parsed.join(","));
         }
       }
-    } catch {
-      /* 무시 */
-    }
+    } catch { /* 무시 */ }
   }, []);
 
   useEffect(() => {
     readLines();
     const handler = () => readLines();
     window.addEventListener(`line-config-changed-${SCREEN_ID}`, handler);
-    return () =>
-      window.removeEventListener(`line-config-changed-${SCREEN_ID}`, handler);
+    return () => window.removeEventListener(`line-config-changed-${SCREEN_ID}`, handler);
   }, [readLines]);
 
-  /* ── 데이터 훅 ── */
   const { data, loading, fetchAll } = useAnalysis(selectedLines);
 
-  /* ── 자동 갱신 (polling) ── */
   useEffect(() => {
     fetchAll();
     const id = setInterval(fetchAll, timing.refreshSeconds * 1000);
@@ -62,12 +50,10 @@ export default function AnalysisPage() {
   }, [fetchAll, timing.refreshSeconds]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
-      {/* ── WebDisplay 공통 헤더 ── */}
+    <div className="h-screen flex flex-col bg-gray-950 text-white overflow-hidden">
       <DisplayHeader title={t("pages.analysis.title")} screenId={SCREEN_ID} />
 
-      {/* ── 요약 바 ── */}
-      <div className="bg-gray-900 border-b border-gray-700 px-6 py-2">
+      <div className="bg-gray-900 border-b border-gray-700 px-6 py-2 shrink-0">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
             <span>{t("pages.analysis.overallStatus")}</span>
@@ -93,37 +79,32 @@ export default function AnalysisPage() {
               </svg>
               {loading ? t("common.loading") : t("common.refresh")}
             </button>
-            {data && (
-              <span className="text-xs text-gray-500">
-                {t("pages.analysis.reportTime")}:{" "}
-                {new Date(data.lastUpdated).toLocaleTimeString()}
-              </span>
-            )}
           </div>
         </div>
       </div>
 
-      {/* ── 본문 ── */}
-      <main className="flex-1 max-w-[1920px] mx-auto w-full px-4 py-4 space-y-6">
-        {/* 로딩 스피너 */}
-        {loading && !data && (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
-            <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
-            {t("common.dataLoading")}
-          </div>
-        )}
+      <main className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+        <div className="max-w-[1920px] mx-auto w-full">
+          {loading && !data && (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
+              <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
+              {t("common.dataLoading")}
+            </div>
+          )}
 
-        {/* 데이터 렌더링 */}
-        {data && (
-          <>
-            <AnalysisSummaryCards
-              summaries={data.summaries}
-              overall={data.overall}
-            />
-            <AnalysisDetailReport summaries={data.summaries} />
-          </>
-        )}
+          {data && (
+            <>
+              <AnalysisSummaryCards
+                summaries={data.summaries}
+                overall={data.overall}
+              />
+              <AnalysisDetailReport summaries={data.summaries} />
+            </>
+          )}
+        </div>
       </main>
+
+      <DisplayFooter loading={loading} lastUpdated={data?.lastUpdated} />
     </div>
   );
 }

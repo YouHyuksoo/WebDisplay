@@ -1,13 +1,6 @@
 /**
  * @file src/app/(ctq)/ctq/indicator/page.tsx
  * @description CTQ 지표 모니터링 페이지 -- 월간 전용
- *
- * 초보자 가이드:
- * 1. 모델(ITEM_CODE)별 x 공정별 전전월/전월 PPM 비교 테이블
- * 2. 자동 갱신 없음 -- 진입 시 1회 조회 + 수동 새로고침/재생성
- * 3. 주황색 재생성 버튼으로 RAW 테이블에서 캐시 재생성
- * 4. h-screen flex 레이아웃 -- 페이지 스크롤 없이 테이블만 스크롤
- * 5. DisplayHeader + useDisplayTiming 패턴 사용
  */
 
 "use client";
@@ -15,6 +8,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
+import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useIndicator } from "@/hooks/ctq/useIndicator";
 import IndicatorTable from "@/components/ctq/IndicatorTable";
@@ -239,28 +233,7 @@ export default function IndicatorPage() {
         )}
       </main>
 
-      {/* 하단 상태바 */}
-      <footer className="shrink-0 bg-gray-900 border-t border-gray-700 px-6 py-1.5">
-        <div className="flex items-center justify-between max-w-[1920px] mx-auto">
-          <div className="flex items-center gap-3 text-xs text-gray-400">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                loading ? "bg-yellow-500 animate-pulse" : "bg-green-500"
-              }`}
-            />
-            <span>
-              {loading ? t("common.dataLoading") : t("common.statusNormal")}
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            {data && (
-              <span>
-                {t("common.refresh")}: {new Date(data.lastUpdated).toLocaleTimeString()}
-              </span>
-            )}
-          </div>
-        </div>
-      </footer>
+      <DisplayFooter loading={loading} lastUpdated={data?.lastUpdated} />
     </div>
   );
 }

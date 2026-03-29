@@ -1,12 +1,6 @@
 /**
  * @file src/app/(ctq)/ctq/open-short/page.tsx
  * @description CTQ 공용부품 Open/Short 모니터링 (ICT 공정)
- *
- * 초보자 가이드:
- * 1. **대상**: ICT 공정의 Open/Short 불량
- * 2. **판정**: 동일 부품 + 동일 불량코드 1일 누적 2건+ -> B급 출하중지
- * 3. **DisplayHeader**: WebDisplay 공통 헤더 사용 (라인선택, 타이밍 설정 통합)
- * 4. **라인 선택**: display-lines-ctq-open-short localStorage 키 사용
  */
 
 "use client";
@@ -14,6 +8,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
+import DisplayFooter from "@/components/display/DisplayFooter";
 import { useAutoRolling } from "@/hooks/ctq/useAutoRolling";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import OpenShortLineCard from "@/components/ctq/OpenShortLineCard";
@@ -26,7 +21,6 @@ export default function OpenShortPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
 
-  /* ── 라인 선택 상태 (localStorage + window event) ── */
   const [selectedLines, setSelectedLines] = useState<string>("%");
 
   const readLines = useCallback(() => {
@@ -48,7 +42,6 @@ export default function OpenShortPage() {
     return () => window.removeEventListener(`line-config-changed-${SCREEN_ID}`, handler);
   }, [readLines]);
 
-  /* ── 데이터 폴링 ── */
   const [data, setData] = useState<OpenShortResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +67,6 @@ export default function OpenShortPage() {
     return () => { active = false; clearInterval(id); };
   }, [selectedLines, timing.refreshSeconds]);
 
-  /* ── 자동 롤링 ── */
   const totalItems = data?.lines.length ?? 0;
   const { currentPage, totalPages, startIdx, endIdx, progress, setCurrentPage } =
     useAutoRolling({
@@ -88,12 +80,10 @@ export default function OpenShortPage() {
   const bCount = data?.lines.filter((l) => l.overallGrade === "B").length ?? 0;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
-      {/* ── WebDisplay 공통 헤더 ── */}
+    <div className="h-screen bg-gray-950 text-white flex flex-col overflow-hidden">
       <DisplayHeader title={t("pages.openShort.title")} screenId={SCREEN_ID} />
 
-      {/* ── 요약 바 ── */}
-      <div className="bg-gray-900 border-b border-gray-700 px-6 py-2">
+      <div className="bg-gray-900 border-b border-gray-700 px-6 py-2 shrink-0">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
             <span>{t("table.process")}: ICT</span>
@@ -119,50 +109,53 @@ export default function OpenShortPage() {
         )}
       </div>
 
-      {/* ── 본문 ── */}
-      <main className="flex-1 max-w-[1920px] mx-auto w-full px-4 py-2">
-        {error && (
-          <div className="mb-4 p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
-            {t("common.dataError")}: {error}
-          </div>
-        )}
-        {loading && !data && (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
-            <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
-            {t("common.dataLoading")}
-          </div>
-        )}
-        {data && data.lines.length === 0 && (
-          <div className="flex items-center justify-center h-64 text-gray-500">
-            {t("pages.openShort.noData")}
-          </div>
-        )}
-        {data && data.lines.length > 0 && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-              {visibleLines.map((line) => (
-                <OpenShortLineCard key={line.lineCode} line={line} compact />
-              ))}
+      <main className="flex-1 overflow-y-auto px-4 py-2">
+        <div className="max-w-[1920px] mx-auto">
+          {error && (
+            <div className="mb-4 p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
+              {t("common.dataError")}: {error}
             </div>
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-6 pb-4">
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentPage(i)}
-                    className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                      i === currentPage ? "bg-blue-500" : "bg-gray-700 hover:bg-gray-600"
-                    }`}
-                  />
+          )}
+          {loading && !data && (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
+              <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
+              {t("common.dataLoading")}
+            </div>
+          )}
+          {data && data.lines.length === 0 && (
+            <div className="flex items-center justify-center h-64 text-gray-500">
+              {t("pages.openShort.noData")}
+            </div>
+          )}
+          {data && data.lines.length > 0 && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                {visibleLines.map((line) => (
+                  <OpenShortLineCard key={line.lineCode} line={line} compact />
                 ))}
-                <span className="ml-2 text-xs text-gray-500">
-                  {currentPage + 1} / {totalPages}
-                </span>
               </div>
-            )}
-          </>
-        )}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-6 pb-4">
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPage(i)}
+                      className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                        i === currentPage ? "bg-blue-500" : "bg-gray-700 hover:bg-gray-600"
+                      }`}
+                    />
+                  ))}
+                  <span className="ml-2 text-xs text-gray-500">
+                    {currentPage + 1} / {totalPages}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </main>
+
+      <DisplayFooter loading={loading} lastUpdated={data?.lastUpdated} />
     </div>
   );
 }
