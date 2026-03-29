@@ -178,8 +178,11 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
 
     const absOffset = Math.abs(offset);
 
-    // 떠나는 섹션: 이전에 보고 있던 섹션 (확대+페이드아웃)
-    const isDeparting = (i === state.currentSection) && (i !== targetIndex);
+    // 떠나는 섹션: 인접(±1) 이동 시에만 줌 효과, 건너뛰기(dot 클릭)는 즉시 숨김
+    const prevIdx = state.currentSection;
+    const rawDist = Math.abs(targetIndex - prevIdx);
+    const isAdjacentMove = rawDist === 1 || rawDist === sectionCount - 1;
+    const isDeparting = (i === prevIdx) && (i !== targetIndex) && isAdjacentMove;
 
     // 떠나는 섹션: 앞으로→커지며 뒤로 사라짐, 뒤로→작아지며 앞으로 빠짐
     const zPos = isDeparting
