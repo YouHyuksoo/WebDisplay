@@ -117,21 +117,29 @@ export function goToSection(index: number, forceDirection: number | null = null)
     },
   });
 
-  // 카드 깊이 업데이트 (GSAP로 부드럽게)
-  animateCardsToSection(index, direction);
+  // 인접(±1) vs 건너뛰기 판별
+  const rawDist = Math.abs(index - state.currentSection);
+  const isAdjacent = rawDist === 1 || rawDist === sections.length - 1;
 
-  // 터널 속도를 서서히 감속
-  gsap.to({ speed: state.targetSpeed }, {
-    speed: 0,
-    duration: 0.6,
-    ease: 'power2.out',
-    onUpdate: function (this: gsap.core.Tween) {
-      state.targetSpeed = (this.targets()[0] as { speed: number }).speed;
-    },
-  });
+  // 카드 깊이 업데이트
+  animateCardsToSection(index, direction, isAdjacent);
 
-  // 라이트 모드: 즉시 해제, 일반: 애니메이션 완료 후 해제
-  const transitionDuration = state.simpleVirtualization ? 100 : 700;
+  // 인접 이동: 터널 가속 + 부드러운 전환 / 건너뛰기: 즉시
+  if (isAdjacent) {
+    gsap.to({ speed: state.targetSpeed }, {
+      speed: 0,
+      duration: 0.6,
+      ease: 'power2.out',
+      onUpdate: function (this: gsap.core.Tween) {
+        state.targetSpeed = (this.targets()[0] as { speed: number }).speed;
+      },
+    });
+  } else {
+    state.targetSpeed = 0;
+  }
+
+  // 인접: 애니메이션 완료 후 해제, 건너뛰기: 즉시 해제
+  const transitionDuration = !isAdjacent ? 50 : (state.simpleVirtualization ? 100 : 700);
   setTimeout(() => {
     state.isTransitioning = false;
   }, transitionDuration);
@@ -163,7 +171,7 @@ export function goToNextSection(): void {
  * @param targetIndex - 목표 섹션 인덱스
  * @param direction - 이동 방향 (1 또는 -1)
  */
-export function animateCardsToSection(targetIndex: number, direction: number): void {
+export function animateCardsToSection(targetIndex: number, direction: number, isAdjacent = true): void {
   const sections = document.querySelectorAll('.section-cards');
   const sectionCount = sections.length;
 
@@ -178,11 +186,8 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
 
     const absOffset = Math.abs(offset);
 
-    // 떠나는 섹션: 인접(±1) 이동 시에만 줌 효과, 건너뛰기(dot 클릭)는 즉시 숨김
-    const prevIdx = state.currentSection;
-    const rawDist = Math.abs(targetIndex - prevIdx);
-    const isAdjacentMove = rawDist === 1 || rawDist === sectionCount - 1;
-    const isDeparting = (i === prevIdx) && (i !== targetIndex) && isAdjacentMove;
+    // 인접 이동에서만 떠나는 줌 효과
+    const isDeparting = isAdjacent && (i === state.currentSection) && (i !== targetIndex);
 
     // 떠나는 섹션: 앞으로→커지며 뒤로 사라짐, 뒤로→작아지며 앞으로 빠짐
     const zPos = isDeparting
@@ -233,12 +238,6 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
       gsap.set(section, { display: 'flex' });
     }
 
-    // 건너뛰기(비인접) 도착 섹션: 정위치에서 페이드인 (뭉개짐 방지)
-    const isArriving = (offset === 0) && !isAdjacentMove;
-    if (isArriving) {
-      gsap.set(section, { z: 0, scale: 1, y: 0, zIndex: 100, opacity: 0 });
-    }
-
     const sectionProps = { z: zPos, scale, opacity, y: yOffset, zIndex };
     const onSectionComplete = () => {
       // 떠나는 섹션: 애니메이션 완료 후 완전 숨김 + 스타일 리셋
@@ -263,8 +262,8 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
       }
     };
 
-    if (state.simpleVirtualization) {
-      // 라이트 모드: 즉시 전환 (GSAP 트윈 0개)
+    if (state.simpleVirtualization || !isAdjacent) {
+      // 라이트 모드 또는 건너뛰기: 즉시 전환 (GSAP 트윈 0개)
       gsap.set(section, sectionProps);
       onSectionComplete();
     } else {
