@@ -46,13 +46,18 @@ export function mapTimeZoneToGroup(zone: string): number {
 /* ------------------------------------------------------------------ */
 
 /**
- * 현재 시간 기준으로 주간(A)/야간(B) 시프트를 반환한다.
- * A(주간): 08:00 ~ 19:59, B(야간): 20:00 ~ 07:59
- * @returns 'A' | 'B'
+ * 현재 시프트를 서버(Oracle)에서 조회하는 SQL.
+ * 작업일 기준: 08:00~08:00 (08시 이전이면 전일 야간, 08시 이후면 당일 주간)
+ * @returns SQL 문자열
  */
-export function getCurrentShift(): string {
-  const hour = new Date().getHours();
-  return hour >= 8 && hour < 20 ? 'A' : 'B';
+export function sqlCurrentShift(): string {
+  return `
+SELECT CASE WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'HH24')) >= 8
+            AND TO_NUMBER(TO_CHAR(SYSDATE, 'HH24')) < 20
+       THEN 'A' ELSE 'B' END AS SHIFT_CODE,
+       TO_CHAR(F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A'), 'YYYYMMDD') AS WORK_DATE
+  FROM DUAL
+`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -75,7 +80,7 @@ SELECT t.PLAN_DATE, t.LINE_CODE,
   LEFT JOIN ISYS_USERS leader ON leader.USER_ID = t.LEADER_ID
   LEFT JOIN ISYS_USERS sub_leader ON sub_leader.USER_ID = t.SUB_LEADER_ID
  WHERE t.LINE_CODE = :lineCode AND t.ORGANIZATION_ID = :orgId
-   AND t.PLAN_DATE = TRUNC(SYSDATE)
+   AND t.PLAN_DATE = F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A')
 `;
 }
 
@@ -88,7 +93,7 @@ export function sqlTimeZoneActual(): string {
 SELECT WORK_TIME_ZONE, SUM(IO_QTY) AS QTY
   FROM IP_PRODUCT_WORKSTAGE_IO
  WHERE LINE_CODE = :lineCode AND WORKSTAGE_CODE = :workstageCode
-   AND ORGANIZATION_ID = :orgId AND ACTUAL_YYYMMDD = TO_CHAR(SYSDATE, 'YYYYMMDD')
+   AND ORGANIZATION_ID = :orgId AND ACTUAL_DATE = F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A')
  GROUP BY WORK_TIME_ZONE ORDER BY WORK_TIME_ZONE
 `;
 }
@@ -101,6 +106,6 @@ export function sqlTotalActual(): string {
   return `
 SELECT COUNT(*) AS TOTAL_QTY FROM IP_PRODUCT_WORKSTAGE_IO
  WHERE LINE_CODE = :lineCode AND WORKSTAGE_CODE = :workstageCode
-   AND ORGANIZATION_ID = :orgId AND ACTUAL_YYYMMDD = TO_CHAR(SYSDATE, 'YYYYMMDD')
+   AND ORGANIZATION_ID = :orgId AND ACTUAL_DATE = F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A')
 `;
 }

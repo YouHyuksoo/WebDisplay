@@ -15,8 +15,8 @@ import {
   sqlProductPlan,
   sqlTimeZoneActual,
   sqlTotalActual,
+  sqlCurrentShift,
   mapTimeZoneToGroup,
-  getCurrentShift,
   TIME_LABELS,
 } from '@/lib/queries/product-io-status';
 
@@ -36,14 +36,16 @@ export async function GET(request: Request) {
       timeZones: [0, 0, 0, 0, 0, 0],
       targets: [0, 0, 0, 0, 0, 0],
       totalActual: 0,
-      timeLabels: TIME_LABELS[getCurrentShift()],
-      shift: getCurrentShift(),
+      timeLabels: TIME_LABELS.A,
+      shift: 'A',
       timestamp: new Date().toISOString(),
     });
   }
 
   try {
-    const shift = getCurrentShift();
+    /* 서버 시간 기준 shift/작업일 조회 */
+    const shiftRows = await executeQuery<{ SHIFT_CODE: string; WORK_DATE: string }>(sqlCurrentShift(), {});
+    const shift = shiftRows[0]?.SHIFT_CODE ?? 'A';
     const commonBinds = {
       lineCode,
       orgId: Number(orgId),
