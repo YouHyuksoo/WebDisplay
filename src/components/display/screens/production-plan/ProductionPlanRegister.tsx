@@ -12,6 +12,7 @@
 import { useState, useCallback } from 'react';
 import useSWR, { mutate } from 'swr';
 import DisplayLayout from '@/components/display/DisplayLayout';
+import RunCardSelectModal from './RunCardSelectModal';
 import { fetcher } from '@/lib/fetcher';
 import { buildDisplayApiUrl, DEFAULT_ORG_ID, fmtNum } from '@/lib/display-helpers';
 
@@ -70,6 +71,7 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
   const [form, setForm] = useState<FormState>({ ...EMPTY_FORM });
   const [editMode, setEditMode] = useState(false);
   const [selectedDate, setSelectedDate] = useState(EMPTY_FORM.planDate);
+  const [runCardModalOpen, setRunCardModalOpen] = useState(false);
 
   const apiUrl = buildDisplayApiUrl('20', {
     orgId: DEFAULT_ORG_ID,
@@ -166,8 +168,25 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
     setEditMode(true);
   };
 
+  /** 런카드 선택 시 모델명/제품코드/계획수량 자동 입력 */
+  const handleRunCardSelect = useCallback((row: { MODEL_NAME: string; ITEM_CODE: string; LOT_SIZE: number }) => {
+    setForm((prev) => ({
+      ...prev,
+      modelName: row.MODEL_NAME,
+      itemCode: row.ITEM_CODE,
+      planQty: String(row.LOT_SIZE),
+    }));
+    setRunCardModalOpen(false);
+  }, []);
+
   return (
     <DisplayLayout screenId={screenId}>
+      <RunCardSelectModal
+        isOpen={runCardModalOpen}
+        lineCode={form.lineCode}
+        onSelect={handleRunCardSelect}
+        onClose={() => setRunCardModalOpen(false)}
+      />
       <div className="flex h-full flex-col gap-3 overflow-auto p-3">
         {/* ── 입력 폼 ── */}
         <section className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900">
@@ -197,10 +216,19 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
               </select>
             </Field>
             <Field label="모델명">
-              <input type="text" name="modelName" value={form.modelName} onChange={onChange} className={inputCls} />
+              <div className="flex gap-1">
+                <input type="text" name="modelName" value={form.modelName} onChange={onChange} className={`${inputCls} flex-1`} readOnly />
+                <button
+                  type="button"
+                  onClick={() => { if (form.lineCode) setRunCardModalOpen(true); else alert('라인을 먼저 선택하세요.'); }}
+                  className="shrink-0 rounded border border-zinc-300 bg-zinc-100 px-2 text-xs hover:bg-zinc-200 dark:border-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+                >
+                  검색
+                </button>
+              </div>
             </Field>
             <Field label="제품코드">
-              <input type="text" name="itemCode" value={form.itemCode} onChange={onChange} className={inputCls} />
+              <input type="text" name="itemCode" value={form.itemCode} onChange={onChange} className={inputCls} readOnly />
             </Field>
             <Field label="UPH">
               <input type="number" name="uph" value={form.uph} onChange={onChange} className={inputCls} />
