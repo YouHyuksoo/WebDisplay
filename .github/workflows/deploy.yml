@@ -43,13 +43,13 @@ jobs:
       - name: Stop PM2 before sync
         run: |
           if (Test-Path "$env:DEPLOY_DIR_WEBDISPLAY\ecosystem.config.js") {
-            try {
-              Set-Location $env:DEPLOY_DIR_WEBDISPLAY
-              pm2 stop mes-display 2>$null
-            } catch {}
+            Set-Location $env:DEPLOY_DIR_WEBDISPLAY
+            pm2 stop mes-display 2>$null
+            if ($LASTEXITCODE -ne 0) { Write-Host "mes-display not running, skipping" }
           } else {
             Write-Host "First deploy, skipping PM2 stop"
           }
+          exit 0
 
       - name: Sync to deploy directory
         run: |
