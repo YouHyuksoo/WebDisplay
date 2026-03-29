@@ -178,28 +178,24 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
 
     const absOffset = Math.abs(offset);
 
-    // 떠나는 섹션(offset = -direction): 확대되며 카메라 쪽으로 날아와 사라짐
-    // 다가오는 섹션(offset = 0): 뒤에서 다가옴
-    // 대기 섹션(offset > 0): 뒤에서 작게 대기
-    const isDeparting = (offset === -direction) && absOffset === 1;
+    // 떠나는 섹션: 실제로 이전에 보고 있던 섹션만 해당 (dot 점프 시 엉뚱한 섹션 방지)
+    // state.currentSection은 아직 이전 값 (goToSection의 onComplete에서 갱신되므로)
+    const isDeparting = (i === state.currentSection) && (i !== targetIndex);
     const zPos = isDeparting
-      ? direction * DEPTH_SPACING * 0.5    // 카메라 방향으로 이동
+      ? direction * DEPTH_SPACING * 0.5
       : -offset * DEPTH_SPACING;
     const scale = isDeparting
-      ? 1.4                                // 확대되며 사라짐
+      ? 1.3
       : offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -40 : offset < 0 ? 40 : 0;
 
-    // 썸네일/캐러셀 모드: 활성 섹션만 표시
-    // 그리드 모드: ±1까지 표시 (3D 깊이 프리뷰)
     const isGridMode = state.cardLayout === 'grid';
     const visibleRange = isGridMode ? 1 : 0;
     const opacity = isDeparting
-      ? 0                                  // 날아가며 페이드아웃
+      ? 0
       : absOffset <= visibleRange ? (offset === 0 ? 1 : 0.15) : 0;
-    const zIndex = isDeparting ? 200 : 100 - absOffset;  // 떠나는 섹션이 맨 앞
+    const zIndex = isDeparting ? 200 : 100 - absOffset;
 
-    // [최적화] 기존 트윈 정리 — 빠른 휠 시 트윈 충돌 방지
     gsap.killTweensOf(section);
 
     // 보이지 않는 섹션은 즉시 숨김 (떠나는 섹션 제외)
