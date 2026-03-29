@@ -79,7 +79,30 @@ export function t(key: string, params?: Record<string, string | number>): string
  * @param shortcut - 바로가기 객체 (url, title 포함)
  * @returns 번역된 화면 제목. 매칭 실패 시 원본 title 반환.
  */
-export function getScreenTitle(shortcut: { url: string; title: string }): string {
+/** CTQ 카드 ID → i18n 키 매핑 */
+const CTQ_TITLE_KEYS: Record<string, string> = {
+  'ctq-repeat': 'ctq.nav.repeatability',
+  'ctq-non-consec': 'ctq.nav.nonConsecutive',
+  'ctq-accident': 'ctq.nav.accident',
+  'ctq-material': 'ctq.nav.material',
+  'ctq-open-short': 'ctq.nav.openShort',
+  'ctq-fpy': 'ctq.nav.fpy',
+  'ctq-equipment': 'ctq.nav.equipment',
+  'ctq-repair': 'ctq.nav.repairStatus',
+  'ctq-equip-hist': 'ctq.nav.equipmentHistory',
+  'ctq-indicator': 'ctq.nav.indicator',
+  'ctq-dashboard': 'ctq.nav.qualityDashboard',
+  'ctq-analysis': 'ctq.nav.analysis',
+};
+
+export function getScreenTitle(shortcut: { id?: string; url: string; title: string }): string {
+  // CTQ 카드: i18n 키로 번역
+  if (shortcut.id && CTQ_TITLE_KEYS[shortcut.id]) {
+    const translated = t(CTQ_TITLE_KEYS[shortcut.id]);
+    if (translated !== CTQ_TITLE_KEYS[shortcut.id]) return translated;
+  }
+
+  // Display 카드: screens.ts에서 로케일별 제목
   const match = shortcut.url.match(/\/display\/(\d+)/);
   if (match) {
     const screen = SCREENS[match[1]];
@@ -87,7 +110,7 @@ export function getScreenTitle(shortcut: { url: string; title: string }): string
       const locale = getLocale();
       if (locale === 'ko') return screen.titleKo;
       if (locale === 'es' && screen.titleEs) return screen.titleEs;
-      return screen.title; // 영문 기본
+      return screen.title; // 영문 기본 (vi도 여기)
     }
   }
   return shortcut.title;
