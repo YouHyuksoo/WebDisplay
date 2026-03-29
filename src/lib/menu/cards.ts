@@ -317,6 +317,10 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
   // 클릭 - MES: dispatch navigation event instead of opening URL
   // Ctrl+클릭: 새 탭에서 열기
   card.addEventListener('click', (e: MouseEvent) => {
+    // 수정 모드에서는 액션 버튼(삭제/수정/즐겨찾기) 전용 — 카드 내비게이션 차단
+    if (state.editMode) return;
+    // 액션 버튼 클릭이 카드로 전파된 경우 차단
+    if ((e.target as HTMLElement).closest('.card-btn')) return;
     const parent = card.closest('.section-cards');
     if (!parent?.classList.contains('active')) return;
     if (card.classList.contains('opening')) return; // 중복 클릭 방지
@@ -506,7 +510,11 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
   card.appendChild(actions);
 
   // 클릭 - 디스플레이 화면 열기
-  card.addEventListener('click', () => {
+  card.addEventListener('click', (e: MouseEvent) => {
+    // 수정 모드에서는 액션 버튼 전용 — 카드 내비게이션 차단
+    if (state.editMode) return;
+    // 액션 버튼 클릭이 카드로 전파된 경우 차단
+    if ((e.target as HTMLElement).closest('.card-btn')) return;
     const parent = card.closest('.section-cards');
     if (!parent?.classList.contains('active')) return;
 

@@ -36,7 +36,7 @@ export const DEFAULT_MENU_SETTINGS: MenuSettings = {
   tunnelShape: 'triangle',
   glowTheme: 'pink',
   iconColorMode: 'brand',
-  cardStyle: 'glass',
+  cardStyle: 'neon',
   spaceType: 'aurora',
   cardLayout: 'grid',
   auroraBrightness: 1.0,
