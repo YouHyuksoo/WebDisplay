@@ -74,22 +74,22 @@ function getPool(): Promise<oracledb.Pool> {
         user: fileCfg.username,
         password: fileCfg.password,
         connectString: buildConnectString(fileCfg),
-        poolMin: 2,
-        poolMax: 10,
-        poolIncrement: 1,
+        poolMin: 4,
+        poolMax: 20,
+        poolIncrement: 2,
         connectTimeout: 10,
-        queueTimeout: 10000,
+        queueTimeout: 30000,
       });
     } else {
       poolPromise = oracledb.createPool({
         user: process.env.ORACLE_USER,
         password: process.env.ORACLE_PASSWORD,
         connectString: process.env.ORACLE_CONNECT_STRING,
-        poolMin: 2,
-        poolMax: 10,
-        poolIncrement: 1,
+        poolMin: 4,
+        poolMax: 20,
+        poolIncrement: 2,
         connectTimeout: 10,
-        queueTimeout: 10000,
+        queueTimeout: 30000,
       });
     }
   }
