@@ -233,7 +233,12 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
       gsap.set(section, { display: 'flex' });
     }
 
-    // [라이트 모드] 즉시 전환 vs [일반] 부드러운 애니메이션
+    // 건너뛰기(비인접) 도착 섹션: 정위치에서 페이드인 (뭉개짐 방지)
+    const isArriving = (offset === 0) && !isAdjacentMove;
+    if (isArriving) {
+      gsap.set(section, { z: 0, scale: 1, y: 0, zIndex: 100, opacity: 0 });
+    }
+
     const sectionProps = { z: zPos, scale, opacity, y: yOffset, zIndex };
     const onSectionComplete = () => {
       // 떠나는 섹션: 애니메이션 완료 후 완전 숨김 + 스타일 리셋
