@@ -110,10 +110,10 @@ export function setupUtilityButtonHandlers(): void {
   localeDropdown?.querySelectorAll('.locale-option').forEach((btn) => {
     btn.addEventListener('click', () => {
       const locale = (btn as HTMLElement).dataset.locale ?? 'ko';
-      localStorage.setItem(KEYS.LOCALE, locale);
-      import('../ui').then((UI) => UI.showToast(`🌐 Language: ${locale.toUpperCase()}`));
       localeDropdown.classList.remove('open');
-      setTimeout(() => location.reload(), 800);
+      // changeLocale: localStorage 저장 + 즉시 reload (LocaleProvider 표준 방식)
+      localStorage.setItem(KEYS.LOCALE, locale);
+      location.reload();
     });
   });
 
