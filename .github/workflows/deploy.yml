@@ -93,7 +93,7 @@ jobs:
             $r = Invoke-WebRequest -Uri "http://localhost:3000" -UseBasicParsing -TimeoutSec 10
             Write-Host "[WebDisplay] App OK (status: $($r.StatusCode))"
           } catch {
-            Write-Host "[WebDisplay] App not ready yet — may need a few more seconds"
+            Write-Host "[WebDisplay] App not ready yet - may need a few more seconds"
           }
 
       - name: Show PM2 status
