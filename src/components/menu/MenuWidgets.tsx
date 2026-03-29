@@ -100,6 +100,10 @@ export default function MenuWidgets() {
               <span className="locale-flag">&#127466;&#127480;</span>
               <span>Español</span>
             </button>
+            <button className="locale-option" data-locale="vi">
+              <span className="locale-flag">&#127483;&#127475;</span>
+              <span>Tiếng Việt</span>
+            </button>
           </div>
         </div>
         <button className="util-btn" id="theme-btn" data-tooltip={t('themeToggle')}>
