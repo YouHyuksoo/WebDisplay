@@ -178,28 +178,19 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
 
     const absOffset = Math.abs(offset);
 
-    // 떠나는 섹션: 실제로 이전에 보고 있던 섹션만 해당 (dot 점프 시 엉뚱한 섹션 방지)
-    // state.currentSection은 아직 이전 값 (goToSection의 onComplete에서 갱신되므로)
-    const isDeparting = (i === state.currentSection) && (i !== targetIndex);
-    const zPos = isDeparting
-      ? direction * DEPTH_SPACING * 0.5
-      : -offset * DEPTH_SPACING;
-    const scale = isDeparting
-      ? 1.3
-      : offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
+    const zPos = -offset * DEPTH_SPACING;
+    const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -40 : offset < 0 ? 40 : 0;
 
     const isGridMode = state.cardLayout === 'grid';
     const visibleRange = isGridMode ? 1 : 0;
-    const opacity = isDeparting
-      ? 0
-      : absOffset <= visibleRange ? (offset === 0 ? 1 : 0.15) : 0;
-    const zIndex = isDeparting ? 200 : 100 - absOffset;
+    const opacity = absOffset <= visibleRange ? (offset === 0 ? 1 : 0.15) : 0;
+    const zIndex = 100 - absOffset;
 
     gsap.killTweensOf(section);
 
-    // 보이지 않는 섹션은 즉시 숨김 (떠나는 섹션 제외)
-    if (absOffset > visibleRange && !isDeparting) {
+    // 보이지 않는 섹션은 즉시 숨김
+    if (absOffset > visibleRange) {
       gsap.set(section, {
         z: zPos, scale: scale, opacity: 0, y: yOffset, zIndex,
         display: 'none',
@@ -224,10 +215,6 @@ export function animateCardsToSection(targetIndex: number, direction: number): v
     // [라이트 모드] 즉시 전환 vs [일반] 부드러운 애니메이션
     const sectionProps = { z: zPos, scale, opacity, y: yOffset, zIndex };
     const onSectionComplete = () => {
-      if (isDeparting) {
-        // 떠나는 섹션: 애니메이션 완료 후 숨김
-        gsap.set(section, { display: 'none', opacity: 0 });
-      }
       if (offset === 0) {
         section.classList.add('active');
         (section as HTMLElement).scrollTop = 0;
