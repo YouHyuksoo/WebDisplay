@@ -15,6 +15,10 @@ import DisplayLayout from '@/components/display/DisplayLayout';
 import { fetcher } from '@/lib/fetcher';
 import { buildDisplayApiUrl, DEFAULT_ORG_ID, fmtNum } from '@/lib/display-helpers';
 
+/** 라인 목록 API 응답 타입 */
+interface LineItem { lineCode: string; lineName: string }
+interface LineGroup { division: string; lines: LineItem[] }
+
 /** 빈 폼 초기값 */
 const EMPTY_FORM = {
   planDate: new Date().toISOString().slice(0, 10),
@@ -76,6 +80,12 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
     refreshInterval: 0,
   });
   const rows = data?.rows ?? [];
+
+  /* 라인 목록 조회 */
+  const { data: lineData } = useSWR<{ groups: LineGroup[] }>(
+    `/api/display/lines?orgId=${DEFAULT_ORG_ID}`, fetcher, { refreshInterval: 0 },
+  );
+  const lineGroups = lineData?.groups ?? [];
 
   /** 폼 필드 변경 핸들러 */
   const onChange = useCallback(
@@ -166,10 +176,19 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
               <input type="date" name="planDate" value={form.planDate} onChange={onChange} className={inputCls} />
             </Field>
             <Field label="라인코드">
-              <input
-                type="text" name="lineCode" value={form.lineCode} onChange={onChange}
+              <select
+                name="lineCode" value={form.lineCode} onChange={onChange}
                 disabled={editMode} className={`${inputCls} ${editMode ? 'opacity-60' : ''}`}
-              />
+              >
+                <option value="">-- 선택 --</option>
+                {lineGroups.map((g) => (
+                  <optgroup key={g.division} label={g.division}>
+                    {g.lines.map((l) => (
+                      <option key={l.lineCode} value={l.lineCode}>{l.lineName}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
             </Field>
             <Field label="Shift">
               <select name="shiftCode" value={form.shiftCode} onChange={onChange} className={inputCls}>
