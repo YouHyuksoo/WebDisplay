@@ -77,26 +77,36 @@ function randn(mean: number, std: number, seed: number): number {
   return mean + z * std;
 }
 
-/** 서브그룹 데이터 생성 (25개 서브그룹, 각 5개 샘플) */
-function generateSubgroups(item: MeasurementItem, seedBase: number) {
+/** 서브그룹 데이터 생성 (기간 내 일별 서브그룹, 각 5개 샘플) */
+function generateSubgroups(item: MeasurementItem, seedBase: number, dateFrom: string, dateTo: string) {
   const subgroupSize = 5;
-  const subgroupCount = 25;
   const range = item.usl - item.lsl;
-  const std = range / 8; // 공정 표준편차 시뮬레이션
+  const std = range / 8;
+
+  // 날짜 범위로 서브그룹 수 결정
+  const from = new Date(dateFrom);
+  const to = new Date(dateTo);
+  const days = Math.max(1, Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+  const subgroupCount = Math.min(days, 60); // 최대 60개
 
   const subgroups = [];
   for (let i = 0; i < subgroupCount; i++) {
     const samples = [];
-    // 약간의 트렌드를 넣어서 현실감 부여
-    const drift = (i > 18 ? (i - 18) * std * 0.15 : 0);
+    const drift = (i > subgroupCount * 0.75 ? (i - subgroupCount * 0.75) * std * 0.15 : 0);
     for (let j = 0; j < subgroupSize; j++) {
       const seed = seedBase + i * 100 + j;
       samples.push(Number(randn(item.target + drift, std, seed).toFixed(4)));
     }
     const mean = samples.reduce((s, v) => s + v, 0) / subgroupSize;
     const r = Math.max(...samples) - Math.min(...samples);
+    // 서브그룹 날짜 계산
+    const sgDate = new Date(from);
+    sgDate.setDate(sgDate.getDate() + Math.round(i * (days - 1) / Math.max(subgroupCount - 1, 1)));
+    const dateLabel = `${String(sgDate.getMonth() + 1).padStart(2, '0')}/${String(sgDate.getDate()).padStart(2, '0')}`;
     subgroups.push({
       id: i + 1,
+      date: sgDate.toISOString().slice(0, 10),
+      dateLabel,
       samples,
       xbar: Number(mean.toFixed(4)),
       range: Number(r.toFixed(4)),
@@ -188,14 +198,22 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Item not found' }, { status: 404 });
   }
 
-  // seed를 공정+항목 기반으로 고정 → 같은 요청에 같은 데이터
-  const seedBase = (processId + item.id).split('').reduce((s, c) => s + c.charCodeAt(0), 0);
-  const data = generateSubgroups(item, seedBase);
+  // 기간 파라미터 (기본: 최근 25일)
+  const today = new Date().toISOString().slice(0, 10);
+  const defaultFrom = new Date(Date.now() - 24 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const dateFrom = searchParams.get('dateFrom') ?? defaultFrom;
+  const dateTo = searchParams.get('dateTo') ?? today;
+
+  // seed를 공정+항목+기간 기반으로 고정 → 같은 요청에 같은 데이터
+  const seedBase = (processId + item.id + dateFrom).split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+  const data = generateSubgroups(item, seedBase, dateFrom, dateTo);
 
   return NextResponse.json({
     processId: process.id,
     processName: process.name,
     item: { id: item.id, name: item.name, unit: item.unit, usl: item.usl, lsl: item.lsl, target: item.target },
+    dateFrom,
+    dateTo,
     ...data,
     timestamp: new Date().toISOString(),
   });

@@ -27,6 +27,8 @@ interface ProcessInfo { id: string; name: string; items: MeasItem[] }
 
 interface Subgroup {
   id: number;
+  date: string;
+  dateLabel: string;
   samples: number[];
   xbar: number;
   range: number;
@@ -46,15 +48,39 @@ interface SpcData {
   processId: string;
   processName: string;
   item: MeasItem & { usl: number; lsl: number; target: number };
+  dateFrom: string;
+  dateTo: string;
   subgroups: Subgroup[];
   stats: SpcStats;
 }
 
 /* -- 스타일 상수 -- */
 
-const inputCls = 'rounded border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100';
-const labelCls = 'text-xs font-medium text-zinc-400 mb-0.5';
+const inputCls = 'rounded border border-zinc-300 bg-white px-2 py-1.5 text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100';
+const labelCls = 'text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-0.5';
 const btnBase = 'rounded px-4 py-1.5 text-sm font-semibold transition-colors whitespace-nowrap';
+
+/** 테마 감지 훅 — recharts는 Tailwind 미지원이라 JS로 색상 전달 */
+function useChartTheme() {
+  const [isDark, setIsDark] = useState(true);
+  useEffect(() => {
+    const check = () => setIsDark(document.documentElement.classList.contains('dark'));
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => obs.disconnect();
+  }, []);
+  return {
+    grid: isDark ? '#333' : '#e5e7eb',
+    tick: isDark ? '#999' : '#6b7280',
+    tooltip: { bg: isDark ? '#1a1a2e' : '#ffffff', border: isDark ? '#333' : '#e5e7eb' },
+    cardBg: isDark ? 'bg-zinc-900' : 'bg-white',
+    cardBorder: isDark ? 'border-zinc-700' : 'border-zinc-200',
+    sectionBg: isDark ? 'bg-indigo-950/30 border-indigo-800/50' : 'bg-indigo-50 border-indigo-200',
+    textMuted: isDark ? 'text-zinc-500' : 'text-zinc-400',
+    textSub: isDark ? 'text-zinc-600' : 'text-zinc-400',
+  };
+}
 
 /* -- Cpk 등급 판정 -- */
 
@@ -116,9 +142,15 @@ function buildHistogram(subgroups: Subgroup[], stats: SpcStats, binCount = 15) {
 interface Props { screenId: string }
 
 export default function SpcControlChart({ screenId }: Props) {
+  const theme = useChartTheme();
+  const today = new Date().toISOString().slice(0, 10);
+  const defaultFrom = new Date(Date.now() - 24 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
   const [processes, setProcesses] = useState<ProcessInfo[]>([]);
   const [selectedProcess, setSelectedProcess] = useState('');
   const [selectedItem, setSelectedItem] = useState('');
+  const [dateFrom, setDateFrom] = useState(defaultFrom);
+  const [dateTo, setDateTo] = useState(today);
   const [data, setData] = useState<SpcData | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -147,13 +179,13 @@ export default function SpcControlChart({ screenId }: Props) {
     setLoading(true);
     try {
       const res = await fetcher(
-        `/api/display/60?processId=${selectedProcess}&itemId=${selectedItem}`
+        `/api/display/60?processId=${selectedProcess}&itemId=${selectedItem}&dateFrom=${dateFrom}&dateTo=${dateTo}`
       ) as SpcData;
       setData(res);
     } finally {
       setLoading(false);
     }
-  }, [selectedProcess, selectedItem]);
+  }, [selectedProcess, selectedItem, dateFrom, dateTo]);
 
   /* 초기 자동 조회 */
   useEffect(() => {
@@ -168,14 +200,22 @@ export default function SpcControlChart({ screenId }: Props) {
       <div className="flex h-full flex-col gap-2 overflow-auto p-3">
 
         {/* ═══════ 조회 영역 ═══════ */}
-        <section className="rounded-lg border border-indigo-800/50 bg-indigo-950/30 p-3">
+        <section className={`rounded-lg border p-3 ${theme.sectionBg}`}>
           <div className="flex flex-wrap items-end gap-4">
+            <div>
+              <div className={labelCls}>기간</div>
+              <div className="flex items-center gap-1">
+                <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={`${inputCls} w-36`} />
+                <span className={`text-sm ${theme.textMuted}`}>~</span>
+                <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={`${inputCls} w-36`} />
+              </div>
+            </div>
             <div>
               <div className={labelCls}>공정</div>
               <select
                 value={selectedProcess}
                 onChange={(e) => setSelectedProcess(e.target.value)}
-                className={`${inputCls} w-48`}
+                className={`${inputCls} w-44`}
               >
                 {processes.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
@@ -202,13 +242,15 @@ export default function SpcControlChart({ screenId }: Props) {
               {loading ? '조회 중...' : '조회'}
             </button>
 
-            {/* 규격 요약 */}
+            {/* 규격 + 기간 요약 */}
             {data && (
-              <div className="ml-auto flex items-center gap-4 text-xs text-zinc-400">
+              <div className={`ml-auto flex items-center gap-4 text-xs ${theme.textMuted}`}>
+                <span>{data.dateFrom} ~ {data.dateTo}</span>
+                <span className={theme.textSub}>|</span>
                 <span>USL: <b className="text-red-400">{data.item.usl}</b></span>
                 <span>Target: <b className="text-green-400">{data.item.target}</b></span>
                 <span>LSL: <b className="text-blue-400">{data.item.lsl}</b></span>
-                <span className="text-zinc-500">|</span>
+                <span className={theme.textSub}>|</span>
                 <span>n={s?.sampleSize}, k={s?.subgroupCount}</span>
               </div>
             )}
@@ -220,8 +262,8 @@ export default function SpcControlChart({ screenId }: Props) {
             {/* ═══════ Cp/Cpk 게이지 + 통계 요약 ═══════ */}
             <section className="grid grid-cols-[1fr_1fr_2fr] gap-2">
               {/* Cp 카드 */}
-              <div className="rounded-lg border border-zinc-700 bg-zinc-900 p-3 text-center">
-                <div className="text-xs text-zinc-500 mb-1">Cp (공정능력)</div>
+              <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-3 text-center">
+                <div className="text-xs text-zinc-400 dark:text-zinc-500 mb-1">Cp (공정능력)</div>
                 <div className="text-3xl font-black" style={{ color: getCpkGrade(s.cp).color }}>
                   {s.cp.toFixed(3)}
                 </div>
@@ -229,8 +271,8 @@ export default function SpcControlChart({ screenId }: Props) {
               </div>
 
               {/* Cpk 카드 */}
-              <div className="rounded-lg border border-zinc-700 bg-zinc-900 p-3 text-center">
-                <div className="text-xs text-zinc-500 mb-1">Cpk (공정능력지수)</div>
+              <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-3 text-center">
+                <div className="text-xs text-zinc-400 dark:text-zinc-500 mb-1">Cpk (공정능력지수)</div>
                 <div className="text-3xl font-black" style={{ color: getCpkGrade(s.cpk).color }}>
                   {s.cpk.toFixed(3)}
                 </div>
@@ -238,7 +280,7 @@ export default function SpcControlChart({ screenId }: Props) {
               </div>
 
               {/* 통계 요약 테이블 */}
-              <div className="rounded-lg border border-zinc-700 bg-zinc-900 p-3">
+              <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-3">
                 <div className="grid grid-cols-4 gap-x-6 gap-y-1 text-xs">
                   <StatRow label="X-bar (평균)" value={s.xbarBar} />
                   <StatRow label="R̄ (평균 범위)" value={s.rBar} />
@@ -253,7 +295,7 @@ export default function SpcControlChart({ screenId }: Props) {
             </section>
 
             {/* ═══════ X-bar Chart + Histogram ═══════ */}
-            <section className="rounded-lg border border-zinc-700 bg-zinc-900 p-3 flex-1 min-h-[220px]">
+            <section className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-3 flex-1 min-h-[220px]">
               <div className="mb-2 flex items-center gap-2">
                 <span className="text-sm font-bold text-zinc-300">X-bar Chart</span>
                 <span className="text-xs text-zinc-500">— 평균 관리도</span>
@@ -264,17 +306,17 @@ export default function SpcControlChart({ screenId }: Props) {
                 <div className="flex-1">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={data.subgroups} margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis dataKey="id" tick={{ fontSize: 11, fill: '#999' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} />
+                      <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: theme.tick }} interval="preserveStartEnd" />
                       <YAxis
                         domain={[
                           (min: number) => Math.min(min, s.lsl) - (s.usl - s.lsl) * 0.05,
                           (max: number) => Math.max(max, s.usl) + (s.usl - s.lsl) * 0.05,
                         ]}
-                        tick={{ fontSize: 11, fill: '#999' }}
+                        tick={{ fontSize: 11, fill: theme.tick }}
                       />
                       <Tooltip
-                        contentStyle={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: 8 }}
+                        contentStyle={{ background: theme.tooltip.bg, border: `1px solid ${theme.tooltip.border}`, borderRadius: 8 }}
                         labelStyle={{ color: '#999' }}
                         formatter={(value) => [Number(value).toFixed(4), 'X-bar']}
                       />
@@ -293,13 +335,13 @@ export default function SpcControlChart({ screenId }: Props) {
                 </div>
                 {/* 히스토그램 (세로 배치) */}
                 <div className="w-[350px] shrink-0">
-                  <Histogram subgroups={data.subgroups} stats={s} />
+                  <Histogram subgroups={data.subgroups} stats={s} theme={theme} />
                 </div>
               </div>
             </section>
 
             {/* ═══════ R Chart + 공정능력 분석도 ═══════ */}
-            <section className="rounded-lg border border-zinc-700 bg-zinc-900 p-3 flex-1 min-h-[220px]">
+            <section className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-3 flex-1 min-h-[220px]">
               <div className="mb-2 flex items-center gap-2">
                 <span className="text-sm font-bold text-zinc-300">R Chart</span>
                 <span className="text-xs text-zinc-500">— 범위 관리도</span>
@@ -310,11 +352,11 @@ export default function SpcControlChart({ screenId }: Props) {
                 <div className="flex-1">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={data.subgroups} margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis dataKey="id" tick={{ fontSize: 11, fill: '#999' }} />
-                      <YAxis domain={[0, 'auto']} tick={{ fontSize: 11, fill: '#999' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} />
+                      <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: theme.tick }} interval="preserveStartEnd" />
+                      <YAxis domain={[0, 'auto']} tick={{ fontSize: 11, fill: theme.tick }} />
                       <Tooltip
-                        contentStyle={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: 8 }}
+                        contentStyle={{ background: theme.tooltip.bg, border: `1px solid ${theme.tooltip.border}`, borderRadius: 8 }}
                         labelStyle={{ color: '#999' }}
                         formatter={(value) => [Number(value).toFixed(4), 'R']}
                       />
@@ -331,7 +373,7 @@ export default function SpcControlChart({ screenId }: Props) {
                 </div>
                 {/* 공정능력 분석도 */}
                 <div className="w-[350px] shrink-0">
-                  <CapabilityChart subgroups={data.subgroups} stats={s} />
+                  <CapabilityChart subgroups={data.subgroups} stats={s} theme={theme} />
                 </div>
               </div>
             </section>
@@ -350,7 +392,9 @@ export default function SpcControlChart({ screenId }: Props) {
 
 /* -- 히스토그램 + 정규분포 곡선 컴포넌트 -- */
 
-function Histogram({ subgroups, stats }: { subgroups: Subgroup[]; stats: SpcStats }) {
+type ChartTheme = ReturnType<typeof useChartTheme>;
+
+function Histogram({ subgroups, stats, theme }: { subgroups: Subgroup[]; stats: SpcStats; theme: ChartTheme }) {
   const bins = useMemo(() => buildHistogram(subgroups, stats), [subgroups, stats]);
 
   return (
@@ -359,18 +403,18 @@ function Histogram({ subgroups, stats }: { subgroups: Subgroup[]; stats: SpcStat
         data={bins}
         margin={{ top: 10, right: 10, bottom: 25, left: 5 }}
       >
-        <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} vertical={false} />
         <XAxis
           dataKey="mid"
-          tick={{ fontSize: 9, fill: '#999' }}
+          tick={{ fontSize: 9, fill: theme.tick }}
           interval={1}
           angle={-45}
           textAnchor="end"
           height={40}
         />
-        <YAxis tick={{ fontSize: 10, fill: '#999' }} width={30} />
+        <YAxis tick={{ fontSize: 10, fill: theme.tick }} width={30} />
         <Tooltip
-          contentStyle={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: 8 }}
+          contentStyle={{ background: theme.tooltip.bg, border: `1px solid ${theme.tooltip.border}`, borderRadius: 8 }}
           formatter={(value, name) => [
             value, name === 'count' ? '빈도' : '정규분포',
           ]}
@@ -401,7 +445,7 @@ function Histogram({ subgroups, stats }: { subgroups: Subgroup[]; stats: SpcStat
 
 /* -- 공정능력 분석도 (Process Capability Chart) -- */
 
-function CapabilityChart({ subgroups, stats }: { subgroups: Subgroup[]; stats: SpcStats }) {
+function CapabilityChart({ subgroups, stats, theme }: { subgroups: Subgroup[]; stats: SpcStats; theme: ChartTheme }) {
   const chartData = useMemo(() => {
     const allSamples = subgroups.flatMap((s) => s.samples);
     const mean = allSamples.reduce((s, v) => s + v, 0) / allSamples.length;
@@ -441,17 +485,17 @@ function CapabilityChart({ subgroups, stats }: { subgroups: Subgroup[]; stats: S
     <div className="flex h-full flex-col">
       <ResponsiveContainer width="100%" height="80%">
         <ComposedChart data={points} margin={{ top: 10, right: 10, bottom: 25, left: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} vertical={false} />
           <XAxis
             dataKey="x"
             type="number"
             domain={['dataMin', 'dataMax']}
-            tick={{ fontSize: 9, fill: '#999' }}
+            tick={{ fontSize: 9, fill: theme.tick }}
             tickCount={8}
           />
           <YAxis tick={false} width={5} />
           <Tooltip
-            contentStyle={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: 8 }}
+            contentStyle={{ background: theme.tooltip.bg, border: `1px solid ${theme.tooltip.border}`, borderRadius: 8 }}
             formatter={(value) => [Number(value).toFixed(4), '']}
             labelFormatter={(label) => `값: ${label}`}
           />
