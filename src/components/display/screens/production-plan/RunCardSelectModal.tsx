@@ -9,6 +9,7 @@
 import { useEffect } from 'react';
 import useSWR from 'swr';
 import { fetcher } from '@/lib/fetcher';
+import { useTranslations } from 'next-intl';
 import { DEFAULT_ORG_ID, fmtNum } from '@/lib/display-helpers';
 
 interface RunCardRow {
@@ -27,6 +28,7 @@ interface RunCardSelectModalProps {
 }
 
 export default function RunCardSelectModal({ isOpen, lineCode, onSelect, onClose }: RunCardSelectModalProps) {
+  const t = useTranslations('productionPlan');
   const { data, isLoading } = useSWR<{ rows: RunCardRow[] }>(
     isOpen && lineCode ? `/api/display/run-cards?orgId=${DEFAULT_ORG_ID}&lineCode=${lineCode}` : null,
     fetcher,
@@ -51,7 +53,7 @@ export default function RunCardSelectModal({ isOpen, lineCode, onSelect, onClose
         {/* 헤더 */}
         <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
           <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-100">
-            당일 런카드 선택 <span className="ml-2 text-xs font-normal text-zinc-500">({lineCode})</span>
+            {t('runCardTitle')} <span className="ml-2 text-xs font-normal text-zinc-500">({lineCode})</span>
           </h3>
           <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">✕</button>
         </div>
@@ -61,18 +63,18 @@ export default function RunCardSelectModal({ isOpen, lineCode, onSelect, onClose
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
               <tr>
-                <th className="px-3 py-2 text-left">모델명</th>
-                <th className="px-3 py-2 text-left">제품코드</th>
-                <th className="px-3 py-2 text-right">LOT수량</th>
-                <th className="px-3 py-2 text-left">LOT번호</th>
+                <th className="px-3 py-2 text-left">{t('modelName')}</th>
+                <th className="px-3 py-2 text-left">{t('itemCode')}</th>
+                <th className="px-3 py-2 text-right">{t('lotSize')}</th>
+                <th className="px-3 py-2 text-left">{t('lotNo')}</th>
               </tr>
             </thead>
             <tbody>
               {isLoading && (
-                <tr><td colSpan={4} className="py-6 text-center text-zinc-400">조회 중...</td></tr>
+                <tr><td colSpan={4} className="py-6 text-center text-zinc-400">{t('runCardLoading')}</td></tr>
               )}
               {!isLoading && rows.length === 0 && (
-                <tr><td colSpan={4} className="py-6 text-center text-zinc-400">당일 런카드가 없습니다.</td></tr>
+                <tr><td colSpan={4} className="py-6 text-center text-zinc-400">{t('runCardEmpty')}</td></tr>
               )}
               {rows.map((r, i) => (
                 <tr

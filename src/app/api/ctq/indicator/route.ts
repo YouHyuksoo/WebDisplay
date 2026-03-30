@@ -155,14 +155,6 @@ async function calculateAndInsert(targetMonth: string): Promise<void> {
   await Promise.all(
     PROCESS_KEYS.map((key) => insertProcessMonth(key, targetMonth))
   );
-  /* RAW에 더 이상 없는 오래된 행 정리 (대책서 등록된 행은 보존) */
-  await executeQuery(
-    `DELETE FROM IQ_INDICATOR_MONTHLY
-     WHERE TARGET_MONTH = :tm
-       AND COUNTERMEASURE_NO IS NULL
-       AND UPDATED_DATE < SYSDATE - 1/1440`,
-    { tm: targetMonth }
-  );
 }
 
 /* -- 응답 빌드 -- */

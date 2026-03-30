@@ -78,12 +78,14 @@ export default function ProductIoStatus({
       <div className="flex h-full flex-col overflow-hidden">
         <div className="min-h-0 flex-1 overflow-hidden">
           <ProductIoGrid
-            plan={data?.plan ?? null}
-            timeZones={data?.timeZones ?? [0, 0, 0, 0, 0, 0]}
-            targets={data?.targets ?? [0, 0, 0, 0, 0, 0]}
+            plan={data?.plan ? { ...data.plan, LINE_NAME: data.plan.LINE_NAME ?? data.lineName } : data?.lineName ? { LINE_NAME: data.lineName } as never : null}
+            timeZones={data?.timeZones ?? []}
+            targets={data?.targets ?? []}
             totalActual={data?.totalActual ?? 0}
             timeLabels={data?.timeLabels ?? []}
+            zoneLabels={data?.zoneLabels}
             shift={data?.shift ?? 'A'}
+            models={data?.models ?? []}
             isLoading={isLoading}
             error={error}
           />

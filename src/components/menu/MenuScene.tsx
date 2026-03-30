@@ -29,6 +29,7 @@ import MenuWidgets from './MenuWidgets';
 import MenuControls from './MenuControls';
 import MenuSubmenus from './MenuSubmenus';
 import MenuModals from './MenuModals';
+import AmbientCharts from './effects/AmbientCharts';
 
 /**
  * mydesktop 3D 메뉴 시스템을 호스팅하는 메인 컴포넌트
@@ -82,6 +83,7 @@ export default function MenuScene() {
       <MenuControls />
       <MenuSubmenus />
       <MenuModals />
+      <AmbientCharts />
     </div>
   );
 }

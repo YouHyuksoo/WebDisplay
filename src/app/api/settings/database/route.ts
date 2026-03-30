@@ -136,7 +136,19 @@ async function saveProfiles(profiles: DatabaseProfile[], activeProfile: string) 
   const dir = path.dirname(CONFIG_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-  const data: DatabaseFileConfig = { activeProfile, profiles };
+  // 기존 파일에서 비밀번호 복원 (마스킹/빈값인 프로필은 기존 비밀번호 유지)
+  const existing = loadFileConfig();
+  const merged = profiles.map((p) => {
+    if (!p.password || p.password === '****') {
+      const old = existing?.profiles.find((o) => o.name === p.name);
+      if (old?.password && old.password !== '****') {
+        return { ...p, password: old.password };
+      }
+    }
+    return p;
+  });
+
+  const data: DatabaseFileConfig = { activeProfile, profiles: merged };
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf-8');
 
   await resetPool();

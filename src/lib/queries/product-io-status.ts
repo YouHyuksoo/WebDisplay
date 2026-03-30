@@ -124,3 +124,20 @@ SELECT COUNT(*) AS TOTAL_QTY FROM IP_PRODUCT_WORKSTAGE_IO
    AND ORGANIZATION_ID = :orgId AND ACTUAL_DATE = F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A')
 `;
 }
+
+/**
+ * 모델별 실적 집계 — 계획 없어도 실적 발생한 모든 모델을 최초 IO 시간순으로 반환.
+ * @returns SQL 문자열 (바인드: lineCode, workstageCode, orgId)
+ */
+export function sqlModelActuals(): string {
+  return `
+SELECT MODEL_NAME, ITEM_CODE,
+       SUM(IO_QTY) AS QTY,
+       MIN(IO_DATE) AS FIRST_IO
+  FROM IP_PRODUCT_WORKSTAGE_IO
+ WHERE LINE_CODE = :lineCode AND WORKSTAGE_CODE = :workstageCode
+   AND ORGANIZATION_ID = :orgId AND ACTUAL_DATE = F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A')
+ GROUP BY MODEL_NAME, ITEM_CODE
+ ORDER BY MIN(IO_DATE)
+`;
+}

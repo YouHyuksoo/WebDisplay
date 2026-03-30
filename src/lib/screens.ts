@@ -48,4 +48,6 @@ export const SCREENS: Record<string, ScreenConfig> = {
   '43': { id: '43', title: 'VISION Chart Analysis', titleKo: 'VISION 차트분석', titleEs: 'Análisis de gráficos VISION', titleVi: 'Phân tích biểu đồ VISION', window: 'w_display_vision_chart', group: 'charts' },
 
   '50': { id: '50', title: 'Equipment Log Search', titleKo: '설비로그검색', titleEs: 'Búsqueda de registro de equipos', titleVi: 'Tìm kiếm nhật ký thiết bị', window: 'w_display_equipment_log', group: 'equipment' },
+
+  '60': { id: '60', title: 'SPC Control Chart', titleKo: '관리도보기', titleEs: 'Gráfico de control SPC', titleVi: 'Biểu đồ kiểm soát SPC', window: '', group: 'spc-monitoring' },
 };

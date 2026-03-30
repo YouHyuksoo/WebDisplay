@@ -117,13 +117,17 @@ export function setupWheelHandlers(): void {
     }
 
     if (wheelAccumulator > WHEEL_THRESHOLD) {
-      // 즉시 잠금 → import 완료 후 해제
       sectionLocked = true;
       lastTriggerTime = now;
       wheelAccumulator = 0;
       import('../sections').then((Sections) => {
         Sections.goToSection(state.currentSection + 1);
-        sectionLocked = false;
+        // isTransitioning이 완전히 끝날 때까지 잠금 유지
+        const unlock = () => {
+          if (state.isTransitioning) { setTimeout(unlock, 50); return; }
+          sectionLocked = false;
+        };
+        setTimeout(unlock, 100);
       }).catch(() => { sectionLocked = false; });
     } else if (wheelAccumulator < -WHEEL_THRESHOLD) {
       sectionLocked = true;
@@ -131,7 +135,11 @@ export function setupWheelHandlers(): void {
       wheelAccumulator = 0;
       import('../sections').then((Sections) => {
         Sections.goToSection(state.currentSection - 1);
-        sectionLocked = false;
+        const unlock = () => {
+          if (state.isTransitioning) { setTimeout(unlock, 50); return; }
+          sectionLocked = false;
+        };
+        setTimeout(unlock, 100);
       }).catch(() => { sectionLocked = false; });
     }
   };

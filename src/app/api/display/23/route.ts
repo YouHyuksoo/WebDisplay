@@ -15,6 +15,7 @@ import {
   sqlProductPlan,
   sqlTimeZoneActual,
   sqlTotalActual,
+  sqlModelActuals,
   sqlCurrentShift,
   SHIFT_ZONES,
 } from '@/lib/queries/product-io-status';
@@ -26,7 +27,8 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const orgId = searchParams.get('orgId') ?? '1';
   const linesParam = searchParams.get('lines') ?? '';
-  const lineCode = linesParam.split(',').map((s) => s.trim()).filter(Boolean)[0] ?? '';
+  const lineCodes = linesParam.split(',').map((s) => s.trim()).filter(Boolean);
+  const lineCode = lineCodes[lineCodes.length - 1] ?? '';
 
   /* 라인 미선택 시 빈 응답 */
   if (!lineCode || lineCode === '%') {
@@ -47,14 +49,20 @@ export async function GET(request: Request) {
 
     const commonBinds = { lineCode, orgId: Number(orgId) };
 
-    /* 3개 쿼리 병렬 실행 */
-    const [planRows, tzRows, totalRows] = await Promise.all([
+    /* 5개 쿼리 병렬 실행 */
+    const [planRows, tzRows, totalRows, modelRows, lineNameRows] = await Promise.all([
       executeQuery(sqlProductPlan(), commonBinds),
       executeQuery(sqlTimeZoneActual(), { ...commonBinds, workstageCode: WORKSTAGE_CODE }),
       executeQuery(sqlTotalActual(), { ...commonBinds, workstageCode: WORKSTAGE_CODE }),
+      executeQuery(sqlModelActuals(), { ...commonBinds, workstageCode: WORKSTAGE_CODE }),
+      executeQuery<{ LINE_NAME: string }>(`SELECT F_GET_LINE_NAME(:lineCode, 1) AS LINE_NAME FROM DUAL`, { lineCode }),
     ]);
 
     const plan = (planRows as Record<string, unknown>[])[0] ?? null;
+    const lineName = lineNameRows[0]?.LINE_NAME ?? lineCode;
+    if (plan) {
+      (plan as Record<string, unknown>).LINE_NAME = (plan as Record<string, unknown>).LINE_NAME ?? lineName;
+    }
 
     /* 시간대별 실적 — TIME_SLOT(A~E) → 인덱스 매핑 */
     const slotMap: Record<string, number> = { A: 0, B: 1, C: 2, D: 3, E: 4 };
@@ -80,7 +88,8 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({
-      plan, timeZones, targets, totalActual,
+      plan, lineName, timeZones, targets, totalActual,
+      models: modelRows,
       zoneLabels: zones.map((z) => z.zone),
       timeLabels: zones.map((z) => z.label),
       shift, timestamp: new Date().toISOString(),

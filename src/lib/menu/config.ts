@@ -117,6 +117,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'fav-42', title: 'FCT 차트분석', url: '/display/42', color: '#f59e0b', icon: 'svg:operation-rate', layer: 0 },
   { id: 'fav-43', title: 'VISION 차트분석', url: '/display/43', color: '#10b981', icon: 'svg:vision', layer: 0 },
   { id: 'fav-50', title: '설비로그검색', url: '/display/50', color: '#64748b', icon: 'svg:error-log', layer: 0 },
+  { id: 'fav-60', title: '관리도보기', url: '/display/60', color: '#8b5cf6', icon: 'svg:chart', layer: 0 },
 
   // SMD Monitoring (layer: 1)
   { id: 'menu-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 1 },
@@ -140,6 +141,9 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'menu-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:material', layer: 1 },
   { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 1 },
   { id: 'menu-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 1 },
+
+  // SPC Monitoring (layer: 4)
+  { id: 'menu-60', title: '관리도보기', url: '/display/60', color: '#8b5cf6', icon: 'svg:chart', layer: 4 },
 
   // Anomaly Monitoring (layer: 5) — SOLUMCTQ 이상점 모니터링
   { id: 'ctq-repeat', title: '반복성연속', url: '/ctq/repeatability', color: '#ef4444', icon: 'svg:repeat', layer: 5 },

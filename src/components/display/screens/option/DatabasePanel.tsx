@@ -161,17 +161,6 @@ export default function DatabasePanel() {
       );
     }
 
-    // 비밀번호가 비어있으면 기존 것 유지
-    updated = updated.map((p) => {
-      if (!p.password) {
-        const old = profiles.find((o) => o.name === p.name);
-        if (old && old.password && old.password !== '****') {
-          return { ...p, password: old.password };
-        }
-      }
-      return p;
-    });
-
     try {
       const res = await fetch('/api/settings/database', {
         method: 'POST',

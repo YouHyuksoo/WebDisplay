@@ -108,6 +108,7 @@ export function goToSection(index: number, forceDirection: number | null = null)
       state.currentSection = index;
       updateSectionInfo();
       updateDepthIndicator();
+      window.dispatchEvent(new CustomEvent('menu-section-changed', { detail: { index } }));
 
       gsap.fromTo(
         '#section-info',

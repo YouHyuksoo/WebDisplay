@@ -2,7 +2,7 @@
  * @file route.ts
  * @description 생산계획등록 CRUD API (메뉴 20).
  * 초보자 가이드:
- * - GET  /api/display/20?orgId=1&planDate=2026-03-30 → 계획 목록 조회
+ * - GET  /api/display/20?orgId=1&planDateFrom=2026-03-01&planDateTo=2026-03-31&lineCode=S01 → 기간+라인 조회
  * - POST /api/display/20 (body JSON) → 신규 등록
  * - PUT  /api/display/20 (body JSON) → 수정
  * - DELETE /api/display/20?planDate=...&lineCode=...&orgId=... → 삭제
@@ -15,6 +15,10 @@ import { executeQuery, executeDml } from '@/lib/db';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const orgId = searchParams.get('orgId') ?? '1';
+  const planDateFrom = searchParams.get('planDateFrom') ?? null;
+  const planDateTo = searchParams.get('planDateTo') ?? null;
+  const lineCode = searchParams.get('lineCode') ?? null;
+  // 하위호환: 단일 날짜 파라미터도 지원
   const planDate = searchParams.get('planDate') ?? null;
 
   const sql = `
@@ -30,11 +34,16 @@ export async function GET(request: Request) {
       LEFT JOIN ISYS_USERS leader     ON leader.USER_ID     = t.LEADER_ID
       LEFT JOIN ISYS_USERS sub_leader ON sub_leader.USER_ID = t.SUB_LEADER_ID
      WHERE t.ORGANIZATION_ID = :orgId
-       AND (:planDate IS NULL OR t.PLAN_DATE = TO_DATE(:planDate, 'YYYY-MM-DD'))
+       AND ((:planDateFrom IS NULL AND :planDateTo IS NULL AND :planDate IS NULL)
+            OR (:planDate IS NOT NULL AND t.PLAN_DATE = TO_DATE(:planDate, 'YYYY-MM-DD'))
+            OR (:planDateFrom IS NOT NULL AND :planDateTo IS NOT NULL
+                AND t.PLAN_DATE BETWEEN TO_DATE(:planDateFrom, 'YYYY-MM-DD')
+                                    AND TO_DATE(:planDateTo,   'YYYY-MM-DD')))
+       AND (:lineCode IS NULL OR t.LINE_CODE = :lineCode)
      ORDER BY t.PLAN_DATE DESC, t.LINE_CODE`;
 
   try {
-    const rows = await executeQuery(sql, { orgId, planDate });
+    const rows = await executeQuery(sql, { orgId, planDateFrom, planDateTo, planDate, lineCode });
     return NextResponse.json({ rows, timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('[API /display/20 GET] Error:', error);
