@@ -276,7 +276,7 @@ export default function SpcControlChart({ screenId }: Props) {
                       <Tooltip
                         contentStyle={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: 8 }}
                         labelStyle={{ color: '#999' }}
-                        formatter={(value: number) => [value.toFixed(4), 'X-bar']}
+                        formatter={(value) => [Number(value).toFixed(4), 'X-bar']}
                       />
                       <ReferenceLine y={s.usl} stroke="#ff6b6b" strokeWidth={2} label={{ value: 'USL', fill: '#ff6b6b', fontSize: 10, position: 'right' }} />
                       <ReferenceLine y={s.lsl} stroke="#4dabf7" strokeWidth={2} label={{ value: 'LSL', fill: '#4dabf7', fontSize: 10, position: 'right' }} />
@@ -316,7 +316,7 @@ export default function SpcControlChart({ screenId }: Props) {
                       <Tooltip
                         contentStyle={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: 8 }}
                         labelStyle={{ color: '#999' }}
-                        formatter={(value: number) => [value.toFixed(4), 'R']}
+                        formatter={(value) => [Number(value).toFixed(4), 'R']}
                       />
                       <ReferenceLine y={s.rUCL} stroke="#ef4444" strokeDasharray="5 5" label={{ value: 'UCL', fill: '#ef4444', fontSize: 10 }} />
                       <ReferenceLine y={s.rCL} stroke="#22c55e" strokeDasharray="3 3" label={{ value: 'CL', fill: '#22c55e', fontSize: 10 }} />
@@ -371,7 +371,7 @@ function Histogram({ subgroups, stats }: { subgroups: Subgroup[]; stats: SpcStat
         <YAxis tick={{ fontSize: 10, fill: '#999' }} width={30} />
         <Tooltip
           contentStyle={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: 8 }}
-          formatter={(value: number, name: string) => [
+          formatter={(value, name) => [
             value, name === 'count' ? '빈도' : '정규분포',
           ]}
           labelFormatter={(label) => `구간: ${label}`}
@@ -452,7 +452,7 @@ function CapabilityChart({ subgroups, stats }: { subgroups: Subgroup[]; stats: S
           <YAxis tick={false} width={5} />
           <Tooltip
             contentStyle={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: 8 }}
-            formatter={(value: number) => [value.toFixed(4), '']}
+            formatter={(value) => [Number(value).toFixed(4), '']}
             labelFormatter={(label) => `값: ${label}`}
           />
           {/* 규격 내 영역 (초록 음영) */}
