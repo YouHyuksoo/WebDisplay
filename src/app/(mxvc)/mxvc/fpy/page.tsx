@@ -34,8 +34,7 @@ export default function MxvcFpyPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const { data, loading, error, fetchData } = useMxvcFpy(
-    settings.selectedEquipments,
-    settings.dayOffset,
+    settings.dayOffset ?? 0,
   );
 
   useEffect(() => {
@@ -66,7 +65,6 @@ export default function MxvcFpyPage() {
           onChange={setSettings}
           onRefresh={fetchData}
           loading={loading}
-          equipments={data?.equipments ?? []}
           collapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed(true)}
         />

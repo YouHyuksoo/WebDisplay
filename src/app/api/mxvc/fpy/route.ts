@@ -25,9 +25,6 @@ interface FpyRow {
   PASS_CNT: number;
 }
 
-interface EquipmentRow {
-  EQUIPMENT_ID: string;
-}
 
 /**
  * 작업일 경계 SQL (08:00 기준 + dayOffset)
@@ -51,21 +48,9 @@ function workDayEndSql(offset: number): string {
     END`;
 }
 
-/** 설비 필터 WHERE절 생성 */
-function buildEquipmentFilter(
-  equipments: string[],
-): { clause: string; params: Record<string, string> } {
-  if (equipments.length === 0) return { clause: "", params: {} };
-  const placeholders = equipments.map((_, i) => `:eq${i}`).join(",");
-  const params: Record<string, string> = {};
-  equipments.forEach((eq, i) => { params[`eq${i}`] = eq; });
-  return { clause: `AND EQUIPMENT_ID IN (${placeholders})`, params };
-}
-
 /** 단일 테이블 시간대별 직행율 조회 */
 async function queryTableFpy(
   tableKey: MxvcFpyTableKey,
-  eqFilter: { clause: string; params: Record<string, string> },
   dayOffset: number,
 ): Promise<{ key: MxvcFpyTableKey; data: TableFpyData }> {
   const cfg = TABLE_CONFIG[tableKey];
@@ -80,12 +65,11 @@ async function queryTableFpy(
     WHERE LOG_TIMESTAMP >= (${workDayStartSql(dayOffset)})
       AND LOG_TIMESTAMP <= (${workDayEndSql(dayOffset)})
       AND ${cfg.resultCol} IS NOT NULL
-      ${eqFilter.clause}
     GROUP BY TO_CHAR(LOG_TIMESTAMP, 'HH24')
     ORDER BY HOUR
   `;
 
-  const rows = await executeQuery<FpyRow>(sql, eqFilter.params);
+  const rows = await executeQuery<FpyRow>(sql);
 
   const hourly: HourlyFpy[] = rows.map((r) => ({
     hour: r.HOUR,
@@ -114,26 +98,12 @@ async function queryTableFpy(
   };
 }
 
-/** 사용 가능한 EQUIPMENT_ID 목록 조회 (전 테이블 UNION) */
-async function queryEquipments(): Promise<string[]> {
-  const unions = TABLE_KEYS
-    .map((k) => `SELECT DISTINCT EQUIPMENT_ID FROM ${k}`)
-    .join(" UNION ");
-  const sql = `SELECT DISTINCT EQUIPMENT_ID FROM (${unions}) ORDER BY EQUIPMENT_ID`;
-  const rows = await executeQuery<EquipmentRow>(sql);
-  return rows.map((r) => r.EQUIPMENT_ID);
-}
-
 export async function GET(request: NextRequest) {
   try {
-    const eqParam = request.nextUrl.searchParams.get("equipments") ?? "";
-    const equipments = eqParam ? eqParam.split(",").filter(Boolean) : [];
-    const eqFilter = buildEquipmentFilter(equipments);
     const dayOffset = Number(request.nextUrl.searchParams.get("dayOffset") ?? "0") || 0;
 
-    const [tableResults, equipmentList, workDayRows] = await Promise.all([
-      Promise.all(TABLE_KEYS.map((k) => queryTableFpy(k, eqFilter, dayOffset))),
-      queryEquipments(),
+    const [tableResults, workDayRows] = await Promise.all([
+      Promise.all(TABLE_KEYS.map((k) => queryTableFpy(k, dayOffset))),
       executeQuery<{ WD_START: string; WD_END: string }>(
         `SELECT TO_CHAR(${workDayStartSql(dayOffset)}, 'YYYY-MM-DD HH24:MI') AS WD_START,
                 TO_CHAR(${workDayEndSql(dayOffset)}, 'YYYY-MM-DD HH24:MI') AS WD_END
@@ -150,7 +120,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       tables,
-      equipments: equipmentList,
       workDay: { start: wd?.WD_START ?? "", end: wd?.WD_END ?? "" },
       lastUpdated: new Date().toISOString(),
     });

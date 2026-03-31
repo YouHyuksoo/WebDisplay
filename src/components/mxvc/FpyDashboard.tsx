@@ -29,7 +29,7 @@ export default function FpyDashboard({ data, settings }: Props) {
   return (
     <div className="flex-1 overflow-y-auto p-4">
       {/* 요약 바 */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-3 gap-3 mb-4">
         <SummaryCard
           label="작업일"
           value={`${data.workDay.start.slice(5)} ~ ${data.workDay.end.slice(11)}`}
@@ -39,11 +39,6 @@ export default function FpyDashboard({ data, settings }: Props) {
           label="조회 테이블"
           value={`${visibleTables.length}개`}
           color="text-cyan-400"
-        />
-        <SummaryCard
-          label="설비"
-          value={data.equipments.length > 0 ? `${data.equipments.length}대` : "-"}
-          color="text-purple-400"
         />
         <OverallYieldCard tables={data.tables} visibleKeys={visibleTables} />
       </div>

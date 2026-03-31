@@ -25,7 +25,6 @@ export interface TableFpyData {
 /** API 응답 */
 export interface MxvcFpyResponse {
   tables: Record<string, TableFpyData>;
-  equipments: string[];
   workDay: { start: string; end: string };
   lastUpdated: string;
 }
@@ -94,7 +93,6 @@ export interface MxvcFpySettings {
   chartHeight: number;
   palette: "blue" | "rainbow" | "warm" | "cool";
   visibleTables: MxvcFpyTableKey[];
-  selectedEquipments: string[];
   dayOffset: number;
 }
 
@@ -108,7 +106,6 @@ export const DEFAULT_FPY_SETTINGS: MxvcFpySettings = {
     "LOG_FCT", "LOG_VISION_LEGACY", "LOG_EOL", "LOG_ICT",
     "LOG_LOWCURRENT", "LOG_SPI", "LOG_AOI",
   ],
-  selectedEquipments: [],
 };
 
 /** 프리셋 정의 */

@@ -22,7 +22,6 @@ interface Props {
   onChange: (s: MxvcFpySettings) => void;
   onRefresh: () => void;
   loading: boolean;
-  equipments: string[];
   collapsed: boolean;
   onToggleCollapse: () => void;
 }
@@ -37,7 +36,7 @@ const PRESET_LABELS: Record<string, string> = {
 
 export default function FpySidebar({
   settings, onChange, onRefresh, loading,
-  equipments, collapsed, onToggleCollapse,
+  collapsed, onToggleCollapse,
 }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -51,14 +50,6 @@ export default function FpySidebar({
       ? curr.filter((k) => k !== key)
       : [...curr, key];
     set({ visibleTables: next });
-  };
-
-  const toggleEquipment = (eq: string) => {
-    const curr = settings.selectedEquipments;
-    const next = curr.includes(eq)
-      ? curr.filter((e) => e !== eq)
-      : [...curr, eq];
-    set({ selectedEquipments: next });
   };
 
   if (!mounted) {
@@ -164,31 +155,6 @@ export default function FpySidebar({
               <option value="cool">Cool</option>
             </select>
           </div>
-
-          {/* 설비 필터 */}
-          {equipments.length > 0 && (
-            <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
-              <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                설비 필터
-                {settings.selectedEquipments.length > 0 && (
-                  <span className="text-blue-600 dark:text-blue-400 float-right">
-                    {settings.selectedEquipments.length}개 선택
-                  </span>
-                )}
-              </label>
-              <div className="max-h-32 overflow-y-auto space-y-0.5">
-                {equipments.map((eq) => (
-                  <label key={eq} className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox"
-                      checked={settings.selectedEquipments.includes(eq)}
-                      onChange={() => toggleEquipment(eq)}
-                      className="accent-blue-500" />
-                    <span className="text-[11px] text-gray-600 dark:text-gray-300 font-mono">{eq}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* 차트 토글 */}
           <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
