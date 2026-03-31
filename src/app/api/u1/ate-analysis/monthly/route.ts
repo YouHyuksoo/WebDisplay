@@ -46,8 +46,8 @@ async function queryMonthly(): Promise<HeatmapRow[]> {
            COUNT(*) AS TOTAL_CNT,
            SUM(CASE WHEN INSPECT_RESULT IN (${PASS_IN}) THEN 1 ELSE 0 END) AS PASS_CNT
     FROM IQ_MACHINE_ATE_U1_DATA_RAW
-    WHERE INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-10/24)-30, 'YYYY/MM/DD') || ' 10:00:00'
-      AND INSPECT_DATE <  TO_CHAR(TRUNC(SYSDATE-10/24)+1,  'YYYY/MM/DD') || ' 10:00:00'
+    WHERE INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24)-30, 'YYYY/MM/DD') || ' 08:00:00'
+      AND INSPECT_DATE <  TO_CHAR(TRUNC(SYSDATE-8/24)+1,  'YYYY/MM/DD') || ' 08:00:00'
     GROUP BY TO_CHAR(TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'), 'YYYY-MM-DD'),
              NVL(ZONE_CODE, 'UNKNOWN')
     ORDER BY WORK_DATE, ZONE_CODE
@@ -58,8 +58,8 @@ async function queryMonthly(): Promise<HeatmapRow[]> {
 /** DB 기준 날짜 범위 라벨 조회 */
 async function queryDateRange(): Promise<DateRangeRow[]> {
   const sql = `
-    SELECT TO_CHAR(TRUNC(SYSDATE-10/24)-30, 'YYYY-MM-DD') AS FROM_DATE,
-           TO_CHAR(TRUNC(SYSDATE-10/24),    'YYYY-MM-DD') AS TO_DATE
+    SELECT TO_CHAR(TRUNC(SYSDATE-8/24)-30, 'YYYY-MM-DD') AS FROM_DATE,
+           TO_CHAR(TRUNC(SYSDATE-8/24),    'YYYY-MM-DD') AS TO_DATE
     FROM DUAL
   `;
   return executeQuery<DateRangeRow>(sql, {});

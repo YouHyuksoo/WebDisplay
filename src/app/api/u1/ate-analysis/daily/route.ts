@@ -4,7 +4,7 @@
  *
  * 초보자 가이드:
  * 1. IQ_MACHINE_ATE_U1_DATA_RAW 테이블에서 2일치 데이터를 조회
- * 2. 근무일 경계는 10:00 (TRUNC(SYSDATE-10/24))
+ * 2. 근무일 경계는 10:00 (TRUNC(SYSDATE-8/24))
  * 3. 4개 쿼리를 Promise.all로 병렬 실행하여 응답 속도 최적화
  * 4. 차트 #1(당일 합격률), #2(전일 비교), #3(시간대별 추이), #6(기계별 NG) 데이터 제공
  */
@@ -23,16 +23,16 @@ export const dynamic = "force-dynamic";
 /** PASS로 인정되는 값 목록 */
 const PASS_IN = `'PASS','GOOD','OK','Y'`;
 
-/** 2일치 날짜 범위 WHERE 조건 (전일 10:00 ~ 당일+1 10:00) */
-const DATE_RANGE_2DAYS = `INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-10/24)-1, 'YYYY/MM/DD') || ' 10:00:00'
-   AND INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-10/24)+1, 'YYYY/MM/DD') || ' 10:00:00'`;
+/** 2일치 날짜 범위 WHERE 조건 (전일 08:00 ~ 당일+1 08:00) */
+const DATE_RANGE_2DAYS = `INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24)-1, 'YYYY/MM/DD') || ' 08:00:00'
+   AND INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'`;
 
-/** 당일 전용 날짜 범위 WHERE 조건 (당일 10:00 ~ 당일+1 10:00) */
-const DATE_RANGE_TODAY = `INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-10/24), 'YYYY/MM/DD') || ' 10:00:00'
-   AND INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-10/24)+1, 'YYYY/MM/DD') || ' 10:00:00'`;
+/** 당일 전용 날짜 범위 WHERE 조건 (당일 08:00 ~ 당일+1 08:00) */
+const DATE_RANGE_TODAY = `INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24), 'YYYY/MM/DD') || ' 08:00:00'
+   AND INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'`;
 
 /** DAY_TYPE 분류 CASE 절 (Y=전일, T=당일) */
-const DAY_CASE = `CASE WHEN INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-10/24), 'YYYY/MM/DD') || ' 10:00:00' THEN 'Y' ELSE 'T' END`;
+const DAY_CASE = `CASE WHEN INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24), 'YYYY/MM/DD') || ' 08:00:00' THEN 'Y' ELSE 'T' END`;
 
 // ---------------------------------------------------------------------------
 // DB row 인터페이스
@@ -121,8 +121,8 @@ async function queryMachineNg(): Promise<MachineNgRow[]> {
 /** DB 기준 날짜 범위 라벨 조회 */
 async function queryDateRange(): Promise<DateRangeRow[]> {
   const sql = `
-    SELECT TO_CHAR(TRUNC(SYSDATE-10/24)-1, 'YYYY-MM-DD') AS YESTERDAY,
-           TO_CHAR(TRUNC(SYSDATE-10/24),   'YYYY-MM-DD') AS TODAY
+    SELECT TO_CHAR(TRUNC(SYSDATE-8/24)-1, 'YYYY-MM-DD') AS YESTERDAY,
+           TO_CHAR(TRUNC(SYSDATE-8/24),   'YYYY-MM-DD') AS TODAY
     FROM DUAL
   `;
   return executeQuery<DateRangeRow>(sql, {});
@@ -152,12 +152,12 @@ function calcRate(pass: number, total: number): number {
 }
 
 /**
- * 시간(HH)과 근무일 경계(10:00)를 기준으로 교대 구분
- * - 10~21시: 주간 D, 22~09시: 야간 N
+ * 시간(HH)과 근무일 경계(08:00)를 기준으로 교대 구분
+ * - 08~19시: 주간 D, 20~07시: 야간 N
  */
 function toShift(hour: string): "D" | "N" {
   const h = parseInt(hour, 10);
-  return h >= 10 && h < 22 ? "D" : "N";
+  return h >= 8 && h < 20 ? "D" : "N";
 }
 
 // ---------------------------------------------------------------------------

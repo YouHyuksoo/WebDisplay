@@ -6,7 +6,7 @@
  * 1. IQ_MACHINE_ATE_U1_DATA_RAW 테이블에서 최근 7일 데이터를 조회
  * 2. 날짜(DATE) x 라인(LINE_CODE) 기준으로 그룹핑
  * 3. 차트 #4(주간 추이 라인 차트) 데이터 제공
- * 4. 근무일 경계는 10:00 (TRUNC(SYSDATE-10/24))
+ * 4. 근무일 경계는 10:00 (TRUNC(SYSDATE-8/24))
  */
 
 import { NextResponse } from "next/server";
@@ -47,8 +47,8 @@ async function queryWeekly(): Promise<WeeklyRow[]> {
            COUNT(*) AS TOTAL_CNT,
            SUM(CASE WHEN INSPECT_RESULT IN (${PASS_IN}) THEN 1 ELSE 0 END) AS PASS_CNT
     FROM IQ_MACHINE_ATE_U1_DATA_RAW
-    WHERE INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-10/24)-7, 'YYYY/MM/DD') || ' 10:00:00'
-      AND INSPECT_DATE <  TO_CHAR(TRUNC(SYSDATE-10/24)+1, 'YYYY/MM/DD') || ' 10:00:00'
+    WHERE INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24)-7, 'YYYY/MM/DD') || ' 08:00:00'
+      AND INSPECT_DATE <  TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'
       AND LINE_CODE IS NOT NULL
     GROUP BY TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'),
              TO_CHAR(TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'), 'YYYY-MM-DD'),
@@ -61,8 +61,8 @@ async function queryWeekly(): Promise<WeeklyRow[]> {
 /** DB 기준 날짜 범위 라벨 조회 */
 async function queryDateRange(): Promise<DateRangeRow[]> {
   const sql = `
-    SELECT TO_CHAR(TRUNC(SYSDATE-10/24)-7, 'YYYY-MM-DD') AS FROM_DATE,
-           TO_CHAR(TRUNC(SYSDATE-10/24),   'YYYY-MM-DD') AS TO_DATE
+    SELECT TO_CHAR(TRUNC(SYSDATE-8/24)-7, 'YYYY-MM-DD') AS FROM_DATE,
+           TO_CHAR(TRUNC(SYSDATE-8/24),   'YYYY-MM-DD') AS TO_DATE
     FROM DUAL
   `;
   return executeQuery<DateRangeRow>(sql, {});

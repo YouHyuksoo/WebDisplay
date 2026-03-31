@@ -18,7 +18,8 @@ import {
 } from "recharts";
 import type { AteHourlyPoint } from "@/types/u1/ate-analysis";
 
-const ALL_HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+/* 근무일 기준 08시~다음날07시 순서 */
+const ALL_HOURS = Array.from({ length: 24 }, (_, i) => String((i + 8) % 24).padStart(2, "0"));
 
 interface Props {
   hourlyTrend: AteHourlyPoint[];
