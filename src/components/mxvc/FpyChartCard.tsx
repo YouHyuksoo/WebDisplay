@@ -81,11 +81,6 @@ export default function FpyChartCard({ tableKey, data, height }: Props) {
                 border: "1px solid #334155",
                 fontSize: 12,
               }}
-              formatter={(value: number, name: string) => [
-                `${value.toFixed(1)}%`,
-                name,
-              ]}
-              labelFormatter={(label: string) => `${label}시`}
             />
             <ReferenceLine
               y={90}
