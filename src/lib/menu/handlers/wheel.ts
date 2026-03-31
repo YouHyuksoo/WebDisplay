@@ -17,8 +17,8 @@
 import { state } from '../state';
 import { addTracked } from './tracker';
 
-/** 전환 간 최소 간격 (ms) — 전환 애니메이션(600ms) + 최소 쿨다운 */
-const MIN_TRANSITION_GAP = 700;
+/** 전환 간 최소 간격 (ms) — 전환 애니메이션(700ms) + 안전 마진 */
+const MIN_TRANSITION_GAP = 1000;
 
 /**
  * 휠 이벤트 리스너 등록
@@ -30,8 +30,8 @@ export function setupWheelHandlers(): void {
   let wheelTimeout: ReturnType<typeof setTimeout>;
   let lastWheelTime = 0;
   let decayRafId: number | null = null;
-  const WHEEL_THRESHOLD = 120; // 150 -> 120으로 낮춤 (더 민감하게)
-  const WHEEL_DECAY = 0.92;
+  const WHEEL_THRESHOLD = 150;
+  const WHEEL_DECAY = 0.85; // 더 빠르게 감쇠
 
   /** 마지막 전환을 트리거한 시각 (디바운스 기준) */
   let lastTriggerTime = 0;
@@ -109,12 +109,14 @@ export function setupWheelHandlers(): void {
       return;
     }
 
-    // ── 섹션 전환 누적 (감도 대폭 상향) ──
+    // ── 섹션 전환 누적 (연속 휠 시 과도 누적 방지) ──
     if (timeDelta < 200) {
-      wheelAccumulator += e.deltaY * 0.8; // 0.5 -> 0.8 상향
+      wheelAccumulator += e.deltaY * 0.5;
     } else {
-      wheelAccumulator = e.deltaY; // 0.8 -> 1.0 상향
+      wheelAccumulator = e.deltaY * 0.7;
     }
+    // 누적값 상한 클램프 (과도한 누적 방지)
+    wheelAccumulator = Math.max(-WHEEL_THRESHOLD * 1.5, Math.min(WHEEL_THRESHOLD * 1.5, wheelAccumulator));
 
     if (wheelAccumulator > WHEEL_THRESHOLD) {
       sectionLocked = true;
@@ -122,12 +124,8 @@ export function setupWheelHandlers(): void {
       wheelAccumulator = 0;
       import('../sections').then((Sections) => {
         Sections.goToSection(state.currentSection + 1);
-        // isTransitioning이 완전히 끝날 때까지 잠금 유지
-        const unlock = () => {
-          if (state.isTransitioning) { setTimeout(unlock, 50); return; }
-          sectionLocked = false;
-        };
-        setTimeout(unlock, 100);
+        // 전환 애니메이션 완료 후 안전 마진 두고 해제
+        setTimeout(() => { sectionLocked = false; }, MIN_TRANSITION_GAP);
       }).catch(() => { sectionLocked = false; });
     } else if (wheelAccumulator < -WHEEL_THRESHOLD) {
       sectionLocked = true;
@@ -135,11 +133,7 @@ export function setupWheelHandlers(): void {
       wheelAccumulator = 0;
       import('../sections').then((Sections) => {
         Sections.goToSection(state.currentSection - 1);
-        const unlock = () => {
-          if (state.isTransitioning) { setTimeout(unlock, 50); return; }
-          sectionLocked = false;
-        };
-        setTimeout(unlock, 100);
+        setTimeout(() => { sectionLocked = false; }, MIN_TRANSITION_GAP);
       }).catch(() => { sectionLocked = false; });
     }
   };
