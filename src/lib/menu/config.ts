@@ -65,6 +65,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 4, name: 'SPC MONITORING', subtitle: 'SPC 모니터링', icon: '✔' },
   { id: 5, name: 'ANOMALY', subtitle: '이상점 모니터링', icon: '⚠' },
   { id: 6, name: 'CHARTS', subtitle: '차트 보기', icon: '▦' },
+  { id: 7, name: 'U1 MONITORING', subtitle: 'U1전용 모니터링', icon: '◈' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -158,6 +159,11 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'ctq-indicator', title: '지표', url: '/ctq/indicator', color: '#a855f7', icon: 'svg:activity', layer: 5 },
   { id: 'ctq-dashboard', title: '품질분석', url: '/ctq/quality-dashboard', color: '#3b82f6', icon: 'svg:bar-chart', layer: 5 },
   { id: 'ctq-analysis', title: '종합분석', url: '/ctq/analysis', color: '#6366f1', icon: 'svg:pie-chart', layer: 5 },
+
+  // Charts (layer: 6)
+  // U1 Monitoring (layer: 7)
+  { id: 'u1-fpy', title: 'U1 직행율', url: '/u1/fpy', color: '#22c55e', icon: 'svg:target', layer: 7 },
+  { id: 'u1-ate', title: 'ATE 분석', url: '/u1/ate-analysis', color: '#f59e0b', icon: 'svg:chart', layer: 7 },
 
   // Charts (layer: 6)
   { id: 'menu-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 6 },

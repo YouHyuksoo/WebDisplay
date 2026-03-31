@@ -365,7 +365,9 @@
     "catSub3": "Monitoreo de equipos",
     "catSub4": "Monitoreo SPC",
     "catSub5": "Monitoreo de anomalías",
-    "catSub6": "Gráficos"
+    "catSub6": "Gráficos",
+    "catName7": "MONITOREO U1",
+    "catSub7": "Monitoreo dedicado U1"
   },
   "spiChart": {
     "defectByLine": "Defectos por línea",
@@ -508,6 +510,7 @@
       "openShort": "Open/Short",
       "indicator": "Indicador",
       "fpy": "FPY",
+      "u1fpy": "U1 FPY",
       "equipment": "Equipos",
       "equipmentHistory": "Historial equipos",
       "repairStatus": "Reparación",
@@ -531,6 +534,8 @@
       "indicatorStatus": "Rojo: 200%+ vs período anterior\nVerde: Inferior a 200%\nGris: Sin defectos (0)",
       "fpy": "Objetivo: Todos los procesos (ICT, Hi-Pot, FT, Burn-In, ATE, IMAGE, SET)\nContenido: Tasa de aprobación diaria por línea/proceso\nCriterio: FPY inferior a 90% → Grado A (Line Stop)\nPeríodo: Hoy 10:00 ~ (muestra 0 antes de las 10:00)",
       "fpyStatus": "Rojo: FPY inferior a 90% (Grado A - Line Stop)\nAmarillo: FPY 90~95%\nVerde: FPY 95% o superior",
+      "u1fpy": "Objetivo: Procesos U1 dedicados (HIPOT, ATE, Firmware, ICT, BURNIN)\nContenido: Tasa de aprobación diaria por línea/proceso\nCriterio: FPY inferior a 90% → Grado A (Line Stop)\nPeríodo: Hoy 10:00 ~ (muestra 0 antes de las 10:00)",
+      "u1fpyStatus": "Rojo: FPY inferior a 90% (Grado A - Line Stop)\nAmarillo: FPY 90~95%\nVerde: FPY 95% o superior",
       "equipment": "Objetivo: Tiempo de parada de equipo por línea/proceso\nTabla: IP_LINE_DAILY_OPERATION_HIST\nCriterio: Parada diaria 60min+ → Grado C\nPeríodo: Hoy (F_GET_WORK_ACTUAL_DATE)",
       "equipmentStatus": "Rojo: Parada 60min+ (Grado C - Mejora)\nAmarillo: Parada ocurrida (menos de 60min)\nGris: Sin parada",
       "equipmentHistory": "Tabla: IP_LINE_DAILY_OPERATION_HIST\nContenido: Registros diarios de operación/parada de equipo\nPeríodo: Hoy (F_GET_WORK_ACTUAL_DATE)",
@@ -619,6 +624,22 @@
         "gradeALabel": "Grado A (Line Stop)",
         "gradeDesc": "FPY inferior a 90% → Line Stop",
         "noData": "Sin datos de inspección que coincidan."
+      },
+      "u1fpy": {
+        "title": "U1 FPY",
+        "gradeALabel": "Grado A (Line Stop)",
+        "gradeDesc": "FPY inferior a 90% → Line Stop",
+        "noData": "Sin datos de inspección que coincidan."
+      },
+      "ateAnalysis": {
+        "title": "Análisis ATE",
+        "dailyPassRate": "Tasa de aprobación por línea",
+        "yesterdayCompare": "Ayer vs Hoy",
+        "hourlyTrend": "Tendencia de inspección por hora",
+        "weeklyTrend": "Tendencia semanal",
+        "monthlyHeatmap": "Mapa de calor mensual por zona",
+        "machineNg": "Distribución NG por máquina",
+        "noData": "Sin datos"
       },
       "equipment": {
         "title": "Monitoreo CTQ Equipos",
@@ -870,6 +891,10 @@
     "runCardEmpty": "Sin run cards hoy.",
     "runCardLoading": "Cargando...",
     "lotSize": "Cant. LOT",
-    "lotNo": "No. LOT"
+    "lotNo": "No. LOT",
+    "duplicateTitle": "Plan duplicado",
+    "duplicateMessage": "El plan {date} / {line} / Shift {shift} / {model} ya existe. ¿Sobrescribir?",
+    "cancelBtn": "Cancelar",
+    "overwriteBtn": "Sobrescribir"
   }
 }

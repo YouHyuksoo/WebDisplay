@@ -365,7 +365,9 @@
     "catSub3": "Giám sát thiết bị",
     "catSub4": "Giám sát SPC",
     "catSub5": "Giám sát bất thường",
-    "catSub6": "Biểu đồ"
+    "catSub6": "Biểu đồ",
+    "catName7": "GIÁM SÁT U1",
+    "catSub7": "Giám sát chuyên dụng U1"
   },
   "spiChart": {
     "defectByLine": "Tình trạng lỗi theo Line",
@@ -508,6 +510,7 @@
       "openShort": "Open/Short",
       "indicator": "Chỉ số",
       "fpy": "Tỷ lệ đạt",
+      "u1fpy": "U1 Tỷ lệ đạt",
       "equipment": "Thiết bị",
       "equipmentHistory": "Lịch sử TB",
       "repairStatus": "Sửa chữa",
@@ -531,6 +534,8 @@
       "indicatorStatus": "Đỏ: 200%+ so với kỳ trước\nXanh lá: Dưới 200%\nXám: Không có lỗi (0)",
       "fpy": "Đối tượng: Tất cả công đoạn (ICT, Hi-Pot, FT, Burn-In, ATE, IMAGE, SET)\nNội dung: Tỷ lệ đạt lần đầu theo line/công đoạn trong ngày\nTiêu chí: FPY dưới 90% → Cấp A (Dừng Line)\nThời gian: Hôm nay 10:00 ~ (hiển thị 0 trước 10:00)",
       "fpyStatus": "Đỏ: FPY dưới 90% (Cấp A - Dừng Line)\nVàng: FPY 90~95%\nXanh lá: FPY 95% trở lên",
+      "u1fpy": "Đối tượng: Công đoạn U1 chuyên dụng (HIPOT, ATE, Firmware, ICT, BURNIN)\nNội dung: Tỷ lệ đạt lần đầu theo line/công đoạn trong ngày\nTiêu chí: FPY dưới 90% → Cấp A (Dừng Line)\nThời gian: Hôm nay 10:00 ~ (hiển thị 0 trước 10:00)",
+      "u1fpyStatus": "Đỏ: FPY dưới 90% (Cấp A - Dừng Line)\nVàng: FPY 90~95%\nXanh lá: FPY 95% trở lên",
       "equipment": "Đối tượng: Thời gian dừng thiết bị theo line/công đoạn\nBảng: IP_LINE_DAILY_OPERATION_HIST\nTiêu chí: Dừng ngày 60 phút+ → Cấp C\nThời gian: Hôm nay (F_GET_WORK_ACTUAL_DATE)",
       "equipmentStatus": "Đỏ: Dừng 60 phút+ (Cấp C - Cải thiện)\nVàng: Có dừng (dưới 60 phút)\nXám: Không dừng",
       "equipmentHistory": "Bảng: IP_LINE_DAILY_OPERATION_HIST\nNội dung: Lịch sử vận hành/dừng thiết bị trong ngày\nThời gian: Hôm nay (F_GET_WORK_ACTUAL_DATE)",
@@ -619,6 +624,22 @@
         "gradeALabel": "Cấp A (Dừng Line)",
         "gradeDesc": "Tỷ lệ đạt dưới 90% → Dừng Line",
         "noData": "Không có dữ liệu kiểm tra phù hợp với tiêu chí hiện tại."
+      },
+      "u1fpy": {
+        "title": "U1 Tỷ lệ đạt",
+        "gradeALabel": "Cấp A (Dừng Line)",
+        "gradeDesc": "Tỷ lệ đạt dưới 90% → Dừng Line",
+        "noData": "Không có dữ liệu kiểm tra phù hợp với tiêu chí hiện tại."
+      },
+      "ateAnalysis": {
+        "title": "Phân tích ATE",
+        "dailyPassRate": "Tỷ lệ đạt theo Line hôm nay",
+        "yesterdayCompare": "Hôm qua vs Hôm nay",
+        "hourlyTrend": "Xu hướng kiểm tra theo giờ",
+        "weeklyTrend": "Xu hướng tỷ lệ đạt tuần",
+        "monthlyHeatmap": "Bản đồ nhiệt Zone tháng",
+        "machineNg": "Phân bố NG theo máy",
+        "noData": "Không có dữ liệu"
       },
       "equipment": {
         "title": "Giám sát thiết bị CTQ",
@@ -870,6 +891,10 @@
     "runCardEmpty": "Không có run card hôm nay.",
     "runCardLoading": "Đang tải...",
     "lotSize": "SL LOT",
-    "lotNo": "Số LOT"
+    "lotNo": "Số LOT",
+    "duplicateTitle": "Kế hoạch trùng lặp",
+    "duplicateMessage": "Kế hoạch {date} / {line} / Shift {shift} / {model} đã tồn tại. Ghi đè?",
+    "cancelBtn": "Hủy",
+    "overwriteBtn": "Ghi đè"
   }
 }

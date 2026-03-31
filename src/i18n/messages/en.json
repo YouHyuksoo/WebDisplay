@@ -365,7 +365,9 @@
     "catSub3": "Equipment Monitoring",
     "catSub4": "SPC Monitoring",
     "catSub5": "Anomaly Monitoring",
-    "catSub6": "Charts"
+    "catSub6": "Charts",
+    "catName7": "U1 MONITORING",
+    "catSub7": "U1 Dedicated Monitoring"
   },
   "spiChart": {
     "defectByLine": "Defect Status by Line",
@@ -508,6 +510,7 @@
       "openShort": "Open/Short",
       "indicator": "Indicator",
       "fpy": "FPY",
+      "u1fpy": "U1 FPY",
       "equipment": "Equipment",
       "equipmentHistory": "Equip History",
       "repairStatus": "Repair",
@@ -531,6 +534,8 @@
       "indicatorStatus": "Red: 200%+ vs previous period\nGreen: Under 200%\nGray: No defects (0)",
       "fpy": "Target: All processes (ICT, Hi-Pot, FT, Burn-In, ATE, IMAGE, SET)\nContent: Daily first pass yield by line/process\nCriteria: FPY below 90% → Grade A (Line Stop)\nPeriod: Today 10:00 ~ (shows 0 before 10:00)",
       "fpyStatus": "Red: FPY below 90% (Grade A - Line Stop)\nYellow: FPY 90~95%\nGreen: FPY 95% or above",
+      "u1fpy": "Target: U1 dedicated processes (HIPOT, ATE, Firmware, ICT, BURNIN)\nContent: Daily first pass yield by line/process\nCriteria: FPY below 90% → Grade A (Line Stop)\nPeriod: Today 10:00 ~ (shows 0 before 10:00)",
+      "u1fpyStatus": "Red: FPY below 90% (Grade A - Line Stop)\nYellow: FPY 90~95%\nGreen: FPY 95% or above",
       "equipment": "Target: Equipment stop time per line/process\nTable: IP_LINE_DAILY_OPERATION_HIST\nCriteria: Daily stop time 60min+ → Grade C\nPeriod: Today (F_GET_WORK_ACTUAL_DATE)",
       "equipmentStatus": "Red: 60min+ stop (Grade C - Improve)\nYellow: Stop occurred (under 60min)\nGray: No stop",
       "equipmentHistory": "Table: IP_LINE_DAILY_OPERATION_HIST\nContent: Daily equipment operation/stop history records\nPeriod: Today (F_GET_WORK_ACTUAL_DATE)",
@@ -619,6 +624,22 @@
         "gradeALabel": "Grade A (Line Stop)",
         "gradeDesc": "FPY below 90% → Line Stop",
         "noData": "No inspection data matching the current criteria."
+      },
+      "u1fpy": {
+        "title": "U1 FPY",
+        "gradeALabel": "Grade A (Line Stop)",
+        "gradeDesc": "FPY below 90% → Line Stop",
+        "noData": "No inspection data matching the current criteria."
+      },
+      "ateAnalysis": {
+        "title": "ATE Analysis",
+        "dailyPassRate": "Daily Pass Rate by Line",
+        "yesterdayCompare": "Yesterday vs Today",
+        "hourlyTrend": "Hourly Inspection Trend",
+        "weeklyTrend": "Weekly Daily Pass Rate",
+        "monthlyHeatmap": "Monthly Zone Heatmap",
+        "machineNg": "Machine NG Distribution",
+        "noData": "No data"
       },
       "equipment": {
         "title": "CTQ Equipment Monitoring",
@@ -870,6 +891,10 @@
     "runCardEmpty": "No run cards for today.",
     "runCardLoading": "Loading...",
     "lotSize": "LOT Size",
-    "lotNo": "LOT No"
+    "lotNo": "LOT No",
+    "duplicateTitle": "Duplicate Plan",
+    "duplicateMessage": "A plan for {date} / {line} / Shift {shift} / {model} already exists. Overwrite?",
+    "cancelBtn": "Cancel",
+    "overwriteBtn": "Overwrite"
   }
 }

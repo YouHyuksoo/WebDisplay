@@ -365,7 +365,9 @@
     "catSub3": "설비 모니터링",
     "catSub4": "SPC 모니터링",
     "catSub5": "이상점 모니터링",
-    "catSub6": "차트 보기"
+    "catSub6": "차트 보기",
+    "catName7": "U1전용 모니터링",
+    "catSub7": "U1전용 모니터링"
   },
   "spiChart": {
     "defectByLine": "라인별 불량현황",
@@ -508,6 +510,7 @@
       "openShort": "원자재공용부품",
       "indicator": "지표",
       "fpy": "직행율",
+      "u1fpy": "U1 직행율",
       "equipment": "설비이상",
       "equipmentHistory": "설비점검이력",
       "repairStatus": "수리상태",
@@ -531,6 +534,8 @@
       "indicatorStatus": "빨강: 전기 대비 200% 이상\n초록: 전기 대비 200% 미만\n회색: 불량 없음 (0)",
       "fpy": "대상: 모든 공정 (ICT, Hi-Pot, FT, Burn-In, ATE, IMAGE, SET)\n내용: 라인별/공정별 당일 직행율\n기준: 직행율 90% 미만 → A급 (Line Stop)\n기간: 당일 10:00 ~ (10시 이전은 0 표시)",
       "fpyStatus": "빨강: 직행율 90% 미만 (A급 Line Stop)\n노랑: 직행율 90~95%\n초록: 직행율 95% 이상",
+      "u1fpy": "대상: U1 전용 공정 (HIPOT, ATE, 펌웨어, ICT, BURNIN)\n내용: 라인별/공정별 당일 직행율\n기준: 직행율 90% 미만 → A급 (Line Stop)\n기간: 당일 10:00 ~ (10시 이전은 0 표시)",
+      "u1fpyStatus": "빨강: 직행율 90% 미만 (A급 Line Stop)\n노랑: 직행율 90~95%\n초록: 직행율 95% 이상",
       "equipment": "대상: 라인별 공정별 설비 정지시간\n테이블: IP_LINE_DAILY_OPERATION_HIST\n기준: 일 정지시간 60분 이상 → C급\n기간: 당일 (F_GET_WORK_ACTUAL_DATE)",
       "equipmentStatus": "빨강: 60분 이상 정지 (C급 불량개선)\n노랑: 정지 발생 (60분 미만)\n회색: 정지 없음",
       "equipmentHistory": "테이블: IP_LINE_DAILY_OPERATION_HIST\n내용: 당일 설비 가동/정지 개별 이력\n기간: 당일 (F_GET_WORK_ACTUAL_DATE)",
@@ -619,6 +624,22 @@
         "gradeALabel": "A급 (Line Stop)",
         "gradeDesc": "직행율 90% 미만 → Line Stop",
         "noData": "현재 조건에 해당하는 검사 데이터가 없습니다."
+      },
+      "u1fpy": {
+        "title": "U1 직행율",
+        "gradeALabel": "A급 (Line Stop)",
+        "gradeDesc": "직행율 90% 미만 → Line Stop",
+        "noData": "현재 조건에 해당하는 검사 데이터가 없습니다."
+      },
+      "ateAnalysis": {
+        "title": "ATE 분석",
+        "dailyPassRate": "당일 라인별 합격률",
+        "yesterdayCompare": "전일 vs 당일 비교",
+        "hourlyTrend": "시간대별 검사 추이",
+        "weeklyTrend": "주간 일별 합격률 추이",
+        "monthlyHeatmap": "월간 ZONE별 히트맵",
+        "machineNg": "머신별 NG 분포",
+        "noData": "데이터 없음"
       },
       "equipment": {
         "title": "CTQ 설비이상 모니터링",
@@ -870,6 +891,10 @@
     "runCardEmpty": "당일 런카드가 없습니다.",
     "runCardLoading": "조회 중...",
     "lotSize": "LOT수량",
-    "lotNo": "LOT번호"
+    "lotNo": "LOT번호",
+    "duplicateTitle": "중복 계획 존재",
+    "duplicateMessage": "{date} / {line} / Shift {shift} / {model} 계획이 이미 등록되어 있습니다. 덮어쓰시겠습니까?",
+    "cancelBtn": "취소",
+    "overwriteBtn": "덮어쓰기"
   }
 }
