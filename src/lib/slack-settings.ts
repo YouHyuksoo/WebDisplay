@@ -1,13 +1,14 @@
 /**
  * @file src/lib/slack-settings.ts
  * @description
- * Slack 알림 설정을 JSON 파일로 저장/조회하는 유틸리티입니다.
+ * Slack / Teams 알림 설정을 JSON 파일로 저장/조회하는 유틸리티입니다.
  * Oracle DB 없이 data/slack-settings.json 파일을 직접 사용합니다.
  *
  * 초보자 가이드:
  * 1. **getSettings()**: 현재 설정 조회 (파일 없으면 기본값 반환)
  * 2. **saveSettings()**: 설정을 JSON 파일에 저장
  * 3. **저장 위치**: 프로젝트 루트의 data/slack-settings.json
+ * 4. Slack과 Teams 설정이 함께 저장됩니다
  *
  * 사용 예:
  * ```typescript
@@ -20,13 +21,14 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-/** Slack 알림 설정 타입 */
+/** Slack / Teams 통합 알림 설정 타입 */
 export interface SlackSettings {
+  // --- Slack 설정 ---
   /** Incoming Webhook URL */
   webhookUrl: string;
   /** 알림 채널명 (표시용) */
   channelName: string;
-  /** 알림 마스터 ON/OFF */
+  /** Slack 알림 마스터 ON/OFF */
   isEnabled: boolean;
   /** 합격률 급락 알림 */
   notifyPassRateDrop: boolean;
@@ -42,6 +44,13 @@ export interface SlackSettings {
   mentionOnUrgent: boolean;
   /** 일일 리포트 전송 시간 (HH:mm) */
   dailyReportTime: string;
+  // --- Teams 설정 ---
+  /** Teams Incoming Webhook URL */
+  teamsWebhookUrl: string;
+  /** Teams 채널명 (표시용) */
+  teamsChannelName: string;
+  /** Teams 알림 ON/OFF */
+  teamsEnabled: boolean;
 }
 
 /** 기본 설정값 */
@@ -56,6 +65,9 @@ const DEFAULT_SETTINGS: SlackSettings = {
   notifyDailyReport: false,
   mentionOnUrgent: false,
   dailyReportTime: '08:00',
+  teamsWebhookUrl: '',
+  teamsChannelName: '',
+  teamsEnabled: false,
 };
 
 /** 설정 파일 경로 */

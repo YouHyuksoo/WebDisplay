@@ -687,7 +687,7 @@
         "noData": "No data"
       },
       "slackSettings": {
-        "title": "Slack Notification Settings"
+        "title": "Notification Settings (Slack / Teams)"
       },
       "equipment": {
         "title": "CTQ Equipment Monitoring",

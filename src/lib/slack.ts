@@ -1,19 +1,20 @@
 /**
  * @file src/lib/slack.ts
  * @description
- * SOLUM MES WebDisplay용 Slack 웹훅 알림 유틸리티입니다.
- * JSON 파일에 저장된 설정을 기반으로 MES 이벤트를 Slack으로 알림합니다.
+ * SOLUM MES WebDisplay용 Slack / Teams 통합 알림 유틸리티입니다.
+ * JSON 파일에 저장된 설정을 기반으로 MES 이벤트를 Slack/Teams로 알림합니다.
  *
  * 초보자 가이드:
- * 1. **sendSlackNotification(type, data)**: 타입별 알림 전송
- * 2. **알림 타입**: passRateDrop, ngSpike, lineStop, equipmentDown, dailyReport
- * 3. **색상 코딩**: 빨강(critical), 노랑(warning), 초록(good)
- * 4. **isEnabled + 개별 토글** 모두 true일 때만 전송됩니다.
+ * 1. **sendSlackNotification(type, data)**: Slack 전용 알림 전송
+ * 2. **sendNotification(type, data)**: Slack + Teams 동시 전송 (권장)
+ * 3. **알림 타입**: passRateDrop, ngSpike, lineStop, equipmentDown, dailyReport
+ * 4. **색상 코딩**: 빨강(critical), 노랑(warning), 초록(good)
+ * 5. **isEnabled + 개별 토글** 모두 true일 때만 전송됩니다.
  *
  * 사용 예:
  * ```typescript
- * import { sendSlackNotification } from '@/lib/slack';
- * await sendSlackNotification('lineStop', {
+ * import { sendNotification } from '@/lib/slack';
+ * await sendNotification('lineStop', {
  *   lineName: 'SMD-L1',
  *   stoppedAt: new Date(),
  *   reason: '설비 이상',
@@ -22,6 +23,7 @@
  */
 
 import { getSettings } from '@/lib/slack-settings';
+import { sendTeamsNotification } from '@/lib/teams';
 
 /** 알림 타입 정의 */
 export type SlackNotificationType =
@@ -265,4 +267,22 @@ function buildPayload(
     default:
       return { text: '[SOLUM MES] 알림 발생' };
   }
+}
+
+/**
+ * Slack + Teams 동시 알림 전송 (통합 함수, 이 함수를 사용하는 것을 권장)
+ * 각 채널의 enabled 상태와 개별 토글을 각자 확인하여 독립적으로 전송합니다.
+ * @param type - 알림 타입
+ * @param data - 알림 데이터
+ * @returns 하나라도 성공하면 true
+ */
+export async function sendNotification(
+  type: SlackNotificationType,
+  data: Parameters<typeof sendSlackNotification>[1]
+): Promise<boolean> {
+  const results = await Promise.allSettled([
+    sendSlackNotification(type, data),
+    sendTeamsNotification(type, data),
+  ]);
+  return results.some((r) => r.status === 'fulfilled' && r.value === true);
 }

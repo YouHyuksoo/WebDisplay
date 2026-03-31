@@ -1,14 +1,15 @@
 /**
  * @file src/app/(u1)/u1/slack-settings/page.tsx
  * @description
- * SOLUM MES Slack 알림 설정 페이지입니다.
- * 웹훅 URL, 채널명, 알림 조건 등을 설정할 수 있습니다.
+ * SOLUM MES 알림 설정 페이지입니다. (Slack + Teams 통합)
+ * 웹훅 URL, 채널명, 알림 조건 등을 Slack과 Teams 각각 설정할 수 있습니다.
  *
  * 초보자 가이드:
- * 1. **웹훅 URL**: Slack 앱에서 생성한 Incoming Webhook URL 입력
- * 2. **마스터 ON/OFF**: 모든 알림을 한 번에 켜거나 끕니다
- * 3. **개별 토글**: 각 이벤트별 알림 수신 여부 선택
- * 4. **테스트**: 저장 전 웹훅 연동 상태를 확인합니다
+ * 1. **Slack 웹훅 URL**: Slack 앱에서 생성한 Incoming Webhook URL 입력
+ * 2. **Teams 웹훅 URL**: Teams 채널 커넥터에서 생성한 Incoming Webhook URL 입력
+ * 3. **마스터 ON/OFF**: Slack/Teams 각각 독립적으로 켜거나 끕니다
+ * 4. **개별 토글**: 각 이벤트별 알림 수신 여부 선택 (Slack/Teams 공유)
+ * 5. **테스트**: 저장 전 웹훅 연동 상태를 각각 확인합니다
  */
 
 'use client';
@@ -16,16 +17,19 @@
 import { useState, useEffect } from 'react';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import SlackWebhookSection from '@/components/u1/slack/SlackWebhookSection';
+import TeamsWebhookSection from '@/components/u1/slack/TeamsWebhookSection';
 import SlackToggleSection from '@/components/u1/slack/SlackToggleSection';
 import SlackAdvancedSection from '@/components/u1/slack/SlackAdvancedSection';
 
 const SCREEN_ID = 'u1-slack';
 
-/** Slack 설정 타입 */
+/** 통합 알림 설정 타입 (Slack + Teams) */
 export interface SlackSettings {
+  // Slack
   webhookUrl: string;
   channelName: string;
   isEnabled: boolean;
+  // 공유 토글 (Slack/Teams 공통 적용)
   notifyPassRateDrop: boolean;
   notifyNgSpike: boolean;
   notifyLineStop: boolean;
@@ -33,6 +37,10 @@ export interface SlackSettings {
   notifyDailyReport: boolean;
   mentionOnUrgent: boolean;
   dailyReportTime: string;
+  // Teams
+  teamsWebhookUrl: string;
+  teamsChannelName: string;
+  teamsEnabled: boolean;
 }
 
 /** 상태 메시지 타입 */
@@ -52,19 +60,23 @@ const DEFAULT_SETTINGS: SlackSettings = {
   notifyDailyReport: false,
   mentionOnUrgent: false,
   dailyReportTime: '08:00',
+  teamsWebhookUrl: '',
+  teamsChannelName: '',
+  teamsEnabled: false,
 };
 
 export default function SlackSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isTesting, setIsTesting] = useState(false);
+  const [isTestingSlack, setIsTestingSlack] = useState(false);
+  const [isTestingTeams, setIsTestingTeams] = useState(false);
   const [settings, setSettings] = useState<SlackSettings>(DEFAULT_SETTINGS);
   const [status, setStatus] = useState<StatusMsg | null>(null);
 
-  // 상태 메시지 자동 제거 (3초 후)
+  // 상태 메시지 자동 제거 (4초 후)
   useEffect(() => {
     if (!status) return;
-    const timer = setTimeout(() => setStatus(null), 3000);
+    const timer = setTimeout(() => setStatus(null), 4000);
     return () => clearTimeout(timer);
   }, [status]);
 
@@ -79,10 +91,21 @@ export default function SlackSettingsPage() {
 
   // 설정 저장
   const handleSave = async () => {
+    // Slack URL 검증
     if (settings.webhookUrl && !settings.webhookUrl.startsWith('https://hooks.slack.com/')) {
       setStatus({ type: 'error', text: '유효하지 않은 Slack 웹훅 URL입니다.' });
       return;
     }
+    // Teams URL 검증
+    if (
+      settings.teamsWebhookUrl &&
+      !settings.teamsWebhookUrl.includes('.webhook.office.com/') &&
+      !settings.teamsWebhookUrl.includes('.logic.azure.com/')
+    ) {
+      setStatus({ type: 'error', text: '유효하지 않은 Teams 웹훅 URL입니다.' });
+      return;
+    }
+
     setIsSaving(true);
     try {
       const res = await fetch('/api/slack-settings', {
@@ -93,7 +116,7 @@ export default function SlackSettingsPage() {
       if (res.ok) {
         const data = await res.json();
         setSettings({ ...DEFAULT_SETTINGS, ...data });
-        setStatus({ type: 'success', text: 'Slack 설정이 저장되었습니다.' });
+        setStatus({ type: 'success', text: '알림 설정이 저장되었습니다.' });
       } else {
         const err = await res.json();
         setStatus({ type: 'error', text: err.error || '저장에 실패했습니다.' });
@@ -105,13 +128,13 @@ export default function SlackSettingsPage() {
     }
   };
 
-  // 테스트 메시지 전송
-  const handleTest = async () => {
+  // Slack 테스트
+  const handleTestSlack = async () => {
     if (!settings.webhookUrl) {
-      setStatus({ type: 'error', text: '웹훅 URL을 먼저 입력해주세요.' });
+      setStatus({ type: 'error', text: 'Slack 웹훅 URL을 먼저 입력해주세요.' });
       return;
     }
-    setIsTesting(true);
+    setIsTestingSlack(true);
     try {
       const res = await fetch('/api/slack-settings/test', {
         method: 'POST',
@@ -119,15 +142,41 @@ export default function SlackSettingsPage() {
         body: JSON.stringify({ webhookUrl: settings.webhookUrl }),
       });
       if (res.ok) {
-        setStatus({ type: 'success', text: '테스트 메시지를 전송했습니다. Slack을 확인해주세요!' });
+        setStatus({ type: 'success', text: 'Slack 테스트 메시지를 전송했습니다. Slack을 확인해주세요!' });
       } else {
         const err = await res.json();
-        setStatus({ type: 'error', text: err.error || '테스트 전송에 실패했습니다.' });
+        setStatus({ type: 'error', text: err.error || 'Slack 테스트 전송에 실패했습니다.' });
       }
     } catch {
-      setStatus({ type: 'error', text: '테스트 중 오류가 발생했습니다.' });
+      setStatus({ type: 'error', text: 'Slack 테스트 중 오류가 발생했습니다.' });
     } finally {
-      setIsTesting(false);
+      setIsTestingSlack(false);
+    }
+  };
+
+  // Teams 테스트
+  const handleTestTeams = async () => {
+    if (!settings.teamsWebhookUrl) {
+      setStatus({ type: 'error', text: 'Teams 웹훅 URL을 먼저 입력해주세요.' });
+      return;
+    }
+    setIsTestingTeams(true);
+    try {
+      const res = await fetch('/api/slack-settings/test-teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ webhookUrl: settings.teamsWebhookUrl }),
+      });
+      if (res.ok) {
+        setStatus({ type: 'success', text: 'Teams 테스트 메시지를 전송했습니다. Teams를 확인해주세요!' });
+      } else {
+        const err = await res.json();
+        setStatus({ type: 'error', text: err.error || 'Teams 테스트 전송에 실패했습니다.' });
+      }
+    } catch {
+      setStatus({ type: 'error', text: 'Teams 테스트 중 오류가 발생했습니다.' });
+    } finally {
+      setIsTestingTeams(false);
     }
   };
 
@@ -139,7 +188,7 @@ export default function SlackSettingsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-950 flex flex-col">
-        <DisplayHeader title="Slack 알림 설정" screenId={SCREEN_ID} />
+        <DisplayHeader title="알림 설정 (Slack / Teams)" screenId={SCREEN_ID} />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500" />
         </div>
@@ -149,7 +198,7 @@ export default function SlackSettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col">
-      <DisplayHeader title="Slack 알림 설정" screenId={SCREEN_ID} />
+      <DisplayHeader title="알림 설정 (Slack / Teams)" screenId={SCREEN_ID} />
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
         <div className="max-w-2xl mx-auto space-y-4">
@@ -166,19 +215,22 @@ export default function SlackSettingsPage() {
             </div>
           )}
 
-          {/* 마스터 ON/OFF */}
+          {/* Slack 마스터 ON/OFF */}
           <div className="bg-gray-900 rounded-xl p-5 border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-200 font-semibold">Slack 알림</p>
-                <p className="text-gray-400 text-sm mt-0.5">전체 알림 기능을 켜거나 끕니다</p>
+                <p className="text-gray-200 font-semibold flex items-center gap-2">
+                  <span className="text-blue-400">💬</span>
+                  Slack 알림
+                </p>
+                <p className="text-gray-400 text-sm mt-0.5">Slack 전체 알림 기능을 켜거나 끕니다</p>
               </div>
               <button
                 onClick={() => handleToggle('isEnabled')}
                 className={`relative w-12 h-6 rounded-full transition-colors focus:outline-none ${
                   settings.isEnabled ? 'bg-blue-600' : 'bg-gray-600'
                 }`}
-                aria-label="알림 ON/OFF"
+                aria-label="Slack 알림 ON/OFF"
               >
                 <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
                   settings.isEnabled ? 'translate-x-7' : 'translate-x-1'
@@ -187,16 +239,27 @@ export default function SlackSettingsPage() {
             </div>
           </div>
 
-          {/* 웹훅 설정 섹션 */}
+          {/* Slack 웹훅 설정 섹션 */}
           <SlackWebhookSection
             webhookUrl={settings.webhookUrl}
             channelName={settings.channelName}
-            isTesting={isTesting}
+            isTesting={isTestingSlack}
             onChange={(field, value) => setSettings((prev) => ({ ...prev, [field]: value }))}
-            onTest={handleTest}
+            onTest={handleTestSlack}
           />
 
-          {/* 알림 토글 섹션 */}
+          {/* Teams 웹훅 설정 섹션 */}
+          <TeamsWebhookSection
+            webhookUrl={settings.teamsWebhookUrl}
+            channelName={settings.teamsChannelName}
+            isEnabled={settings.teamsEnabled}
+            isTesting={isTestingTeams}
+            onChange={(field, value) => setSettings((prev) => ({ ...prev, [field]: value }))}
+            onToggle={() => handleToggle('teamsEnabled')}
+            onTest={handleTestTeams}
+          />
+
+          {/* 알림 토글 섹션 (Slack/Teams 공유) */}
           <SlackToggleSection settings={settings} onToggle={handleToggle} />
 
           {/* 고급 옵션 섹션 */}

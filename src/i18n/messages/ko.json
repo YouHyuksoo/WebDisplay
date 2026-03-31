@@ -687,7 +687,7 @@
         "noData": "데이터 없음"
       },
       "slackSettings": {
-        "title": "Slack 알림 설정"
+        "title": "알림 설정 (Slack / Teams)"
       },
       "equipment": {
         "title": "CTQ 설비이상 모니터링",

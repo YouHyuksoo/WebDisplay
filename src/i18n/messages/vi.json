@@ -687,7 +687,7 @@
         "noData": "Không có dữ liệu"
       },
       "slackSettings": {
-        "title": "Cài đặt thông báo Slack"
+        "title": "Cài đặt thông báo (Slack / Teams)"
       },
       "equipment": {
         "title": "Giám sát thiết bị CTQ",
