@@ -67,7 +67,7 @@ export function loadShortcuts(): Shortcut[] {
       const cleaned = shortcuts
         .filter((s) => {
           // 제거된 기본 항목은 삭제 (menu-, fav-, ctq- 접두사 모두 포함)
-          const isDefaultId = s.id.startsWith('menu-') || s.id.startsWith('fav-') || s.id.startsWith('ctq-');
+          const isDefaultId = s.id.startsWith('menu-') || s.id.startsWith('fav-') || s.id.startsWith('ctq-') || s.id.startsWith('u1-');
           if (isDefaultId) {
             return defaultMap.has(s.id);
           }
@@ -75,7 +75,7 @@ export function loadShortcuts(): Shortcut[] {
         })
         .map((s) => {
           // 기본 항목이라면 config.ts 정보를 강제 동기화 (제목, 아이콘, 색상 등)
-          const isDefaultId = s.id.startsWith('menu-') || s.id.startsWith('fav-') || s.id.startsWith('ctq-');
+          const isDefaultId = s.id.startsWith('menu-') || s.id.startsWith('fav-') || s.id.startsWith('ctq-') || s.id.startsWith('u1-');
           if (isDefaultId) {
             const def = defaultMap.get(s.id);
             if (def && (s.title !== def.title || s.icon !== def.icon || s.color !== def.color || s.layer !== def.layer)) {
