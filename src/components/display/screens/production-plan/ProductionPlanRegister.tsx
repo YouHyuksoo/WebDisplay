@@ -82,6 +82,7 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
   const [editMode, setEditMode] = useState(false);
   const [runCardModalOpen, setRunCardModalOpen] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const [dupConfirmOpen, setDupConfirmOpen] = useState(false);
   const [selectedLinesCsv, setSelectedLinesCsv] = useState(() => getSelectedLines(screenId));
   const t = useTranslations('productionPlan');
 
@@ -136,20 +137,25 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
     setMessage(null);
   };
 
-  /** 저장/수정 */
-  const handleSave = async () => {
+  /** 저장/수정 (force=true 시 중복 덮어쓰기) */
+  const handleSave = async (force = false) => {
     if (!form.planDate || !form.lineCode) {
       setMessage({ type: 'error', text: t('requiredFields') });
       return;
     }
     const method = editMode ? 'PUT' : 'POST';
-    const body = { ...form, orgId: DEFAULT_ORG_ID, enterBy: 'SYSTEM', modifyBy: 'SYSTEM' };
+    const body = { ...form, orgId: DEFAULT_ORG_ID, enterBy: 'SYSTEM', modifyBy: 'SYSTEM', ...(force ? { force: true } : {}) };
     try {
       const res = await fetch('/api/display/20', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+      /* 중복 감지 → 확인 모달 표시 */
+      if (res.status === 409) {
+        setDupConfirmOpen(true);
+        return;
+      }
       if (!res.ok) throw new Error('요청 실패');
       await mutate(apiUrl);
       handleNew();
@@ -168,6 +174,8 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
         planDate: form.planDate,
         lineCode: form.lineCode,
         orgId: DEFAULT_ORG_ID,
+        ...(form.shiftCode ? { shiftCode: form.shiftCode } : {}),
+        ...(form.modelName ? { modelName: form.modelName } : {}),
       });
       const res = await fetch(`/api/display/20?${params}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('삭제 실패');
@@ -224,6 +232,32 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
         onSelect={handleRunCardSelect}
         onClose={() => setRunCardModalOpen(false)}
       />
+
+      {/* ═══════ 중복 확인 모달 ═══════ */}
+      {dupConfirmOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
+          <div className="w-96 rounded-xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900">
+            <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">{t('duplicateTitle')}</h3>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              {t('duplicateMessage', { date: form.planDate, line: form.lineCode, shift: form.shiftCode, model: form.modelName || '-' })}
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setDupConfirmOpen(false)}
+                className={`${btnBase} bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600`}
+              >
+                {t('cancelBtn')}
+              </button>
+              <button
+                onClick={() => { setDupConfirmOpen(false); handleSave(true); }}
+                className={`${btnBase} bg-orange-600 text-white hover:bg-orange-700`}
+              >
+                {t('overwriteBtn')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex h-full flex-col gap-2 overflow-auto p-3">
 
         {/* ═══════ 조회 영역 ═══════ */}
@@ -344,7 +378,7 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
             <button onClick={handleNew} className={`${btnBase} bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600`}>
               {t('newBtn')}
             </button>
-            <button onClick={handleSave} className={`${btnBase} bg-blue-600 text-white hover:bg-blue-700`}>
+            <button onClick={() => handleSave()} className={`${btnBase} bg-blue-600 text-white hover:bg-blue-700`}>
               {editMode ? t('editBtn') : t('saveBtn')}
             </button>
             {editMode && (
@@ -377,7 +411,7 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
             <tbody>
               {rows.map((r, i) => (
                 <tr
-                  key={`${r.PLAN_DATE}-${r.LINE_CODE}`}
+                  key={`${r.PLAN_DATE}-${r.LINE_CODE}-${r.SHIFT_CODE}-${i}`}
                   onClick={() => handleRowClick(r)}
                   className={`cursor-pointer border-t border-zinc-100 hover:bg-blue-50 dark:border-zinc-800 dark:hover:bg-zinc-700 ${
                     i % 2 === 1 ? 'bg-zinc-50 dark:bg-zinc-900/50' : 'bg-white dark:bg-zinc-950'

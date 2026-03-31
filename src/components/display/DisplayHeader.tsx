@@ -30,6 +30,7 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal }: 
   const locale = useLocale();
   const { theme, setTheme } = useTheme();
   
+  const [mounted, setMounted] = useState(false);
   const [time, setTime] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSqlOpen, setIsSqlOpen] = useState(false);
@@ -38,6 +39,8 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal }: 
   /** 라인 선택 필수 여부 (저장값 없을 때 true) */
   const [lineRequired, setLineRequired] = useState(false);
   const timing = useDisplayTiming();
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const tick = () => setTime(new Date().toLocaleTimeString('ko-KR'));
@@ -118,7 +121,7 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal }: 
             className="rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-yellow-400"
             title="Toggle Theme"
           >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            {mounted ? (theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />) : <Sun size={18} />}
           </button>
 
           {screenId && (

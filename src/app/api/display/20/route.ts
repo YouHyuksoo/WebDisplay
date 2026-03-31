@@ -54,25 +54,14 @@ export async function GET(request: Request) {
   }
 }
 
-/** ---------- POST — 신규 등록 ---------- */
+/** ---------- POST — 신규 등록 (중복 시 409 반환, force=true 시 덮어쓰기) ---------- */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const sql = `
-      INSERT INTO IP_PRODUCT_LINE_TARGET (
-        PLAN_DATE, LINE_CODE, SHIFT_CODE, PLAN_QTY, UPH,
-        MODEL_NAME, ITEM_CODE, WORKER_QTY, COMMENTS,
-        LEADER_ID, SUB_LEADER_ID, ORGANIZATION_ID, ENTER_DATE, ENTER_BY
-      ) VALUES (
-        TO_DATE(:planDate, 'YYYY-MM-DD'), :lineCode, :shiftCode, :planQty, :uph,
-        :modelName, :itemCode, :workerQty, :comments,
-        :leaderId, :subLeaderId, :orgId, SYSDATE, :enterBy
-      )`;
-
-    const result = await executeDml(sql, {
+    const binds = {
       planDate: body.planDate,
       lineCode: body.lineCode,
-      shiftCode: body.shiftCode,
+      shiftCode: body.shiftCode ?? null,
       planQty: Number(body.planQty) || 0,
       uph: Number(body.uph) || 0,
       modelName: body.modelName ?? null,
@@ -83,8 +72,56 @@ export async function POST(request: Request) {
       subLeaderId: body.subLeaderId ?? null,
       orgId: body.orgId ?? '1',
       enterBy: body.enterBy ?? 'SYSTEM',
-    });
+    };
 
+    /* 중복 체크 */
+    const dupCheck = await executeQuery<{ CNT: number }>(
+      `SELECT COUNT(*) AS CNT FROM IP_PRODUCT_LINE_TARGET
+        WHERE PLAN_DATE = TO_DATE(:planDate, 'YYYY-MM-DD')
+          AND LINE_CODE = :lineCode
+          AND NVL(SHIFT_CODE,'X') = NVL(:shiftCode,'X')
+          AND NVL(MODEL_NAME,'X') = NVL(:modelName,'X')
+          AND ORGANIZATION_ID = :orgId`,
+      { planDate: binds.planDate, lineCode: binds.lineCode,
+        shiftCode: binds.shiftCode, modelName: binds.modelName, orgId: binds.orgId },
+    );
+
+    if (Number(dupCheck[0]?.CNT) > 0 && !body.force) {
+      return NextResponse.json(
+        { duplicate: true, message: '동일한 계획이 이미 존재합니다.' },
+        { status: 409 },
+      );
+    }
+
+    /* force=true → 기존 행 UPDATE */
+    if (Number(dupCheck[0]?.CNT) > 0 && body.force) {
+      const updateSql = `
+        UPDATE IP_PRODUCT_LINE_TARGET SET
+          PLAN_QTY=:planQty, UPH=:uph, ITEM_CODE=:itemCode,
+          WORKER_QTY=:workerQty, COMMENTS=:comments,
+          LEADER_ID=:leaderId, SUB_LEADER_ID=:subLeaderId,
+          LAST_MODIFY_DATE=SYSDATE, LAST_MODIFY_BY=:enterBy
+        WHERE PLAN_DATE=TO_DATE(:planDate,'YYYY-MM-DD')
+          AND LINE_CODE=:lineCode
+          AND NVL(SHIFT_CODE,'X')=NVL(:shiftCode,'X')
+          AND NVL(MODEL_NAME,'X')=NVL(:modelName,'X')
+          AND ORGANIZATION_ID=:orgId`;
+      const result = await executeDml(updateSql, binds);
+      return NextResponse.json({ success: true, overwritten: true, rowsAffected: result.rowsAffected });
+    }
+
+    /* 신규 INSERT */
+    const insertSql = `
+      INSERT INTO IP_PRODUCT_LINE_TARGET (
+        PLAN_DATE, LINE_CODE, SHIFT_CODE, PLAN_QTY, UPH,
+        MODEL_NAME, ITEM_CODE, WORKER_QTY, COMMENTS,
+        LEADER_ID, SUB_LEADER_ID, ORGANIZATION_ID, ENTER_DATE, ENTER_BY
+      ) VALUES (
+        TO_DATE(:planDate, 'YYYY-MM-DD'), :lineCode, :shiftCode, :planQty, :uph,
+        :modelName, :itemCode, :workerQty, :comments,
+        :leaderId, :subLeaderId, :orgId, SYSDATE, :enterBy
+      )`;
+    const result = await executeDml(insertSql, binds);
     return NextResponse.json({ success: true, rowsAffected: result.rowsAffected });
   } catch (error) {
     console.error('[API /display/20 POST] Error:', error);
@@ -98,19 +135,19 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const sql = `
       UPDATE IP_PRODUCT_LINE_TARGET SET
-        SHIFT_CODE=:shiftCode, PLAN_QTY=:planQty, UPH=:uph,
-        MODEL_NAME=:modelName, ITEM_CODE=:itemCode, WORKER_QTY=:workerQty,
+        PLAN_QTY=:planQty, UPH=:uph,
+        ITEM_CODE=:itemCode, WORKER_QTY=:workerQty,
         COMMENTS=:comments, LEADER_ID=:leaderId, SUB_LEADER_ID=:subLeaderId,
         LAST_MODIFY_DATE=SYSDATE, LAST_MODIFY_BY=:modifyBy
       WHERE PLAN_DATE=TO_DATE(:planDate,'YYYY-MM-DD')
         AND LINE_CODE=:lineCode
+        AND NVL(SHIFT_CODE,'X')=NVL(:shiftCode,'X')
+        AND NVL(MODEL_NAME,'X')=NVL(:modelName,'X')
         AND ORGANIZATION_ID=:orgId`;
 
     const result = await executeDml(sql, {
-      shiftCode: body.shiftCode,
       planQty: Number(body.planQty) || 0,
       uph: Number(body.uph) || 0,
-      modelName: body.modelName ?? null,
       itemCode: body.itemCode ?? null,
       workerQty: Number(body.workerQty) || 0,
       comments: body.comments ?? null,
@@ -119,6 +156,8 @@ export async function PUT(request: Request) {
       modifyBy: body.modifyBy ?? 'SYSTEM',
       planDate: body.planDate,
       lineCode: body.lineCode,
+      shiftCode: body.shiftCode ?? null,
+      modelName: body.modelName ?? null,
       orgId: body.orgId ?? '1',
     });
 
@@ -136,6 +175,9 @@ export async function DELETE(request: Request) {
   const lineCode = searchParams.get('lineCode');
   const orgId = searchParams.get('orgId') ?? '1';
 
+  const shiftCode = searchParams.get('shiftCode') ?? null;
+  const modelName = searchParams.get('modelName') ?? null;
+
   if (!planDate || !lineCode) {
     return NextResponse.json(
       { error: 'planDate and lineCode are required' },
@@ -148,9 +190,11 @@ export async function DELETE(request: Request) {
       DELETE FROM IP_PRODUCT_LINE_TARGET
        WHERE PLAN_DATE=TO_DATE(:planDate,'YYYY-MM-DD')
          AND LINE_CODE=:lineCode
+         AND (:shiftCode IS NULL OR NVL(SHIFT_CODE,'X')=NVL(:shiftCode,'X'))
+         AND (:modelName IS NULL OR NVL(MODEL_NAME,'X')=NVL(:modelName,'X'))
          AND ORGANIZATION_ID=:orgId`;
 
-    const result = await executeDml(sql, { planDate, lineCode, orgId });
+    const result = await executeDml(sql, { planDate, lineCode, shiftCode, modelName, orgId });
     return NextResponse.json({ success: true, rowsAffected: result.rowsAffected });
   } catch (error) {
     console.error('[API /display/20 DELETE] Error:', error);

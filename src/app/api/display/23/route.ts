@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     const zones = SHIFT_ZONES[shift] ?? SHIFT_ZONES.A;
     const zoneCount = zones.length;
 
-    const commonBinds = { lineCode, orgId: Number(orgId) };
+    const commonBinds = { lineCode, orgId: Number(orgId), shift };
 
     /* 5개 쿼리 병렬 실행 */
     const [planRows, tzRows, totalRows, modelRows, lineNameRows] = await Promise.all([
