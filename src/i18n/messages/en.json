@@ -229,6 +229,7 @@
     "tunnelShape": "Tunnel Shape",
     "cardStyle": "Card Style",
     "categoryManage": "Manage Categories",
+    "notificationSettings": "Notification Settings (Slack / Teams)",
     "bookmarkImport": "Import Bookmarks",
     "quickAddSettings": "Quick Add Settings",
     "dataExport": "Export Data",

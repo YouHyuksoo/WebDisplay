@@ -229,6 +229,7 @@
     "tunnelShape": "터널 모양",
     "cardStyle": "카드 스타일",
     "categoryManage": "카테고리 관리",
+    "notificationSettings": "알림 설정 (Slack / Teams)",
     "bookmarkImport": "북마크 가져오기",
     "quickAddSettings": "빠른 추가 설정",
     "dataExport": "데이터 내보내기",

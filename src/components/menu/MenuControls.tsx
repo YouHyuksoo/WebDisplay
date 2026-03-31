@@ -33,6 +33,7 @@ import {
   ZapOff,
   RotateCw,
   CircleHelp,
+  Bell,
 } from "lucide-react";
 import { useTranslations } from 'next-intl';
 
@@ -236,6 +237,17 @@ export default function MenuControls() {
             <ListTree size={16} />
           </span>
           <span>{t('categoryManage')}</span>
+        </div>
+        <div
+          className="settings-item"
+          id="menu-notification-settings"
+          onClick={() => window.location.href = '/u1/slack-settings'}
+          style={{ cursor: 'pointer' }}
+        >
+          <span className="icon">
+            <Bell size={16} />
+          </span>
+          <span>{t('notificationSettings')}</span>
         </div>
         <div className="settings-divider" />
         <div className="settings-credits">

@@ -229,6 +229,7 @@
     "tunnelShape": "Hình dạng Tunnel",
     "cardStyle": "Kiểu Card",
     "categoryManage": "Quản lý danh mục",
+    "notificationSettings": "Cài đặt thông báo (Slack / Teams)",
     "bookmarkImport": "Nhập Bookmark",
     "quickAddSettings": "Cài đặt thêm nhanh",
     "dataExport": "Xuất dữ liệu",

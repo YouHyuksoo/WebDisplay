@@ -8,7 +8,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Globe, Sun, Moon, Settings, Database, HelpCircle, LogOut, Bell } from 'lucide-react';
+import { Globe, Sun, Moon, Settings, Database, HelpCircle, LogOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { changeLocale } from '@/components/providers/LocaleProvider';
 import LineSelectModal from '../common/LineSelectModal';
@@ -159,15 +159,6 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal }: 
               />
             </>
           )}
-
-          {/* 알림 설정 (Slack / Teams) */}
-          <Link
-            href="/u1/slack-settings"
-            className="rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-amber-400"
-            title="알림 설정 (Slack / Teams)"
-          >
-            <Bell size={18} />
-          </Link>
 
           {/* 도움말 */}
           <Link
