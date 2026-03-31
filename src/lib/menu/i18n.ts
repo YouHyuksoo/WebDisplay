@@ -93,6 +93,14 @@ const CTQ_TITLE_KEYS: Record<string, string> = {
   'ctq-indicator': 'ctq.nav.indicator',
   'ctq-dashboard': 'ctq.nav.qualityDashboard',
   'ctq-analysis': 'ctq.nav.analysis',
+  // U1 전용 모니터링
+  'u1-fpy': 'ctq.pages.u1fpy.title',
+  'u1-ate': 'ctq.pages.ateAnalysis.title',
+  'u1-ict': 'ctq.pages.ictAnalysis.title',
+  'u1-fw': 'ctq.pages.fwAnalysis.title',
+  'u1-hipot': 'ctq.pages.hipotAnalysis.title',
+  'u1-burnin': 'ctq.pages.burninAnalysis.title',
+  'u1-quality': 'ctq.pages.u1QualityDashboard.title',
 };
 
 export function getScreenTitle(shortcut: { id?: string; url: string; title: string }): string {
