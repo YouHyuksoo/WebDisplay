@@ -686,6 +686,9 @@
         "title": "Panel de calidad U1",
         "noData": "Sin datos"
       },
+      "slackSettings": {
+        "title": "Configuración de notificaciones Slack"
+      },
       "equipment": {
         "title": "Monitoreo CTQ Equipos",
         "noData": "Sin datos de anomalías de equipos.",

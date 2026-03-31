@@ -686,6 +686,9 @@
         "title": "Bảng phân tích chất lượng U1",
         "noData": "Không có dữ liệu"
       },
+      "slackSettings": {
+        "title": "Cài đặt thông báo Slack"
+      },
       "equipment": {
         "title": "Giám sát thiết bị CTQ",
         "noData": "Không có dữ liệu bất thường thiết bị phù hợp với tiêu chí hiện tại.",

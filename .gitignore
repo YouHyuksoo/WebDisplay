@@ -39,6 +39,9 @@ yarn-error.log*
 # DB config (contains credentials)
 /config/database.json
 
+# Slack settings (contains webhook URL)
+/data/slack-settings.json
+
 # vercel
 .vercel
 

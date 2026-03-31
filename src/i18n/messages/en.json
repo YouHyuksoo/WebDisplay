@@ -686,6 +686,9 @@
         "title": "U1 Quality Dashboard",
         "noData": "No data"
       },
+      "slackSettings": {
+        "title": "Slack Notification Settings"
+      },
       "equipment": {
         "title": "CTQ Equipment Monitoring",
         "noData": "No equipment anomaly data matching the current criteria.",

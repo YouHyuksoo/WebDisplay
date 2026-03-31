@@ -101,6 +101,7 @@ const CTQ_TITLE_KEYS: Record<string, string> = {
   'u1-hipot': 'ctq.pages.hipotAnalysis.title',
   'u1-burnin': 'ctq.pages.burninAnalysis.title',
   'u1-quality': 'ctq.pages.u1QualityDashboard.title',
+  'u1-slack': 'ctq.pages.slackSettings.title',
 };
 
 export function getScreenTitle(shortcut: { id?: string; url: string; title: string }): string {
