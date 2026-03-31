@@ -664,6 +664,7 @@
         "defectType": "Phân bố NG theo loại lỗi (C5)",
         "noData": "Không có dữ liệu"
       },
+      "u1QualityDashboard": { "title": "Bảng phân tích chất lượng U1" },
       "equipment": {
         "title": "Giám sát thiết bị CTQ",
         "noData": "Không có dữ liệu bất thường thiết bị phù hợp với tiêu chí hiện tại.",

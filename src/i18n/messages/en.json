@@ -664,6 +664,7 @@
         "defectType": "Defect Type (C5) NG Distribution",
         "noData": "No data"
       },
+      "u1QualityDashboard": { "title": "U1 Quality Dashboard" },
       "equipment": {
         "title": "CTQ Equipment Monitoring",
         "noData": "No equipment anomaly data matching the current criteria.",

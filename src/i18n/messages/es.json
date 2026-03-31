@@ -664,6 +664,7 @@
         "defectType": "Distribución NG por tipo de defecto (C5)",
         "noData": "Sin datos"
       },
+      "u1QualityDashboard": { "title": "Panel de calidad U1" },
       "equipment": {
         "title": "Monitoreo CTQ Equipos",
         "noData": "Sin datos de anomalías de equipos.",

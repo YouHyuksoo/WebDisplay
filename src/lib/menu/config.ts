@@ -168,6 +168,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'u1-burnin', title: 'BURNIN 분석', url: '/u1/burnin-analysis', color: '#14b8a6', icon: 'svg:chart', layer: 7 },
   { id: 'u1-hipot', title: 'HIPOT 분석', url: '/u1/hipot-analysis', color: '#ec4899', icon: 'svg:chart', layer: 7 },
   { id: 'u1-ict', title: 'ICT 분석', url: '/u1/ict-analysis', color: '#3b82f6', icon: 'svg:chart', layer: 7 },
+  { id: 'u1-quality', title: 'U1 품질분석', url: '/u1/quality-dashboard', color: '#6366f1', icon: 'svg:pie-chart', layer: 7 },
 
   // Charts (layer: 6)
   { id: 'menu-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 6 },
