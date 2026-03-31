@@ -164,6 +164,10 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   // U1 Monitoring (layer: 7)
   { id: 'u1-fpy', title: 'U1 직행율', url: '/u1/fpy', color: '#22c55e', icon: 'svg:target', layer: 7 },
   { id: 'u1-ate', title: 'ATE 분석', url: '/u1/ate-analysis', color: '#f59e0b', icon: 'svg:chart', layer: 7 },
+  { id: 'u1-fw', title: 'FW 분석', url: '/u1/fw-analysis', color: '#8b5cf6', icon: 'svg:chart', layer: 7 },
+  { id: 'u1-burnin', title: 'BURNIN 분석', url: '/u1/burnin-analysis', color: '#14b8a6', icon: 'svg:chart', layer: 7 },
+  { id: 'u1-hipot', title: 'HIPOT 분석', url: '/u1/hipot-analysis', color: '#ec4899', icon: 'svg:chart', layer: 7 },
+  { id: 'u1-ict', title: 'ICT 분석', url: '/u1/ict-analysis', color: '#3b82f6', icon: 'svg:chart', layer: 7 },
 
   // Charts (layer: 6)
   { id: 'menu-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 6 },

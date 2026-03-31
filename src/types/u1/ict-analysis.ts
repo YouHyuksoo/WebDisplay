@@ -36,10 +36,18 @@ export interface IctMachineNgItem {
   total: number;
 }
 
+/** C5 불량종류별 NG 분포 */
+export interface IctDefectTypeItem {
+  defectType: string;  // C5 컬럼값 (불량종류)
+  ngCount: number;
+  total: number;
+}
+
 export interface IctDailyResponse {
   lineStats: IctLineStat[];
   hourlyTrend: IctHourlyPoint[];
   machineNg: IctMachineNgItem[];
+  defectTypes: IctDefectTypeItem[];  // C5 불량종류별 분포
   dateRange: { yesterday: string; today: string };
   lastUpdated: string;
 }

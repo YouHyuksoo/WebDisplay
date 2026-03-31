@@ -641,6 +641,21 @@
         "machineNg": "Distribución NG por máquina",
         "noData": "Sin datos"
       },
+      "burninAnalysis": {
+        "title": "Análisis BURNIN",
+        "dailyPassRate": "Tasa de aprobación por línea",
+        "yesterdayCompare": "Ayer vs Hoy",
+        "hourlyTrend": "Tendencia de inspección por hora",
+        "weeklyTrend": "Tendencia semanal",
+        "monthlyHeatmap": "Mapa de calor mensual por zona",
+        "machineNg": "Distribución NG por máquina",
+        "noData": "Sin datos"
+      },
+      "ictAnalysis": {
+        "title": "Análisis ICT",
+        "defectType": "Distribución NG por tipo de defecto (C5)",
+        "noData": "Sin datos"
+      },
       "equipment": {
         "title": "Monitoreo CTQ Equipos",
         "noData": "Sin datos de anomalías de equipos.",

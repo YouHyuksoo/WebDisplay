@@ -16,6 +16,7 @@ import type {
   IctLineStat,
   IctHourlyPoint,
   IctMachineNgItem,
+  IctDefectTypeItem,
   IctDailyResponse,
 } from "@/types/u1/ict-analysis";
 
@@ -56,6 +57,12 @@ interface MachineNgRow {
   MACHINE_CODE: string;
   TOTAL_CNT: number;
   NG_CNT: number;
+}
+
+interface DefectTypeRow {
+  DEFECT_TYPE: string;
+  NG_CNT: number;
+  TOTAL_CNT: number;
 }
 
 interface DateRangeRow {
@@ -122,6 +129,23 @@ async function queryMachineNg(): Promise<MachineNgRow[]> {
   return executeQuery<MachineNgRow>(sql, {});
 }
 
+/** C5 불량종류별 NG 분포 (당일, 상위 15개) */
+async function queryDefectTypes(): Promise<DefectTypeRow[]> {
+  const sql = `
+    SELECT NVL(C5, 'UNKNOWN') AS DEFECT_TYPE,
+           SUM(CASE WHEN INSPECT_RESULT NOT IN (${PASS_IN}) THEN 1 ELSE 0 END) AS NG_CNT,
+           COUNT(*) AS TOTAL_CNT
+    FROM IQ_MACHINE_ICT_U1_DATA_RAW
+    WHERE ${DATE_RANGE_TODAY}
+      AND LAST_YN = 'Y'
+    GROUP BY NVL(C5, 'UNKNOWN')
+    HAVING SUM(CASE WHEN INSPECT_RESULT NOT IN (${PASS_IN}) THEN 1 ELSE 0 END) > 0
+    ORDER BY NG_CNT DESC
+    FETCH FIRST 15 ROWS ONLY
+  `;
+  return executeQuery<DefectTypeRow>(sql, {});
+}
+
 /** DB 기준 날짜 범위 라벨 조회 */
 async function queryDateRange(): Promise<DateRangeRow[]> {
   const sql = `
@@ -170,11 +194,12 @@ function toShift(hour: string): "D" | "N" {
 
 export async function GET() {
   try {
-    /* 4개 쿼리 병렬 실행 */
-    const [lineStatRows, hourlyRows, machineNgRows, dateRangeRows] = await Promise.all([
+    /* 5개 쿼리 병렬 실행 (C5 불량종류 포함) */
+    const [lineStatRows, hourlyRows, machineNgRows, defectTypeRows, dateRangeRows] = await Promise.all([
       queryLineStats(),
       queryHourly(),
       queryMachineNg(),
+      queryDefectTypes(),
       queryDateRange(),
     ]);
 
@@ -236,6 +261,13 @@ export async function GET() {
       total: Number(row.TOTAL_CNT),
     }));
 
+    /* defectTypes 조립 (C5 불량종류) */
+    const defectTypes: IctDefectTypeItem[] = defectTypeRows.map((row) => ({
+      defectType: row.DEFECT_TYPE,
+      ngCount: Number(row.NG_CNT),
+      total: Number(row.TOTAL_CNT),
+    }));
+
     /* dateRange */
     const dr = dateRangeRows[0] ?? { YESTERDAY: "", TODAY: "" };
 
@@ -243,6 +275,7 @@ export async function GET() {
       lineStats,
       hourlyTrend,
       machineNg,
+      defectTypes,
       dateRange: { yesterday: dr.YESTERDAY, today: dr.TODAY },
       lastUpdated: new Date().toISOString(),
     };
