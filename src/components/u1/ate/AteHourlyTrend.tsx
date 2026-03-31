@@ -62,13 +62,13 @@ export default function AteHourlyTrend({ hourlyTrend }: Props) {
   return (
     <div className="flex flex-col h-full gap-1">
       {/* 요약 바 */}
-      <div className="flex items-center gap-3 px-2 py-1 rounded bg-gray-800/60 text-[10px]">
+      <div className="flex items-center gap-4 px-3 py-1.5 rounded bg-gray-800/60 text-sm">
         <span className="text-gray-500">총</span>
-        <span className="text-blue-400 font-medium">{totalInspect.toLocaleString()}건</span>
+        <span className="text-blue-400 font-semibold">{totalInspect.toLocaleString()}건</span>
         <span className="text-gray-500">합격률</span>
-        <span className="text-green-400 font-medium">{avgRate.toFixed(1)}%</span>
+        <span className="text-green-400 font-semibold text-base">{avgRate.toFixed(1)}%</span>
         <span className="text-gray-500 ml-auto">피크</span>
-        <span className="text-yellow-400 font-medium">{peakHour.hour}시 ({peakHour.total}건)</span>
+        <span className="text-yellow-400 font-semibold">{peakHour.hour}시 ({peakHour.total}건)</span>
       </div>
 
       <div className="flex-1">
@@ -81,11 +81,11 @@ export default function AteHourlyTrend({ hourlyTrend }: Props) {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-            <XAxis dataKey="hour" tick={{ fill: "#9ca3af", fontSize: 9 }}
+            <XAxis dataKey="hour" tick={{ fill: "#9ca3af", fontSize: 12 }}
               interval={1} axisLine={{ stroke: "#374151" }} />
-            <YAxis yAxisId="left" tick={{ fill: "#9ca3af", fontSize: 10 }} axisLine={{ stroke: "#374151" }} />
+            <YAxis yAxisId="left" tick={{ fill: "#9ca3af", fontSize: 13 }} axisLine={{ stroke: "#374151" }} />
             <YAxis yAxisId="right" orientation="right" domain={[0, 100]}
-              tick={{ fill: "#9ca3af", fontSize: 10 }} tickFormatter={(v: number) => `${v}%`}
+              tick={{ fill: "#9ca3af", fontSize: 13 }} tickFormatter={(v: number) => `${v}%`}
               axisLine={{ stroke: "#374151" }} />
             <Tooltip
               contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #4b5563", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}
@@ -100,7 +100,7 @@ export default function AteHourlyTrend({ hourlyTrend }: Props) {
             {shiftBoundary && (
               <ReferenceLine x={shiftBoundary} yAxisId="left" stroke="#f59e0b"
                 strokeDasharray="5 5" strokeWidth={2}
-                label={{ value: "야간", fill: "#f59e0b", fontSize: 10, position: "top" }} />
+                label={{ value: "야간", fill: "#f59e0b", fontSize: 13, position: "top" }} />
             )}
             <ReferenceLine yAxisId="right" y={90} stroke="#ef4444" strokeDasharray="4 4" strokeOpacity={0.5} />
             <Area yAxisId="left" type="monotone" dataKey="total" fill="url(#areaGrad)"

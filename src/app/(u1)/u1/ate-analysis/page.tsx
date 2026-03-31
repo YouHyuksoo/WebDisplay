@@ -37,8 +37,8 @@ function ChartCard({ title, badge, children }: { title: string; badge: string; c
   return (
     <div className="bg-gray-900/80 dark:bg-gray-900/80 border border-gray-700/60 dark:border-gray-700/60 rounded-xl flex flex-col overflow-hidden backdrop-blur-sm shadow-lg shadow-black/20">
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700/30 bg-gray-800/30">
-        <span className="text-sm font-semibold text-gray-100">{title}</span>
-        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${badgeColor[badge] ?? "bg-gray-700 text-gray-400"}`}>{badge}</span>
+        <span className="text-base font-semibold text-gray-100">{title}</span>
+        <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${badgeColor[badge] ?? "bg-gray-700 text-gray-400"}`}>{badge}</span>
       </div>
       <div className="flex-1 p-2 min-h-0">{children}</div>
     </div>

@@ -46,37 +46,37 @@ export default function AteMonthlyHeatmap({ heatmapData, zones }: Props) {
 
   return (
     <div className="relative h-full flex flex-col overflow-hidden">
-      <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 mb-1 px-1">
+      <div className="flex items-center gap-3 text-sm text-gray-400 dark:text-gray-500 mb-1.5 px-2">
         <span>낮음</span>
         <div className="flex gap-0.5">
-          <div className="w-3 h-3 rounded-sm bg-red-500/70" />
-          <div className="w-3 h-3 rounded-sm bg-orange-500/70" />
-          <div className="w-3 h-3 rounded-sm bg-yellow-500/70" />
-          <div className="w-3 h-3 rounded-sm bg-green-500/70" />
-          <div className="w-3 h-3 rounded-sm bg-green-600" />
+          <div className="w-4 h-4 rounded-sm bg-red-500/70" />
+          <div className="w-4 h-4 rounded-sm bg-orange-500/70" />
+          <div className="w-4 h-4 rounded-sm bg-yellow-500/70" />
+          <div className="w-4 h-4 rounded-sm bg-green-500/70" />
+          <div className="w-4 h-4 rounded-sm bg-green-600" />
         </div>
         <span>높음</span>
       </div>
       <div className="flex-1 overflow-x-auto">
         <div className="min-w-fit">
           <div className="flex">
-            <div className="w-16 shrink-0" />
+            <div className="w-12 shrink-0" />
             {dates.map((d) => (
-              <div key={d} className="w-5 shrink-0 text-center">
-                <span className="text-[9px] text-gray-500 dark:text-gray-600 -rotate-45 inline-block">{d.slice(8)}</span>
+              <div key={d} className="w-6 shrink-0 text-center">
+                <span className="text-xs text-gray-500 dark:text-gray-600 -rotate-45 inline-block">{d.slice(8)}</span>
               </div>
             ))}
           </div>
           {zones.map((zone) => (
             <div key={zone} className="flex items-center">
-              <div className="w-16 shrink-0 text-xs text-gray-400 dark:text-gray-500 truncate pr-1">{zone}</div>
+              <div className="w-12 shrink-0 text-sm text-gray-400 dark:text-gray-500 truncate pr-1 font-medium">{zone}</div>
               {dates.map((date) => {
                 const cell = cellMap.get(`${date}|${zone}`);
                 const colorClass = cell ? getCellColor(cell.rate) : "bg-gray-800";
                 return (
                   <div
                     key={date}
-                    className={`w-5 h-4 shrink-0 m-px rounded-sm cursor-pointer transition-opacity hover:opacity-80 ${colorClass}`}
+                    className={`w-6 h-5 shrink-0 m-px rounded-sm cursor-pointer transition-opacity hover:opacity-80 ${colorClass}`}
                     onMouseEnter={(e) => {
                       if (cell) {
                         const rect = e.currentTarget.getBoundingClientRect();
@@ -93,7 +93,7 @@ export default function AteMonthlyHeatmap({ heatmapData, zones }: Props) {
       </div>
       {tooltip && (
         <div
-          className="fixed z-50 px-2 py-1 rounded bg-gray-800 dark:bg-gray-700 border border-gray-600 text-xs text-white shadow-lg pointer-events-none"
+          className="fixed z-50 px-3 py-1.5 rounded bg-gray-800 dark:bg-gray-700 border border-gray-600 text-sm text-white shadow-lg pointer-events-none"
           style={{ left: tooltip.x, top: tooltip.y }}
         >
           {tooltip.cell.date} | {tooltip.cell.zoneCode} | {tooltip.cell.rate.toFixed(1)}% ({tooltip.cell.pass}/{tooltip.cell.total})

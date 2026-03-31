@@ -48,14 +48,14 @@ export default function AteDailyPassRate({ lineStats }: Props) {
   return (
     <div className="flex flex-col h-full gap-1">
       {/* 전체 요약 바 */}
-      <div className="flex items-center gap-3 px-2 py-1 rounded bg-gray-800/60">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-gray-500">전체</span>
-          <span className="text-sm font-bold" style={{ color: getRateColor(overallRate) }}>
+      <div className="flex items-center gap-4 px-3 py-1.5 rounded bg-gray-800/60">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">전체</span>
+          <span className="text-lg font-bold" style={{ color: getRateColor(overallRate) }}>
             {overallRate.toFixed(1)}%
           </span>
         </div>
-        <div className="flex items-center gap-3 ml-auto text-[10px]">
+        <div className="flex items-center gap-4 ml-auto text-xs">
           <span className="text-green-400">PASS {totalPass.toLocaleString()}</span>
           <span className="text-red-400">NG {totalNg.toLocaleString()}</span>
           <span className="text-gray-400">Total {totalAll.toLocaleString()}</span>
@@ -70,9 +70,9 @@ export default function AteDailyPassRate({ lineStats }: Props) {
             { name: "NG", value: line.today.ng || 0.01 },
           ];
           const color = getRateColor(line.today.rate);
-          const size = isFew ? 130 : 72;
-          const inner = isFew ? 42 : 20;
-          const outer = isFew ? 60 : 32;
+          const size = isFew ? 160 : 90;
+          const inner = isFew ? 52 : 26;
+          const outer = isFew ? 72 : 40;
 
           return (
             <div key={line.lineCode} className="flex flex-col items-center">
@@ -89,15 +89,15 @@ export default function AteDailyPassRate({ lineStats }: Props) {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className={`${isFew ? "text-xl" : "text-[10px]"} font-bold`} style={{ color }}>
+                  <span className={`${isFew ? "text-2xl" : "text-sm"} font-bold`} style={{ color }}>
                     {line.today.rate.toFixed(1)}%
                   </span>
                   {isFew && (
-                    <span className="text-[9px] text-gray-500">{line.today.total.toLocaleString()}건</span>
+                    <span className="text-xs text-gray-500">{line.today.total.toLocaleString()}건</span>
                   )}
                 </div>
               </div>
-              <span className={`text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate ${isFew ? "max-w-[130px]" : "max-w-[72px] text-[10px]"}`}>
+              <span className={`text-gray-400 dark:text-gray-500 mt-0.5 truncate ${isFew ? "text-sm max-w-[160px]" : "text-xs max-w-[90px]"}`}>
                 {line.lineName}
               </span>
               {isFew && (

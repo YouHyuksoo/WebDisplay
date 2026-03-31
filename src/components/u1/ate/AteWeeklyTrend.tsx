@@ -56,9 +56,9 @@ export default function AteWeeklyTrend({ dailyTrend }: Props) {
   return (
     <div className="flex flex-col h-full gap-1">
       {/* 라인별 뱃지 */}
-      <div className="flex items-center gap-2 px-2 py-1 rounded bg-gray-800/60 flex-wrap">
+      <div className="flex items-center gap-3 px-3 py-1.5 rounded bg-gray-800/60 flex-wrap">
         {lineLatest.map((l) => (
-          <div key={l.code} className="flex items-center gap-1 text-[10px]">
+          <div key={l.code} className="flex items-center gap-1.5 text-sm">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: l.color }} />
             <span className="text-gray-400">{l.code}</span>
             {l.rate !== undefined && (
@@ -82,17 +82,17 @@ export default function AteWeeklyTrend({ dailyTrend }: Props) {
               ))}
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-            <XAxis dataKey="date" tick={{ fill: "#9ca3af", fontSize: 11 }} axisLine={{ stroke: "#374151" }} />
-            <YAxis domain={[yMin, 100]} tick={{ fill: "#9ca3af", fontSize: 11 }}
+            <XAxis dataKey="date" tick={{ fill: "#9ca3af", fontSize: 13 }} axisLine={{ stroke: "#374151" }} />
+            <YAxis domain={[yMin, 100]} tick={{ fill: "#9ca3af", fontSize: 13 }}
               tickFormatter={(v: number) => `${v}%`} axisLine={{ stroke: "#374151" }} />
             <Tooltip
               contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #4b5563", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}
               labelStyle={{ color: "#e5e7eb", fontWeight: "bold" }}
               formatter={(value: number | undefined) => [`${(value ?? 0).toFixed(1)}%`]}
             />
-            <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
+            <Legend wrapperStyle={{ fontSize: 13, color: "#9ca3af" }} />
             <ReferenceLine y={90} stroke="#ef4444" strokeDasharray="5 5" strokeOpacity={0.6}
-              label={{ value: "90%", fill: "#ef4444", fontSize: 10, position: "right" }} />
+              label={{ value: "90%", fill: "#ef4444", fontSize: 13, position: "right" }} />
             {lines.map((lineCode, i) => (
               <Area key={lineCode} type="monotone" dataKey={lineCode}
                 stroke={LINE_COLORS[i % LINE_COLORS.length]} strokeWidth={2.5}
