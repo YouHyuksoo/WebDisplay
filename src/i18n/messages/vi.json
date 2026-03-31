@@ -641,6 +641,10 @@
         "machineNg": "Phân bố NG theo máy",
         "noData": "Không có dữ liệu"
       },
+      "fwAnalysis": {
+        "title": "Phân tích FW",
+        "noData": "Không có dữ liệu"
+      },
       "burninAnalysis": {
         "title": "Phân tích BURNIN",
         "dailyPassRate": "Tỷ lệ đạt theo Line hôm nay",
@@ -649,6 +653,10 @@
         "weeklyTrend": "Xu hướng tỷ lệ đạt tuần",
         "monthlyHeatmap": "Bản đồ nhiệt Zone tháng",
         "machineNg": "Phân bố NG theo máy",
+        "noData": "Không có dữ liệu"
+      },
+      "hipotAnalysis": {
+        "title": "Phân tích HIPOT",
         "noData": "Không có dữ liệu"
       },
       "ictAnalysis": {

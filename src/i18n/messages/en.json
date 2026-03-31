@@ -655,6 +655,10 @@
         "machineNg": "Machine NG Distribution",
         "noData": "No data"
       },
+      "hipotAnalysis": {
+        "title": "HIPOT Analysis",
+        "noData": "No data"
+      },
       "ictAnalysis": {
         "title": "ICT Analysis",
         "defectType": "Defect Type (C5) NG Distribution",

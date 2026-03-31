@@ -641,6 +641,10 @@
         "machineNg": "Distribución NG por máquina",
         "noData": "Sin datos"
       },
+      "fwAnalysis": {
+        "title": "Análisis FW",
+        "noData": "Sin datos"
+      },
       "burninAnalysis": {
         "title": "Análisis BURNIN",
         "dailyPassRate": "Tasa de aprobación por línea",
@@ -649,6 +653,10 @@
         "weeklyTrend": "Tendencia semanal",
         "monthlyHeatmap": "Mapa de calor mensual por zona",
         "machineNg": "Distribución NG por máquina",
+        "noData": "Sin datos"
+      },
+      "hipotAnalysis": {
+        "title": "Análisis HIPOT",
         "noData": "Sin datos"
       },
       "ictAnalysis": {
