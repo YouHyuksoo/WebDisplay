@@ -634,8 +634,8 @@
       "ateAnalysis": {
         "title": "Phân tích ATE",
         "dailyPassRate": "Tỷ lệ đạt theo Line hôm nay",
-        "yesterdayCompare": "Hôm qua vs Hôm nay",
-        "hourlyTrend": "Xu hướng kiểm tra theo giờ",
+        "yesterdayCompare": "So sánh tỷ lệ đạt Hôm qua vs Hôm nay",
+        "hourlyTrend": "Số lượng kiểm tra / Tỷ lệ đạt theo giờ",
         "weeklyTrend": "Xu hướng tỷ lệ đạt tuần",
         "monthlyHeatmap": "Bản đồ nhiệt Zone tháng",
         "machineNg": "Phân bố NG theo máy",
@@ -643,13 +643,19 @@
       },
       "fwAnalysis": {
         "title": "Phân tích FW",
+        "dailyPassRate": "Tỷ lệ đạt theo Line hôm nay",
+        "yesterdayCompare": "So sánh tỷ lệ đạt Hôm qua vs Hôm nay",
+        "hourlyTrend": "Số lượng kiểm tra / Tỷ lệ đạt theo giờ",
+        "weeklyTrend": "Xu hướng tỷ lệ đạt tuần",
+        "monthlyHeatmap": "Bản đồ nhiệt Zone tháng",
+        "machineNg": "Phân bố NG theo máy",
         "noData": "Không có dữ liệu"
       },
       "burninAnalysis": {
         "title": "Phân tích BURNIN",
         "dailyPassRate": "Tỷ lệ đạt theo Line hôm nay",
-        "yesterdayCompare": "Hôm qua vs Hôm nay",
-        "hourlyTrend": "Xu hướng kiểm tra theo giờ",
+        "yesterdayCompare": "So sánh tỷ lệ đạt Hôm qua vs Hôm nay",
+        "hourlyTrend": "Số lượng kiểm tra / Tỷ lệ đạt theo giờ",
         "weeklyTrend": "Xu hướng tỷ lệ đạt tuần",
         "monthlyHeatmap": "Bản đồ nhiệt Zone tháng",
         "machineNg": "Phân bố NG theo máy",
@@ -657,14 +663,29 @@
       },
       "hipotAnalysis": {
         "title": "Phân tích HIPOT",
+        "dailyPassRate": "Tỷ lệ đạt theo Line hôm nay",
+        "yesterdayCompare": "So sánh tỷ lệ đạt Hôm qua vs Hôm nay",
+        "hourlyTrend": "Số lượng kiểm tra / Tỷ lệ đạt theo giờ",
+        "weeklyTrend": "Xu hướng tỷ lệ đạt tuần",
+        "monthlyHeatmap": "Bản đồ nhiệt Zone tháng",
+        "machineNg": "Phân bố NG theo máy",
         "noData": "Không có dữ liệu"
       },
       "ictAnalysis": {
         "title": "Phân tích ICT",
+        "dailyPassRate": "Tỷ lệ đạt theo Line hôm nay",
+        "yesterdayCompare": "So sánh tỷ lệ đạt Hôm qua vs Hôm nay",
+        "hourlyTrend": "Số lượng kiểm tra / Tỷ lệ đạt theo giờ",
+        "weeklyTrend": "Xu hướng tỷ lệ đạt tuần",
+        "monthlyHeatmap": "Bản đồ nhiệt Zone tháng",
+        "machineNg": "Phân bố NG theo máy",
         "defectType": "Phân bố NG theo loại lỗi (C5)",
         "noData": "Không có dữ liệu"
       },
-      "u1QualityDashboard": { "title": "Bảng phân tích chất lượng U1" },
+      "u1QualityDashboard": {
+        "title": "Bảng phân tích chất lượng U1",
+        "noData": "Không có dữ liệu"
+      },
       "equipment": {
         "title": "Giám sát thiết bị CTQ",
         "noData": "Không có dữ liệu bất thường thiết bị phù hợp với tiêu chí hiện tại.",

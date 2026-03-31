@@ -634,37 +634,58 @@
       "ateAnalysis": {
         "title": "ATE Analysis",
         "dailyPassRate": "Daily Pass Rate by Line",
-        "yesterdayCompare": "Yesterday vs Today",
-        "hourlyTrend": "Hourly Inspection Trend",
-        "weeklyTrend": "Weekly Daily Pass Rate",
+        "yesterdayCompare": "Yesterday vs Today Pass Rate",
+        "hourlyTrend": "Hourly Inspection Volume / Pass Rate",
+        "weeklyTrend": "Weekly Daily Pass Rate Trend",
         "monthlyHeatmap": "Monthly Zone Heatmap",
         "machineNg": "Machine NG Distribution",
         "noData": "No data"
       },
       "fwAnalysis": {
         "title": "FW Analysis",
+        "dailyPassRate": "Daily Pass Rate by Line",
+        "yesterdayCompare": "Yesterday vs Today Pass Rate",
+        "hourlyTrend": "Hourly Inspection Volume / Pass Rate",
+        "weeklyTrend": "Weekly Daily Pass Rate Trend",
+        "monthlyHeatmap": "Monthly Zone Heatmap",
+        "machineNg": "Machine NG Distribution",
         "noData": "No data"
       },
       "burninAnalysis": {
         "title": "BURNIN Analysis",
         "dailyPassRate": "Daily Pass Rate by Line",
-        "yesterdayCompare": "Yesterday vs Today",
-        "hourlyTrend": "Hourly Inspection Trend",
-        "weeklyTrend": "Weekly Daily Pass Rate",
+        "yesterdayCompare": "Yesterday vs Today Pass Rate",
+        "hourlyTrend": "Hourly Inspection Volume / Pass Rate",
+        "weeklyTrend": "Weekly Daily Pass Rate Trend",
         "monthlyHeatmap": "Monthly Zone Heatmap",
         "machineNg": "Machine NG Distribution",
         "noData": "No data"
       },
       "hipotAnalysis": {
         "title": "HIPOT Analysis",
+        "dailyPassRate": "Daily Pass Rate by Line",
+        "yesterdayCompare": "Yesterday vs Today Pass Rate",
+        "hourlyTrend": "Hourly Inspection Volume / Pass Rate",
+        "weeklyTrend": "Weekly Daily Pass Rate Trend",
+        "monthlyHeatmap": "Monthly Zone Heatmap",
+        "machineNg": "Machine NG Distribution",
         "noData": "No data"
       },
       "ictAnalysis": {
         "title": "ICT Analysis",
+        "dailyPassRate": "Daily Pass Rate by Line",
+        "yesterdayCompare": "Yesterday vs Today Pass Rate",
+        "hourlyTrend": "Hourly Inspection Volume / Pass Rate",
+        "weeklyTrend": "Weekly Daily Pass Rate Trend",
+        "monthlyHeatmap": "Monthly Zone Heatmap",
+        "machineNg": "Machine NG Distribution",
         "defectType": "Defect Type (C5) NG Distribution",
         "noData": "No data"
       },
-      "u1QualityDashboard": { "title": "U1 Quality Dashboard" },
+      "u1QualityDashboard": {
+        "title": "U1 Quality Dashboard",
+        "noData": "No data"
+      },
       "equipment": {
         "title": "CTQ Equipment Monitoring",
         "noData": "No equipment anomaly data matching the current criteria.",

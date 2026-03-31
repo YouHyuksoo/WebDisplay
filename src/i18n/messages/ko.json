@@ -634,8 +634,8 @@
       "ateAnalysis": {
         "title": "ATE 분석",
         "dailyPassRate": "당일 라인별 합격률",
-        "yesterdayCompare": "전일 vs 당일 비교",
-        "hourlyTrend": "시간대별 검사 추이",
+        "yesterdayCompare": "전일 vs 당일 합격률 비교",
+        "hourlyTrend": "시간대별 검사수량 / 합격률",
         "weeklyTrend": "주간 일별 합격률 추이",
         "monthlyHeatmap": "월간 ZONE별 히트맵",
         "machineNg": "머신별 NG 분포",
@@ -644,8 +644,8 @@
       "burninAnalysis": {
         "title": "BURNIN 분석",
         "dailyPassRate": "당일 라인별 합격률",
-        "yesterdayCompare": "전일 vs 당일 비교",
-        "hourlyTrend": "시간대별 검사 추이",
+        "yesterdayCompare": "전일 vs 당일 합격률 비교",
+        "hourlyTrend": "시간대별 검사수량 / 합격률",
         "weeklyTrend": "주간 일별 합격률 추이",
         "monthlyHeatmap": "월간 ZONE별 히트맵",
         "machineNg": "머신별 NG 분포",
@@ -653,18 +653,39 @@
       },
       "fwAnalysis": {
         "title": "FW 분석",
+        "dailyPassRate": "당일 라인별 합격률",
+        "yesterdayCompare": "전일 vs 당일 합격률 비교",
+        "hourlyTrend": "시간대별 검사수량 / 합격률",
+        "weeklyTrend": "주간 일별 합격률 추이",
+        "monthlyHeatmap": "월간 ZONE별 히트맵",
+        "machineNg": "머신별 NG 분포",
         "noData": "데이터 없음"
       },
       "hipotAnalysis": {
         "title": "HIPOT 분석",
+        "dailyPassRate": "당일 라인별 합격률",
+        "yesterdayCompare": "전일 vs 당일 합격률 비교",
+        "hourlyTrend": "시간대별 검사수량 / 합격률",
+        "weeklyTrend": "주간 일별 합격률 추이",
+        "monthlyHeatmap": "월간 ZONE별 히트맵",
+        "machineNg": "머신별 NG 분포",
         "noData": "데이터 없음"
       },
       "ictAnalysis": {
         "title": "ICT 분석",
+        "dailyPassRate": "당일 라인별 합격률",
+        "yesterdayCompare": "전일 vs 당일 합격률 비교",
+        "hourlyTrend": "시간대별 검사수량 / 합격률",
+        "weeklyTrend": "주간 일별 합격률 추이",
+        "monthlyHeatmap": "월간 ZONE별 히트맵",
+        "machineNg": "머신별 NG 분포",
         "defectType": "불량종류(C5)별 NG 분포",
         "noData": "데이터 없음"
       },
-      "u1QualityDashboard": { "title": "U1 품질분석" },
+      "u1QualityDashboard": {
+        "title": "U1 품질분석",
+        "noData": "데이터 없음"
+      },
       "equipment": {
         "title": "CTQ 설비이상 모니터링",
         "noData": "현재 조건에 해당하는 설비이상 데이터가 없습니다.",

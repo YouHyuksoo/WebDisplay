@@ -633,38 +633,59 @@
       },
       "ateAnalysis": {
         "title": "Análisis ATE",
-        "dailyPassRate": "Tasa de aprobación por línea",
-        "yesterdayCompare": "Ayer vs Hoy",
-        "hourlyTrend": "Tendencia de inspección por hora",
-        "weeklyTrend": "Tendencia semanal",
+        "dailyPassRate": "Tasa de aprobación diaria por línea",
+        "yesterdayCompare": "Comparación de tasa de aprobación Ayer vs Hoy",
+        "hourlyTrend": "Volumen de inspección / Tasa por hora",
+        "weeklyTrend": "Tendencia semanal de tasa de aprobación",
         "monthlyHeatmap": "Mapa de calor mensual por zona",
         "machineNg": "Distribución NG por máquina",
         "noData": "Sin datos"
       },
       "fwAnalysis": {
         "title": "Análisis FW",
+        "dailyPassRate": "Tasa de aprobación diaria por línea",
+        "yesterdayCompare": "Comparación de tasa de aprobación Ayer vs Hoy",
+        "hourlyTrend": "Volumen de inspección / Tasa por hora",
+        "weeklyTrend": "Tendencia semanal de tasa de aprobación",
+        "monthlyHeatmap": "Mapa de calor mensual por zona",
+        "machineNg": "Distribución NG por máquina",
         "noData": "Sin datos"
       },
       "burninAnalysis": {
         "title": "Análisis BURNIN",
-        "dailyPassRate": "Tasa de aprobación por línea",
-        "yesterdayCompare": "Ayer vs Hoy",
-        "hourlyTrend": "Tendencia de inspección por hora",
-        "weeklyTrend": "Tendencia semanal",
+        "dailyPassRate": "Tasa de aprobación diaria por línea",
+        "yesterdayCompare": "Comparación de tasa de aprobación Ayer vs Hoy",
+        "hourlyTrend": "Volumen de inspección / Tasa por hora",
+        "weeklyTrend": "Tendencia semanal de tasa de aprobación",
         "monthlyHeatmap": "Mapa de calor mensual por zona",
         "machineNg": "Distribución NG por máquina",
         "noData": "Sin datos"
       },
       "hipotAnalysis": {
         "title": "Análisis HIPOT",
+        "dailyPassRate": "Tasa de aprobación diaria por línea",
+        "yesterdayCompare": "Comparación de tasa de aprobación Ayer vs Hoy",
+        "hourlyTrend": "Volumen de inspección / Tasa por hora",
+        "weeklyTrend": "Tendencia semanal de tasa de aprobación",
+        "monthlyHeatmap": "Mapa de calor mensual por zona",
+        "machineNg": "Distribución NG por máquina",
         "noData": "Sin datos"
       },
       "ictAnalysis": {
         "title": "Análisis ICT",
+        "dailyPassRate": "Tasa de aprobación diaria por línea",
+        "yesterdayCompare": "Comparación de tasa de aprobación Ayer vs Hoy",
+        "hourlyTrend": "Volumen de inspección / Tasa por hora",
+        "weeklyTrend": "Tendencia semanal de tasa de aprobación",
+        "monthlyHeatmap": "Mapa de calor mensual por zona",
+        "machineNg": "Distribución NG por máquina",
         "defectType": "Distribución NG por tipo de defecto (C5)",
         "noData": "Sin datos"
       },
-      "u1QualityDashboard": { "title": "Panel de calidad U1" },
+      "u1QualityDashboard": {
+        "title": "Panel de calidad U1",
+        "noData": "Sin datos"
+      },
       "equipment": {
         "title": "Monitoreo CTQ Equipos",
         "noData": "Sin datos de anomalías de equipos.",
