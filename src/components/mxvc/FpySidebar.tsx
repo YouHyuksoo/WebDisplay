@@ -99,6 +99,23 @@ export default function FpySidebar({
             {loading ? "조회 중..." : "새로고침"}
           </button>
 
+          {/* 일자 조정 */}
+          <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
+            <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+              조회 일자
+              <span className="text-blue-600 dark:text-blue-400 font-mono float-right">
+                {settings.dayOffset === 0 ? "오늘" : `${Math.abs(settings.dayOffset)}일 전`}
+              </span>
+            </label>
+            <input type="range" min={-7} max={0} value={settings.dayOffset}
+              onChange={(e) => set({ dayOffset: Number(e.target.value) })}
+              className="w-full accent-blue-500" />
+            <div className="flex justify-between text-[9px] text-gray-400 dark:text-gray-500 mt-1">
+              <span>7일 전</span>
+              <span>오늘</span>
+            </div>
+          </div>
+
           {/* 프리셋 */}
           <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
             <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">프리셋</label>

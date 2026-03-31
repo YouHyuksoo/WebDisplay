@@ -29,12 +29,27 @@ interface EquipmentRow {
   EQUIPMENT_ID: string;
 }
 
-/** 작업일 경계 SQL (08:00 기준) */
-const WORK_DAY_START_SQL = `
-  CASE WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'HH24')) >= 8
-    THEN TRUNC(SYSDATE) + 8/24
-    ELSE TRUNC(SYSDATE) - 1 + 8/24
-  END`;
+/**
+ * 작업일 경계 SQL (08:00 기준 + dayOffset)
+ * dayOffset=0: 오늘, dayOffset=-1: 어제, ...
+ * 과거 조회 시 end는 해당일 다음날 08:00 (풀 24시간)
+ */
+function workDayStartSql(offset: number): string {
+  return `
+    CASE WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'HH24')) >= 8
+      THEN TRUNC(SYSDATE) + 8/24 + (${offset})
+      ELSE TRUNC(SYSDATE) - 1 + 8/24 + (${offset})
+    END`;
+}
+
+function workDayEndSql(offset: number): string {
+  if (offset >= 0) return "SYSDATE";
+  return `
+    CASE WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'HH24')) >= 8
+      THEN TRUNC(SYSDATE) + 8/24 + (${offset}) + 1
+      ELSE TRUNC(SYSDATE) - 1 + 8/24 + (${offset}) + 1
+    END`;
+}
 
 /** 설비 필터 WHERE절 생성 */
 function buildEquipmentFilter(
@@ -51,6 +66,7 @@ function buildEquipmentFilter(
 async function queryTableFpy(
   tableKey: MxvcFpyTableKey,
   eqFilter: { clause: string; params: Record<string, string> },
+  dayOffset: number,
 ): Promise<{ key: MxvcFpyTableKey; data: TableFpyData }> {
   const cfg = TABLE_CONFIG[tableKey];
   const passIn = PASS_VALUES.map((v) => `'${v}'`).join(",");
@@ -61,8 +77,8 @@ async function queryTableFpy(
       COUNT(*) AS TOTAL_CNT,
       SUM(CASE WHEN ${cfg.resultCol} IN (${passIn}) THEN 1 ELSE 0 END) AS PASS_CNT
     FROM ${tableKey}
-    WHERE LOG_TIMESTAMP >= (${WORK_DAY_START_SQL})
-      AND LOG_TIMESTAMP <= SYSDATE
+    WHERE LOG_TIMESTAMP >= (${workDayStartSql(dayOffset)})
+      AND LOG_TIMESTAMP <= (${workDayEndSql(dayOffset)})
       AND ${cfg.resultCol} IS NOT NULL
       ${eqFilter.clause}
     GROUP BY TO_CHAR(LOG_TIMESTAMP, 'HH24')
@@ -113,13 +129,14 @@ export async function GET(request: NextRequest) {
     const eqParam = request.nextUrl.searchParams.get("equipments") ?? "";
     const equipments = eqParam ? eqParam.split(",").filter(Boolean) : [];
     const eqFilter = buildEquipmentFilter(equipments);
+    const dayOffset = Number(request.nextUrl.searchParams.get("dayOffset") ?? "0") || 0;
 
     const [tableResults, equipmentList, workDayRows] = await Promise.all([
-      Promise.all(TABLE_KEYS.map((k) => queryTableFpy(k, eqFilter))),
+      Promise.all(TABLE_KEYS.map((k) => queryTableFpy(k, eqFilter, dayOffset))),
       queryEquipments(),
       executeQuery<{ WD_START: string; WD_END: string }>(
-        `SELECT TO_CHAR(${WORK_DAY_START_SQL}, 'YYYY-MM-DD HH24:MI') AS WD_START,
-                TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI') AS WD_END
+        `SELECT TO_CHAR(${workDayStartSql(dayOffset)}, 'YYYY-MM-DD HH24:MI') AS WD_START,
+                TO_CHAR(${workDayEndSql(dayOffset)}, 'YYYY-MM-DD HH24:MI') AS WD_END
          FROM DUAL`,
       ),
     ]);

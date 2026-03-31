@@ -35,6 +35,7 @@ export default function MxvcFpyPage() {
 
   const { data, loading, error, fetchData } = useMxvcFpy(
     settings.selectedEquipments,
+    settings.dayOffset,
   );
 
   useEffect(() => {

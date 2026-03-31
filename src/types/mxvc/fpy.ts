@@ -95,6 +95,7 @@ export interface MxvcFpySettings {
   palette: "blue" | "rainbow" | "warm" | "cool";
   visibleTables: MxvcFpyTableKey[];
   selectedEquipments: string[];
+  dayOffset: number;
 }
 
 /** 기본 설정 */
@@ -102,6 +103,7 @@ export const DEFAULT_FPY_SETTINGS: MxvcFpySettings = {
   layout: "2x3",
   chartHeight: 200,
   palette: "blue",
+  dayOffset: 0,
   visibleTables: [
     "LOG_FCT", "LOG_VISION_LEGACY", "LOG_EOL", "LOG_ICT",
     "LOG_LOWCURRENT", "LOG_SPI", "LOG_AOI",
