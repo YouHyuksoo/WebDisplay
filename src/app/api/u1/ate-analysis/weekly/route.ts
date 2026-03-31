@@ -50,6 +50,7 @@ async function queryWeekly(): Promise<WeeklyRow[]> {
     WHERE INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24)-7, 'YYYY/MM/DD') || ' 08:00:00'
       AND INSPECT_DATE <  TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'
       AND LINE_CODE IS NOT NULL
+      AND LAST_YN = 'Y'
     GROUP BY TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'),
              TO_CHAR(TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'), 'YYYY-MM-DD'),
              LINE_CODE
