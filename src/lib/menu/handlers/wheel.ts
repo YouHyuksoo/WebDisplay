@@ -18,6 +18,8 @@ const COOLDOWN = 1200;
 export function setupWheelHandlers(): void {
   /** 마지막 전환 시각 */
   let lastTriggerTime = 0;
+  /** import() 비동기 딜레이 중 즉시 잠금 (isTransitioning 설정 전 경합 방지) */
+  let locked = false;
   /** 3D 효과 복귀용 타이머 */
   let effectTimeout: ReturnType<typeof setTimeout>;
 
@@ -57,19 +59,24 @@ export function setupWheelHandlers(): void {
     clearTimeout(effectTimeout);
     effectTimeout = setTimeout(() => { state.targetSpeed = 0; }, 150);
 
-    // ── 전환 중이거나 쿨다운 중이면 무시 ──
-    if (state.isTransitioning || (now - lastTriggerTime) < COOLDOWN) {
+    // ── 잠금/전환 중/쿨다운 중이면 무시 ──
+    if (locked || state.isTransitioning || (now - lastTriggerTime) < COOLDOWN) {
       return;
     }
 
     // ── 방향 판별: deltaY 부호만으로 즉시 전환 ──
-    if (Math.abs(e.deltaY) < 10) return; // 미세 움직임 무시
+    if (Math.abs(e.deltaY) < 10) return;
 
+    // 즉시 잠금 (import 비동기 딜레이 중 경합 차단)
+    locked = true;
     lastTriggerTime = now;
     const direction = e.deltaY > 0 ? 1 : -1;
 
     import('../sections').then((Sections) => {
       Sections.goToSection(state.currentSection + direction);
+    }).finally(() => {
+      // 쿨다운 후 잠금 해제
+      setTimeout(() => { locked = false; }, COOLDOWN);
     });
   };
 
