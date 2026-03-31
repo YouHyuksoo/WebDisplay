@@ -40,7 +40,7 @@ function ChartCard({ title, badge, children }: { title: string; badge: string; c
         <span className="text-sm font-semibold text-gray-100">{title}</span>
         <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${badgeColor[badge] ?? "bg-gray-700 text-gray-400"}`}>{badge}</span>
       </div>
-      <div className="flex-1 p-2 min-h-[240px]">{children}</div>
+      <div className="flex-1 p-2 min-h-0">{children}</div>
     </div>
   );
 }
@@ -96,22 +96,22 @@ export default function AteAnalysisPage() {
   }, [fetchDaily, fetchWeekly, fetchMonthly]);
 
   return (
-    <div className="min-h-screen bg-gray-950 dark:bg-gray-950 text-white flex flex-col">
+    <div className="h-screen bg-gray-950 dark:bg-gray-950 text-white flex flex-col overflow-hidden">
       <DisplayHeader title="ATE 분석" screenId={SCREEN_ID} />
       {error && (
-        <div className="mx-4 mt-2 p-3 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
+        <div className="mx-4 mt-1 p-2 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
           {error}
         </div>
       )}
-      <main className="flex-1 max-w-[1920px] mx-auto w-full px-4 py-3">
+      <main className="flex-1 max-w-[1920px] mx-auto w-full px-3 py-2 overflow-hidden">
         {loading && !daily ? (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 grid-rows-2 gap-2 h-full">
             {Array.from({ length: 6 }).map((_, i) => (
               <ChartCard key={i} title="로딩중..." badge="-"><ChartSkeleton /></ChartCard>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 grid-rows-2 gap-2 h-full">
             <ChartCard title="당일 라인별 합격률" badge="당일">
               {daily ? <AteDailyPassRate lineStats={daily.lineStats} /> : <ChartSkeleton />}
             </ChartCard>
