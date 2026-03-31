@@ -3,13 +3,13 @@
  * @description 멕시코전장 직행율(FPY) API — 13개 LOG 테이블 병렬 조회
  *
  * 초보자 가이드:
- * 1. SVEHICLEPDB에 executeQueryByProfile("멕시코전장내부")로 접속
+ * 1. 활성 DB 프로필의 executeQuery로 접속 (기존 mxvc API와 동일)
  * 2. 13개 테이블을 Promise.all로 병렬 쿼리
  * 3. 작업일 기준: 08:00 시작 (현재 < 08시이면 전일 08:00~현재)
  * 4. 직행율 = PASS 건수 / 전체 건수 x 100
  */
 import { NextRequest, NextResponse } from "next/server";
-import { executeQueryByProfile } from "@/lib/db";
+import { executeQuery } from "@/lib/db";
 import {
   TABLE_CONFIG, TABLE_KEYS,
   type MxvcFpyTableKey, type HourlyFpy, type TableFpyData,
@@ -17,7 +17,6 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const DB_PROFILE = "멕시코전장내부";
 const PASS_VALUES = ["OK", "PASS", "GOOD", "Y"];
 
 interface FpyRow {
@@ -70,7 +69,7 @@ async function queryTableFpy(
     ORDER BY HOUR
   `;
 
-  const rows = await executeQueryByProfile<FpyRow>(DB_PROFILE, sql, eqFilter.params);
+  const rows = await executeQuery<FpyRow>(sql, eqFilter.params);
 
   const hourly: HourlyFpy[] = rows.map((r) => ({
     hour: r.HOUR,
@@ -105,7 +104,7 @@ async function queryEquipments(): Promise<string[]> {
     .map((k) => `SELECT DISTINCT EQUIPMENT_ID FROM ${k}`)
     .join(" UNION ");
   const sql = `SELECT DISTINCT EQUIPMENT_ID FROM (${unions}) ORDER BY EQUIPMENT_ID`;
-  const rows = await executeQueryByProfile<EquipmentRow>(DB_PROFILE, sql);
+  const rows = await executeQuery<EquipmentRow>(sql);
   return rows.map((r) => r.EQUIPMENT_ID);
 }
 
@@ -118,8 +117,7 @@ export async function GET(request: NextRequest) {
     const [tableResults, equipmentList, workDayRows] = await Promise.all([
       Promise.all(TABLE_KEYS.map((k) => queryTableFpy(k, eqFilter))),
       queryEquipments(),
-      executeQueryByProfile<{ WD_START: string; WD_END: string }>(
-        DB_PROFILE,
+      executeQuery<{ WD_START: string; WD_END: string }>(
         `SELECT TO_CHAR(${WORK_DAY_START_SQL}, 'YYYY-MM-DD HH24:MI') AS WD_START,
                 TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI') AS WD_END
          FROM DUAL`,
