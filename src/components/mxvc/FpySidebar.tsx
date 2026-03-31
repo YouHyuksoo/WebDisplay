@@ -104,10 +104,10 @@ export default function FpySidebar({
             <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
               조회 일자
               <span className="text-blue-600 dark:text-blue-400 font-mono float-right">
-                {settings.dayOffset === 0 ? "오늘" : `${Math.abs(settings.dayOffset)}일 전`}
+                {(settings.dayOffset ?? 0) === 0 ? "오늘" : `${Math.abs(settings.dayOffset ?? 0)}일 전`}
               </span>
             </label>
-            <input type="range" min={-7} max={0} value={settings.dayOffset}
+            <input type="range" min={-7} max={0} value={settings.dayOffset ?? 0}
               onChange={(e) => set({ dayOffset: Number(e.target.value) })}
               className="w-full accent-blue-500" />
             <div className="flex justify-between text-[9px] text-gray-400 dark:text-gray-500 mt-1">
