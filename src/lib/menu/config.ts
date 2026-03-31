@@ -65,7 +65,8 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 4, name: 'SPC MONITORING', subtitle: 'SPC 모니터링', icon: '✔' },
   { id: 5, name: 'ANOMALY', subtitle: '이상점 모니터링', icon: '⚠' },
   { id: 6, name: 'CHARTS', subtitle: '차트 보기', icon: '▦' },
-  { id: 7, name: 'U1 MONITORING', subtitle: 'U1전용 모니터링', icon: '◈' },
+  { id: 7, name: '베트남U1모니터링', subtitle: 'Vietnam U1 Monitoring', icon: '◈' },
+  { id: 8, name: '멕시코전장모니터링', subtitle: 'Mexico VC Monitoring', icon: '🌎' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -101,24 +102,7 @@ export const COLORS: string[] = [
  *   4 = QUALITY (품질 관리)
  */
 export const DEFAULT_SHORTCUTS: Shortcut[] = [
-  // Favorites (layer: 0) — 모든 메뉴 즐겨찾기 등록
-  { id: 'fav-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 0 },
-  { id: 'fav-25', title: '종합F/P현황', url: '/display/25', color: '#a78bfa', icon: 'svg:stencil', layer: 0 },
-  { id: 'fav-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:production', layer: 0 },
-  { id: 'fav-27', title: 'SMD 듀얼생산현황', url: '/display/27', color: '#818cf8', icon: 'svg:monitor', layer: 0 },
-  { id: 'fav-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:pba-production', layer: 0 },
-  { id: 'fav-34', title: '픽업률현황(BASE)', url: '/display/34', color: '#f59e0b', icon: 'svg:chip-smd', layer: 0 },
-  { id: 'fav-35', title: '픽업률현황(HEAD)', url: '/display/35', color: '#eab308', icon: 'svg:chip-smd', layer: 0 },
-  { id: 'fav-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 0 },
-  { id: 'fav-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:material', layer: 0 },
-  { id: 'fav-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 0 },
-  { id: 'fav-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 0 },
-  { id: 'fav-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 0 },
-  { id: 'fav-41', title: 'AOI 차트분석', url: '/display/41', color: '#06b6d4', icon: 'svg:vision', layer: 0 },
-  { id: 'fav-42', title: 'FCT 차트분석', url: '/display/42', color: '#f59e0b', icon: 'svg:operation-rate', layer: 0 },
-  { id: 'fav-43', title: 'VISION 차트분석', url: '/display/43', color: '#10b981', icon: 'svg:vision', layer: 0 },
-  { id: 'fav-50', title: '설비로그검색', url: '/display/50', color: '#64748b', icon: 'svg:error-log', layer: 0 },
-  { id: 'fav-60', title: '관리도보기', url: '/display/60', color: '#8b5cf6', icon: 'svg:chart', layer: 0 },
+  // Favorites (layer: 0) — 사용자가 직접 등록/해제, 기본은 비어있음
 
   // SMD Monitoring (layer: 1)
   { id: 'menu-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 1 },
@@ -175,6 +159,10 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 'menu-41', title: 'AOI 차트분석', url: '/display/41', color: '#06b6d4', icon: 'svg:vision', layer: 6 },
   { id: 'menu-42', title: 'FCT 차트분석', url: '/display/42', color: '#f59e0b', icon: 'svg:operation-rate', layer: 6 },
   { id: 'menu-43', title: 'VISION 차트분석', url: '/display/43', color: '#10b981', icon: 'svg:vision', layer: 6 },
+
+  // 멕시코전장로그조회 (layer: 8)
+  { id: 'mex-log', title: '로그조회', url: '/mxvc/log', color: '#22d3ee', icon: 'svg:error-log', layer: 8 },
+  { id: 'mex-fpy', title: '직행율', url: '/mxvc/fpy', color: '#22c55e', icon: 'svg:target', layer: 8 },
 ];
 
 // ---------------------------------------------------------------------------
