@@ -78,9 +78,9 @@ export default function FpyDashboard({ data, settings }: Props) {
 
 function SummaryCard({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div className="bg-gray-800/60 rounded-lg p-3 text-center">
+    <div className="bg-gray-100 dark:bg-gray-800/60 rounded-lg p-3 text-center">
       <div className={`text-lg font-extrabold font-mono ${color}`}>{value}</div>
-      <div className="text-[10px] text-gray-500 mt-1">{label}</div>
+      <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{label}</div>
     </div>
   );
 }
@@ -111,9 +111,9 @@ function OverallYieldCard({
       : "text-green-400";
 
   return (
-    <div className="bg-gray-800/60 rounded-lg p-3 text-center">
+    <div className="bg-gray-100 dark:bg-gray-800/60 rounded-lg p-3 text-center">
       <div className={`text-2xl font-extrabold font-mono ${color}`}>{overall.toFixed(1)}%</div>
-      <div className="text-[10px] text-gray-500 mt-1">종합 직행율</div>
+      <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">종합 직행율</div>
     </div>
   );
 }

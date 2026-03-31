@@ -41,14 +41,14 @@ export default function FpyChartCard({ tableKey, data, height }: Props) {
   const { summary, hourly } = data;
 
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-xl p-4">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xs text-gray-400 font-bold uppercase">{label}</h3>
+        <h3 className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">{label}</h3>
         <div className="flex items-center gap-2 text-xs">
           <span className={`font-bold font-mono ${getSummaryColor(summary.yield)}`}>
             {summary.yield.toFixed(1)}%
           </span>
-          <span className="text-gray-500">
+          <span className="text-gray-400 dark:text-gray-500">
             ({summary.pass}/{summary.total})
           </span>
         </div>
@@ -56,7 +56,7 @@ export default function FpyChartCard({ tableKey, data, height }: Props) {
 
       {hourly.length === 0 ? (
         <div
-          className="flex items-center justify-center text-gray-600 text-xs"
+          className="flex items-center justify-center text-gray-400 dark:text-gray-600 text-xs"
           style={{ height }}
         >
           데이터 없음

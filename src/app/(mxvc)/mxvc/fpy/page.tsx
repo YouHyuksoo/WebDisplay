@@ -44,14 +44,14 @@ export default function MxvcFpyPage() {
   }, [fetchData, timing.refreshSeconds]);
 
   return (
-    <div className="h-screen flex flex-col bg-gray-950 text-white overflow-hidden">
+    <div className="h-screen flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-white overflow-hidden">
       <DisplayHeader title="멕시코전장 직행율" screenId={SCREEN_ID} />
 
       <div className="flex flex-1 min-h-0 relative">
         {sidebarCollapsed && (
           <button
             onClick={() => setSidebarCollapsed(false)}
-            className="absolute top-4 left-0 z-20 p-1.5 rounded-r-md bg-gray-800 border border-l-0 border-gray-700 text-blue-400 hover:text-white hover:bg-blue-600 transition-all shadow-lg"
+            className="absolute top-4 left-0 z-20 p-1.5 rounded-r-md bg-gray-100 dark:bg-gray-800 border border-l-0 border-gray-300 dark:border-gray-700 text-blue-500 dark:text-blue-400 hover:text-white hover:bg-blue-600 transition-all shadow-lg"
             title="사이드바 열기"
           >
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -73,14 +73,14 @@ export default function MxvcFpyPage() {
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${sidebarCollapsed ? "ml-0" : ""}`}>
           {error && !data && (
             <div className="flex-1 flex items-center justify-center">
-              <div className="p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
+              <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg text-red-600 dark:text-red-300 text-sm">
                 데이터 조회 실패: {error}
               </div>
             </div>
           )}
           {loading && !data && (
-            <div className="flex-1 flex flex-col items-center justify-center text-gray-500 gap-3">
-              <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
+            <div className="flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-3">
+              <span className="w-8 h-8 border-4 border-gray-300 dark:border-gray-700 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin" />
               데이터 조회 중...
             </div>
           )}
