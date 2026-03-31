@@ -1,17 +1,18 @@
 /**
  * @file src/components/u1/ate/AteWeeklyTrend.tsx
- * @description ATE 주간 일별 합격률 추이 — LINE별 색상 구분 멀티라인 차트
+ * @description ATE 주간 일별 합격률 — 면적 라인 + 포인트 강조 + 값 레이블
  *
  * 초보자 가이드:
  * 1. 최근 7일간 일별 합격률을 라인별로 표시
- * 2. LINE마다 다른 색상, 90% 기준선(빨간 점선) 표시
- * 3. AteWeeklyPoint[]를 날짜 x 라인 pivot으로 변환
+ * 2. LINE마다 다른 색상 + 반투명 면적 채움
+ * 3. 90% 기준선, 포인트에 값 표시
+ * 4. 상단 요약: 라인별 현재 합격률 뱃지
  */
 
 "use client";
 
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Legend,
 } from "recharts";
 import type { AteWeeklyPoint } from "@/types/u1/ate-analysis";
@@ -41,23 +42,67 @@ export default function AteWeeklyTrend({ dailyTrend }: Props) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, rates]) => ({ date: date.slice(5), ...rates }));
 
+  /* 각 라인의 최신 합격률 */
+  const latestDate = chartData[chartData.length - 1];
+  const lineLatest = lines.map((l, i) => ({
+    code: l, rate: latestDate ? (latestDate as unknown as Record<string, number>)[l] : undefined, color: LINE_COLORS[i % LINE_COLORS.length],
+  }));
+
+  /* Y축 범위: 데이터 최솟값에서 여유 */
+  const allRates = dailyTrend.map((d) => d.rate);
+  const minRate = Math.min(...allRates);
+  const yMin = Math.max(0, Math.floor((minRate - 10) / 10) * 10);
+
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-        <XAxis dataKey="date" tick={{ fill: "#9ca3af", fontSize: 11 }} />
-        <YAxis domain={[80, 100]} tick={{ fill: "#9ca3af", fontSize: 11 }} tickFormatter={(v: number) => `${v}%`} />
-        <Tooltip
-          contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-          labelStyle={{ color: "#e5e7eb" }}
-          formatter={(value: number | undefined) => [`${(value ?? 0).toFixed(1)}%`]}
-        />
-        <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
-        <ReferenceLine y={90} stroke="#ef4444" strokeDasharray="5 5" label={{ value: "90%", fill: "#ef4444", fontSize: 10 }} />
-        {lines.map((lineCode, i) => (
-          <Line key={lineCode} type="monotone" dataKey={lineCode} stroke={LINE_COLORS[i % LINE_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} connectNulls />
+    <div className="flex flex-col h-full gap-1">
+      {/* 라인별 뱃지 */}
+      <div className="flex items-center gap-2 px-2 py-1 rounded bg-gray-800/60 flex-wrap">
+        {lineLatest.map((l) => (
+          <div key={l.code} className="flex items-center gap-1 text-[10px]">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: l.color }} />
+            <span className="text-gray-400">{l.code}</span>
+            {l.rate !== undefined && (
+              <span className="font-medium" style={{ color: l.rate < 90 ? "#ef4444" : l.rate < 95 ? "#eab308" : "#22c55e" }}>
+                {l.rate.toFixed(1)}%
+              </span>
+            )}
+          </div>
         ))}
-      </LineChart>
-    </ResponsiveContainer>
+      </div>
+
+      <div className="flex-1">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+            <defs>
+              {lines.map((_, i) => (
+                <linearGradient key={i} id={`weekGrad${i}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={LINE_COLORS[i % LINE_COLORS.length]} stopOpacity={0.3} />
+                  <stop offset="100%" stopColor={LINE_COLORS[i % LINE_COLORS.length]} stopOpacity={0.02} />
+                </linearGradient>
+              ))}
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
+            <XAxis dataKey="date" tick={{ fill: "#9ca3af", fontSize: 11 }} axisLine={{ stroke: "#374151" }} />
+            <YAxis domain={[yMin, 100]} tick={{ fill: "#9ca3af", fontSize: 11 }}
+              tickFormatter={(v: number) => `${v}%`} axisLine={{ stroke: "#374151" }} />
+            <Tooltip
+              contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #4b5563", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}
+              labelStyle={{ color: "#e5e7eb", fontWeight: "bold" }}
+              formatter={(value: number | undefined) => [`${(value ?? 0).toFixed(1)}%`]}
+            />
+            <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
+            <ReferenceLine y={90} stroke="#ef4444" strokeDasharray="5 5" strokeOpacity={0.6}
+              label={{ value: "90%", fill: "#ef4444", fontSize: 10, position: "right" }} />
+            {lines.map((lineCode, i) => (
+              <Area key={lineCode} type="monotone" dataKey={lineCode}
+                stroke={LINE_COLORS[i % LINE_COLORS.length]} strokeWidth={2.5}
+                fill={`url(#weekGrad${i})`} connectNulls animationDuration={800}
+                dot={{ r: 4, fill: LINE_COLORS[i % LINE_COLORS.length], strokeWidth: 0 }}
+                activeDot={{ r: 7, stroke: LINE_COLORS[i % LINE_COLORS.length], strokeWidth: 2, fill: "#1f2937" }} />
+            ))}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

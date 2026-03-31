@@ -1,28 +1,17 @@
 /**
  * @file src/components/u1/ate/AteMachineNg.tsx
- * @description ATE 머신별 NG 분포 — 수평 바 차트 (TOP 10, NG 건수 내림차순)
+ * @description ATE 머신별 NG 분포 — 수평 바 + 값 레이블 + NG율 + 요약
  *
  * 초보자 가이드:
  * 1. Y축: MACHINE_CODE, X축: NG 건수
- * 2. NG 건수에 따라 빨강 그라데이션 색상
- * 3. 당일 데이터만 사용 (Daily API의 machineNg 필드)
+ * 2. 바 끝에 NG건수 + NG율(%) 표시
+ * 3. 그라데이션 바 + 배경 트랙으로 비율감 표현
+ * 4. 상단 요약: 총 NG 건수 + 최다 NG 머신
  */
 
 "use client";
 
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell,
-} from "recharts";
 import type { AteMachineNgItem } from "@/types/u1/ate-analysis";
-
-function getNgColor(ngCount: number, maxNg: number): string {
-  if (maxNg === 0) return "#6b7280";
-  const ratio = ngCount / maxNg;
-  if (ratio > 0.7) return "#ef4444";
-  if (ratio > 0.4) return "#f97316";
-  return "#eab308";
-}
 
 interface Props {
   machineNg: AteMachineNgItem[];
@@ -37,32 +26,50 @@ export default function AteMachineNg({ machineNg }: Props) {
     );
   }
 
+  const totalNg = machineNg.reduce((s, m) => s + m.ngCount, 0);
   const maxNg = Math.max(...machineNg.map((m) => m.ngCount));
-  const chartData = machineNg.map((m) => ({
-    name: m.machineCode,
-    ng: m.ngCount,
-    total: m.total,
-  }));
+  const topMachine = machineNg[0];
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#374151" horizontal={false} />
-        <XAxis type="number" tick={{ fill: "#9ca3af", fontSize: 11 }} />
-        <YAxis type="category" dataKey="name" tick={{ fill: "#9ca3af", fontSize: 10 }} width={80} />
-        <Tooltip
-          contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-          labelStyle={{ color: "#e5e7eb" }}
-          formatter={(value: number | string | undefined, _name: string | undefined, props: { payload?: { total?: number } }) => [
-            `${value ?? 0}건 / ${props.payload?.total ?? 0}건`, "NG",
-          ]}
-        />
-        <Bar dataKey="ng" name="NG 건수" radius={[0, 4, 4, 0]}>
-          {chartData.map((entry, idx) => (
-            <Cell key={idx} fill={getNgColor(entry.ng, maxNg)} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="flex flex-col h-full gap-1">
+      {/* 요약 바 */}
+      <div className="flex items-center gap-3 px-2 py-1 rounded bg-gray-800/60 text-[10px]">
+        <span className="text-gray-500">총 NG</span>
+        <span className="text-red-400 font-bold">{totalNg.toLocaleString()}건</span>
+        <span className="text-gray-500 ml-auto">TOP</span>
+        <span className="text-orange-400 font-medium">{topMachine.machineCode} ({topMachine.ngCount}건)</span>
+      </div>
+
+      {/* 커스텀 수평 바 */}
+      <div className="flex-1 flex flex-col justify-center gap-1.5 px-1 overflow-y-auto">
+        {machineNg.map((m) => {
+          const pct = maxNg > 0 ? (m.ngCount / maxNg) * 100 : 0;
+          const ngRate = m.total > 0 ? ((m.ngCount / m.total) * 100).toFixed(1) : "0.0";
+          const barColor = pct > 70 ? "from-red-600 to-red-400" : pct > 40 ? "from-orange-600 to-orange-400" : "from-yellow-600 to-yellow-400";
+
+          return (
+            <div key={m.machineCode} className="flex items-center gap-2">
+              <span className="w-16 shrink-0 text-[11px] text-gray-400 text-right truncate">{m.machineCode}</span>
+              <div className="flex-1 relative h-5">
+                {/* 배경 트랙 */}
+                <div className="absolute inset-0 bg-gray-800/60 rounded" />
+                {/* 값 바 */}
+                <div
+                  className={`absolute inset-y-0 left-0 rounded bg-gradient-to-r ${barColor} transition-all duration-500`}
+                  style={{ width: `${Math.max(pct, 3)}%` }}
+                />
+                {/* 값 레이블 */}
+                <div className="absolute inset-0 flex items-center px-2">
+                  <span className="text-[10px] font-bold text-white drop-shadow-sm ml-auto">
+                    {m.ngCount}건
+                  </span>
+                </div>
+              </div>
+              <span className="w-12 shrink-0 text-[10px] text-right text-red-400/80">{ngRate}%</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
