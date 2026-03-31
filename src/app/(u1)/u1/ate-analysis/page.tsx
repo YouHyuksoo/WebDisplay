@@ -115,7 +115,7 @@ export default function AteAnalysisPage() {
             <ChartCard title="당일 라인별 합격률" badge="당일">
               {daily ? <AteDailyPassRate lineStats={daily.lineStats} /> : <ChartSkeleton />}
             </ChartCard>
-            <ChartCard title="전일 vs 당일 비교" badge="전일/당일">
+            <ChartCard title="전일 vs 당일 합격률 비교" badge="전일/당일">
               {daily ? <AteYesterdayCompare lineStats={daily.lineStats} /> : <ChartSkeleton />}
             </ChartCard>
             <ChartCard title="시간대별 검사 추이" badge="당일">
