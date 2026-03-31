@@ -96,14 +96,17 @@ export function goToSection(index: number, forceDirection: number | null = null)
   // 터널 가속
   state.targetSpeed = direction * 30;
 
-  // [최적화] 기존 타이틀 트윈 정리
+  // ★ 기존 모든 섹션 관련 트윈 강제 정리 (방향 전환 시 충돌 방지)
   gsap.killTweensOf('#section-info');
+  gsap.killTweensOf('#scroll-hint');
+  document.querySelectorAll('.section-cards').forEach((s) => gsap.killTweensOf(s));
 
   // 섹션 타이틀 애니메이션
   gsap.to('#section-info', {
     opacity: 0,
     y: direction * -30,
-    duration: 0.3,
+    duration: 0.25,
+    overwrite: true,
     onComplete: () => {
       state.currentSection = index;
       updateSectionInfo();
@@ -113,7 +116,7 @@ export function goToSection(index: number, forceDirection: number | null = null)
       gsap.fromTo(
         '#section-info',
         { opacity: 0, y: direction * 30 },
-        { opacity: 1, y: 0, duration: 0.3 },
+        { opacity: 1, y: 0, duration: 0.25, overwrite: true },
       );
     },
   });
@@ -129,7 +132,7 @@ export function goToSection(index: number, forceDirection: number | null = null)
   if (isAdjacent) {
     gsap.to({ speed: state.targetSpeed }, {
       speed: 0,
-      duration: 0.6,
+      duration: 0.5,
       ease: 'power2.out',
       onUpdate: function (this: gsap.core.Tween) {
         state.targetSpeed = (this.targets()[0] as { speed: number }).speed;
@@ -139,8 +142,8 @@ export function goToSection(index: number, forceDirection: number | null = null)
     state.targetSpeed = 0;
   }
 
-  // 인접: 애니메이션 완료 후 해제, 건너뛰기: 즉시 해제
-  const transitionDuration = !isAdjacent ? 50 : (state.simpleVirtualization ? 100 : 700);
+  // ★ 애니메이션 기반 해제: 고정 타이머 대신 gsap duration에 맞춘 안전한 해제
+  const transitionDuration = !isAdjacent ? 50 : (state.simpleVirtualization ? 100 : 800);
   setTimeout(() => {
     state.isTransitioning = false;
   }, transitionDuration);
@@ -270,9 +273,9 @@ export function animateCardsToSection(targetIndex: number, direction: number, is
     } else {
       gsap.to(section, {
         ...sectionProps,
-        duration: 0.6,
+        duration: 0.5,
         ease: 'power2.out',
-        overwrite: 'auto',
+        overwrite: true,
         onComplete: onSectionComplete,
       });
     }

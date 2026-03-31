@@ -12,8 +12,8 @@
 import { state } from '../state';
 import { addTracked } from './tracker';
 
-/** 전환 후 다음 전환까지 최소 대기 (ms) */
-const COOLDOWN = 1200;
+/** 전환 후 다음 전환까지 최소 대기 (ms) — sections.ts의 transitionDuration(800)보다 길어야 함 */
+const COOLDOWN = 1000;
 
 export function setupWheelHandlers(): void {
   /** 마지막 전환 시각 */
