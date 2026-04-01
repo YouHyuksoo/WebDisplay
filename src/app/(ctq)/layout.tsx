@@ -21,7 +21,7 @@ export default function CtqLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className="min-h-screen bg-gray-950 text-white antialiased">
+      <body className="h-screen overflow-hidden bg-gray-950 text-white antialiased">
         <LocaleProvider>
           <FooterProvider>
             {children}

@@ -2,12 +2,7 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* 100vh lock - NO page scroll EVER */
-html,
-body {
-  height: 100vh;
-  overflow: hidden;
-}
+/* 100vh lock - 필요한 레이아웃에서 h-screen overflow-hidden 클래스로 적용 */
 
 /* Grid Resizing */
 body.resizing {
