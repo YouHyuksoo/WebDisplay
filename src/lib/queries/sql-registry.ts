@@ -159,7 +159,7 @@ const SCREEN_SQL_BUILDERS: Record<string, () => ScreenSqlInfo> = {
   }),
   '50': () => ({
     screenId: '50',
-    title: '설비로그검색 (Equipment Log Search)',
+    title: '설비호출이력검색 (Equipment Call History Search)',
     queries: [
       { label: '로그 목록', sql: sqlEquipmentLogList('/* AND keyword LIKE ... */') },
       { label: '로그 건수', sql: sqlEquipmentLogCount('/* AND keyword LIKE ... */') },

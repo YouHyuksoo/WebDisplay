@@ -18,7 +18,8 @@ export function useFpy(selectedLines: string = "%") {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/ctq/fpy?lines=${encodeURIComponent(selectedLines)}`);
+      const params = selectedLines && selectedLines !== "%" ? `?lines=${encodeURIComponent(selectedLines)}` : "";
+      const res = await fetch(`/api/ctq/fpy${params}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json: FpyResponse = await res.json();
       setData(json);

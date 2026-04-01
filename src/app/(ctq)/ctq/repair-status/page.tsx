@@ -1,11 +1,11 @@
 /**
  * @file src/app/(ctq)/ctq/repair-status/page.tsx
- * @description 수리상태 페이지 -- IP_PRODUCT_WORK_QC 당일 불량 PID 수리 현황
+ * @description 수리상태 페이지 -- IP_PRODUCT_WORK_QC 불량 PID 수리 현황
  *
  * 초보자 가이드:
- * 1. 당일 불량 감지된 PID의 수리 상태를 목록으로 표시
- * 2. DisplayHeader + useDisplayTiming + useAutoRolling 패턴 적용
- * 3. h-screen flex 레이아웃 -- 테이블만 스크롤
+ * 1. 날짜 범위(QC_DATE) 조건 필수 -- 기본 당일~당일
+ * 2. 시작일 08:00 ~ 종료일 익일 08:00 범위 조회
+ * 3. DisplayHeader + useDisplayTiming + 자동 폴링 패턴
  * 4. PID 검색 필터 지원
  */
 
@@ -23,18 +23,36 @@ import RepairStatusTable from "@/components/ctq/RepairStatusTable";
 
 const SCREEN_ID = "ctq-repair";
 
+/** 베트남(UTC+7) 기준 오늘 날짜를 YYYY-MM-DD로 반환 */
+function getTodayVietnam(): string {
+  const now = new Date();
+  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  const vn = new Date(utcMs + 7 * 3600000);
+  if (vn.getHours() < 8) vn.setDate(vn.getDate() - 1);
+  const y = vn.getFullYear();
+  const m = String(vn.getMonth() + 1).padStart(2, "0");
+  const d = String(vn.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export default function RepairStatusPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
 
   const selectedLines = useSelectedLines(SCREEN_ID);
 
+  /* -- 날짜 범위 조건 (필수, 기본 당일~당일) -- */
+  const [dateFrom, setDateFrom] = useState(getTodayVietnam);
+  const [dateTo, setDateTo] = useState(getTodayVietnam);
+
   /* -- PID 검색 필터 -- */
   const [pidInput, setPidInput] = useState("");
   const [pidFilter, setPidFilter] = useState("");
 
   /* -- 데이터 조회 -- */
-  const { data, error, loading, fetchData } = useRepairStatus(selectedLines, pidFilter);
+  const { data, error, loading, fetchData } = useRepairStatus(
+    selectedLines, pidFilter, dateFrom, dateTo
+  );
 
   /* -- 자동 폴링 -- */
   useEffect(() => {
@@ -45,18 +63,38 @@ export default function RepairStatusPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-white overflow-hidden">
-      {/* -- WebDisplay 공통 헤더 -- */}
       <DisplayHeader title={t("pages.repairStatus.title")} screenId={SCREEN_ID} />
 
-      {/* -- PID 검색 바 -- */}
+      {/* -- 조회 조건 바 -- */}
       <div className="shrink-0 bg-gray-900 border-b border-gray-700 px-6 py-2">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 text-xs text-gray-400">
             <CriteriaTooltip pageKey="repairStatus" />
             <span>{t("pages.repairStatus.tableSource")}</span>
-            <span>{t("pages.repairStatus.periodDesc")}</span>
           </div>
           <div className="flex items-center gap-4">
+            {/* 날짜 범위 선택 (필수) */}
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-400">{t("pages.repairStatus.dateLabel")}</label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => {
+                  setDateFrom(e.target.value);
+                  if (e.target.value > dateTo) setDateTo(e.target.value);
+                }}
+                className="px-2 py-1.5 rounded bg-gray-800 border border-gray-600 text-sm text-gray-200 focus:outline-none focus:border-blue-500 [color-scheme:dark]"
+              />
+              <span className="text-gray-500">~</span>
+              <input
+                type="date"
+                value={dateTo}
+                min={dateFrom}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="px-2 py-1.5 rounded bg-gray-800 border border-gray-600 text-sm text-gray-200 focus:outline-none focus:border-blue-500 [color-scheme:dark]"
+              />
+            </div>
+            {/* PID 검색 */}
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -64,7 +102,7 @@ export default function RepairStatusPage() {
                 onChange={(e) => setPidInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { setPidFilter(pidInput); } }}
                 placeholder="PID..."
-                className="w-56 px-3 py-1.5 rounded bg-gray-900 border border-gray-600 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                className="w-44 px-3 py-1.5 rounded bg-gray-800 border border-gray-600 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500"
               />
               {pidFilter && (
                 <button
@@ -75,6 +113,7 @@ export default function RepairStatusPage() {
                 </button>
               )}
             </div>
+            {/* 새로고침 */}
             <button
               onClick={fetchData}
               disabled={loading}

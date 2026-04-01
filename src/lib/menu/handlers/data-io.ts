@@ -31,8 +31,6 @@ export function exportData(): void {
   const data = {
     version: '1.0',
     exportedAt: new Date().toISOString(),
-    shortcuts: state.shortcuts,
-    categories: Storage.loadCategories(),
     settings: {
       tunnelShape: state.tunnelShape,
       glowTheme: state.glowTheme,
@@ -90,19 +88,7 @@ export function importData(): void {
         const confirmed = await showConfirm(t('menuUI.importConfirm'), { title: t('menuUI.dataImportTitle'), danger: true });
         if (!confirmed) return;
 
-        // 데이터 복원
-        if (data.shortcuts) {
-          state.shortcuts = data.shortcuts;
-          Storage.saveShortcuts(data.shortcuts);
-        }
-
-        if (data.categories) {
-          Storage.saveCategories(data.categories);
-          import('../categories').then((Categories) => {
-            Categories.load();
-          });
-        }
-
+        // 데이터 복원 (설정만 — 카드/카테고리는 config.ts 단일 소스)
         if (data.settings) {
           state.tunnelShape = data.settings.tunnelShape || 'triangle';
           state.glowTheme = data.settings.glowTheme || 'gold';

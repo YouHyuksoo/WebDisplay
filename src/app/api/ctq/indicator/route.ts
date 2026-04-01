@@ -11,7 +11,7 @@
 
 import { NextResponse } from "next/server";
 import { type NextRequest } from "next/server";
-import { executeQuery } from "@/lib/db";
+import { executeQuery, executeDml } from "@/lib/db";
 import type {
   IndicatorProcessKey,
   IndicatorModelData,
@@ -147,7 +147,7 @@ async function insertProcessMonth(
       VALUES (src.TM, src.ITEM_CODE, src.PC, src.NG_CNT, src.TOT_CNT, src.PPM_VAL, SYSDATE, SYSDATE)
   `;
 
-  await executeQuery(sql, { tm: targetMonth, pc: processKey, startStr, endStr });
+  await executeDml(sql, { tm: targetMonth, pc: processKey, startStr, endStr });
 }
 
 /** 특정 월의 모든 공정을 병렬 집계+저장 (MERGE 방식, COUNTERMEASURE_NO 보존) */
@@ -299,7 +299,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await executeQuery(
+    await executeDml(
       `UPDATE IQ_INDICATOR_MONTHLY
        SET COUNTERMEASURE_NO = :cn, UPDATED_DATE = SYSDATE
        WHERE TARGET_MONTH = :tm AND ITEM_CODE = :ic AND PROCESS_CODE = :pc`,

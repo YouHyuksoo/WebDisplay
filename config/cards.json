@@ -126,11 +126,11 @@
     },
     {
       "id": "menu-50",
-      "title": "설비로그검색",
+      "title": "설비호출이력검색",
       "url": "/display/50",
       "color": "#64748b",
       "icon": "svg:error-log",
-      "layer": -1
+      "layer": 8
     },
     {
       "id": "menu-29",
@@ -357,6 +357,14 @@
       "layer": 1
     },
     {
+      "id": "u1-log",
+      "title": "로그조회",
+      "url": "/u1/log",
+      "color": "#22d3ee",
+      "icon": "svg:error-log",
+      "layer": 7
+    },
+    {
       "id": "mex-log",
       "title": "로그조회",
       "url": "/mxvc/log",
@@ -370,6 +378,14 @@
       "url": "/mxvc/fpy",
       "color": "#22c55e",
       "icon": "svg:target",
+      "layer": 8
+    },
+    {
+      "id": "mex-interlock",
+      "title": "설비호출이력분석",
+      "url": "/mxvc/interlock",
+      "color": "#f59e0b",
+      "icon": "svg:interlock",
       "layer": 8
     }
   ]

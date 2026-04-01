@@ -47,22 +47,27 @@ export async function GET(request: Request) {
     const zones = SHIFT_ZONES[shift] ?? SHIFT_ZONES.A;
     const zoneCount = zones.length;
 
-    const commonBinds = { lineCode, orgId: Number(orgId), shift };
+    const planBinds = { lineCode, orgId: Number(orgId), shift };
+    const ioBinds = { lineCode, orgId: Number(orgId), workstageCode: WORKSTAGE_CODE };
 
     /* 5개 쿼리 병렬 실행 */
     const [planRows, tzRows, totalRows, modelRows, lineNameRows] = await Promise.all([
-      executeQuery(sqlProductPlan(), commonBinds),
-      executeQuery(sqlTimeZoneActual(), { ...commonBinds, workstageCode: WORKSTAGE_CODE }),
-      executeQuery(sqlTotalActual(), { ...commonBinds, workstageCode: WORKSTAGE_CODE }),
-      executeQuery(sqlModelActuals(), { ...commonBinds, workstageCode: WORKSTAGE_CODE }),
+      executeQuery(sqlProductPlan(), planBinds),
+      executeQuery(sqlTimeZoneActual(), ioBinds),
+      executeQuery(sqlTotalActual(), ioBinds),
+      executeQuery(sqlModelActuals(), ioBinds),
       executeQuery<{ LINE_NAME: string }>(`SELECT F_GET_LINE_NAME(:lineCode, 1) AS LINE_NAME FROM DUAL`, { lineCode }),
     ]);
 
-    const plan = (planRows as Record<string, unknown>[])[0] ?? null;
+    const allPlans = planRows as Record<string, unknown>[];
+    const plan = allPlans[0] ?? null;
     const lineName = lineNameRows[0]?.LINE_NAME ?? lineCode;
-    /* plan이 없어도 LINE_NAME 보장 */
+
+    /* 해당 라인/일자의 모든 계획 PLAN_QTY 합계 */
+    const totalPlanQty = allPlans.reduce((sum, r) => sum + (Number(r.PLAN_QTY) || 0), 0);
     if (plan) {
-      (plan as Record<string, unknown>).LINE_NAME = (plan as Record<string, unknown>).LINE_NAME ?? lineName;
+      plan.LINE_NAME = plan.LINE_NAME ?? lineName;
+      plan.PLAN_QTY = totalPlanQty;
     }
 
     /* 시간대별 실적 — TIME_SLOT(A~E) → 인덱스 매핑 */

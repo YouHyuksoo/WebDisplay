@@ -88,10 +88,20 @@ export function goToSection(index: number, forceDirection: number | null = null)
   if (forceDirection !== null) direction = forceDirection;
 
   // 히스토리에 현재 섹션 기록 (돌아가기 기능용, 최대 20개)
-  state.sectionHistory.push(state.currentSection);
+  const oldSection = state.currentSection;
+  state.sectionHistory.push(oldSection);
   if (state.sectionHistory.length > 20) state.sectionHistory.shift();
 
   state.isTransitioning = true;
+
+  // ★ 핵심: state.currentSection을 즉시 업데이트 (onComplete 지연 제거)
+  // 이전에는 onComplete(0.25초 후)에서 업데이트했는데, isTransitioning 잠금(50ms)보다
+  // 늦어서 그 사이에 클릭하면 방향 계산이 꼬이는 버그가 있었음
+  state.currentSection = index;
+
+  // 인접(±1) vs 건너뛰기 판별 — oldSection 기준으로 계산
+  const rawDist = Math.abs(index - oldSection);
+  const isAdjacent = rawDist === 1 || rawDist === sections.length - 1;
 
   // 터널 가속
   state.targetSpeed = direction * 30;
@@ -108,7 +118,6 @@ export function goToSection(index: number, forceDirection: number | null = null)
     duration: 0.25,
     overwrite: true,
     onComplete: () => {
-      state.currentSection = index;
       updateSectionInfo();
       updateDepthIndicator();
       window.dispatchEvent(new CustomEvent('menu-section-changed', { detail: { index } }));
@@ -121,12 +130,11 @@ export function goToSection(index: number, forceDirection: number | null = null)
     },
   });
 
-  // 인접(±1) vs 건너뛰기 판별
-  const rawDist = Math.abs(index - state.currentSection);
-  const isAdjacent = rawDist === 1 || rawDist === sections.length - 1;
+  // 도트 인디케이터 즉시 업데이트 (타이틀 페이드 기다리지 않음)
+  updateDepthIndicator();
 
-  // 카드 깊이 업데이트
-  animateCardsToSection(index, direction, isAdjacent);
+  // 카드 깊이 업데이트 — oldSection을 명시적으로 전달
+  animateCardsToSection(index, direction, isAdjacent, oldSection);
 
   // 인접 이동: 터널 가속 + 부드러운 전환 / 건너뛰기: 즉시
   if (isAdjacent) {
@@ -134,6 +142,7 @@ export function goToSection(index: number, forceDirection: number | null = null)
       speed: 0,
       duration: 0.5,
       ease: 'power2.out',
+      overwrite: true,
       onUpdate: function (this: gsap.core.Tween) {
         state.targetSpeed = (this.targets()[0] as { speed: number }).speed;
       },
@@ -174,8 +183,11 @@ export function goToNextSection(): void {
  *
  * @param targetIndex - 목표 섹션 인덱스
  * @param direction - 이동 방향 (1 또는 -1)
+ * @param isAdjacent - 인접 이동 여부
+ * @param fromIndex - 출발 섹션 인덱스 (명시하지 않으면 state.currentSection 사용)
  */
-export function animateCardsToSection(targetIndex: number, direction: number, isAdjacent = true): void {
+export function animateCardsToSection(targetIndex: number, direction: number, isAdjacent = true, fromIndex?: number): void {
+  const departingSection = fromIndex ?? state.currentSection;
   const sections = document.querySelectorAll('.section-cards');
   const sectionCount = sections.length;
 
@@ -190,8 +202,8 @@ export function animateCardsToSection(targetIndex: number, direction: number, is
 
     const absOffset = Math.abs(offset);
 
-    // 인접 이동에서만 떠나는 줌 효과
-    const isDeparting = isAdjacent && (i === state.currentSection) && (i !== targetIndex);
+    // 인접 이동에서만 떠나는 줌 효과 — departingSection(출발지)을 명시적으로 사용
+    const isDeparting = isAdjacent && (i === departingSection) && (i !== targetIndex);
 
     // 떠나는 섹션: 앞으로→커지며 뒤로 사라짐, 뒤로→작아지며 앞으로 빠짐
     const zPos = isDeparting
@@ -202,19 +214,17 @@ export function animateCardsToSection(targetIndex: number, direction: number, is
       : offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -40 : offset < 0 ? 40 : 0;
 
-    // 그리드 모드: ±1 미리보기 (3D 깊이 프리뷰)
-    const isGridMode = state.cardLayout === 'grid';
-    const visibleRange = isGridMode ? 1 : 0;
+    // 현재 섹션만 표시 (인접 섹션 프리뷰 제거 — 전환 시 깜빡임 방지)
     const opacity = isDeparting ? 0
       : offset === 0 ? 1
-      : absOffset <= visibleRange ? 0.12 : 0;
+      : 0;
     // zIndex: 떠나는 섹션은 일반 값 사용 (200 금지 — 잔류 방지)
     const zIndex = 100 - absOffset;
 
     gsap.killTweensOf(section);
 
     // 보이지 않는 섹션은 즉시 숨김 (떠나는 섹션은 애니메이션 후 숨김)
-    if (absOffset > visibleRange && !isDeparting) {
+    if (offset !== 0 && !isDeparting) {
       gsap.set(section, {
         z: zPos, scale: scale, opacity: 0, y: yOffset, zIndex,
         display: 'none',
@@ -331,14 +341,10 @@ export function updateSectionInfo(): void {
   const subtitleEl = document.getElementById('section-subtitle');
 
   if (titleEl) {
-    const nameKey = `menuUI.catName${section.id}`;
-    const translatedName = t(nameKey);
-    titleEl.textContent = translatedName !== nameKey ? translatedName : section.name;
+    titleEl.textContent = section.name;
   }
   if (subtitleEl) {
-    const subtitleKey = `menuUI.catSub${section.id}`;
-    const translated = t(subtitleKey);
-    subtitleEl.textContent = translated !== subtitleKey ? translated : section.subtitle;
+    subtitleEl.textContent = section.subtitle;
   }
 }
 
@@ -364,13 +370,11 @@ export function updateCardsDepth(): void {
     const scale = offset === 0 ? 1 : Math.max(0.3, 1 - absOffset * 0.4);
     const yOffset = offset > 0 ? -30 : offset < 0 ? 30 : 0;
 
-    const isGridMode = state.cardLayout === 'grid';
-    const visibleRange = isGridMode ? 1 : 0;
-    const opacity = absOffset <= visibleRange ? (offset === 0 ? 1 : 0.1) : 0;
+    const opacity = offset === 0 ? 1 : 0;
     const zIndex = 100 - absOffset;
 
-    // 보이는 범위의 섹션만 카드 로드
-    if (absOffset <= visibleRange) {
+    // 현재 섹션만 카드 로드
+    if (offset === 0) {
       getCardsModule().then((Cards) => {
         Cards.populateSection(section as HTMLElement, i);
       });
@@ -382,7 +386,7 @@ export function updateCardsDepth(): void {
       opacity: opacity,
       y: yOffset,
       zIndex: zIndex,
-      display: absOffset <= visibleRange
+      display: offset === 0
         ? ((section as HTMLElement).classList.contains('thumbnail-layout') ? 'grid' : 'flex')
         : 'none',
     });
@@ -416,10 +420,10 @@ export function createDepthIndicator(): void {
     const dot = document.createElement('div');
     dot.className = 'depth-dot' + (i === state.currentSection ? ' active' : '');
     const icon = 'icon' in section ? (section as Category).icon : '';
-    const nameKey = `menuUI.catName${section.id}`;
-    const translatedName = t(nameKey);
-    const displayName = translatedName !== nameKey ? translatedName : section.name;
-    dot.dataset.label = `${icon || ''} ${displayName}`;
+    const localizedName = t(`menuUI.catName${section.id}`) !== `menuUI.catName${section.id}`
+      ? t(`menuUI.catName${section.id}`)
+      : section.subtitle || section.name;
+    dot.dataset.label = `${icon || ''} ${localizedName}`;
     dot.addEventListener('click', () => goToSection(i));
     container.appendChild(dot);
   });

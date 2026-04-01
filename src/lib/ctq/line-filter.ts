@@ -17,7 +17,7 @@ export function parseLines(request: NextRequest): string[] {
   return linesParam
     .split(",")
     .map((s) => s.trim())
-    .filter(Boolean);
+    .filter((s) => s && s !== "%");
 }
 
 /**

@@ -8,12 +8,17 @@
  * 3. **중요**: data-shape, data-style 등 data 속성 유지 필수 (JS에서 참조)
  */
 
+'use client';
+
 import { Star, Edit2, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 /**
  * 터널 서브메뉴 + 카드 스타일 서브메뉴 + 토스트 + 컨텍스트 메뉴
  */
 export default function MenuSubmenus() {
+  const t = useTranslations('menuUI');
+
   return (
     <>
       {/* 터널 모양 서브메뉴 */}
@@ -91,15 +96,15 @@ export default function MenuSubmenus() {
       <div id="context-menu">
         <div className="context-item" id="ctx-fav">
           <Star size={14} style={{ marginRight: '6px' }} />
-          <span>Favorite</span>
+          <span>{t('favorite')}</span>
         </div>
         <div className="context-item" id="ctx-edit">
           <Edit2 size={14} style={{ marginRight: '6px' }} />
-          <span>Edit</span>
+          <span>{t('edit')}</span>
         </div>
         <div className="context-item danger" id="ctx-delete">
           <Trash2 size={14} style={{ marginRight: '6px' }} />
-          <span>Delete</span>
+          <span>{t('delete')}</span>
         </div>
       </div>
     </>

@@ -6,7 +6,7 @@
  * mode=filters 파라미터로 필터 드롭다운용 고유값 목록을 조회할 수 있다.
  */
 import { NextResponse } from 'next/server';
-import { executeQueryByProfile } from '@/lib/db';
+import { executeQuery } from '@/lib/db';
 import {
   sqlEquipmentLogList,
   sqlEquipmentLogCount,
@@ -16,17 +16,14 @@ import {
 } from '@/lib/queries/equipment-log';
 import type { EquipmentLogRow } from '@/lib/queries/equipment-log';
 
-/** SVEHICLEPDB 프로필 이름 (database.json에 등록) */
-const DB_PROFILE = 'SVEHICLEPDB';
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
 
   /* 필터 옵션(고유값) 조회 모드 */
   if (searchParams.get('mode') === 'filters') {
     try {
-      const rows = await executeQueryByProfile<{ COL_TYPE: string; COL_VALUE: string; COL_LABEL: string | null }>(
-        DB_PROFILE, sqlFilterOptions(), {},
+      const rows = await executeQuery<{ COL_TYPE: string; COL_VALUE: string; COL_LABEL: string | null }>(
+        sqlFilterOptions(), {},
       );
       const addrList: { value: string; label: string }[] = [];
       const lineCodeList: { value: string; label: string }[] = [];
@@ -69,13 +66,11 @@ export async function GET(request: Request) {
 
   try {
     const [countResult, logList] = await Promise.all([
-      executeQueryByProfile<{ TOTAL_COUNT: number }>(
-        DB_PROFILE,
+      executeQuery<{ TOTAL_COUNT: number }>(
         sqlEquipmentLogCount(extraClause),
         { fromDate, toDate, ...extraBinds },
       ),
-      executeQueryByProfile<EquipmentLogRow>(
-        DB_PROFILE,
+      executeQuery<EquipmentLogRow>(
         sqlEquipmentLogList(extraClause, sortCol, sortDir),
         { fromDate, toDate, startRow, endRow, ...extraBinds },
       ),

@@ -34,6 +34,10 @@ export default function DatabasePanel() {
   const [status, setStatus] = useState<Status>('idle');
   const [message, setMessage] = useState('');
   const [source, setSource] = useState<'env' | 'file' | 'unknown'>('unknown');
+  /** 비밀번호가 저장되어 있는지 여부 (API에서 ****로 반환된 경우) */
+  const [hasStoredPassword, setHasStoredPassword] = useState(false);
+  /** 사용자가 비밀번호 필드를 직접 수정했는지 여부 */
+  const [passwordTouched, setPasswordTouched] = useState(false);
 
   /** API에서 프로필 목록 로드 */
   const loadProfiles = useCallback(async () => {
@@ -63,14 +67,17 @@ export default function DatabasePanel() {
     if (!found) return;
     setSelectedName(name);
     setIsNew(false);
-    setNewName('');
+    setNewName(name);
+    const hasPw = !!found.password && found.password !== '';
+    setHasStoredPassword(hasPw);
+    setPasswordTouched(false);
     setConfig({
       host: found.host,
       port: found.port,
       connectionType: found.connectionType,
       sidOrService: found.sidOrService,
       username: found.username,
-      password: '', // 마스킹된 비밀번호는 빈값
+      password: hasPw ? '●●●●●●●●' : '',
     });
     setStatus('idle');
     setMessage('');
@@ -82,6 +89,8 @@ export default function DatabasePanel() {
     setSelectedName('');
     setNewName('');
     setConfig(EMPTY_CONFIG);
+    setHasStoredPassword(false);
+    setPasswordTouched(false);
     setStatus('idle');
     setMessage('');
   };
@@ -115,7 +124,14 @@ export default function DatabasePanel() {
       const res = await fetch('/api/settings/database', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'test', config }),
+        body: JSON.stringify({
+          action: 'test',
+          config: {
+            ...config,
+            password: passwordTouched ? config.password : '',
+          },
+          profileName: selectedName || newName.trim(),
+        }),
       });
       const data = await res.json();
       if (data.success) {
@@ -133,15 +149,16 @@ export default function DatabasePanel() {
 
   /** 저장 & 재연결: 현재 폼 → 프로필 배열에 반영 후 API 저장 */
   const handleSave = async () => {
-    const profileName = isNew ? newName.trim() : selectedName;
+    const profileName = newName.trim();
     if (!profileName) {
       setStatus('error');
       setMessage(t('profileNameRequired'));
       return;
     }
 
-    // 중복 이름 검사 (새 프로필일 때)
-    if (isNew && profiles.some((p) => p.name === profileName)) {
+    // 중복 이름 검사 (새 프로필이거나 이름이 변경된 경우)
+    const nameChanged = !isNew && profileName !== selectedName;
+    if ((isNew || nameChanged) && profiles.some((p) => p.name === profileName)) {
       setStatus('error');
       setMessage(t('profileNameDuplicate'));
       return;
@@ -150,7 +167,11 @@ export default function DatabasePanel() {
     setStatus('saving');
     setMessage('');
 
-    const newProfile: DatabaseProfile = { ...config, name: profileName };
+    const newProfile: DatabaseProfile = {
+      ...config,
+      name: profileName,
+      password: passwordTouched ? config.password : '',
+    };
     let updated: DatabaseProfile[];
 
     if (isNew) {
@@ -179,7 +200,34 @@ export default function DatabasePanel() {
         setActiveProfile(profileName);
         setSelectedName(profileName);
         setIsNew(false);
-        setNewName('');
+        setNewName(profileName);
+        setHasStoredPassword(true);
+        setPasswordTouched(false);
+        setConfig((prev) => ({ ...prev, password: '●●●●●●●●' }));
+      } else {
+        setStatus('error');
+        setMessage(data.error);
+      }
+    } catch (e) {
+      setStatus('error');
+      setMessage(String(e));
+    }
+  };
+
+  /** 재연결: 현재 활성 프로필로 DB 풀 재시작 */
+  const handleReconnect = async () => {
+    setStatus('saving');
+    setMessage('');
+    try {
+      const res = await fetch('/api/settings/database', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reconnect', activeProfile }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus('success');
+        setMessage(t('dbReconnectSuccess') ?? 'DB 재연결 완료');
       } else {
         setStatus('error');
         setMessage(data.error);
@@ -267,19 +315,17 @@ export default function DatabasePanel() {
 
         {/* 오른쪽: 설정 폼 */}
         <div className="min-w-0 flex-1 space-y-4">
-          {/* 새 프로필 이름 입력 */}
-          {isNew && (
-            <div>
-              <label className={labelClass}>{t('profileName')}</label>
-              <input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder={t('profileNamePlaceholder')}
-                className={inputClass}
-                autoFocus
-              />
-            </div>
-          )}
+          {/* 프로필 이름 */}
+          <div>
+            <label className={labelClass}>{t('profileName')}</label>
+            <input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder={t('profileNamePlaceholder')}
+              className={inputClass}
+              autoFocus={isNew}
+            />
+          </div>
 
           {/* 호스트 + 포트 */}
           <div className="grid grid-cols-3 gap-4">
@@ -351,8 +397,16 @@ export default function DatabasePanel() {
               <input
                 type="password"
                 value={config.password}
-                onChange={(e) => update({ password: e.target.value })}
-                placeholder={selectedName ? t('passwordUnchanged') : ''}
+                onFocus={() => {
+                  if (!passwordTouched && hasStoredPassword) {
+                    setConfig((prev) => ({ ...prev, password: '' }));
+                  }
+                }}
+                onChange={(e) => {
+                  setPasswordTouched(true);
+                  update({ password: e.target.value });
+                }}
+                placeholder={hasStoredPassword && !passwordTouched ? t('passwordUnchanged') : ''}
                 className={inputClass}
               />
             </div>
@@ -377,7 +431,14 @@ export default function DatabasePanel() {
               disabled={status === 'testing' || status === 'saving'}
               className="rounded bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-40 dark:bg-emerald-500 dark:hover:bg-emerald-600"
             >
-              {status === 'saving' ? t('saving') : t('applyReconnect')}
+              {status === 'saving' ? t('saving') : t('save')}
+            </button>
+            <button
+              onClick={handleReconnect}
+              disabled={status === 'testing' || status === 'saving'}
+              className="rounded bg-amber-600 px-5 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-40 dark:bg-amber-500 dark:hover:bg-amber-600"
+            >
+              {t('reconnect')}
             </button>
           </div>
 

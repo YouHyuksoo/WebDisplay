@@ -38,6 +38,24 @@ export const SHIFT_ZONES: Record<string, { zone: string; label: string }[]> = {
 };
 
 /* ------------------------------------------------------------------ */
+/*  IO_DATE 시간 보정: MES가 한국시간(KST,UTC+9)으로 저장하므로         */
+/*  베트남 로컬(ICT,UTC+7) 기준으로 -2시간 보정하여 그룹핑한다          */
+/* ------------------------------------------------------------------ */
+const IO_LOCAL = `(IO_DATE - 2/24)`;
+
+/**
+ * 현재 shift의 시작 시각 (베트남 로컬 기준).
+ * TRUNC(SYSDATE - X/24) + X/24 패턴: X시를 자정처럼 취급.
+ * - 주간: 08:00 경계 → TRUNC(SYSDATE - 8/24) + 8/24
+ * - 야간: 20:00 경계 → TRUNC(SYSDATE - 20/24) + 20/24
+ */
+const SHIFT_START = `CASE
+  WHEN TO_NUMBER(TO_CHAR(SYSDATE,'HH24')) BETWEEN 8 AND 19
+  THEN TRUNC(SYSDATE - 8/24) + 8/24
+  ELSE TRUNC(SYSDATE - 20/24) + 20/24
+END`;
+
+/* ------------------------------------------------------------------ */
 /*  현재 시프트 판별                                                    */
 /* ------------------------------------------------------------------ */
 
@@ -92,27 +110,24 @@ export function sqlTimeZoneActual(): string {
 SELECT TIME_SLOT, SUM(IO_QTY) AS QTY FROM (
   SELECT IO_QTY,
     CASE
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0800' AND '1009' THEN 'A'
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '1010' AND '1259' THEN 'B'
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '1300' AND '1509' THEN 'C'
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '1510' AND '1729' THEN 'D'
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '1730' AND '1959' THEN 'E'
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '2000' AND '2209' THEN 'A'
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '2210' AND '2359' THEN 'B'
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0000' AND '0059' THEN 'B'
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0100' AND '0309' THEN 'C'
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0310' AND '0529' THEN 'D'
-      WHEN TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0530' AND '0759' THEN 'E'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '0800' AND '1009' THEN 'A'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '1010' AND '1259' THEN 'B'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '1300' AND '1509' THEN 'C'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '1510' AND '1729' THEN 'D'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '1730' AND '1959' THEN 'E'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '2000' AND '2209' THEN 'A'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '2210' AND '2359' THEN 'B'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '0000' AND '0059' THEN 'B'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '0100' AND '0309' THEN 'C'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '0310' AND '0529' THEN 'D'
+      WHEN TO_CHAR(${IO_LOCAL},'HH24MI') BETWEEN '0530' AND '0759' THEN 'E'
       ELSE 'X'
     END AS TIME_SLOT
   FROM IP_PRODUCT_WORKSTAGE_IO
   WHERE LINE_CODE = :lineCode AND WORKSTAGE_CODE = :workstageCode
     AND ORGANIZATION_ID = :orgId AND ACTUAL_DATE = F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A')
-    AND (
-      (:shift = 'A' AND TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0800' AND '1959')
-      OR
-      (:shift = 'B' AND (TO_CHAR(IO_DATE,'HH24MI') >= '2000' OR TO_CHAR(IO_DATE,'HH24MI') < '0800'))
-    )
+    AND ${IO_LOCAL} >= ${SHIFT_START}
+    AND ${IO_LOCAL} <= SYSDATE
 )
 WHERE TIME_SLOT != 'X'
 GROUP BY TIME_SLOT ORDER BY TIME_SLOT
@@ -128,11 +143,8 @@ export function sqlTotalActual(): string {
 SELECT SUM(IO_QTY) AS TOTAL_QTY FROM IP_PRODUCT_WORKSTAGE_IO
  WHERE LINE_CODE = :lineCode AND WORKSTAGE_CODE = :workstageCode
    AND ORGANIZATION_ID = :orgId AND ACTUAL_DATE = F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A')
-   AND (
-     (:shift = 'A' AND TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0800' AND '1959')
-     OR
-     (:shift = 'B' AND (TO_CHAR(IO_DATE,'HH24MI') >= '2000' OR TO_CHAR(IO_DATE,'HH24MI') < '0800'))
-   )
+   AND ${IO_LOCAL} >= ${SHIFT_START}
+   AND ${IO_LOCAL} <= SYSDATE
 `;
 }
 
@@ -148,11 +160,8 @@ SELECT MODEL_NAME, ITEM_CODE,
   FROM IP_PRODUCT_WORKSTAGE_IO
  WHERE LINE_CODE = :lineCode AND WORKSTAGE_CODE = :workstageCode
    AND ORGANIZATION_ID = :orgId AND ACTUAL_DATE = F_GET_WORK_ACTUAL_DATE(SYSDATE, 'A')
-   AND (
-     (:shift = 'A' AND TO_CHAR(IO_DATE,'HH24MI') BETWEEN '0800' AND '1959')
-     OR
-     (:shift = 'B' AND (TO_CHAR(IO_DATE,'HH24MI') >= '2000' OR TO_CHAR(IO_DATE,'HH24MI') < '0800'))
-   )
+   AND ${IO_LOCAL} >= ${SHIFT_START}
+   AND ${IO_LOCAL} <= SYSDATE
  GROUP BY MODEL_NAME, ITEM_CODE
  ORDER BY MIN(IO_DATE)
 `;

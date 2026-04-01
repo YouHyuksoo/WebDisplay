@@ -83,6 +83,7 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
   const [runCardModalOpen, setRunCardModalOpen] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const [dupConfirmOpen, setDupConfirmOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedLinesCsv, setSelectedLinesCsv] = useState(() => getSelectedLines(screenId));
   const t = useTranslations('productionPlan');
 
@@ -166,9 +167,15 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
     }
   };
 
-  /** 삭제 */
-  const handleDelete = async () => {
+  /** 삭제 확인 모달 표시 */
+  const handleDeleteClick = () => {
     if (!editMode) return;
+    setDeleteConfirmOpen(true);
+  };
+
+  /** 삭제 실행 */
+  const handleDeleteConfirm = async () => {
+    setDeleteConfirmOpen(false);
     try {
       const params = new URLSearchParams({
         planDate: form.planDate,
@@ -181,6 +188,7 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
       if (!res.ok) throw new Error('삭제 실패');
       await mutate(apiUrl);
       handleNew();
+      setMessage({ type: 'success', text: t('deleteSuccess') });
     } catch (err) {
       console.error(err);
       setMessage({ type: 'error', text: t('deleteFailed') });
@@ -253,6 +261,31 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
                 className={`${btnBase} bg-orange-600 text-white hover:bg-orange-700`}
               >
                 {t('overwriteBtn')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ═══════ 삭제 확인 모달 ═══════ */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
+          <div className="w-96 rounded-xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900">
+            <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">{t('deleteTitle')}</h3>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              {t('deleteMessage', { date: form.planDate, line: form.lineCode, shift: form.shiftCode, model: form.modelName || '-' })}
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setDeleteConfirmOpen(false)}
+                className={`${btnBase} bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600`}
+              >
+                {t('cancelBtn')}
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className={`${btnBase} bg-red-600 text-white hover:bg-red-700`}
+              >
+                {t('deleteBtn')}
               </button>
             </div>
           </div>
@@ -382,7 +415,7 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
               {editMode ? t('editBtn') : t('saveBtn')}
             </button>
             {editMode && (
-              <button onClick={handleDelete} className={`${btnBase} bg-red-600 text-white hover:bg-red-700`}>
+              <button onClick={handleDeleteClick} className={`${btnBase} bg-red-600 text-white hover:bg-red-700`}>
                 {t('deleteBtn')}
               </button>
             )}

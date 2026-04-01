@@ -1,14 +1,32 @@
 /**
  * @file EquipmentLogGrid.tsx
- * @description 설비 로그 검색 결과 테이블 컴포넌트.
- * 초보자 가이드: ICOM_WEB_SERVICE_LOG 조회 결과를 테이블로 표시한다.
- * 열 헤더 경계를 드래그하면 열 너비를 조절할 수 있다.
+ * @description 설비호출이력검색 결과 AG Grid 컴포넌트.
+ * 초보자 가이드:
+ * - AG Grid Community로 컬럼 리사이즈/이동/소팅/필터를 네이티브 지원
+ * - 서버 페이지네이션은 외부에서 제어 (page/totalPages props)
+ * - 다크/라이트 테마 자동 전환
  */
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  colorSchemeDark,
+  colorSchemeLight,
+  themeQuartz,
+  type ColDef,
+} from 'ag-grid-community';
+import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
 import type { EquipmentLogRow } from '@/lib/queries/equipment-log';
+
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+const gridParams = { fontSize: 11, headerFontSize: 12, rowHeight: 28, headerHeight: 32 };
+const lightTheme = themeQuartz.withPart(colorSchemeLight).withParams(gridParams);
+const darkTheme = themeQuartz.withPart(colorSchemeDark).withParams(gridParams);
 
 interface Props {
   rows: EquipmentLogRow[];
@@ -22,58 +40,32 @@ interface Props {
   onSort: (col: string) => void;
 }
 
-/** 각 열의 초기 너비(px) */
-const DEFAULT_WIDTHS = [50, 170, 80, 100, 130, 0, 200];
-const MIN_COL_WIDTH = 40;
-
 export default function EquipmentLogGrid({
-  rows, totalCount, page, totalPages, pageSize, sortCol, sortDir, onPageChange, onSort,
+  rows, totalCount, page, totalPages, pageSize, onPageChange, onSort,
 }: Props) {
+  const { resolvedTheme } = useTheme();
+  const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
+  const gridRef = useRef<AgGridReact>(null);
   const t = useTranslations('equipmentLog');
-  const [colWidths, setColWidths] = useState<number[]>(DEFAULT_WIDTHS);
-  const tableRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ colIdx: number; startX: number; startW: number } | null>(null);
 
-  /** 열 경계 드래그 시작 */
-  const onResizeStart = useCallback((colIdx: number, e: React.MouseEvent) => {
-    e.preventDefault();
-    const currentWidth = colWidths[colIdx] || 200;
-    dragRef.current = { colIdx, startX: e.clientX, startW: currentWidth };
+  const colDefs: ColDef[] = useMemo(() => [
+    { field: 'NO', headerName: 'No', width: 60, sortable: false, filter: false,
+      valueGetter: (params) => params.node ? (page - 1) * pageSize + params.node.rowIndex! + 1 : '' },
+    { field: 'CALL_DATE', headerName: t('callDate'), width: 170, filter: 'agTextColumnFilter' },
+    { field: 'ADDR', headerName: t('addr'), width: 100, filter: 'agTextColumnFilter',
+      cellClass: 'font-semibold text-blue-700 dark:text-blue-400' },
+    { field: 'LINE_NAME', headerName: t('lineCode'), width: 100, filter: 'agTextColumnFilter',
+      valueFormatter: (params) => params.data?.LINE_NAME || params.data?.LINE_CODE || '-' },
+    { field: 'WORKSTAGE_CODE', headerName: t('workstageCode'), width: 130, filter: 'agTextColumnFilter' },
+    { field: 'REQ', headerName: t('reqShort'), minWidth: 200, flex: 1, filter: 'agTextColumnFilter',
+      tooltipField: 'REQ' },
+    { field: 'RETURN', headerName: t('returnShort'), width: 250, filter: 'agTextColumnFilter',
+      tooltipField: 'RETURN' },
+  ], [page, pageSize, t]);
 
-    const onMove = (ev: MouseEvent) => {
-      if (!dragRef.current) return;
-      const diff = ev.clientX - dragRef.current.startX;
-      const newW = Math.max(MIN_COL_WIDTH, dragRef.current.startW + diff);
-      setColWidths((prev) => {
-        const next = [...prev];
-        next[dragRef.current!.colIdx] = newW;
-        return next;
-      });
-    };
-    const onUp = () => {
-      dragRef.current = null;
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  }, [colWidths]);
-
-  const headers = [
-    { key: 'no', label: 'No', align: 'text-center', sortKey: '' },
-    { key: 'callDate', label: t('callDate'), align: 'text-left', sortKey: 'CALL_DATE' },
-    { key: 'addr', label: t('addr'), align: 'text-left', sortKey: 'ADDR' },
-    { key: 'line', label: t('lineCode'), align: 'text-center', sortKey: 'LINE_NAME' },
-    { key: 'stage', label: t('workstageCode'), align: 'text-left', sortKey: 'WORKSTAGE_CODE' },
-    { key: 'req', label: t('reqShort'), align: 'text-left', sortKey: 'REQ' },
-    { key: 'return', label: t('returnShort'), align: 'text-left', sortKey: 'RETURN' },
-  ];
-
-  /** 정렬 화살표 표시 */
-  const sortArrow = (sk: string) => {
-    if (!sk || sk !== sortCol) return <span className="ml-1 text-gray-500/40">↕</span>;
-    return <span className="ml-1 text-blue-400">{sortDir === 'ASC' ? '▲' : '▼'}</span>;
-  };
+  const onFirstDataRendered = useCallback(() => {
+    gridRef.current?.api?.autoSizeAllColumns();
+  }, []);
 
   return (
     <div className="flex h-full flex-col">
@@ -92,84 +84,32 @@ export default function EquipmentLogGrid({
         </span>
       </div>
 
-      {/* 테이블 */}
-      <div className="flex-1 overflow-auto" ref={tableRef}>
-        <table className="w-full border-collapse text-sm" style={{ tableLayout: 'fixed' }}>
-          <colgroup>
-            {colWidths.map((w, i) =>
-              w > 0
-                ? <col key={i} style={{ width: `${w}px` }} />
-                : <col key={i} />,
-            )}
-          </colgroup>
-          <thead className="sticky top-0 z-10 bg-slate-700 text-white dark:bg-slate-800">
-            <tr>
-              {headers.map((h, i) => (
-                <th
-                  key={h.key}
-                  className={`relative select-none px-3 py-2.5 font-medium ${h.align} ${h.sortKey ? 'cursor-pointer hover:bg-slate-600 dark:hover:bg-slate-700' : ''}`}
-                  onClick={h.sortKey ? () => onSort(h.sortKey) : undefined}
-                >
-                  {h.label}
-                  {h.sortKey && sortArrow(h.sortKey)}
-                  {/* 열 리사이즈 핸들 (마지막 열 제외) */}
-                  {i < headers.length - 1 && (
-                    <span
-                      onMouseDown={(e) => { e.stopPropagation(); onResizeStart(i, e); }}
-                      className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-blue-400/50"
-                    />
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-16 text-center text-gray-400 dark:text-gray-500">
-                  {t('noData')}
-                </td>
-              </tr>
-            ) : (
-              rows.map((row, idx) => {
-                const globalIdx = (page - 1) * pageSize + idx + 1;
-                return (
-                  <tr
-                    key={idx}
-                    className={`border-b border-gray-100 transition-colors hover:bg-blue-50/50 dark:border-gray-700/50 dark:hover:bg-blue-900/20 ${
-                      idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50/50 dark:bg-gray-800/30'
-                    }`}
-                  >
-                    <td className="px-3 py-2 text-center text-gray-400 dark:text-gray-500">
-                      {globalIdx}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2 font-mono text-xs text-gray-700 dark:text-gray-300">
-                      {row.CALL_DATE}
-                    </td>
-                    <td className="truncate px-3 py-2 font-semibold text-blue-700 dark:text-blue-400">
-                      {row.ADDR ?? '-'}
-                    </td>
-                    <td className="truncate px-3 py-2 text-center text-gray-700 dark:text-gray-300" title={row.LINE_CODE ?? ''}>
-                      {row.LINE_NAME ? `${row.LINE_NAME}` : row.LINE_CODE ?? '-'}
-                    </td>
-                    <td className="truncate px-3 py-2 text-gray-600 dark:text-gray-400">
-                      {row.WORKSTAGE_CODE ?? '-'}
-                    </td>
-                    <td className="truncate px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400" title={row.REQ ?? ''}>
-                      {row.REQ ?? '-'}
-                    </td>
-                    <td className="truncate px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400" title={row.RETURN ?? ''}>
-                      {row.RETURN ?? '-'}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+      {/* AG Grid */}
+      <div className="flex-1">
+        <AgGridReact
+          ref={gridRef}
+          theme={gridTheme}
+          rowData={rows}
+          columnDefs={colDefs}
+          onFirstDataRendered={onFirstDataRendered}
+          defaultColDef={{
+            sortable: true,
+            resizable: true,
+            filter: true,
+            minWidth: 60,
+          }}
+          animateRows={false}
+          enableCellTextSelection={true}
+          suppressCellFocus={true}
+          tooltipShowDelay={300}
+          onSortChanged={(e) => {
+            const col = e.api.getColumnState().find((c) => c.sort);
+            if (col?.colId) onSort(col.colId);
+          }}
+        />
       </div>
 
-      {/* 페이지네이션 */}
+      {/* 서버 페이지네이션 */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-1 border-t border-gray-200 bg-gray-50 px-4 py-2 dark:border-gray-700 dark:bg-gray-800/50">
           <button onClick={() => onPageChange(1)} disabled={page <= 1} className={pgBtnClass}>«</button>

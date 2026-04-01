@@ -89,6 +89,7 @@ async function queryLineStats(): Promise<LineStatRow[]> {
     FROM IQ_MACHINE_ICT_U1_DATA_RAW
     WHERE ${DATE_RANGE_2DAYS}
       AND LINE_CODE IS NOT NULL
+      AND PID IS NOT NULL
       AND LAST_YN = 'Y'
     GROUP BY LINE_CODE, ${DAY_CASE}
     ORDER BY LINE_CODE, DAY_TYPE
@@ -104,6 +105,7 @@ async function queryHourly(): Promise<HourlyRow[]> {
            SUM(CASE WHEN INSPECT_RESULT IN (${PASS_IN}) THEN 1 ELSE 0 END) AS PASS_CNT
     FROM IQ_MACHINE_ICT_U1_DATA_RAW
     WHERE ${DATE_RANGE_TODAY}
+      AND PID IS NOT NULL
       AND LAST_YN = 'Y'
     GROUP BY SUBSTR(INSPECT_DATE, 12, 2)
     ORDER BY HOUR
@@ -120,6 +122,7 @@ async function queryMachineNg(): Promise<MachineNgRow[]> {
     FROM IQ_MACHINE_ICT_U1_DATA_RAW
     WHERE ${DATE_RANGE_TODAY}
       AND MACHINE_CODE IS NOT NULL
+      AND PID IS NOT NULL
       AND LAST_YN = 'Y'
     GROUP BY MACHINE_CODE
     HAVING SUM(CASE WHEN INSPECT_RESULT NOT IN (${PASS_IN}) THEN 1 ELSE 0 END) > 0
@@ -137,6 +140,7 @@ async function queryDefectTypes(): Promise<DefectTypeRow[]> {
            COUNT(*) AS TOTAL_CNT
     FROM IQ_MACHINE_ICT_U1_DATA_RAW
     WHERE ${DATE_RANGE_TODAY}
+      AND PID IS NOT NULL
       AND LAST_YN = 'Y'
     GROUP BY NVL(C5, 'UNKNOWN')
     HAVING SUM(CASE WHEN INSPECT_RESULT NOT IN (${PASS_IN}) THEN 1 ELSE 0 END) > 0

@@ -102,8 +102,17 @@ export async function GET(request: NextRequest) {
   try {
     const dayOffset = Number(request.nextUrl.searchParams.get("dayOffset") ?? "0") || 0;
 
+    /** 테이블 미존재(ORA-00942) 등 개별 오류 시 빈 데이터로 대체 */
+    const safeQuery = async (k: MxvcFpyTableKey) => {
+      try {
+        return await queryTableFpy(k, dayOffset);
+      } catch {
+        return { key: k, data: { hourly: [], summary: { total: 0, pass: 0, yield: 100 } } as TableFpyData };
+      }
+    };
+
     const [tableResults, workDayRows] = await Promise.all([
-      Promise.all(TABLE_KEYS.map((k) => queryTableFpy(k, dayOffset))),
+      Promise.all(TABLE_KEYS.map(safeQuery)),
       executeQuery<{ WD_START: string; WD_END: string }>(
         `SELECT TO_CHAR(${workDayStartSql(dayOffset)}, 'YYYY-MM-DD HH24:MI') AS WD_START,
                 TO_CHAR(${workDayEndSql(dayOffset)}, 'YYYY-MM-DD HH24:MI') AS WD_END

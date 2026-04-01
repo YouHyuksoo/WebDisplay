@@ -92,8 +92,8 @@ export async function POST(request: Request) {
     const { action } = body as { action: string };
 
     if (action === 'test') {
-      const { config } = body as { config: DatabaseConfig };
-      return await testConnection(config);
+      const { config, profileName } = body as { config: DatabaseConfig; profileName?: string };
+      return await testConnection(config, profileName);
     }
 
     if (action === 'save') {
@@ -104,19 +104,38 @@ export async function POST(request: Request) {
       return await saveProfiles(profiles, activeProfile);
     }
 
+    if (action === 'reconnect') {
+      const { activeProfile } = body as { activeProfile?: string };
+      return await reconnectPool(activeProfile);
+    }
+
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
 
+/** 저장된 프로필에서 실제 비밀번호 조회 */
+function resolvePassword(cfg: DatabaseConfig, profileName?: string): string {
+  if (cfg.password && cfg.password !== '●●●●●●●●' && cfg.password !== '****') {
+    return cfg.password;
+  }
+  // 비밀번호가 비어있거나 마스킹값이면 파일에서 복원
+  const existing = loadFileConfig();
+  const stored = existing?.profiles.find((p) => p.name === profileName);
+  return stored?.password && stored.password !== '****'
+    ? stored.password
+    : cfg.password;
+}
+
 /** 임시 연결로 테스트 */
-async function testConnection(cfg: DatabaseConfig) {
+async function testConnection(cfg: DatabaseConfig, profileName?: string) {
+  const password = resolvePassword(cfg, profileName);
   let conn: oracledb.Connection | null = null;
   try {
     conn = await oracledb.getConnection({
       user: cfg.username,
-      password: cfg.password,
+      password,
       connectString: buildConnectString(cfg),
     });
     const result = await conn.execute<{ BANNER: string }>(
@@ -139,7 +158,7 @@ async function saveProfiles(profiles: DatabaseProfile[], activeProfile: string) 
   // 기존 파일에서 비밀번호 복원 (마스킹/빈값인 프로필은 기존 비밀번호 유지)
   const existing = loadFileConfig();
   const merged = profiles.map((p) => {
-    if (!p.password || p.password === '****') {
+    if (!p.password || p.password === '****' || p.password === '●●●●●●●●') {
       const old = existing?.profiles.find((o) => o.name === p.name);
       if (old?.password && old.password !== '****') {
         return { ...p, password: old.password };
@@ -151,6 +170,21 @@ async function saveProfiles(profiles: DatabaseProfile[], activeProfile: string) 
   const data: DatabaseFileConfig = { activeProfile, profiles: merged };
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf-8');
 
+  /* 활성 프로필이 변경되었을 수 있으므로 기존 풀 해제 → 다음 쿼리 시 새 프로필로 재생성 */
   await resetPool();
-  return NextResponse.json({ success: true, message: 'Saved & pool restarted' });
+
+  return NextResponse.json({ success: true, message: 'Saved' });
+}
+
+/** 풀 재연결 (activeProfile 변경 시 파일도 갱신) */
+async function reconnectPool(activeProfile?: string) {
+  if (activeProfile) {
+    const existing = loadFileConfig();
+    if (existing) {
+      existing.activeProfile = activeProfile;
+      fs.writeFileSync(CONFIG_PATH, JSON.stringify(existing, null, 2), 'utf-8');
+    }
+  }
+  await resetPool();
+  return NextResponse.json({ success: true, message: 'Pool reconnected' });
 }

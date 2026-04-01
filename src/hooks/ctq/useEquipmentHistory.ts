@@ -22,7 +22,7 @@ export function useEquipmentHistory(selectedLines: string, fromDate: string, toD
     setError(null);
     try {
       const params = new URLSearchParams();
-      if (selectedLines) params.set("lines", selectedLines);
+      if (selectedLines && selectedLines !== "%") params.set("lines", selectedLines);
       if (fromDate) params.set("from", fromDate);
       if (toDate) params.set("to", toDate);
       const res = await fetch(`/api/ctq/equipment-history?${params.toString()}`);

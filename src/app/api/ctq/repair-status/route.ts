@@ -35,11 +35,31 @@ interface QcRow {
   BAD_REASON_NAME: string;
 }
 
+/** YYYY-MM-DD → "YYYY/MM/DD 08:00:00" 형식으로 변환 */
+function toShiftStart(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-");
+  return `${y}/${m}/${d} 08:00:00`;
+}
+
+/** YYYY-MM-DD의 익일 08:00 계산 */
+function toShiftEnd(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const next = new Date(y, m - 1, d + 1);
+  const ny = next.getFullYear();
+  const nm = String(next.getMonth() + 1).padStart(2, "0");
+  const nd = String(next.getDate()).padStart(2, "0");
+  return `${ny}/${nm}/${nd} 08:00:00`;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const lines = parseLines(request);
     const lineFilter = buildLineInClause(lines, "t", "ln");
-    const tr = getVietnamTimeRange();
+    const dateFrom = request.nextUrl.searchParams.get("dateFrom")?.trim() ?? "";
+    const dateTo = request.nextUrl.searchParams.get("dateTo")?.trim() ?? "";
+    const tr = dateFrom && dateTo
+      ? { startStr: toShiftStart(dateFrom), endStr: toShiftEnd(dateTo) }
+      : getVietnamTimeRange();
     const pidFilter = request.nextUrl.searchParams.get("pid")?.trim() ?? "";
     const pidClause = pidFilter ? "AND t.SERIAL_NO LIKE :pidLike" : "";
 

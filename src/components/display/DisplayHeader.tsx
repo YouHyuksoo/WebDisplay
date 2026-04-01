@@ -14,6 +14,7 @@ import { changeLocale } from '@/components/providers/LocaleProvider';
 import LineSelectModal from '../common/LineSelectModal';
 import SqlViewerModal from '../common/SqlViewerModal';
 import useDisplayTiming from '@/hooks/useDisplayTiming';
+import useDbClock from '@/hooks/useDbClock';
 import { hasLineSelection } from '@/lib/display-helpers';
 import Link from 'next/link';
 
@@ -31,7 +32,7 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal }: 
   const { theme, setTheme } = useTheme();
   
   const [mounted, setMounted] = useState(false);
-  const [time, setTime] = useState('');
+  const time = useDbClock();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSqlOpen, setIsSqlOpen] = useState(false);
   const [showLocaleMenu, setShowLocaleMenu] = useState(false);
@@ -41,13 +42,6 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal }: 
   const timing = useDisplayTiming();
 
   useEffect(() => { setMounted(true); }, []);
-
-  useEffect(() => {
-    const tick = () => setTime(new Date().toLocaleTimeString('ko-KR'));
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
 
   /* ── 최초 접속 시 라인 미선택이면 자동 팝업 ── */
   useEffect(() => {

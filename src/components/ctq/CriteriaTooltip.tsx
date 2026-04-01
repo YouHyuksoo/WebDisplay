@@ -28,9 +28,9 @@ export default function CriteriaTooltip({ pageKey }: CriteriaTooltipProps) {
   }, [open]);
 
   const criteriaText = t(`navTooltip.${pageKey}`);
-  const statusKey = `navTooltip.${pageKey}Status`;
-  const statusText = t(statusKey);
-  const hasStatus = statusText !== statusKey;
+  const statusKey = `navTooltip.${pageKey}Status` as Parameters<typeof t>[0];
+  const hasStatus = t.has(statusKey);
+  const statusText = hasStatus ? t(statusKey) : '';
 
   return (
     <div className="relative" ref={ref}>

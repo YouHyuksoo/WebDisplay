@@ -11,9 +11,9 @@
  */
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { fmtNum } from '@/lib/display-helpers';
+import useDbClock from '@/hooks/useDbClock';
 
 interface PlanData {
   LINE_NAME?: string; SHIFT_CODE?: string; PLAN_QTY?: number; UPH?: number;
@@ -37,21 +37,12 @@ interface ProductIoGridProps {
   isLoading: boolean; error?: Error;
 }
 
-function useClock(): string {
-  const [time, setTime] = useState(() => new Date().toLocaleTimeString('ko-KR', { hour12: false }));
-  useEffect(() => {
-    const id = setInterval(() => setTime(new Date().toLocaleTimeString('ko-KR', { hour12: false })), 1000);
-    return () => clearInterval(id);
-  }, []);
-  return time;
-}
-
 const TD = 'border border-zinc-700 px-3 py-1';
 
 export default function ProductIoGrid({
   plan, timeZones, targets, totalActual, timeLabels, shift, zoneLabels, models = [], isLoading, error,
 }: ProductIoGridProps) {
-  const clock = useClock();
+  const clock = useDbClock();
   const t = useTranslations('productIo');
 
   if (error) {

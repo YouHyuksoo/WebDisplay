@@ -47,7 +47,7 @@ export const SCREENS: Record<string, ScreenConfig> = {
   '42': { id: '42', title: 'FCT Chart Analysis', titleKo: 'FCT 차트분석', titleEs: 'Análisis de gráficos FCT', titleVi: 'Phân tích biểu đồ FCT', window: 'w_display_fct_chart', group: 'charts' },
   '43': { id: '43', title: 'VISION Chart Analysis', titleKo: 'VISION 차트분석', titleEs: 'Análisis de gráficos VISION', titleVi: 'Phân tích biểu đồ VISION', window: 'w_display_vision_chart', group: 'charts' },
 
-  '50': { id: '50', title: 'Equipment Log Search', titleKo: '설비로그검색', titleEs: 'Búsqueda de registro de equipos', titleVi: 'Tìm kiếm nhật ký thiết bị', window: 'w_display_equipment_log', group: 'equipment' },
+  '50': { id: '50', title: 'Equipment Call History Search', titleKo: '설비호출이력검색', titleEs: 'Búsqueda de historial de llamadas', titleVi: 'Tìm kiếm lịch sử cuộc gọi thiết bị', window: 'w_display_equipment_log', group: 'equipment' },
 
   '60': { id: '60', title: 'SPC Control Chart', titleKo: '관리도보기', titleEs: 'Gráfico de control SPC', titleVi: 'Biểu đồ kiểm soát SPC', window: '', group: 'spc-monitoring' },
 };

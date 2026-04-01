@@ -16,10 +16,12 @@ export function useOpenShort(intervalMs: number, selectedLines: string = "%") {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const linesQs = selectedLines && selectedLines !== "%" ? `?lines=${encodeURIComponent(selectedLines)}` : "";
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/ctq/open-short?lines=${encodeURIComponent(selectedLines)}`);
+      const res = await fetch(`/api/ctq/open-short${linesQs}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json: OpenShortResponse = await res.json();
       setData(json);
@@ -36,7 +38,7 @@ export function useOpenShort(intervalMs: number, selectedLines: string = "%") {
     const doFetch = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/ctq/open-short?lines=${encodeURIComponent(selectedLines)}`);
+        const res = await fetch(`/api/ctq/open-short${linesQs}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json: OpenShortResponse = await res.json();
         if (active) { setData(json); setError(null); }

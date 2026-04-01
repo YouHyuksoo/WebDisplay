@@ -20,7 +20,7 @@ export default function U1Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" className="dark" suppressHydrationWarning>
       <body className="h-screen overflow-hidden bg-gray-950 text-white antialiased">
         <LocaleProvider>
           <FooterProvider>
