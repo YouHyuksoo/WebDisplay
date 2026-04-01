@@ -100,6 +100,14 @@ export default function FpySidebar({
             </label>
             <input type="range" min={-7} max={0} value={settings.dayOffset ?? 0}
               onChange={(e) => set({ dayOffset: Number(e.target.value) })}
+              onWheel={(e) => {
+                e.preventDefault();
+                const cur = settings.dayOffset ?? 0;
+                const next = e.deltaY < 0
+                  ? Math.min(cur + 1, 0)
+                  : Math.max(cur - 1, -7);
+                set({ dayOffset: next });
+              }}
               className="w-full accent-blue-500" />
             <div className="flex justify-between text-[9px] text-gray-400 dark:text-gray-500 mt-1">
               <span>7일 전</span>
