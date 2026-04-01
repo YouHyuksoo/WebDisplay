@@ -20,7 +20,6 @@ import {
   Palette,
   Paintbrush,
   Settings,
-  Plus,
   Boxes,
   AppWindow,
   Sun,
@@ -162,9 +161,6 @@ export default function MenuControls() {
         <a className="floating-btn" href="/help" data-tooltip={t('help')}>
           <CircleHelp size={22} />
         </a>
-        <button className="floating-btn" id="add-btn" data-tooltip={t('addShortcut')}>
-          <Plus size={22} />
-        </button>
       </div>
 
       {/* 설정 메뉴 */}
