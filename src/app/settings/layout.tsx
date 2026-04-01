@@ -15,7 +15,7 @@ export default function SettingsLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white antialiased overflow-auto">
+      <body className="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white antialiased" style={{ height: 'auto', overflow: 'auto' }}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
