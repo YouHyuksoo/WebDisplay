@@ -46,27 +46,17 @@ export const DEFAULT_MENU_SETTINGS: MenuSettings = {
 };
 
 // ---------------------------------------------------------------------------
-// DEFAULT_CATEGORIES (유일한 카테고리 정의 — Single Source of Truth)
+// DEFAULT_CATEGORIES / DEFAULT_SHORTCUTS — 폴백 전용
+// 실제 데이터는 config/cards.json이 Single Source of Truth
+// API 실패 시에만 이 폴백 사용 (즐겨찾기만 포함)
 // ---------------------------------------------------------------------------
 
 /** 즐겨찾기 카테고리 고정 ID */
 export const FAVORITES_CATEGORY_ID = 0;
 
-/**
- * 기본 카테고리 정의 - MES 메뉴 그룹
- * 새 카테고리 추가 시 여기에만 추가하면 됨 (SECTIONS, ScreenConfig.group 등 별도 수정 불필요)
- * 사용자 정의 카테고리는 id가 100 이상
- */
+/** 폴백 카테고리 (즐겨찾기만) — 실제 데이터는 config/cards.json */
 export const DEFAULT_CATEGORIES: Category[] = [
   { id: 0, name: 'FAVORITES', subtitle: '즐겨찾기', icon: '★' },
-  { id: 1, name: 'SMD MONITORING', subtitle: 'SMD 모니터링', icon: '❖' },
-  { id: 2, name: 'PBA MONITORING', subtitle: 'PBA 모니터링', icon: '▤' },
-  { id: 3, name: 'EQUIPMENT', subtitle: '설비 모니터링', icon: '⌂' },
-  { id: 4, name: 'SPC MONITORING', subtitle: 'SPC 모니터링', icon: '✔' },
-  { id: 5, name: 'ANOMALY', subtitle: '이상점 모니터링', icon: '⚠' },
-  { id: 6, name: 'CHARTS', subtitle: '차트 보기', icon: '▦' },
-  { id: 7, name: '베트남U1모니터링', subtitle: 'Vietnam U1 Monitoring', icon: '◈' },
-  { id: 8, name: '멕시코전장모니터링', subtitle: 'Mexico VC Monitoring', icon: '🌎' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -88,82 +78,12 @@ export const COLORS: string[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// DEFAULT_SHORTCUTS
+// DEFAULT_SHORTCUTS — 폴백 전용 (빈 배열)
+// 실제 데이터는 config/cards.json이 Single Source of Truth
 // ---------------------------------------------------------------------------
 
-/**
- * 기본 바로가기 목록 - MES 메뉴 화면 카드
- *
- * layer 값은 DEFAULT_CATEGORIES의 id와 매핑:
- *   0 = FAVORITES (즐겨찾기)
- *   1 = SMD MONITORING (SMD 모니터링)
- *   2 = PBA MONITORING (PBA 모니터링)
- *   3 = EQUIPMENT (설비 모니터링)
- *   4 = QUALITY (품질 관리)
- */
-export const DEFAULT_SHORTCUTS: Shortcut[] = [
-  // Favorites (layer: 0) — 사용자가 직접 등록/해제, 기본은 비어있음
-
-  // SMD Monitoring (layer: 1)
-  { id: 'menu-24', title: 'SMD 생산현황', url: '/display/24', color: '#3b82f6', icon: 'svg:chip-smd', layer: 1 },
-  { id: 'menu-25', title: '종합F/P현황', url: '/display/25', color: '#a78bfa', icon: 'svg:stencil', layer: 1 },
-  { id: 'menu-26', title: '라인별생산현황', url: '/display/26', color: '#22d3ee', icon: 'svg:production', layer: 1 },
-  { id: 'menu-27', title: 'SMD 듀얼생산현황', url: '/display/27', color: '#818cf8', icon: 'svg:monitor', layer: 1 },
-
-  // PBA Monitoring (layer: 2)
-  { id: 'menu-21', title: '제품생산현황', url: '/display/21', color: '#06b6d4', icon: 'svg:pba-production', layer: 2 },
-  { id: 'menu-22', title: '제품투입현황', url: '/display/22', color: '#14b8a6', icon: 'svg:pba-input', layer: 2 },
-  { id: 'menu-23', title: '제품포장현황', url: '/display/23', color: '#8b5cf6', icon: 'svg:pba-package', layer: 2 },
-  { id: 'menu-20', title: '생산계획등록', url: '/display/20', color: '#3b82f6', icon: 'svg:plan-register', layer: 2 },
-
-  // Equipment (layer: 3)
-  { id: 'menu-34', title: '픽업률현황(BASE)', url: '/display/34', color: '#f59e0b', icon: 'svg:chip-smd', layer: 3 },
-  { id: 'menu-35', title: '픽업률현황(HEAD)', url: '/display/35', color: '#eab308', icon: 'svg:chip-smd', layer: 3 },
-  { id: 'menu-50', title: '설비로그검색', url: '/display/50', color: '#64748b', icon: 'svg:error-log', layer: 3 },
-
-  // Quality (layer: 4) — 카드를 SMD 모니터링(layer: 1)으로 이동
-  { id: 'menu-29', title: 'MSL(장착기준)', url: '/display/29', color: '#f87171', icon: 'svg:msl-warning', layer: 1 },
-  { id: 'menu-30', title: 'MSL(출고기준)', url: '/display/30', color: '#fb923c', icon: 'svg:material', layer: 1 },
-  { id: 'menu-31', title: 'Solder Paste 관리', url: '/display/31', color: '#10b981', icon: 'svg:solder', layer: 1 },
-  { id: 'menu-37', title: '온습도', url: '/display/37', color: '#f97316', icon: 'svg:temperature', layer: 1 },
-
-  // SPC Monitoring (layer: 4)
-  { id: 'menu-60', title: '관리도보기', url: '/display/60', color: '#8b5cf6', icon: 'svg:chart', layer: 4 },
-
-  // Anomaly Monitoring (layer: 5) — SOLUMCTQ 이상점 모니터링
-  { id: 'ctq-repeat', title: '반복성연속', url: '/ctq/repeatability', color: '#ef4444', icon: 'svg:repeat', layer: 5 },
-  { id: 'ctq-non-consec', title: '반복성동일', url: '/ctq/non-consecutive', color: '#f97316', icon: 'svg:repeat', layer: 5 },
-  { id: 'ctq-accident', title: '사고성', url: '/ctq/accident', color: '#dc2626', icon: 'svg:accident', layer: 5 },
-  { id: 'ctq-material', title: '원자재동일부품', url: '/ctq/material', color: '#8b5cf6', icon: 'svg:layers', layer: 5 },
-  { id: 'ctq-open-short', title: '원자재공용부품', url: '/ctq/open-short', color: '#06b6d4', icon: 'svg:layers', layer: 5 },
-  { id: 'ctq-fpy', title: '직행율', url: '/ctq/fpy', color: '#22c55e', icon: 'svg:target', layer: 5 },
-  { id: 'ctq-equipment', title: '설비이상', url: '/ctq/equipment', color: '#f59e0b', icon: 'svg:settings', layer: 5 },
-  { id: 'ctq-repair', title: '수리상태', url: '/ctq/repair-status', color: '#14b8a6', icon: 'svg:wrench', layer: 5 },
-  { id: 'ctq-equip-hist', title: '설비점검이력', url: '/ctq/equipment-history', color: '#64748b', icon: 'svg:clipboard', layer: 5 },
-  { id: 'ctq-indicator', title: '지표', url: '/ctq/indicator', color: '#a855f7', icon: 'svg:activity', layer: 5 },
-  { id: 'ctq-dashboard', title: '품질분석', url: '/ctq/quality-dashboard', color: '#3b82f6', icon: 'svg:bar-chart', layer: 5 },
-  { id: 'ctq-analysis', title: '종합분석', url: '/ctq/analysis', color: '#6366f1', icon: 'svg:pie-chart', layer: 5 },
-
-  // Charts (layer: 6)
-  // U1 Monitoring (layer: 7)
-  { id: 'u1-fpy', title: 'U1 직행율', url: '/u1/fpy', color: '#22c55e', icon: 'svg:target', layer: 7 },
-  { id: 'u1-ate', title: 'ATE 분석', url: '/u1/ate-analysis', color: '#f59e0b', icon: 'svg:chart', layer: 7 },
-  { id: 'u1-fw', title: 'FW 분석', url: '/u1/fw-analysis', color: '#8b5cf6', icon: 'svg:chart', layer: 7 },
-  { id: 'u1-burnin', title: 'BURNIN 분석', url: '/u1/burnin-analysis', color: '#14b8a6', icon: 'svg:chart', layer: 7 },
-  { id: 'u1-hipot', title: 'HIPOT 분석', url: '/u1/hipot-analysis', color: '#ec4899', icon: 'svg:chart', layer: 7 },
-  { id: 'u1-ict', title: 'ICT 분석', url: '/u1/ict-analysis', color: '#3b82f6', icon: 'svg:chart', layer: 7 },
-  { id: 'u1-quality', title: 'U1 품질분석', url: '/u1/quality-dashboard', color: '#6366f1', icon: 'svg:pie-chart', layer: 7 },
-
-  // Charts (layer: 6)
-  { id: 'menu-40', title: 'SPI 차트분석', url: '/display/40', color: '#8b5cf6', icon: 'svg:chart', layer: 6 },
-  { id: 'menu-41', title: 'AOI 차트분석', url: '/display/41', color: '#06b6d4', icon: 'svg:vision', layer: 6 },
-  { id: 'menu-42', title: 'FCT 차트분석', url: '/display/42', color: '#f59e0b', icon: 'svg:operation-rate', layer: 6 },
-  { id: 'menu-43', title: 'VISION 차트분석', url: '/display/43', color: '#10b981', icon: 'svg:vision', layer: 6 },
-
-  // 멕시코전장로그조회 (layer: 8)
-  { id: 'mex-log', title: '로그조회', url: '/mxvc/log', color: '#22d3ee', icon: 'svg:error-log', layer: 8 },
-  { id: 'mex-fpy', title: '직행율', url: '/mxvc/fpy', color: '#22c55e', icon: 'svg:target', layer: 8 },
-];
+/** 폴백 카드 (빈 배열) — 실제 데이터는 config/cards.json */
+export const DEFAULT_SHORTCUTS: Shortcut[] = [];
 
 // ---------------------------------------------------------------------------
 // GLOW_THEMES
