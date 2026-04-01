@@ -86,8 +86,15 @@ export default function CardManagerPage() {
   }));
 
   const unassigned = cards.filter(
-    (c) => !categories.some((cat) => cat.id === c.layer),
+    (c) => c.layer === -1 || !categories.some((cat) => cat.id === c.layer),
   );
+
+  const removeCard = (cardId: string) => {
+    setCards((prev) =>
+      prev.map((c) => (c.id === cardId ? { ...c, layer: -1 } : c)),
+    );
+    setDirty(true);
+  };
 
   if (loading) {
     return (
@@ -165,6 +172,7 @@ export default function CardManagerPage() {
                     card={card}
                     categories={categories}
                     onChangeLayer={changeLayer}
+                    onRemove={removeCard}
                   />
                 ))}
               </div>
@@ -172,13 +180,17 @@ export default function CardManagerPage() {
           </div>
         ))}
 
-        {unassigned.length > 0 && (
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-amber-300 dark:border-amber-700 overflow-hidden">
-            <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
-              <span className="font-bold text-sm text-amber-600 dark:text-amber-400">
-                미분류 · {unassigned.length}개
-              </span>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-amber-300 dark:border-amber-700 overflow-hidden">
+          <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
+            <span className="font-bold text-sm text-amber-600 dark:text-amber-400">
+              📦 미분류 · {unassigned.length}개
+            </span>
+          </div>
+          {unassigned.length === 0 ? (
+            <div className="px-4 py-6 text-center text-xs text-gray-400 dark:text-gray-600">
+              제거된 카드가 여기에 표시됩니다
             </div>
+          ) : (
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {unassigned.map((card) => (
                 <CardRow
@@ -186,11 +198,12 @@ export default function CardManagerPage() {
                   card={card}
                   categories={categories}
                   onChangeLayer={changeLayer}
+                  onRemove={removeCard}
                 />
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -200,10 +213,12 @@ function CardRow({
   card,
   categories,
   onChangeLayer,
+  onRemove,
 }: {
   card: Card;
   categories: Category[];
   onChangeLayer: (id: string, layer: number) => void;
+  onRemove: (id: string) => void;
 }) {
   return (
     <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
@@ -222,12 +237,22 @@ function CardRow({
         onChange={(e) => onChangeLayer(card.id, Number(e.target.value))}
         className="shrink-0 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs text-gray-700 dark:text-gray-300"
       >
+        <option value={-1}>📦 미분류</option>
         {categories.map((cat) => (
           <option key={cat.id} value={cat.id}>
             {cat.icon} {cat.name}
           </option>
         ))}
       </select>
+      {card.layer !== -1 && (
+        <button
+          onClick={() => onRemove(card.id)}
+          className="shrink-0 px-2 py-1 rounded text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+          title="미분류로 이동"
+        >
+          제거
+        </button>
+      )}
     </div>
   );
 }
