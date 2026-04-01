@@ -630,6 +630,23 @@ export function populateSection(container: HTMLElement, sectionIndex: number): v
   const sectionShortcuts = state.shortcuts.filter((s) => s.layer === section.id);
   const isThumbnail = state.cardLayout === 'thumbnail';
 
+  /* 빈 카테고리: 안내 카드 표시 */
+  if (sectionShortcuts.length === 0 && section.id !== 0) {
+    container.innerHTML = '';
+    const empty = document.createElement('div');
+    empty.className = 'shortcut-card empty-card';
+    empty.style.cssText = 'opacity:0.4; pointer-events:auto; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; border:2px dashed rgba(148,163,184,0.3); border-radius:16px; min-height:120px; min-width:180px;';
+    empty.innerHTML = `
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.5">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      <span style="color:#64748b; font-size:11px;">카드 관리에서 추가</span>
+    `;
+    empty.addEventListener('click', () => { window.location.href = '/settings/cards'; });
+    container.appendChild(empty);
+    return;
+  }
+
   if (isThumbnail) {
     // 썸네일은 현재 보여주는 페이지(6개)만 렌더
     container.innerHTML = '';
