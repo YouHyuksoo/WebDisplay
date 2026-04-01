@@ -156,7 +156,7 @@ export async function initMenuSystem(): Promise<void> {
     // 1-2. 바로가기 및 설정 로드 (cards.json 서버 동기화)
     state.shortcutVersion = 2; // [업데이트] 아이콘 변경 반영을 위해 버전 업
     state.shortcuts = Storage.loadShortcuts();
-    Storage.syncCardsFromServer().then((cards) => {
+    Storage.syncCardsFromServer().then(({ cards }) => {
       const favorites = state.shortcuts.filter((s) => s.layer === 0);
       state.shortcuts = [...favorites, ...cards];
       import('./cards').then((Cards) => Cards.renderCards());

@@ -65,19 +65,22 @@ function loadCardsCache(): Shortcut[] | null {
 }
 
 /**
- * 서버(cards.json)에서 카드 목록을 가져와 localStorage에 캐시한다.
+ * 서버(cards.json)에서 카드+카테고리를 가져와 localStorage에 캐시한다.
  * 메뉴 초기화 시 호출.
  */
-export async function syncCardsFromServer(): Promise<Shortcut[]> {
+export async function syncCardsFromServer(): Promise<{ cards: Shortcut[]; categories: Category[] }> {
   try {
     const res = await fetch('/api/settings/cards');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const cards = data.cards as Shortcut[];
+    const categories = data.categories as Category[];
     localStorage.setItem(KEYS.CARDS_CACHE, JSON.stringify(cards));
-    return cards;
+    localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(categories));
+    return { cards, categories };
   } catch {
-    return loadCardsCache() ?? (JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS)) as Shortcut[]);
+    const cards = loadCardsCache() ?? (JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS)) as Shortcut[]);
+    return { cards, categories: [] };
   }
 }
 

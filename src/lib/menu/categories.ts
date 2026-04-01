@@ -67,11 +67,21 @@ export function save(): boolean {
 }
 
 /**
- * 모든 카테고리 반환 (기본 + 사용자 정의)
+ * 모든 카테고리 반환 (JSON 캐시 우선 → DEFAULT_CATEGORIES 폴백 + 사용자 정의)
  * @returns 전체 카테고리 배열
  */
 export function getAll(): Category[] {
-  const defaults = DEFAULT_CATEGORIES;
+  let defaults = DEFAULT_CATEGORIES;
+  try {
+    const cached = localStorage.getItem(Storage.KEYS.CATEGORIES);
+    if (cached) {
+      const parsed = JSON.parse(cached) as Category[];
+      if (parsed.length > 0) {
+        const favorites = DEFAULT_CATEGORIES.find((c) => c.id === 0);
+        defaults = favorites ? [favorites, ...parsed] : parsed;
+      }
+    }
+  } catch { /* ignore */ }
   return [...defaults, ...customCategories];
 }
 

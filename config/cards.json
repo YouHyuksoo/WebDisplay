@@ -1,4 +1,15 @@
 {
+  "categories": [
+    { "id": 0, "name": "FAVORITES", "subtitle": "즐겨찾기", "icon": "★" },
+    { "id": 1, "name": "SMD MONITORING", "subtitle": "SMD 모니터링", "icon": "❖" },
+    { "id": 2, "name": "PBA MONITORING", "subtitle": "PBA 모니터링", "icon": "▤" },
+    { "id": 3, "name": "EQUIPMENT", "subtitle": "설비 모니터링", "icon": "⌂" },
+    { "id": 4, "name": "SPC MONITORING", "subtitle": "SPC 모니터링", "icon": "✔" },
+    { "id": 5, "name": "ANOMALY", "subtitle": "이상점 모니터링", "icon": "⚠" },
+    { "id": 6, "name": "CHARTS", "subtitle": "차트 보기", "icon": "▦" },
+    { "id": 7, "name": "베트남U1모니터링", "subtitle": "Vietnam U1 Monitoring", "icon": "◈" },
+    { "id": 8, "name": "멕시코전장모니터링", "subtitle": "Mexico VC Monitoring", "icon": "🌎" }
+  ],
   "cards": [
     { "id": "menu-24", "title": "SMD 생산현황", "url": "/display/24", "color": "#3b82f6", "icon": "svg:chip-smd", "layer": 1 },
     { "id": "menu-25", "title": "종합F/P현황", "url": "/display/25", "color": "#a78bfa", "icon": "svg:stencil", "layer": 1 },
