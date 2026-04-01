@@ -236,6 +236,17 @@ export default function MenuControls() {
         </div>
         <div
           className="settings-item"
+          id="menu-card-manager"
+          onClick={() => window.location.href = '/settings/cards'}
+          style={{ cursor: 'pointer' }}
+        >
+          <span className="icon">
+            <AppWindow size={16} />
+          </span>
+          <span>카드 관리</span>
+        </div>
+        <div
+          className="settings-item"
           id="menu-notification-settings"
           onClick={() => window.location.href = '/u1/slack-settings'}
           style={{ cursor: 'pointer' }}

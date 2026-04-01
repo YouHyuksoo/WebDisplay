@@ -1,0 +1,233 @@
+/**
+ * @file src/app/settings/cards/page.tsx
+ * @description 메뉴 카드 관리 페이지 — 전체 카드를 카테고리별로 보고 이동
+ *
+ * 초보자 가이드:
+ * 1. /api/settings/cards에서 전체 카드 + 카테고리 목록 로드
+ * 2. 카테고리별로 그룹핑하여 표시
+ * 3. 각 카드의 카테고리를 드롭다운으로 변경 가능
+ * 4. 저장 버튼으로 cards.json에 반영
+ */
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+
+interface Card {
+  id: string;
+  title: string;
+  url: string;
+  color: string;
+  icon: string;
+  layer: number;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  subtitle: string;
+  icon: string;
+}
+
+export default function CardManagerPage() {
+  const [cards, setCards] = useState<Card[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const [toast, setToast] = useState("");
+
+  const fetchCards = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/settings/cards");
+      const data = await res.json();
+      setCards(data.cards ?? []);
+      setCategories(data.categories ?? []);
+    } catch (e) {
+      console.error("카드 로드 실패:", e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchCards(); }, [fetchCards]);
+
+  const changeLayer = (cardId: string, newLayer: number) => {
+    setCards((prev) =>
+      prev.map((c) => (c.id === cardId ? { ...c, layer: newLayer } : c)),
+    );
+    setDirty(true);
+  };
+
+  const saveCards = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/settings/cards", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cards }),
+      });
+      if (!res.ok) throw new Error("저장 실패");
+      setDirty(false);
+      setToast("저장 완료");
+      localStorage.removeItem("mes-display-cards-cache");
+      setTimeout(() => setToast(""), 2000);
+    } catch (e) {
+      setToast(`오류: ${e}`);
+      setTimeout(() => setToast(""), 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const grouped = categories.map((cat) => ({
+    category: cat,
+    cards: cards.filter((c) => c.layer === cat.id),
+  }));
+
+  const unassigned = cards.filter(
+    (c) => !categories.some((cat) => cat.id === c.layer),
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-950 flex items-center justify-center">
+        <span className="w-8 h-8 border-4 border-gray-300 dark:border-gray-700 border-t-blue-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
+      {/* 헤더 */}
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-bold">카드 관리</h1>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              {cards.length}개 카드 · {categories.length}개 카테고리
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {dirty && (
+              <span className="text-xs text-amber-500 font-medium">변경사항 있음</span>
+            )}
+            <button
+              onClick={saveCards}
+              disabled={!dirty || saving}
+              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold disabled:opacity-40 transition-colors"
+            >
+              {saving ? "저장 중..." : "저장"}
+            </button>
+            <a
+              href="/"
+              className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              돌아가기
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* 토스트 */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-2 rounded-lg bg-gray-800 text-white text-sm shadow-lg">
+          {toast}
+        </div>
+      )}
+
+      {/* 카테고리별 카드 목록 */}
+      <div className="max-w-5xl mx-auto px-6 py-6 space-y-6">
+        {grouped.map(({ category, cards: catCards }) => (
+          <div
+            key={category.id}
+            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+          >
+            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{category.icon}</span>
+                <span className="font-bold text-sm">{category.name}</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  ({category.subtitle}) · {catCards.length}개
+                </span>
+              </div>
+            </div>
+
+            {catCards.length === 0 ? (
+              <div className="px-4 py-6 text-center text-xs text-gray-400 dark:text-gray-600">
+                카드 없음
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                {catCards.map((card) => (
+                  <CardRow
+                    key={card.id}
+                    card={card}
+                    categories={categories}
+                    onChangeLayer={changeLayer}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {unassigned.length > 0 && (
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-amber-300 dark:border-amber-700 overflow-hidden">
+            <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
+              <span className="font-bold text-sm text-amber-600 dark:text-amber-400">
+                미분류 · {unassigned.length}개
+              </span>
+            </div>
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              {unassigned.map((card) => (
+                <CardRow
+                  key={card.id}
+                  card={card}
+                  categories={categories}
+                  onChangeLayer={changeLayer}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CardRow({
+  card,
+  categories,
+  onChangeLayer,
+}: {
+  card: Card;
+  categories: Category[];
+  onChangeLayer: (id: string, layer: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+      <div
+        className="w-3 h-3 rounded-full shrink-0"
+        style={{ backgroundColor: card.color }}
+      />
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium truncate">{card.title}</div>
+        <div className="text-[10px] text-gray-400 dark:text-gray-500 font-mono truncate">
+          {card.url}
+        </div>
+      </div>
+      <select
+        value={card.layer}
+        onChange={(e) => onChangeLayer(card.id, Number(e.target.value))}
+        className="shrink-0 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs text-gray-700 dark:text-gray-300"
+      >
+        {categories.map((cat) => (
+          <option key={cat.id} value={cat.id}>
+            {cat.icon} {cat.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}

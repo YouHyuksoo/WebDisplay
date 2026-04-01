@@ -37,6 +37,7 @@ export const KEYS = {
   HISTORY: 'mes-display-history',
   AUTO_LAUNCH: 'mes-display-auto-launch',
   DELETED_DEFAULTS: 'mes-display-deleted-defaults',
+  CARDS_CACHE: 'mes-display-cards-cache',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -44,139 +45,79 @@ export const KEYS = {
 // ---------------------------------------------------------------------------
 
 /**
- * 바로가기 목록 불러오기
- * localStorage에 저장된 바로가기가 없으면 기본값 반환
- *
- * @returns 바로가기 배열
- *
- * @example
- * ```ts
- * const shortcuts = loadShortcuts();
- * console.log(shortcuts[0].title); // 'ASSY 생산 현황'
- * ```
+ * 바로가기 목록 반환.
+ * - 일반 카드(layer 1+): cards.json 캐시 우선, 없으면 DEFAULT_SHORTCUTS 폴백
+ * - 즐겨찾기(layer 0): localStorage에서 사용자가 등록/해제
  */
 export function loadShortcuts(): Shortcut[] {
+  const defaults = loadCardsCache() ?? JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS)) as Shortcut[];
+  const favorites = loadFavorites();
+  return [...favorites, ...defaults];
+}
+
+/** cards.json에서 가져온 캐시를 localStorage에서 읽기 */
+function loadCardsCache(): Shortcut[] | null {
   try {
-    const saved = localStorage.getItem(KEYS.SHORTCUTS);
-    if (saved) {
-      const shortcuts = JSON.parse(saved) as Shortcut[];
-      let hasChanges = false;
-      const defaultMap = new Map(DEFAULT_SHORTCUTS.map((s) => [s.id, s]));
-
-      // 1. 기존 항목들의 정보를 최신 기본값과 동기화
-      const cleaned = shortcuts
-        .filter((s) => {
-          // 제거된 기본 항목은 삭제 (menu-, fav-, ctq- 접두사 모두 포함)
-          const isDefaultId = s.id.startsWith('menu-') || s.id.startsWith('fav-') || s.id.startsWith('ctq-') || s.id.startsWith('u1-');
-          if (isDefaultId) {
-            return defaultMap.has(s.id);
-          }
-          return true;
-        })
-        .map((s) => {
-          // 기본 항목이라면 config.ts 정보를 강제 동기화 (제목, 아이콘, 색상 등)
-          const isDefaultId = s.id.startsWith('menu-') || s.id.startsWith('fav-') || s.id.startsWith('ctq-') || s.id.startsWith('u1-');
-          if (isDefaultId) {
-            const def = defaultMap.get(s.id);
-            if (def && (s.title !== def.title || s.icon !== def.icon || s.color !== def.color || s.layer !== def.layer)) {
-              hasChanges = true;
-              return { ...s, ...def };
-            }
-          }
-          return s;
-        });
-
-      // 2. 기본 목록에 새로 추가된 화면 자동 병합 (사용자가 삭제한 항목은 제외)
-      const deletedDefaults = loadDeletedDefaults();
-      const existingIds = new Set(cleaned.map((s) => s.id));
-      const added = DEFAULT_SHORTCUTS.filter((s) => !existingIds.has(s.id) && !deletedDefaults.has(s.id));
-      if (added.length > 0) hasChanges = true;
-
-      const merged = [...cleaned, ...added];
-      if (hasChanges || merged.length !== shortcuts.length) {
-        localStorage.setItem(KEYS.SHORTCUTS, JSON.stringify(merged));
-      }
-      return merged;
-    }
-  } catch (e) {
-    console.error('Failed to load shortcuts:', e);
-  }
-  // 기본값 반환 (깊은 복사)
-  return JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS)) as Shortcut[];
+    const saved = localStorage.getItem(KEYS.CARDS_CACHE);
+    if (saved) return JSON.parse(saved) as Shortcut[];
+  } catch { /* ignore */ }
+  return null;
 }
 
 /**
- * 바로가기 목록 저장
- *
- * @param shortcuts - 저장할 바로가기 배열
- * @returns 저장 성공 여부
- *
- * @example
- * ```ts
- * const shortcuts = loadShortcuts();
- * shortcuts.push({ id: 'menu-99', title: 'New', url: '/display/99', color: '#fff', icon: '', layer: 0 });
- * saveShortcuts(shortcuts);
- * ```
+ * 서버(cards.json)에서 카드 목록을 가져와 localStorage에 캐시한다.
+ * 메뉴 초기화 시 호출.
+ */
+export async function syncCardsFromServer(): Promise<Shortcut[]> {
+  try {
+    const res = await fetch('/api/settings/cards');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const cards = data.cards as Shortcut[];
+    localStorage.setItem(KEYS.CARDS_CACHE, JSON.stringify(cards));
+    return cards;
+  } catch {
+    return loadCardsCache() ?? (JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS)) as Shortcut[]);
+  }
+}
+
+/**
+ * 즐겨찾기 목록만 저장 (layer 0인 항목만 추출하여 localStorage에 저장)
  */
 export function saveShortcuts(shortcuts: Shortcut[]): boolean {
   try {
-    localStorage.setItem(KEYS.SHORTCUTS, JSON.stringify(shortcuts));
+    const favorites = shortcuts.filter((s) => s.layer === 0);
+    localStorage.setItem(KEYS.SHORTCUTS, JSON.stringify(favorites));
     return true;
   } catch (e) {
-    console.error('Failed to save shortcuts:', e);
+    console.error('Failed to save favorites:', e);
     return false;
   }
 }
 
-/**
- * 바로가기 초기화 (기본값으로 복원)
- *
- * @returns 초기화된 바로가기 배열
- *
- * @example
- * ```ts
- * const shortcuts = resetShortcuts();
- * ```
- */
+/** 즐겨찾기 초기화 (빈 배열) */
 export function resetShortcuts(): Shortcut[] {
-  const defaults = JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS)) as Shortcut[];
-  saveShortcuts(defaults);
-  resetDeletedDefaults();
-  return defaults;
+  localStorage.removeItem(KEYS.SHORTCUTS);
+  return loadShortcuts();
 }
 
-// ---------------------------------------------------------------------------
-// Deleted Defaults (사용자가 삭제한 기본 바로가기 추적)
-// ---------------------------------------------------------------------------
-
-/**
- * 사용자가 삭제한 기본 바로가기 ID 목록 불러오기
- * @returns 삭제된 기본 항목 ID Set
- */
-export function loadDeletedDefaults(): Set<string> {
+/** localStorage에서 즐겨찾기(layer 0) 항목만 불러오기 */
+function loadFavorites(): Shortcut[] {
   try {
-    const saved = localStorage.getItem(KEYS.DELETED_DEFAULTS);
-    if (saved) return new Set(JSON.parse(saved) as string[]);
+    const saved = localStorage.getItem(KEYS.SHORTCUTS);
+    if (saved) {
+      return (JSON.parse(saved) as Shortcut[]).filter((s) => s.layer === 0);
+    }
   } catch { /* ignore */ }
-  return new Set();
+  return [];
 }
 
-/**
- * 기본 바로가기를 삭제 목록에 추가 (auto-merge 시 복원 방지)
- * @param id - 삭제할 기본 바로가기 ID
- */
-export function addDeletedDefault(id: string): void {
-  const deleted = loadDeletedDefaults();
-  deleted.add(id);
-  localStorage.setItem(KEYS.DELETED_DEFAULTS, JSON.stringify([...deleted]));
-}
-
-/**
- * 삭제 목록 초기화 (모든 기본 항목 복원 허용)
- */
-export function resetDeletedDefaults(): void {
-  localStorage.removeItem(KEYS.DELETED_DEFAULTS);
-}
+/** @deprecated 사용하지 않음 */
+export function loadDeletedDefaults(): Set<string> { return new Set(); }
+/** @deprecated 사용하지 않음 */
+export function addDeletedDefault(_id: string): void { /* noop */ }
+/** @deprecated 사용하지 않음 */
+export function resetDeletedDefaults(): void { /* noop */ }
 
 // ---------------------------------------------------------------------------
 // Settings
@@ -238,38 +179,14 @@ export function saveSettings(settings: MenuSettings): boolean {
 // Categories
 // ---------------------------------------------------------------------------
 
-/**
- * 사용자 정의 카테고리 불러오기
- * localStorage에 저장된 카테고리가 없으면 빈 배열 반환
- *
- * @returns 사용자 정의 카테고리 배열
- */
+/** @deprecated 사용자 정의 카테고리 제거됨 — config.ts가 단일 소스 */
 export function loadCategories(): Category[] {
-  try {
-    const saved = localStorage.getItem(KEYS.CATEGORIES);
-    if (saved) {
-      return JSON.parse(saved) as Category[];
-    }
-  } catch (e) {
-    console.error('Failed to load categories:', e);
-  }
   return [];
 }
 
-/**
- * 사용자 정의 카테고리 저장
- *
- * @param categories - 저장할 카테고리 배열
- * @returns 저장 성공 여부
- */
-export function saveCategories(categories: Category[]): boolean {
-  try {
-    localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(categories));
-    return true;
-  } catch (e) {
-    console.error('Failed to save categories:', e);
-    return false;
-  }
+/** @deprecated 사용하지 않음 */
+export function saveCategories(_categories: Category[]): boolean {
+  return true;
 }
 
 // ---------------------------------------------------------------------------
