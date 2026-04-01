@@ -142,61 +142,55 @@ export function add(
 }
 
 /**
- * 카테고리 수정
- * @param id - 수정할 카테고리 ID
- * @param data - 수정할 데이터
- * @returns 수정 성공 여부
+ * 카테고리 수정 — cards.json API로 반영
+ * 즐겨찾기(id=0)만 수정 불가
  */
 export function update(
   id: number,
   data: { name?: string; subtitle?: string; icon?: string },
 ): boolean {
-  // 기본 카테고리는 수정 불가
-  if (id < CUSTOM_ID_START) {
-    console.warn('Cannot update default categories');
-    return false;
-  }
+  if (id === 0) return false;
 
-  const idx = customCategories.findIndex((c) => c.id === id);
-  if (idx === -1) return false;
+  const all = getAll();
+  const cat = all.find((c) => c.id === id);
+  if (!cat) return false;
 
-  if (data.name) customCategories[idx].name = data.name.toUpperCase();
-  if (data.subtitle !== undefined) customCategories[idx].subtitle = data.subtitle;
-  if (data.icon) customCategories[idx].icon = data.icon;
+  if (data.name) cat.name = data.name.toUpperCase();
+  if (data.subtitle !== undefined) cat.subtitle = data.subtitle;
+  if (data.icon) cat.icon = data.icon;
 
-  save();
+  syncCategoriesToServer(all.filter((c) => c.id !== 0));
   return true;
 }
 
 /**
- * 카테고리 삭제
- * @param id - 삭제할 카테고리 ID
- * @returns 삭제 성공 여부
+ * 카테고리 삭제 — cards.json API로 반영
+ * 즐겨찾기(id=0)만 삭제 불가, 소속 카드는 미분류(-1)로 이동
  */
 export function remove(id: number): boolean {
-  // 기본 카테고리는 삭제 불가
-  if (id < CUSTOM_ID_START) {
-    console.warn('Cannot delete default categories');
-    return false;
-  }
+  if (id === 0) return false;
 
-  const idx = customCategories.findIndex((c) => c.id === id);
-  if (idx === -1) return false;
+  const all = getAll().filter((c) => c.id !== id);
+  localStorage.setItem(Storage.KEYS.CATEGORIES, JSON.stringify(all.filter((c) => c.id !== 0)));
 
-  customCategories.splice(idx, 1);
-  save();
-
-  // 해당 카테고리의 바로가기들을 첫 번째 카테고리로 이동
   if (state.shortcuts) {
     state.shortcuts.forEach((shortcut) => {
-      if (shortcut.layer === id) {
-        shortcut.layer = 0;
-      }
+      if (shortcut.layer === id) shortcut.layer = -1;
     });
     saveShortcuts();
   }
 
+  syncCategoriesToServer(all.filter((c) => c.id !== 0));
   return true;
+}
+
+/** 카테고리 변경을 cards.json API에 저장 */
+function syncCategoriesToServer(categories: Category[]): void {
+  fetch('/api/settings/cards', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ categories }),
+  }).catch((e) => console.error('카테고리 동기화 실패:', e));
 }
 
 // ---------------------------------------------------------------------------
@@ -239,7 +233,7 @@ export function renderManagerList(): void {
     item.className = 'category-item';
     item.dataset.id = String(cat.id);
 
-    const isDefault = cat.id < CUSTOM_ID_START;
+    const isFavorites = cat.id === 0;
 
     item.innerHTML = `
       <span class="category-icon">${cat.icon || '◻'}</span>
@@ -248,7 +242,7 @@ export function renderManagerList(): void {
         <div class="category-subtitle">${cat.subtitle}</div>
       </div>
       ${
-        isDefault
+        isFavorites
           ? '<span class="category-badge">' + t('menuUI.categoryDefault') + '</span>'
           : `
           <div class="category-actions">
