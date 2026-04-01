@@ -61,7 +61,8 @@ jobs:
 
           robocopy $src $dst /MIR /NFL /NDL /NJH /NJS /NC /NS `
             /XF ".env" ".env.local" ".env.production" `
-            /XD ".git" "logs" "config"
+            /XD ".git" "logs" `
+            /XF "database.json"
 
           if ($LASTEXITCODE -le 7) { exit 0 } else { exit $LASTEXITCODE }
 
