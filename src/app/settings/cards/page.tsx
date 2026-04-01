@@ -59,18 +59,27 @@ export default function CardManagerPage() {
     setDirty(true);
   };
 
+  const removeCategory = (catId: number) => {
+    setCards((prev) =>
+      prev.map((c) => (c.layer === catId ? { ...c, layer: -1 } : c)),
+    );
+    setCategories((prev) => prev.filter((c) => c.id !== catId));
+    setDirty(true);
+  };
+
   const saveCards = async () => {
     setSaving(true);
     try {
       const res = await fetch("/api/settings/cards", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cards }),
+        body: JSON.stringify({ categories, cards }),
       });
       if (!res.ok) throw new Error("저장 실패");
       setDirty(false);
       setToast("저장 완료");
       localStorage.removeItem("mes-display-cards-cache");
+      localStorage.removeItem("mes-display-categories");
       setTimeout(() => setToast(""), 2000);
     } catch (e) {
       setToast(`오류: ${e}`);
@@ -151,12 +160,21 @@ export default function CardManagerPage() {
             className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
           >
             <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{category.icon}</span>
-                <span className="font-bold text-sm">{category.name}</span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">
-                  ({category.subtitle}) · {catCards.length}개
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{category.icon}</span>
+                  <span className="font-bold text-sm">{category.name}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    ({category.subtitle}) · {catCards.length}개
+                  </span>
+                </div>
+                <button
+                  onClick={() => removeCategory(category.id)}
+                  className="px-2 py-1 rounded text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  title="카테고리 제거 (카드는 미분류로 이동)"
+                >
+                  카테고리 제거
+                </button>
               </div>
             </div>
 
