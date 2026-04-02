@@ -845,7 +845,9 @@
         "count": "건수",
         "inspCount": "검사량",
         "pidCount": "PID수",
-        "retestRatePercent": "재검사율(%)"
+        "retestRatePercent": "재검사율(%)",
+        "repairLeadTimeLine": "수리 리드타임 (라인별, 7일)",
+        "repairLeadTimeModel": "수리 리드타임 (모델별, 7일)"
       },
       "analysis": {
         "title": "종합분석",

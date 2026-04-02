@@ -8,6 +8,7 @@
  */
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { WorkstageCard } from "@/types/mxvc/interlock";
 import InterlockCard from "./InterlockCard";
 
@@ -16,10 +17,11 @@ interface InterlockCardGridProps {
 }
 
 export default function InterlockCardGrid({ cards }: InterlockCardGridProps) {
+  const t = useTranslations("common");
   if (cards.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-        데이터 없음
+        {t("noData")}
       </div>
     );
   }

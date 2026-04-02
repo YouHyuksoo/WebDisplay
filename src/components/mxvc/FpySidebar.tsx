@@ -11,6 +11,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import type { MxvcFpySettings, MxvcFpyTableKey } from "@/types/mxvc/fpy";
 import {
   DEFAULT_FPY_SETTINGS, FPY_PRESETS,
@@ -38,6 +39,7 @@ export default function FpySidebar({
   settings, onChange, onRefresh, loading,
   collapsed, onToggleCollapse,
 }: Props) {
+  const t = useTranslations("common");
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -87,7 +89,7 @@ export default function FpySidebar({
         <div className="mt-3 flex flex-col gap-3">
           <button onClick={onRefresh} disabled={loading}
             className="w-full px-3 py-2 rounded bg-blue-600 hover:bg-blue-500 text-xs text-white font-bold disabled:opacity-50 transition-colors">
-            {loading ? "조회 중..." : "새로고침"}
+            {loading ? t("loading") : t("refresh")}
           </button>
 
           {/* 일자 조정 */}

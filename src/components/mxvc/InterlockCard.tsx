@@ -10,6 +10,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import type { WorkstageCard, InterlockLog } from "@/types/mxvc/interlock";
 import { useInterlockDetail } from "@/hooks/mxvc/useInterlock";
 
@@ -43,6 +44,7 @@ function LogRow({ log, full }: { log: InterlockLog; full?: boolean }) {
 }
 
 export default function InterlockCard({ card }: InterlockCardProps) {
+  const t = useTranslations("common");
   const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -65,9 +67,10 @@ export default function InterlockCard({ card }: InterlockCardProps) {
             {card.workstageCode}
           </span>
           <div className="flex items-center gap-1.5">
-            <span className="inline-flex items-center justify-center w-14 h-6 rounded text-xs font-bold bg-green-500 text-white">OK {card.okCount}</span>
-            <span className="inline-flex items-center justify-center w-14 h-6 rounded text-xs font-bold bg-red-500 text-white">NG {card.ngCount}</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">/ {card.totalCount}</span>
+            <span className="text-xs font-bold text-green-600 dark:text-green-400">OK {card.okCount}</span>
+            <span className="text-xs text-gray-400">/</span>
+            <span className="text-xs font-bold text-red-500 dark:text-red-400">NG {card.ngCount}</span>
+            <span className="text-xs text-gray-400">({card.totalCount})</span>
             {/* 크게보기 아이콘 */}
             <button
               onClick={() => { setModalOpen(true); setExpanded(true); }}
@@ -87,7 +90,7 @@ export default function InterlockCard({ card }: InterlockCardProps) {
             <LogRow key={`${log.callDate}-${idx}`} log={log} />
           ))}
           {logs.length === 0 && (
-            <div className="px-2 py-4 text-center text-[10px] text-gray-400">이력 없음</div>
+            <div className="px-2 py-4 text-center text-[10px] text-gray-400">{t("noData")}</div>
           )}
         </div>
 
@@ -150,7 +153,7 @@ export default function InterlockCard({ card }: InterlockCardProps) {
                 <LogRow key={`${log.callDate}-${idx}`} log={log} full />
               ))}
               {modalLogs.length === 0 && (
-                <div className="px-4 py-8 text-center text-sm text-gray-400">이력 없음</div>
+                <div className="px-4 py-8 text-center text-sm text-gray-400">{t("noData")}</div>
               )}
             </div>
           </div>

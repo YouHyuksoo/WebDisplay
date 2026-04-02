@@ -10,6 +10,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { AgGridReact } from 'ag-grid-react';
 import {
   AllCommunityModule,
@@ -61,6 +62,7 @@ function weekAgo(): string {
 }
 
 export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDataGridProps) {
+  const t = useTranslations('common');
   const { resolvedTheme } = useTheme();
   const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
   const gridRef = useRef<AgGridReact>(null);
@@ -270,7 +272,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
                        disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500
                        text-white rounded-lg transition-colors"
           >
-            {loading ? '조회 중...' : '조회'}
+            {loading ? t('loading') : t('refresh')}
           </button>
 
           <button

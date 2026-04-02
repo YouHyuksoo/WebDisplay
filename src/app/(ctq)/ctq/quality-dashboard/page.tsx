@@ -19,7 +19,7 @@ import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { usePersistedState } from "@/hooks/ctq/usePersistedState";
 import { useQualityDashboard } from "@/hooks/ctq/useQualityDashboard";
 import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
-import DashboardSidebar from "@/components/ctq/DashboardSidebar";
+import DashboardSidebar, { PRESETS } from "@/components/ctq/DashboardSidebar";
 import DashboardCharts from "@/components/ctq/DashboardCharts";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import type { DashboardSettings } from "@/types/ctq/quality-dashboard";
@@ -58,9 +58,44 @@ export default function QualityDashboardPage() {
       {/* -- WebDisplay 공통 헤더 -- */}
       <DisplayHeader title={t("pages.qualityDashboard.title")} screenId={SCREEN_ID} />
 
-      {/* -- 요약 바 -- */}
+      {/* -- 프리셋 + 판정기준 바 -- */}
       <div className="shrink-0 bg-gray-900 border-b border-gray-700 px-6 py-2">
-        <div className="flex items-center max-w-[1920px] mx-auto">
+        <div className="flex items-center gap-4 max-w-[1920px] mx-auto">
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-gray-500 mr-1">{t("pages.qualityDashboard.preset")}</span>
+            {Object.entries({ default: "presetDefault", manager: "presetManager", line: "presetLine", quality: "presetQuality", all: "presetAll" }).map(([k, v]) => (
+              <button key={k} onClick={() => setSettings({ ...settings, ...PRESETS[k] } as DashboardSettings)}
+                className="px-2 py-1 text-[10px] border border-gray-600 rounded bg-gray-800 text-gray-400 hover:border-blue-500 hover:text-blue-400 transition-colors">
+                {t(`pages.qualityDashboard.${v}`)}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-gray-500">{t("pages.qualityDashboard.layout")}</span>
+            <select value={settings.layout} onChange={e => setSettings({ ...settings, layout: e.target.value as DashboardSettings["layout"] })}
+              className="bg-gray-800 text-gray-200 border border-gray-600 rounded px-1.5 py-0.5 text-[10px]">
+              <option value="2x3">{t("pages.qualityDashboard.layout2x3")}</option>
+              <option value="3x2">{t("pages.qualityDashboard.layout3x2")}</option>
+              <option value="2x2+1">{t("pages.qualityDashboard.layout2x2p1")}</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-gray-500">{t("pages.qualityDashboard.palette")}</span>
+            <select value={settings.palette} onChange={e => setSettings({ ...settings, palette: e.target.value as DashboardSettings["palette"] })}
+              className="bg-gray-800 text-gray-200 border border-gray-600 rounded px-1.5 py-0.5 text-[10px]">
+              <option value="blue">Blue</option>
+              <option value="rainbow">Rainbow</option>
+              <option value="warm">Warm</option>
+              <option value="cool">Cool</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-gray-500">{t("pages.qualityDashboard.chartHeight")}</span>
+            <input type="range" min={120} max={350} value={settings.chartHeight}
+              onChange={e => setSettings({ ...settings, chartHeight: Number(e.target.value) })}
+              className="w-20 accent-blue-500" />
+            <span className="text-[10px] text-blue-400 font-mono">{settings.chartHeight}px</span>
+          </div>
           <CriteriaTooltip pageKey="qualityDashboard" />
         </div>
       </div>

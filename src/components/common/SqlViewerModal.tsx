@@ -6,6 +6,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import type { SqlEntry } from '@/lib/queries/sql-registry';
 
 interface SqlViewerModalProps {
@@ -15,6 +16,7 @@ interface SqlViewerModalProps {
 }
 
 export default function SqlViewerModal({ isOpen, onClose, screenId }: SqlViewerModalProps) {
+  const t = useTranslations('common');
   const [queries, setQueries] = useState<SqlEntry[]>([]);
   const [title, setTitle] = useState('');
   const [activeTab, setActiveTab] = useState(0);
@@ -151,7 +153,7 @@ export default function SqlViewerModal({ isOpen, onClose, screenId }: SqlViewerM
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
               </svg>
-              로딩 중...
+              {t('loading')}
             </div>
           )}
 

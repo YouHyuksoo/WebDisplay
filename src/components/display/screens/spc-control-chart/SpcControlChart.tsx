@@ -11,6 +11,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, ResponsiveContainer, Dot,
@@ -142,6 +143,7 @@ function buildHistogram(subgroups: Subgroup[], stats: SpcStats, binCount = 15) {
 interface Props { screenId: string }
 
 export default function SpcControlChart({ screenId }: Props) {
+  const t = useTranslations('common');
   const theme = useChartTheme();
   const today = new Date().toISOString().slice(0, 10);
   const defaultFrom = new Date(Date.now() - 24 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -239,7 +241,7 @@ export default function SpcControlChart({ screenId }: Props) {
               disabled={loading}
               className={`${btnBase} bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50`}
             >
-              {loading ? '조회 중...' : '조회'}
+              {loading ? t('loading') : t('refresh')}
             </button>
 
             {/* 규격 + 기간 요약 */}

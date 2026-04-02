@@ -845,7 +845,9 @@
         "count": "Count",
         "inspCount": "Inspections",
         "pidCount": "PIDs",
-        "retestRatePercent": "Retest Rate(%)"
+        "retestRatePercent": "Retest Rate(%)",
+        "repairLeadTimeLine": "Repair Lead Time (by Line, 7d)",
+        "repairLeadTimeModel": "Repair Lead Time (by Model, 7d)"
       },
       "analysis": {
         "title": "Comprehensive Analysis",

@@ -18,6 +18,7 @@ interface CountRow { NAME: string; CNT: number; }
 interface RepairRow { TOTAL_CNT: number; REPAIRED_CNT: number; }
 interface HourRow { HR: string; CNT: number; }
 interface FpyRow { NAME: string; DAY_TYPE: string; FPY: number; TOTAL: number; PASS: number; }
+interface LeadTimeRow { NAME: string; AVG_HOURS: number; MAX_HOURS: number; CNT: number; }
 
 const FPY_PROCESSES = [
   { key: "ICT", table: "IQ_MACHINE_ICT_SERVER_DATA_RAW" },
@@ -40,6 +41,16 @@ export async function GET(request: NextRequest) {
       ${lineFilter.clause}
     `;
     const bp = { tsStart: tr.startStr, tsEnd: tr.endStr, ...lineFilter.params };
+
+    /* 수리 리드타임: 최근 7일, REPAIR_DATE > QC_DATE */
+    const ltWhere = `
+      t.QC_DATE >= TRUNC(SYSDATE) - 7
+      AND t.REPAIR_DATE IS NOT NULL AND t.REPAIR_DATE > t.QC_DATE
+      AND (t.SERIAL_NO LIKE 'VN07%' OR t.SERIAL_NO LIKE 'VNL1%' OR t.SERIAL_NO LIKE 'VNA2%')
+      AND t.LINE_CODE IS NOT NULL AND t.LINE_CODE <> '*'
+      ${lineFilter.clause}
+    `;
+    const ltParams = { ...lineFilter.params };
 
     const [processR, badCodeR, lineR, modelR, hourR, repairR, defectItemR, locationR, repairWsR, receiptR] = await Promise.all([
       executeQuery<CountRow>(`
@@ -127,6 +138,26 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    const [ltLineR, ltModelR] = await Promise.all([
+      executeQuery<LeadTimeRow>(`
+        SELECT F_GET_LINE_NAME(t.LINE_CODE, 1) AS NAME,
+               ROUND(AVG((t.REPAIR_DATE - t.QC_DATE) * 24), 1) AS AVG_HOURS,
+               ROUND(MAX((t.REPAIR_DATE - t.QC_DATE) * 24), 1) AS MAX_HOURS,
+               COUNT(*) AS CNT
+        FROM IP_PRODUCT_WORK_QC t WHERE ${ltWhere}
+        GROUP BY t.LINE_CODE, F_GET_LINE_NAME(t.LINE_CODE, 1) ORDER BY AVG_HOURS DESC
+      `, ltParams),
+      executeQuery<LeadTimeRow>(`
+        SELECT NVL(t.MODEL_NAME, '-') AS NAME,
+               ROUND(AVG((t.REPAIR_DATE - t.QC_DATE) * 24), 1) AS AVG_HOURS,
+               ROUND(MAX((t.REPAIR_DATE - t.QC_DATE) * 24), 1) AS MAX_HOURS,
+               COUNT(*) AS CNT
+        FROM IP_PRODUCT_WORK_QC t WHERE ${ltWhere}
+        GROUP BY t.MODEL_NAME ORDER BY AVG_HOURS DESC FETCH FIRST 15 ROWS ONLY
+      `, ltParams),
+    ]);
+    const toLeadTime = (rows: LeadTimeRow[]) => rows.map(r => ({ name: r.NAME || "-", avgHours: r.AVG_HOURS, maxHours: r.MAX_HOURS, count: r.CNT }));
+
     const toChart = (rows: CountRow[]) => rows.map(r => ({ name: r.NAME || "-", count: r.CNT }));
     const total = repairR[0]?.TOTAL_CNT ?? 0;
     const repaired = repairR[0]?.REPAIRED_CNT ?? 0;
@@ -149,6 +180,8 @@ export async function GET(request: NextRequest) {
       repairWorkstage: toChart(repairWsR),
       receipt: toChart(receiptR),
       fpy: fpyData,
+      repairLeadTimeLine: toLeadTime(ltLineR),
+      repairLeadTimeModel: toLeadTime(ltModelR),
       summary: {
         totalDefects: total,
         repairRate: total > 0 ? Math.round((repaired / total) * 100) : 0,

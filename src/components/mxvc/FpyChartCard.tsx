@@ -10,6 +10,7 @@
  */
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell, ReferenceLine,
@@ -37,6 +38,7 @@ function getSummaryColor(y: number): string {
 }
 
 export default function FpyChartCard({ tableKey, data, height }: Props) {
+  const t = useTranslations("common");
   const label = TABLE_LABELS[tableKey];
   const { summary, hourly } = data;
 
@@ -59,7 +61,7 @@ export default function FpyChartCard({ tableKey, data, height }: Props) {
           className="flex items-center justify-center text-gray-400 dark:text-gray-600 text-xs"
           style={{ height }}
         >
-          데이터 없음
+          {t("noData")}
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={height}>

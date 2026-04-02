@@ -53,6 +53,7 @@ export default function LineSelectModal({
   required = false,
 }: LineSelectModalProps) {
   const t = useTranslations('display');
+  const tc = useTranslations('common');
 
   const [groups, setGroups] = useState<LineGroup[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -251,7 +252,7 @@ export default function LineSelectModal({
           {/* 라인 그룹 목록 */}
           {loading ? (
             <div className="flex items-center justify-center h-32 text-gray-500">
-              라인 목록 불러오는 중...
+              {tc('loading')}
             </div>
           ) : groups.length === 0 ? (
             <div className="flex items-center justify-center h-32 text-gray-500">

@@ -12,6 +12,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import IctDailyPassRate from "@/components/u1/ict/IctDailyPassRate";
@@ -53,6 +54,7 @@ function ChartSkeleton() {
 }
 
 export default function IctAnalysisPage() {
+  const t = useTranslations("common");
   const [daily, setDaily] = useState<IctDailyResponse | null>(null);
   const [weekly, setWeekly] = useState<IctWeeklyResponse | null>(null);
   const [monthly, setMonthly] = useState<IctMonthlyResponse | null>(null);
@@ -104,7 +106,7 @@ export default function IctAnalysisPage() {
         {loading && !daily ? (
           <div className="flex-1 grid grid-cols-3 grid-rows-3 gap-2">
             {Array.from({ length: 7 }).map((_, i) => (
-              <ChartCard key={i} title="로딩중..." badge="-"><ChartSkeleton /></ChartCard>
+              <ChartCard key={i} title={t("loading")} badge="-"><ChartSkeleton /></ChartCard>
             ))}
           </div>
         ) : (

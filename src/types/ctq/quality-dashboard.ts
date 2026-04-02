@@ -48,6 +48,13 @@ export interface RawInsightsResponse {
   lastUpdated: string;
 }
 
+export interface LeadTimeItem {
+  name: string;
+  avgHours: number;
+  maxHours: number;
+  count: number;
+}
+
 export interface RepairStats {
   total: number;
   repaired: number;
@@ -73,6 +80,8 @@ export interface QualityDashboardResponse {
   repairWorkstage: ChartItem[];
   receipt: ChartItem[];
   fpy: FpyItem[];
+  repairLeadTimeLine: LeadTimeItem[];
+  repairLeadTimeModel: LeadTimeItem[];
   summary: SummaryData;
   lastUpdated: string;
 }
@@ -98,6 +107,8 @@ export interface DashboardSettings {
   showNgMatrix: boolean;
   showRetestRate: boolean;
   showWeeklyTrend: boolean;
+  showRepairLeadTimeLine: boolean;
+  showRepairLeadTimeModel: boolean;
   showSummary: boolean;
 }
 
@@ -122,6 +133,8 @@ export const DEFAULT_SETTINGS: DashboardSettings = {
   showNgMatrix: false,
   showRetestRate: false,
   showWeeklyTrend: false,
+  showRepairLeadTimeLine: false,
+  showRepairLeadTimeModel: false,
   showSummary: true,
 };
 

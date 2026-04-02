@@ -11,6 +11,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import { usePersistedState } from "@/hooks/ctq/usePersistedState";
@@ -24,6 +25,7 @@ import { DEFAULT_FPY_SETTINGS } from "@/types/mxvc/fpy";
 const SCREEN_ID = "mxvc-fpy";
 
 export default function MxvcFpyPage() {
+  const t = useTranslations("common");
   const timing = useDisplayTiming();
 
   const [settings, setSettings] = usePersistedState<MxvcFpySettings>(
@@ -73,14 +75,14 @@ export default function MxvcFpyPage() {
           {error && !data && (
             <div className="flex-1 flex items-center justify-center">
               <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg text-red-600 dark:text-red-300 text-sm">
-                데이터 조회 실패: {error}
+                {t("error")}: {error}
               </div>
             </div>
           )}
           {loading && !data && (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-3">
               <span className="w-8 h-8 border-4 border-gray-300 dark:border-gray-700 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin" />
-              데이터 조회 중...
+              {t("loading")}
             </div>
           )}
           {data && <FpyDashboard data={data} settings={settings} />}

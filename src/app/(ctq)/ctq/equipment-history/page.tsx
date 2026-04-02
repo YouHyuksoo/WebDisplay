@@ -12,7 +12,6 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { useEquipmentHistory } from "@/hooks/ctq/useEquipmentHistory";
-import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import EquipmentHistoryTable from "@/components/ctq/EquipmentHistoryTable";
 
 const SCREEN_ID = "ctq-equip-hist";
@@ -48,53 +47,40 @@ export default function EquipmentHistoryPage() {
       <DisplayHeader title={t("pages.equipmentHistory.title")} screenId={SCREEN_ID} />
 
       <header className="shrink-0 bg-gray-800 border-b border-gray-700 px-6 py-3">
-        <div className="flex items-center justify-between max-w-[1920px] mx-auto">
-          <div className="flex items-center gap-4 text-xs text-gray-400">
-            <CriteriaTooltip pageKey="equipmentHistory" />
-            <span>IP_LINE_DAILY_OPERATION_HIST</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={fromDate}
-              max={toDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="px-2 py-1 rounded bg-gray-900 border border-gray-600 text-sm text-gray-200 focus:border-blue-500 focus:outline-none"
-            />
-            <span className="text-gray-500 text-sm">~</span>
-            <input
-              type="date"
-              value={toDate}
-              min={fromDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="px-2 py-1 rounded bg-gray-900 border border-gray-600 text-sm text-gray-200 focus:border-blue-500 focus:outline-none"
-            />
-            <button
-              onClick={setToday}
-              className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-xs text-gray-300 transition-colors"
-            >
-              Today
-            </button>
-            <button
-              onClick={fetchData}
-              disabled={loading}
-              className="px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 text-sm text-gray-300 hover:text-white transition-colors disabled:opacity-50"
-            >
-              {loading ? (
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 border-2 border-gray-500 border-t-white rounded-full animate-spin" />
-                  {t("common.dataLoading")}
-                </span>
-              ) : (
-                t("common.refresh")
-              )}
-            </button>
-          </div>
+        <div className="flex items-center gap-2 max-w-[1920px] mx-auto">
+          <input
+            type="date"
+            value={fromDate}
+            max={toDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="px-2 py-1 rounded bg-gray-900 border border-gray-600 text-sm text-gray-200 focus:border-blue-500 focus:outline-none"
+          />
+          <span className="text-gray-500 text-sm">~</span>
+          <input
+            type="date"
+            value={toDate}
+            min={fromDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="px-2 py-1 rounded bg-gray-900 border border-gray-600 text-sm text-gray-200 focus:border-blue-500 focus:outline-none"
+          />
+          <button
+            onClick={setToday}
+            className="px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-xs text-gray-300 transition-colors"
+          >
+            Today
+          </button>
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            className="px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 text-sm text-gray-300 hover:text-white transition-colors disabled:opacity-50"
+          >
+            {t("common.refresh")}
+          </button>
         </div>
       </header>
 
-      <main className="flex-1 min-h-0 max-w-[1920px] w-full mx-auto">
-        {error && (
+      <main className="flex-1 min-h-0 max-w-[1920px] w-full mx-auto relative">
+        {error && !loading && (
           <div className="mx-6 mt-4 p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
             {t("common.dataError")}: {error}
           </div>
@@ -105,7 +91,7 @@ export default function EquipmentHistoryPage() {
             {t("common.dataLoading")}
           </div>
         )}
-        {data && data.rows.length === 0 && (
+        {data && data.rows.length === 0 && !loading && (
           <div className="flex items-center justify-center" style={{ minHeight: "calc(100vh - 200px)" }}>
             <div className="text-center p-12 bg-gray-900/60 border border-gray-700 rounded-2xl max-w-lg">
               <div className="text-6xl mb-5">📋</div>

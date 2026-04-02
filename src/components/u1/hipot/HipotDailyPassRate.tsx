@@ -12,6 +12,7 @@
 "use client";
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { useTranslations } from "next-intl";
 import type { HipotLineStat } from "@/types/u1/hipot-analysis";
 
 function getRateColor(rate: number): string {
@@ -31,10 +32,11 @@ interface Props {
 }
 
 export default function HipotDailyPassRate({ lineStats }: Props) {
+  const t = useTranslations("common");
   if (lineStats.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">
-        데이터 없음
+        {t("noData")}
       </div>
     );
   }

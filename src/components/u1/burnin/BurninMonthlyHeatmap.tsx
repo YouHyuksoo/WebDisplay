@@ -12,6 +12,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { BurninHeatmapCell } from "@/types/u1/burnin-analysis";
 
 function getCellColor(rate: number): string {
@@ -28,12 +29,13 @@ interface Props {
 }
 
 export default function BurninMonthlyHeatmap({ heatmapData, zones }: Props) {
+  const t = useTranslations("common");
   const [tooltip, setTooltip] = useState<{ cell: BurninHeatmapCell; x: number; y: number } | null>(null);
 
   if (heatmapData.length === 0 || zones.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">
-        데이터 없음
+        {t("noData")}
       </div>
     );
   }

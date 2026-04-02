@@ -16,7 +16,7 @@ import {
 } from "recharts";
 import { useTranslations } from "next-intl";
 import type {
-  QualityDashboardResponse, DashboardSettings, ChartItem, RawInsightsResponse,
+  QualityDashboardResponse, DashboardSettings, ChartItem, LeadTimeItem, RawInsightsResponse,
 } from "@/types/ctq/quality-dashboard";
 import { PALETTES } from "@/types/ctq/quality-dashboard";
 import DashboardRawCharts from "./DashboardRawCharts";
@@ -56,6 +56,22 @@ function HorizontalBar({ data, h, colors, barName }: { data: ChartItem[]; h: num
         <YAxis type="category" dataKey="name" width={120} tick={{ fill: "#94a3b8", fontSize: 9 }} />
         <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", fontSize: 12 }} />
         <Bar dataKey="count" name={barName}>{data.map((_, i) => <Cell key={i} fill={colors[i % colors.length]} />)}</Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function LeadTimeBar({ data, h, colors }: { data: LeadTimeItem[]; h: number; colors: string[] }) {
+  return (
+    <ResponsiveContainer width="100%" height={h}>
+      <BarChart data={data} layout="vertical">
+        <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+        <XAxis type="number" tick={{ fill: "#64748b", fontSize: 10 }} unit="h" />
+        <YAxis type="category" dataKey="name" width={100} tick={{ fill: "#94a3b8", fontSize: 9 }} />
+        <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", fontSize: 12 }} />
+        <Legend wrapperStyle={{ fontSize: 11, color: "#94a3b8" }} />
+        <Bar dataKey="avgHours" name="평균(h)" fill="#3b82f6" />
+        <Bar dataKey="maxHours" name="최대(h)" fill="#f87171" opacity={0.6} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -144,6 +160,10 @@ export default function DashboardCharts({ data, settings, rawData }: Props) {
         </ResponsiveContainer>
       );
     })() },
+    { key: "repairLeadTimeLine", show: settings.showRepairLeadTimeLine, title: t("pages.qualityDashboard.repairLeadTimeLine"),
+      el: <LeadTimeBar data={data.repairLeadTimeLine ?? []} h={h} colors={colors} /> },
+    { key: "repairLeadTimeModel", show: settings.showRepairLeadTimeModel, title: t("pages.qualityDashboard.repairLeadTimeModel"),
+      el: <LeadTimeBar data={data.repairLeadTimeModel ?? []} h={h} colors={colors} /> },
   ];
 
   const visible = charts.filter(c => c.show);

@@ -12,6 +12,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import HipotDailyPassRate from "@/components/u1/hipot/HipotDailyPassRate";
@@ -50,6 +51,7 @@ function ChartSkeleton() {
 }
 
 export default function HipotAnalysisPage() {
+  const t = useTranslations("common");
   const [daily, setDaily] = useState<HipotDailyResponse | null>(null);
   const [weekly, setWeekly] = useState<HipotWeeklyResponse | null>(null);
   const [monthly, setMonthly] = useState<HipotMonthlyResponse | null>(null);
@@ -107,7 +109,7 @@ export default function HipotAnalysisPage() {
         {loading && !daily ? (
           <div className="grid grid-cols-3 grid-rows-2 gap-2 h-full">
             {Array.from({ length: 6 }).map((_, i) => (
-              <ChartCard key={i} title="로딩중..." badge="-"><ChartSkeleton /></ChartCard>
+              <ChartCard key={i} title={t("loading")} badge="-"><ChartSkeleton /></ChartCard>
             ))}
           </div>
         ) : (

@@ -15,6 +15,7 @@ import {
   ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Legend,
 } from "recharts";
+import { useTranslations } from "next-intl";
 import type { IctWeeklyPoint } from "@/types/u1/ict-analysis";
 
 const LINE_COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#06b6d4", "#f97316", "#ec4899"];
@@ -24,10 +25,11 @@ interface Props {
 }
 
 export default function IctWeeklyTrend({ dailyTrend }: Props) {
+  const t = useTranslations("common");
   if (dailyTrend.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">
-        데이터 없음
+        {t("noData")}
       </div>
     );
   }

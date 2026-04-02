@@ -387,6 +387,14 @@
       "color": "#f59e0b",
       "icon": "svg:interlock",
       "layer": 8
+    },
+    {
+      "id": "mex-inspect-result",
+      "title": "설비호출저장이력",
+      "url": "/mxvc/inspect-result",
+      "color": "#8b5cf6",
+      "icon": "svg:error-log",
+      "layer": 8
     }
   ]
 }

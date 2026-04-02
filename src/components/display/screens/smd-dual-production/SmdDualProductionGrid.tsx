@@ -9,6 +9,7 @@
 'use client';
 
 import { useGridResizer } from '@/hooks/useGridResizer';
+import { useTranslations } from 'next-intl';
 import { formatNumber } from '../../shared/DataBadges';
 
 /** SMD 듀얼 생산현황 데이터 행 */
@@ -104,12 +105,13 @@ function dateOnly(val?: string): string {
 
 /** SMD 듀얼 생산현황 그리드 (라인별 2줄 구조) */
 export default function SmdDualProductionGrid({ rows }: SmdDualProductionGridProps) {
+  const t = useTranslations('common');
   const { widths, handleMouseDown } = useGridResizer('grid-widths-smd-dual', INITIAL_WIDTHS);
 
   if (!rows || rows.length === 0) {
     return (
       <div className="flex h-full items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-400 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-500">
-        데이터 없음
+        {t('noData')}
       </div>
     );
   }

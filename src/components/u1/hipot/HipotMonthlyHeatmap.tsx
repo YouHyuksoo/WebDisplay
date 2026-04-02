@@ -12,6 +12,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { HipotHeatmapCell } from "@/types/u1/hipot-analysis";
 
 function getCellColor(rate: number): string {
@@ -28,12 +29,13 @@ interface Props {
 }
 
 export default function HipotMonthlyHeatmap({ heatmapData, zones }: Props) {
+  const t = useTranslations("common");
   const [tooltip, setTooltip] = useState<{ cell: HipotHeatmapCell; x: number; y: number } | null>(null);
 
   if (heatmapData.length === 0 || zones.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">
-        데이터 없음
+        {t("noData")}
       </div>
     );
   }

@@ -11,6 +11,7 @@
 "use client";
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { useTranslations } from "next-intl";
 import type { IctDefectTypeItem } from "@/types/u1/ict-analysis";
 
 const COLORS = [
@@ -24,10 +25,11 @@ interface Props {
 }
 
 export default function IctDefectType({ defectTypes }: Props) {
+  const t = useTranslations("common");
   if (defectTypes.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">
-        불량 데이터 없음
+        {t("noData")}
       </div>
     );
   }

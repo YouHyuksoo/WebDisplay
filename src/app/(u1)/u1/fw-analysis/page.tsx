@@ -13,6 +13,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import FwDailyPassRate from "@/components/u1/fw/FwDailyPassRate";
@@ -51,6 +52,7 @@ function ChartSkeleton() {
 }
 
 export default function FwAnalysisPage() {
+  const t = useTranslations("common");
   const [daily, setDaily] = useState<FwDailyResponse | null>(null);
   const [weekly, setWeekly] = useState<FwWeeklyResponse | null>(null);
   const [monthly, setMonthly] = useState<FwMonthlyResponse | null>(null);
@@ -108,7 +110,7 @@ export default function FwAnalysisPage() {
         {loading && !daily ? (
           <div className="grid grid-cols-3 grid-rows-2 gap-2 h-full">
             {Array.from({ length: 6 }).map((_, i) => (
-              <ChartCard key={i} title="로딩중..." badge="-"><ChartSkeleton /></ChartCard>
+              <ChartCard key={i} title={t("loading")} badge="-"><ChartSkeleton /></ChartCard>
             ))}
           </div>
         ) : (

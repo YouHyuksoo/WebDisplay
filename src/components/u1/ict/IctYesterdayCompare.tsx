@@ -15,6 +15,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell, ReferenceLine, LabelList,
 } from "recharts";
+import { useTranslations } from "next-intl";
 import type { IctLineStat } from "@/types/u1/ict-analysis";
 
 interface Props {
@@ -22,10 +23,11 @@ interface Props {
 }
 
 export default function IctYesterdayCompare({ lineStats }: Props) {
+  const t = useTranslations("common");
   if (lineStats.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">
-        데이터 없음
+        {t("noData")}
       </div>
     );
   }

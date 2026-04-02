@@ -11,6 +11,7 @@
 
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { AteMachineNgItem } from "@/types/u1/ate-analysis";
 
 interface Props {
@@ -18,10 +19,11 @@ interface Props {
 }
 
 export default function AteMachineNg({ machineNg }: Props) {
+  const t = useTranslations("common");
   if (machineNg.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">
-        NG 데이터 없음
+        {t("noData")}
       </div>
     );
   }

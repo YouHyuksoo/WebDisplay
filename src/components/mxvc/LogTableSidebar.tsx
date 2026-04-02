@@ -9,6 +9,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface TableInfo {
   TABLE_NAME: string;
@@ -28,6 +29,7 @@ export default function LogTableSidebar({
   onSelectTable,
   apiBase = '/api/mxvc',
 }: LogTableSidebarProps) {
+  const t = useTranslations('common');
   const [tables, setTables] = useState<TableInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -78,7 +80,7 @@ export default function LogTableSidebar({
       <div className="flex-1 overflow-y-auto">
         {loading && (
           <div className="px-4 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">
-            불러오는 중...
+            {t('loading')}
           </div>
         )}
         {error && (

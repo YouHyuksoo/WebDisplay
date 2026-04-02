@@ -14,7 +14,7 @@ import { useTranslations } from "next-intl";
 import type { DashboardSettings } from "@/types/ctq/quality-dashboard";
 import { DEFAULT_SETTINGS } from "@/types/ctq/quality-dashboard";
 
-const PRESETS: Record<string, Partial<DashboardSettings>> = {
+export const PRESETS: Record<string, Partial<DashboardSettings>> = {
   default: { ...DEFAULT_SETTINGS },
   manager: { layout: "2x2+1", chartHeight: 220, palette: "rainbow", showProcess: true, showBadCode: true, showLine: false, showRepair: true, showHourly: true, showModel: false, showDefectItem: false, showLocation: false, showRepairWorkstage: false, showReceipt: true, showSummary: true },
   line: { layout: "2x3", chartHeight: 200, palette: "cool", showProcess: true, showBadCode: false, showLine: true, showRepair: false, showHourly: true, showModel: true, showDefectItem: false, showLocation: true, showRepairWorkstage: false, showReceipt: false, showSummary: true },
@@ -88,48 +88,6 @@ export default function DashboardSidebar({ settings, onChange, onRefresh, loadin
           </button>
 
           <div className="bg-gray-800/50 rounded-lg p-3">
-            <label className="block text-[10px] text-gray-400 uppercase tracking-wide mb-2">{t("pages.qualityDashboard.preset")}</label>
-            <div className="flex flex-wrap gap-1">
-              {Object.entries({ default: "presetDefault", manager: "presetManager", line: "presetLine", quality: "presetQuality", all: "presetAll" }).map(([k, v]) => (
-                <button key={k} onClick={() => set(PRESETS[k] as DashboardSettings)}
-                  className="px-2 py-1 text-[10px] border border-gray-600 rounded bg-gray-900 text-gray-400 hover:border-blue-500 hover:text-blue-400 transition-colors">
-                  {t(`pages.qualityDashboard.${v}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-gray-800/50 rounded-lg p-3">
-            <label className="block text-[10px] text-gray-400 uppercase tracking-wide mb-2">{t("pages.qualityDashboard.layout")}</label>
-            <select value={settings.layout} onChange={e => set({ layout: e.target.value as DashboardSettings["layout"] })}
-              className="w-full bg-gray-900 text-gray-200 border border-gray-600 rounded px-2 py-1 text-xs">
-              <option value="2x3">{t("pages.qualityDashboard.layout2x3")}</option>
-              <option value="3x2">{t("pages.qualityDashboard.layout3x2")}</option>
-              <option value="2x2+1">{t("pages.qualityDashboard.layout2x2p1")}</option>
-            </select>
-          </div>
-
-          <div className="bg-gray-800/50 rounded-lg p-3">
-            <label className="block text-[10px] text-gray-400 uppercase tracking-wide mb-2">
-              {t("pages.qualityDashboard.chartHeight")} <span className="text-blue-400 font-mono float-right">{settings.chartHeight}px</span>
-            </label>
-            <input type="range" min={120} max={350} value={settings.chartHeight}
-              onChange={e => set({ chartHeight: Number(e.target.value) })}
-              className="w-full accent-blue-500" />
-          </div>
-
-          <div className="bg-gray-800/50 rounded-lg p-3">
-            <label className="block text-[10px] text-gray-400 uppercase tracking-wide mb-2">{t("pages.qualityDashboard.palette")}</label>
-            <select value={settings.palette} onChange={e => set({ palette: e.target.value as DashboardSettings["palette"] })}
-              className="w-full bg-gray-900 text-gray-200 border border-gray-600 rounded px-2 py-1 text-xs">
-              <option value="blue">{t("pages.qualityDashboard.paletteBlue")}</option>
-              <option value="rainbow">{t("pages.qualityDashboard.paletteRainbow")}</option>
-              <option value="warm">{t("pages.qualityDashboard.paletteWarm")}</option>
-              <option value="cool">{t("pages.qualityDashboard.paletteCool")}</option>
-            </select>
-          </div>
-
-          <div className="bg-gray-800/50 rounded-lg p-3">
             <label className="block text-[10px] text-gray-400 uppercase tracking-wide mb-2">{t("pages.qualityDashboard.chartsToShow")}</label>
             {([
               ["showSummary", "summaryCard"],
@@ -150,6 +108,8 @@ export default function DashboardSidebar({ settings, onChange, onRefresh, loadin
               ["showNgMatrix", "ngMatrix"],
               ["showRetestRate", "retestRate"],
               ["showWeeklyTrend", "weeklyTrend"],
+              ["showRepairLeadTimeLine", "repairLeadTimeLine"],
+              ["showRepairLeadTimeModel", "repairLeadTimeModel"],
             ] as [keyof DashboardSettings, string][]).map(([key, label]) => (
               <label key={key} className="flex items-center gap-2 mt-1 cursor-pointer">
                 <input type="checkbox" checked={!!(settings[key])}

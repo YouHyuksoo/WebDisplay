@@ -16,6 +16,7 @@ import {
   ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
+import { useTranslations } from "next-intl";
 import type { FwHourlyPoint } from "@/types/u1/fw-analysis";
 
 /* 근무일 기준 08시~다음날07시 순서 */
@@ -26,10 +27,11 @@ interface Props {
 }
 
 export default function FwHourlyTrend({ hourlyTrend }: Props) {
+  const t = useTranslations("common");
   if (hourlyTrend.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">
-        데이터 없음
+        {t("noData")}
       </div>
     );
   }

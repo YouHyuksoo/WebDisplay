@@ -11,6 +11,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
@@ -21,6 +22,7 @@ import type { WorkstageCard } from "@/types/mxvc/interlock";
 const SCREEN_ID = "mxvc-interlock";
 
 export default function InterlockPage() {
+  const t = useTranslations("common");
   const timing = useDisplayTiming();
   const { data, loading, error, fetchData } = useInterlock();
   const [filterLine, setFilterLine] = useState("");
@@ -136,9 +138,18 @@ export default function InterlockPage() {
             초기화
           </button>
         )}
-        <span className="ml-auto text-[10px] text-gray-400">
-          {filteredCards.length}개 공정
-        </span>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-[10px] text-gray-400">
+            {filteredCards.length}개 공정
+          </span>
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            className="px-3 py-1.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold disabled:opacity-50 transition-colors"
+          >
+            {t("refresh")}
+          </button>
+        </div>
       </div>
 
       {/* 카드 그리드 영역 */}
@@ -146,13 +157,13 @@ export default function InterlockPage() {
         {loading && !data && (
           <div className="flex items-center justify-center h-64 text-gray-500 gap-2">
             <span className="w-5 h-5 border-2 border-gray-300 dark:border-gray-600 border-t-blue-400 rounded-full animate-spin" />
-            불러오는 중...
+            {t("loading")}
           </div>
         )}
         {data && <InterlockCardGrid cards={filteredCards} />}
         {!data && !loading && (
           <div className="flex items-center justify-center h-64 text-gray-500">
-            데이터 없음
+            {t("noData")}
           </div>
         )}
       </div>
