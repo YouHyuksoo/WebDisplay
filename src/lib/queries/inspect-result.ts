@@ -102,6 +102,7 @@ export function sqlInspectResultCount(extraClause: string): string {
     SELECT COUNT(*) AS TOTAL_COUNT
     FROM IQ_MACHINE_INSPECT_RESULT T
     LEFT JOIN IP_PRODUCT_2D_BARCODE B ON B.SERIAL_NO = T.PID
+    LEFT JOIN IP_PRODUCT_ROUTING_MODEL R ON R.MODEL_NAME = B.MODEL_NAME AND R.WORKSTAGE_CODE = T.WORKSTAGE_CODE AND R.ORGANIZATION_ID = 1
     WHERE T.INSPECT_DATE BETWEEN :fromDate || ' 00:00:00' AND :toDate || ' 23:59:59'
     ${extraClause}
   `;
@@ -121,6 +122,8 @@ const SORT_MAP: Record<string, string> = {
   MODEL_CODE: 'B.MODEL_CODE',
   MASTER_MODEL_NAME: 'B.MASTER_MODEL_NAME',
   PCB_ITEM: 'B.PCB_ITEM',
+  WORKSTAGE_CODE: 'T.WORKSTAGE_CODE',
+  PRE_WORKSTAGE_CODE: 'R.PRE_WORKSTAGE_CODE',
 };
 
 /** 데이터 목록 SQL (페이지네이션 + 정렬) */
@@ -142,13 +145,16 @@ export function sqlInspectResultList(
           T.TXN_TYPE,
           TO_CHAR(T.ENTER_DATE, 'YYYY-MM-DD HH24:MI:SS') AS ENTER_DATE,
           T.IS_LAST,
+          T.WORKSTAGE_CODE,
           B.RUN_NO,
           B.PCB_ITEM,
           B.MODEL_NAME,
           B.MODEL_CODE,
-          B.MASTER_MODEL_NAME
+          B.MASTER_MODEL_NAME,
+          R.PRE_WORKSTAGE_CODE
         FROM IQ_MACHINE_INSPECT_RESULT T
         LEFT JOIN IP_PRODUCT_2D_BARCODE B ON B.SERIAL_NO = T.PID
+        LEFT JOIN IP_PRODUCT_ROUTING_MODEL R ON R.MODEL_NAME = B.MODEL_NAME AND R.WORKSTAGE_CODE = T.WORKSTAGE_CODE AND R.ORGANIZATION_ID = 1
         WHERE T.INSPECT_DATE BETWEEN :fromDate || ' 00:00:00' AND :toDate || ' 23:59:59'
         ${extraClause}
         ORDER BY ${orderExpr} ${sortDir}
