@@ -9,8 +9,8 @@ jobs:
   deploy:
     strategy:
       matrix:
-        runner: [VN-WebDisplay, SOLUMXSRV003]
-    runs-on: ${{ matrix.runner }}
+        server: [vietnam-server, mexico-server]
+    runs-on: [self-hosted, Windows, '${{ matrix.server }}']
 
     defaults:
       run:
