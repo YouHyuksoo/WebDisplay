@@ -1,13 +1,14 @@
 /**
  * @file src/types/mxvc/interlock.ts
- * @description 멕시코전장 인터락호출이력 타입 정의
+ * @description 멕시코전장 인터락호출이력 타입 정의 (공정별 카드형 UI)
  * 초보자 가이드:
- * 1. InterlockLog: 개별 로그 행 (ICOM_WEB_SERVICE_LOG 1행)
- * 2. InterlockChartData: 4개 차트용 집계 데이터
- * 3. InterlockResponse: API 응답 전체
+ * 1. InterlockLog: 개별 호출 로그 1행
+ * 2. WorkstageCard: 공정 1개 = 카드 1장 (공정 요약 + 최근 이력 리스트)
+ * 3. InterlockResponse: 전체 카드 목록 API 응답
+ * 4. InterlockDetailResponse: 특정 공정 이력 페이징 API 응답
  */
 
-/** 개별 로그 행 */
+/** 개별 호출 로그 행 */
 export interface InterlockLog {
   addr: string;
   req: string;
@@ -18,33 +19,13 @@ export interface InterlockLog {
   returnMsg: string;
 }
 
-/** 시간별 호출 건수 */
-export interface HourlyCount {
-  hour: string;
-  count: number;
-}
-
-/** 공정별 NG 집계 */
-export interface WorkstageNg {
+/** 공정별 카드 — 카드 1장 = 공정 1개 */
+export interface WorkstageCard {
   workstageCode: string;
-  total: number;
-  ng: number;
-}
-
-/** ADDR별 호출 집계 */
-export interface AddrCount {
-  addr: string;
-  total: number;
-  ok: number;
-  ng: number;
-}
-
-/** 차트 데이터 묶음 */
-export interface InterlockChartData {
-  hourly: HourlyCount[];
-  okNgRatio: { ok: number; ng: number };
-  byWorkstage: WorkstageNg[];
-  byAddr: AddrCount[];
+  totalCount: number;
+  okCount: number;
+  ngCount: number;
+  logs: InterlockLog[];
 }
 
 /** 페이지네이션 정보 */
@@ -55,10 +36,15 @@ export interface PaginationInfo {
   totalPages: number;
 }
 
-/** API 응답 */
+/** 메인 API 응답 — 전체 공정 카드 목록 */
 export interface InterlockResponse {
+  cards: WorkstageCard[];
+  lastUpdated: string;
+}
+
+/** 특정 공정 상세 이력 API 응답 */
+export interface InterlockDetailResponse {
   logs: InterlockLog[];
-  charts: InterlockChartData;
   pagination: PaginationInfo;
   lastUpdated: string;
 }
