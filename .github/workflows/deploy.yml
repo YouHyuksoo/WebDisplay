@@ -7,7 +7,10 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, Windows]
+    strategy:
+      matrix:
+        runner: [VN-WebDisplay, SOLUMXSRV003]
+    runs-on: ${{ matrix.runner }}
 
     defaults:
       run:
@@ -21,7 +24,7 @@ jobs:
             Write-Host "  [System.Environment]::SetEnvironmentVariable('DEPLOY_DIR_WEBDISPLAY', 'F:\Project\WebDisplay', 'Machine')"
             exit 1
           }
-          Write-Host "[WebDisplay] Deploy target: $env:DEPLOY_DIR_WEBDISPLAY"
+          Write-Host "[WebDisplay] Deploy target: $env:DEPLOY_DIR_WEBDISPLAY (runner: $env:RUNNER_NAME)"
 
       - name: Disable autocrlf
         run: git config --global core.autocrlf false
@@ -60,9 +63,8 @@ jobs:
           if (!(Test-Path $dst)) { New-Item -ItemType Directory -Path $dst -Force }
 
           robocopy $src $dst /MIR /NFL /NDL /NJH /NJS /NC /NS `
-            /XF ".env" ".env.local" ".env.production" `
-            /XD ".git" "logs" `
-            /XF "database.json"
+            /XF ".env" ".env.local" ".env.production" "database.json" `
+            /XD ".git" "logs"
 
           if ($LASTEXITCODE -le 7) { exit 0 } else { exit $LASTEXITCODE }
 
