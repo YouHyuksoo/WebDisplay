@@ -14,6 +14,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
+import type { PieLabelRenderProps } from "recharts";
 import type { InterlockChartData } from "@/types/mxvc/interlock";
 
 interface InterlockChartsProps {
@@ -78,7 +79,7 @@ export default function InterlockCharts({ charts }: InterlockChartsProps) {
               outerRadius={90}
               paddingAngle={3}
               dataKey="value"
-              label={({ name, percent }: { name: string; percent?: number }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+              label={(props: PieLabelRenderProps) => `${props.name ?? ''} ${(((props.percent ?? 0) as number) * 100).toFixed(0)}%`}
               labelLine={{ stroke: "#9ca3af" }}
               isAnimationActive={false}
             >
