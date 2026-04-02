@@ -53,6 +53,8 @@ export function buildKeywordClause(keyword?: string): {
     OR UPPER(T.LINE_CODE) LIKE UPPER(:kw)
     OR UPPER(T.MACHINE_CODE) LIKE UPPER(:kw)
     OR UPPER(T.TXN_TYPE) LIKE UPPER(:kw)
+    OR UPPER(B.MODEL_NAME) LIKE UPPER(:kw)
+    OR UPPER(B.RUN_NO) LIKE UPPER(:kw)
   )`;
   return { clause, binds: { kw: `%${keyword.trim()}%` } };
 }
@@ -99,6 +101,7 @@ export function sqlInspectResultCount(extraClause: string): string {
   return `
     SELECT COUNT(*) AS TOTAL_COUNT
     FROM IQ_MACHINE_INSPECT_RESULT T
+    LEFT JOIN IP_PRODUCT_2D_BARCODE B ON B.SERIAL_NO = T.PID
     WHERE T.INSPECT_DATE BETWEEN :fromDate || ' 00:00:00' AND :toDate || ' 23:59:59'
     ${extraClause}
   `;
@@ -113,6 +116,11 @@ const SORT_MAP: Record<string, string> = {
   INSPECT_RESULT: 'T.INSPECT_RESULT',
   TXN_TYPE: 'T.TXN_TYPE',
   ENTER_DATE: 'T.ENTER_DATE',
+  RUN_NO: 'B.RUN_NO',
+  MODEL_NAME: 'B.MODEL_NAME',
+  MODEL_CODE: 'B.MODEL_CODE',
+  MASTER_MODEL_NAME: 'B.MASTER_MODEL_NAME',
+  PCB_ITEM: 'B.PCB_ITEM',
 };
 
 /** 데이터 목록 SQL (페이지네이션 + 정렬) */
@@ -133,8 +141,14 @@ export function sqlInspectResultList(
           T.INSPECT_RESULT,
           T.TXN_TYPE,
           TO_CHAR(T.ENTER_DATE, 'YYYY-MM-DD HH24:MI:SS') AS ENTER_DATE,
-          T.IS_LAST
+          T.IS_LAST,
+          B.RUN_NO,
+          B.PCB_ITEM,
+          B.MODEL_NAME,
+          B.MODEL_CODE,
+          B.MASTER_MODEL_NAME
         FROM IQ_MACHINE_INSPECT_RESULT T
+        LEFT JOIN IP_PRODUCT_2D_BARCODE B ON B.SERIAL_NO = T.PID
         WHERE T.INSPECT_DATE BETWEEN :fromDate || ' 00:00:00' AND :toDate || ' 23:59:59'
         ${extraClause}
         ORDER BY ${orderExpr} ${sortDir}

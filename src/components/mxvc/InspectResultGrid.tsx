@@ -51,18 +51,22 @@ export default function InspectResultGrid({
     { field: "NO", headerName: "No", width: 60, sortable: false, filter: false,
       valueGetter: (params) => params.node ? (page - 1) * pageSize + params.node.rowIndex! + 1 : "" },
     { field: "INSPECT_DATE", headerName: "검사일시", width: 170, filter: "agTextColumnFilter" },
-    { field: "LINE_CODE", headerName: "LINE", width: 90, filter: "agTextColumnFilter",
+    { field: "LINE_CODE", headerName: "LINE", width: 80, filter: "agTextColumnFilter",
       cellClass: "font-semibold text-blue-700 dark:text-blue-400" },
-    { field: "MACHINE_CODE", headerName: "머신코드", width: 130, filter: "agTextColumnFilter" },
-    { field: "PID", headerName: "PID", minWidth: 180, flex: 1, filter: "agTextColumnFilter",
-      tooltipField: "PID" },
-    { field: "INSPECT_RESULT", headerName: "결과", width: 90, filter: "agTextColumnFilter",
+    { field: "MACHINE_CODE", headerName: "머신코드", width: 120, filter: "agTextColumnFilter" },
+    { field: "PID", headerName: "PID", width: 160, filter: "agTextColumnFilter", tooltipField: "PID" },
+    { field: "RUN_NO", headerName: "RUN_NO", width: 120, filter: "agTextColumnFilter" },
+    { field: "MODEL_NAME", headerName: "모델명", width: 130, filter: "agTextColumnFilter" },
+    { field: "MODEL_CODE", headerName: "모델코드", width: 100, filter: "agTextColumnFilter" },
+    { field: "MASTER_MODEL_NAME", headerName: "마스터모델", width: 120, filter: "agTextColumnFilter" },
+    { field: "PCB_ITEM", headerName: "PCB_ITEM", width: 100, filter: "agTextColumnFilter" },
+    { field: "INSPECT_RESULT", headerName: "결과", width: 80, filter: "agTextColumnFilter",
       cellClass: (params) => params.value === "PASS" || params.value === "OK" || params.value === "GOOD" || params.value === "Y"
         ? "font-bold text-green-600 dark:text-green-400"
         : "font-bold text-red-600 dark:text-red-400" },
-    { field: "TXN_TYPE", headerName: "TXN유형", width: 110, filter: "agTextColumnFilter" },
-    { field: "ENTER_DATE", headerName: "등록일시", width: 170, filter: "agTextColumnFilter" },
-    { field: "IS_LAST", headerName: "최종", width: 60, filter: "agTextColumnFilter" },
+    { field: "TXN_TYPE", headerName: "TXN유형", width: 100, filter: "agTextColumnFilter" },
+    { field: "ENTER_DATE", headerName: "등록일시", width: 160, filter: "agTextColumnFilter" },
+    { field: "IS_LAST", headerName: "최종", width: 55, filter: "agTextColumnFilter" },
   ], [page, pageSize]);
 
   const onFirstDataRendered = useCallback(() => {
