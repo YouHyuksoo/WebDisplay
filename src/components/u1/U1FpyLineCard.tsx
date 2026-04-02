@@ -21,14 +21,6 @@ import type {
 
 const PROCESS_KEYS: U1FpyProcessKey[] = ["HIPOT", "ATE", "FW", "ICT", "BURNIN"];
 
-const PROCESS_LABELS: Record<U1FpyProcessKey, string> = {
-  HIPOT: "HIPOT",
-  ATE: "ATE",
-  FW: "펌웨어",
-  ICT: "ICT",
-  BURNIN: "BURNIN",
-};
-
 function getYieldColor(yieldRate: number): { text: string; bar: string } {
   if (yieldRate < 90) return { text: "text-red-400", bar: "bg-red-500" };
   if (yieldRate < 95) return { text: "text-yellow-400", bar: "bg-yellow-500" };
@@ -44,7 +36,7 @@ interface U1FpyLineCardProps {
 export default function U1FpyLineCard({ line, dateRange }: U1FpyLineCardProps) {
   const t = useTranslations("ctq");
 
-  const hasAnyProcess = PROCESS_KEYS.some((k) => line.processes[k]);
+  const hasAnyProcess = PROCESS_KEYS.some((k) => line.processes[k] && Object.keys(line.processes[k]!).length > 0);
 
   return (
     <div className="rounded-lg border-2 border-gray-700 bg-gray-900/50 overflow-hidden">
@@ -77,9 +69,12 @@ export default function U1FpyLineCard({ line, dateRange }: U1FpyLineCardProps) {
           </div>
         )}
         {PROCESS_KEYS.map((key) => {
-          const proc = line.processes[key];
-          if (!proc) return null;
-          return <ProcessRow key={key} processKey={key} data={proc} dateRange={dateRange} />;
+          const procGroups = line.processes[key];
+          if (!procGroups) return null;
+          const entries = Object.entries(procGroups).sort(([a], [b]) => a.localeCompare(b));
+          return entries.map(([groupName, data]) => (
+            <ProcessRow key={`${key}-${groupName}`} label={groupName} data={data} dateRange={dateRange} />
+          ));
         })}
       </div>
     </div>
@@ -108,7 +103,7 @@ function GaugeBar({ data, label, barColorClass }: { data: U1FpyProcessData; labe
   );
 }
 
-function ProcessRow({ processKey, data, dateRange }: { processKey: U1FpyProcessKey; data: U1FpyProcessDayData; dateRange?: { yesterday: string; today: string } }) {
+function ProcessRow({ label, data, dateRange }: { label: string; data: U1FpyProcessDayData; dateRange?: { yesterday: string; today: string } }) {
   const yesterday = data.yesterday;
   const today = data.today;
   if (!yesterday && !today) return null;
@@ -122,8 +117,8 @@ function ProcessRow({ processKey, data, dateRange }: { processKey: U1FpyProcessK
 
   return (
     <div className="flex items-start gap-2">
-      <div className="w-14 text-sm font-medium text-gray-300 shrink-0 pt-0.5">
-        {PROCESS_LABELS[processKey]}
+      <div className="w-14 text-sm font-medium text-gray-300 shrink-0 pt-0.5 truncate" title={label}>
+        {label}
       </div>
       <div className="flex-1 space-y-0.5">
         {yesterday ? (

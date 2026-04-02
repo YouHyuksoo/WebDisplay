@@ -24,7 +24,7 @@ const PASS_IN = `'PASS','GOOD','OK','Y'`;
 
 interface WeeklyRow {
   WORK_DATE: string;
-  LINE_CODE: string;
+  MACHINE_GROUP: string;
   TOTAL_CNT: number;
   PASS_CNT: number;
 }
@@ -38,24 +38,24 @@ interface DateRangeRow {
 // SQL 쿼리 함수
 // ---------------------------------------------------------------------------
 
-/** 최근 7일 라인별 일간 합격률 조회 */
+/** 최근 7일 설비그룹별(ATE1,ATE2) 일간 합격률 조회 */
 async function queryWeekly(): Promise<WeeklyRow[]> {
   const sql = `
     SELECT TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD') AS WORK_DATE_RAW,
            TO_CHAR(TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'), 'YYYY-MM-DD') AS WORK_DATE,
-           LINE_CODE,
+           SUBSTR(MACHINE_CODE, 1, 4) AS MACHINE_GROUP,
            COUNT(*) AS TOTAL_CNT,
            SUM(CASE WHEN INSPECT_RESULT IN (${PASS_IN}) THEN 1 ELSE 0 END) AS PASS_CNT
     FROM IQ_MACHINE_ATE_U1_DATA_RAW
     WHERE INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24)-7, 'YYYY/MM/DD') || ' 08:00:00'
       AND INSPECT_DATE <  TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'
-      AND LINE_CODE IS NOT NULL
+      AND MACHINE_CODE IS NOT NULL
       AND PID IS NOT NULL
       AND LAST_YN = 'Y'
     GROUP BY TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'),
              TO_CHAR(TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'), 'YYYY-MM-DD'),
-             LINE_CODE
-    ORDER BY WORK_DATE, LINE_CODE
+             SUBSTR(MACHINE_CODE, 1, 4)
+    ORDER BY WORK_DATE, MACHINE_GROUP
   `;
   return executeQuery<WeeklyRow>(sql, {});
 }
@@ -88,13 +88,13 @@ export async function GET() {
       return Math.round((pass / total) * 10000) / 100;
     };
 
-    /* dailyTrend 조립 */
+    /* dailyTrend 조립 (MACHINE_GROUP = ATE1, ATE2) */
     const dailyTrend: AteWeeklyPoint[] = weeklyRows.map((row) => {
       const total = Number(row.TOTAL_CNT);
       const pass = Number(row.PASS_CNT);
       return {
         date: row.WORK_DATE,
-        lineCode: row.LINE_CODE,
+        lineCode: row.MACHINE_GROUP,
         total,
         pass,
         rate: calcRate(pass, total),

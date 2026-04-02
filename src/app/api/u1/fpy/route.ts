@@ -29,11 +29,13 @@ interface ProcessConfig {
   dateType: "varchar" | "date";
   passValues: string[];
   extraWhere?: string;
+  /** MACHINE_CODE 앞 N자리 그룹핑 (예: 6=HIPOT1, 4=ATE1). 미지정 시 LINE_CODE만 사용 */
+  machinePrefixLen?: number;
 }
 
 const PROCESS_CONFIG: Record<U1FpyProcessKey, ProcessConfig> = {
-  HIPOT:  { table: "IQ_MACHINE_HIPOT_U1_DATA_RAW",  dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
-  ATE:    { table: "IQ_MACHINE_ATE_U1_DATA_RAW",     dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
+  HIPOT:  { table: "IQ_MACHINE_HIPOT_U1_DATA_RAW",  dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "AND SUBSTR(t.MACHINE_CODE, 1, 6) IN ('HIPOT1','HIPOT2')", machinePrefixLen: 6 },
+  ATE:    { table: "IQ_MACHINE_ATE_U1_DATA_RAW",     dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "", machinePrefixLen: 4 },
   FW:     { table: "IQ_MACHINE_FW_U1_DATA_RAW",      dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
   ICT:    { table: "IQ_MACHINE_ICT_U1_DATA_RAW",     dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
   BURNIN: { table: "IQ_MACHINE_BURNIN_U1_DATA_RAW",  dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
@@ -43,6 +45,7 @@ const PROCESS_KEYS: U1FpyProcessKey[] = ["HIPOT", "ATE", "FW", "ICT", "BURNIN"];
 
 interface U1FpyRow {
   LINE_CODE: string;
+  MACHINE_GROUP: string | null;
   TOTAL_CNT: number;
   PASS_CNT: number;
 }
@@ -50,6 +53,29 @@ interface U1FpyRow {
 interface LineNameRow {
   LINE_CODE: string;
   LINE_NAME: string;
+}
+
+/** MACHINE_CODE 그룹핑 SQL 표현식 생성 */
+function buildMachineGroupExpr(config: ProcessConfig, key: string): {
+  selectExpr: string;
+  innerGroupBy: string;
+  extraWhere: string;
+} {
+  const len = config.machinePrefixLen;
+  if (len) {
+    const expr = `SUBSTR(t.MACHINE_CODE, 1, ${len})`;
+    return {
+      selectExpr: expr,
+      innerGroupBy: `${expr}, `,
+      extraWhere: "AND t.MACHINE_CODE IS NOT NULL",
+    };
+  } else {
+    return {
+      selectExpr: `'${key}'`,
+      innerGroupBy: "",
+      extraWhere: "",
+    };
+  }
 }
 
 /**
@@ -73,6 +99,7 @@ function buildDayCase(col: string, dateType: "varchar" | "date"): string {
 
 interface U1FpyRow2Days extends U1FpyRow {
   DAY_TYPE: string;
+  MACHINE_GROUP: string;
 }
 
 /**
@@ -91,28 +118,31 @@ async function queryProcess2Days(
   const col = `t.${config.dateCol}`;
   const passIn = config.passValues.map(v => `'${v}'`).join(",");
   const dayCase = buildDayCase(col, config.dateType);
+  const mg = buildMachineGroupExpr(config, key);
 
   const sql = `
-    SELECT sub.LINE_CODE, sub.DAY_TYPE,
+    SELECT sub.LINE_CODE, sub.MACHINE_GROUP, sub.DAY_TYPE,
            COUNT(*) AS TOTAL_CNT,
            SUM(CASE WHEN sub.FIRST_RESULT IN (${passIn}) THEN 1 ELSE 0 END) AS PASS_CNT
     FROM (
       SELECT t.LINE_CODE,
+             ${mg.selectExpr} AS MACHINE_GROUP,
              ${dayCase} AS DAY_TYPE,
              MIN(t.${config.resultCol}) KEEP (DENSE_RANK FIRST ORDER BY t.${config.dateCol}) AS FIRST_RESULT
       FROM ${config.table} t
       WHERE ${buildDateRange2Days(col, config.dateType)}
         ${config.extraWhere ?? ""}
         AND t.LINE_CODE IS NOT NULL
+        ${mg.extraWhere}
         ${lineFilter.clause}
         AND EXISTS (
           SELECT 1 FROM IP_PRODUCT_2D_BARCODE b
           WHERE b.SERIAL_NO = t.${config.pidCol}
             AND b.ITEM_CODE IS NOT NULL AND b.ITEM_CODE <> '*'
         )
-      GROUP BY t.LINE_CODE, t.${config.pidCol}, ${dayCase}
+      GROUP BY t.LINE_CODE, ${mg.innerGroupBy}t.${config.pidCol}, ${dayCase}
     ) sub
-    GROUP BY sub.LINE_CODE, sub.DAY_TYPE
+    GROUP BY sub.LINE_CODE, sub.MACHINE_GROUP, sub.DAY_TYPE
   `;
 
   const rows = await executeQuery<U1FpyRow2Days>(sql, lineFilter.params);
@@ -182,17 +212,19 @@ export async function GET(request: NextRequest) {
       return lineMap.get(code)!;
     }
 
-    /* 전일+당일 데이터 병합 (DAY_TYPE: Y=전일, T=당일) */
+    /* 전일+당일 데이터 병합 (DAY_TYPE: Y=전일, T=당일, MACHINE_GROUP별) */
     for (const { key, rows } of allResults) {
       for (const row of rows) {
         if (!row.LINE_CODE) continue;
         const line = ensureLine(row.LINE_CODE);
         if (!line.processes[key]) line.processes[key] = {};
+        const machineGroup = row.MACHINE_GROUP || key;
+        if (!line.processes[key]![machineGroup]) line.processes[key]![machineGroup] = {};
         const pd = toProcessData(row);
         if (row.DAY_TYPE === "Y") {
-          line.processes[key]!.yesterday = pd;
+          line.processes[key]![machineGroup].yesterday = pd;
         } else if (row.DAY_TYPE === "T") {
-          line.processes[key]!.today = pd;
+          line.processes[key]![machineGroup].today = pd;
           if (pd.yield < 90) line.overallGrade = "A";
         }
       }

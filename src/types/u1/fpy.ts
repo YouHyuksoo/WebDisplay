@@ -26,12 +26,18 @@ export interface U1FpyProcessDayData {
   today?: U1FpyProcessData;
 }
 
-/** 라인별 직행율 카드 데이터 */
+/**
+ * 라인별 직행율 카드 데이터
+ * processes 구조: { ATE: { ATE1: dayData, ATE2: dayData }, HIPOT: { HIPOT001: dayData }, FW: { FW: dayData } }
+ * - ATE: MACHINE_CODE 앞 4자리 그룹 (ATE1, ATE2 등)
+ * - HIPOT: MACHINE_CODE 전체 그룹
+ * - FW/ICT/BURNIN: 공정명 단일 그룹
+ */
 export interface U1FpyLineData {
   lineCode: string;
   lineName: string;
   overallGrade: "A" | "OK";
-  processes: Partial<Record<U1FpyProcessKey, U1FpyProcessDayData>>;
+  processes: Partial<Record<U1FpyProcessKey, Record<string, U1FpyProcessDayData>>>;
 }
 
 /** API 응답 */

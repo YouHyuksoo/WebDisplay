@@ -39,7 +39,7 @@ const DAY_CASE = `CASE WHEN INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24), 'YYYY/MM
 // ---------------------------------------------------------------------------
 
 interface LineStatRow {
-  LINE_CODE: string;
+  MACHINE_GROUP: string;
   DAY_TYPE: string;
   TOTAL_CNT: number;
   PASS_CNT: number;
@@ -62,29 +62,24 @@ interface DateRangeRow {
   TODAY: string;
 }
 
-interface LineNameRow {
-  LINE_CODE: string;
-  LINE_NAME: string;
-}
-
 // ---------------------------------------------------------------------------
 // SQL 쿼리 함수
 // ---------------------------------------------------------------------------
 
-/** 라인별 전일/당일 합격률 조회 */
+/** 설비그룹별(ATE1,ATE2) 전일/당일 합격률 조회 */
 async function queryLineStats(): Promise<LineStatRow[]> {
   const sql = `
-    SELECT LINE_CODE,
+    SELECT SUBSTR(MACHINE_CODE, 1, 4) AS MACHINE_GROUP,
            ${DAY_CASE} AS DAY_TYPE,
            COUNT(*) AS TOTAL_CNT,
            SUM(CASE WHEN INSPECT_RESULT IN (${PASS_IN}) THEN 1 ELSE 0 END) AS PASS_CNT
     FROM IQ_MACHINE_ATE_U1_DATA_RAW
     WHERE ${DATE_RANGE_2DAYS}
-      AND LINE_CODE IS NOT NULL
+      AND MACHINE_CODE IS NOT NULL
       AND PID IS NOT NULL
       AND LAST_YN = 'Y'
-    GROUP BY LINE_CODE, ${DAY_CASE}
-    ORDER BY LINE_CODE, DAY_TYPE
+    GROUP BY SUBSTR(MACHINE_CODE, 1, 4), ${DAY_CASE}
+    ORDER BY MACHINE_GROUP, DAY_TYPE
   `;
   return executeQuery<LineStatRow>(sql, {});
 }
@@ -134,19 +129,6 @@ async function queryDateRange(): Promise<DateRangeRow[]> {
   return executeQuery<DateRangeRow>(sql, {});
 }
 
-/** LINE_CODE 목록으로 LINE_NAME 조회 */
-async function fetchLineNames(lineCodes: string[]): Promise<Map<string, string>> {
-  if (lineCodes.length === 0) return new Map();
-  const placeholders = lineCodes.map((_, i) => `:lc${i}`).join(",");
-  const sql = `SELECT LINE_CODE, LINE_NAME FROM IP_PRODUCT_LINE WHERE LINE_CODE IN (${placeholders})`;
-  const params: Record<string, string> = {};
-  lineCodes.forEach((code, i) => { params[`lc${i}`] = code; });
-  const rows = await executeQuery<LineNameRow>(sql, params);
-  const map = new Map<string, string>();
-  rows.forEach((r) => map.set(r.LINE_CODE, r.LINE_NAME));
-  return map;
-}
-
 // ---------------------------------------------------------------------------
 // 데이터 변환 헬퍼
 // ---------------------------------------------------------------------------
@@ -180,11 +162,7 @@ export async function GET() {
       queryDateRange(),
     ]);
 
-    /* 라인명 조회 */
-    const allLineCodes = [...new Set(lineStatRows.map((r) => r.LINE_CODE).filter(Boolean))];
-    const lineNames = await fetchLineNames(allLineCodes);
-
-    /* lineStats 조립 */
+    /* lineStats 조립 (MACHINE_GROUP = ATE1, ATE2 등) */
     const lineMap = new Map<string, AteLineStat>();
 
     function ensureLineStat(code: string): AteLineStat {
@@ -192,7 +170,7 @@ export async function GET() {
         const empty = { total: 0, pass: 0, ng: 0, rate: 100 };
         lineMap.set(code, {
           lineCode: code,
-          lineName: lineNames.get(code) ?? code,
+          lineName: code,
           today: { ...empty },
           yesterday: { ...empty },
         });
@@ -201,8 +179,8 @@ export async function GET() {
     }
 
     for (const row of lineStatRows) {
-      if (!row.LINE_CODE) continue;
-      const stat = ensureLineStat(row.LINE_CODE);
+      if (!row.MACHINE_GROUP) continue;
+      const stat = ensureLineStat(row.MACHINE_GROUP);
       const total = Number(row.TOTAL_CNT);
       const pass = Number(row.PASS_CNT);
       const ng = total - pass;

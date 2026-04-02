@@ -98,16 +98,16 @@ function getPool(): Promise<oracledb.Pool> {
 
 /**
  * 기존 풀을 닫고 재시작한다. DB 설정 변경 후 호출.
+ * poolPromise를 먼저 null로 설정해 새 요청이 즉시 새 풀을 사용하도록 하고,
+ * 이전 풀은 백그라운드에서 정리한다.
  */
 export async function resetPool(): Promise<void> {
-  if (poolPromise) {
-    try {
-      const pool = await poolPromise;
-      await pool.close(0);
-    } catch {
-      // 풀이 이미 닫힌 경우 무시
-    }
-    poolPromise = null;
+  const oldPromise = poolPromise;
+  poolPromise = null;
+  if (oldPromise) {
+    oldPromise
+      .then((pool) => pool.close(0))
+      .catch(() => { /* 이전 풀 정리 실패 무시 */ });
   }
 }
 
