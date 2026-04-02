@@ -57,7 +57,7 @@ export default function LogTableSidebar({
   });
 
   return (
-    <aside className="w-64 min-w-[256px] border-r border-gray-200 dark:border-gray-700 flex flex-col
+    <aside className="w-64 min-w-[256px] border-r border-gray-200 dark:border-gray-700 flex flex-col min-h-0
                        bg-gray-50 dark:bg-gray-900">
       {/* 헤더 */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">

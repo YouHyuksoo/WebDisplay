@@ -57,22 +57,34 @@ export function buildKeywordClause(keyword?: string): {
   return { clause, binds: { kw: `%${keyword.trim()}%` } };
 }
 
-/** 개별 필터 WHERE 절 */
+/** 콤마 구분 값을 IN 절로 변환 */
+function buildInClause(col: string, values: string, prefix: string): { clause: string; binds: Record<string, string> } {
+  const arr = values.split(",").map(v => v.trim()).filter(Boolean);
+  if (arr.length === 0) return { clause: "", binds: {} };
+  const placeholders = arr.map((_, i) => `:${prefix}${i}`);
+  const binds: Record<string, string> = {};
+  arr.forEach((v, i) => { binds[`${prefix}${i}`] = v; });
+  return { clause: ` AND ${col} IN (${placeholders.join(",")})`, binds };
+}
+
+/** 개별 필터 WHERE 절 (다중선택: 콤마 구분) */
 export function buildColumnFilters(filters: {
   lineCode?: string;
   machineCode?: string;
   isLast?: string;
 }): { clause: string; binds: Record<string, string> } {
   let clause = '';
-  const binds: Record<string, string> = {};
+  let binds: Record<string, string> = {};
 
   if (filters.lineCode) {
-    clause += ' AND T.LINE_CODE = :filterLine';
-    binds.filterLine = filters.lineCode;
+    const r = buildInClause("T.LINE_CODE", filters.lineCode, "fl");
+    clause += r.clause;
+    binds = { ...binds, ...r.binds };
   }
   if (filters.machineCode) {
-    clause += ' AND T.MACHINE_CODE = :filterMachine';
-    binds.filterMachine = filters.machineCode;
+    const r = buildInClause("T.MACHINE_CODE", filters.machineCode, "fm");
+    clause += r.clause;
+    binds = { ...binds, ...r.binds };
   }
   if (filters.isLast) {
     clause += ' AND T.IS_LAST = :filterIsLast';

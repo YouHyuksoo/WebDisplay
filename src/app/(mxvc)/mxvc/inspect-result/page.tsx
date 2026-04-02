@@ -2,13 +2,13 @@
  * @file src/app/(mxvc)/mxvc/inspect-result/page.tsx
  * @description 설비호출저장이력 검색 페이지 — IQ_MACHINE_INSPECT_RESULT
  * 초보자 가이드:
- * 1. display/50(설비호출이력검색)과 동일한 패턴
- * 2. 날짜/라인/설비/키워드 필터 + AG Grid 서버 페이지네이션
- * 3. 멕시코전장 카테고리 메뉴에서 진입
+ * 1. 좌측 사이드바: LINE/머신 체크박스 다중선택
+ * 2. 상단 필터: 날짜/IS_LAST/키워드 + 검색 버튼
+ * 3. AG Grid 서버 페이지네이션
  */
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import useSWR from "swr";
 import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
@@ -31,8 +31,7 @@ interface SearchResponse {
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 function todayStr(): string { return new Date().toISOString().slice(0, 10); }
 
-const selectClass = "rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200";
-const inputClass = selectClass;
+const inputClass = "rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200";
 
 export default function InspectResultPage() {
   const t = useTranslations("common");
@@ -40,24 +39,28 @@ export default function InspectResultPage() {
   const [fromDate, setFromDate] = useState(todayStr());
   const [toDate, setToDate] = useState(todayStr());
   const [keyword, setKeyword] = useState("");
-  const [lineCode, setLineCode] = useState("");
-  const [machineCode, setMachineCode] = useState("");
+  const [selectedLines, setSelectedLines] = useState<Set<string>>(new Set());
+  const [selectedMachines, setSelectedMachines] = useState<Set<string>>(new Set());
   const [isLast, setIsLast] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(50);
   const [sortCol, setSortCol] = useState("INSPECT_DATE");
   const [sortDir, setSortDir] = useState<"ASC" | "DESC">("DESC");
   const [searchTrigger, setSearchTrigger] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const { data: filterOpts } = useSWR<InspectResultFilters>(
     `${API_BASE}?mode=filters`, fetcher, { revalidateOnFocus: false },
   );
 
+  const lineParam = useMemo(() => Array.from(selectedLines).join(","), [selectedLines]);
+  const machineParam = useMemo(() => Array.from(selectedMachines).join(","), [selectedMachines]);
+
   const apiUrl = searchTrigger
     ? `${API_BASE}?fromDate=${fromDate}&toDate=${toDate}`
       + `&keyword=${encodeURIComponent(keyword)}`
-      + `&lineCode=${encodeURIComponent(lineCode)}`
-      + `&machineCode=${encodeURIComponent(machineCode)}`
+      + `&lineCode=${encodeURIComponent(lineParam)}`
+      + `&machineCode=${encodeURIComponent(machineParam)}`
       + `&isLast=${encodeURIComponent(isLast)}`
       + `&sortCol=${sortCol}&sortDir=${sortDir}`
       + `&page=${page}&pageSize=${pageSize}`
@@ -83,11 +86,27 @@ export default function InspectResultPage() {
     [handleSearch],
   );
 
+  const toggleLine = (v: string) => {
+    setSelectedLines((prev) => {
+      const next = new Set(prev);
+      next.has(v) ? next.delete(v) : next.add(v);
+      return next;
+    });
+  };
+
+  const toggleMachine = (v: string) => {
+    setSelectedMachines((prev) => {
+      const next = new Set(prev);
+      next.has(v) ? next.delete(v) : next.add(v);
+      return next;
+    });
+  };
+
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-white overflow-hidden">
       <DisplayHeader title="설비호출저장이력" screenId={SCREEN_ID} />
 
-      {/* 검색 필터 바 */}
+      {/* 상단 필터 바: 날짜 + IS_LAST + 키워드 + 검색 */}
       <div className="shrink-0 flex flex-wrap items-center gap-3 border-b border-gray-200 bg-white px-4 py-2.5 dark:border-gray-700 dark:bg-gray-900">
         <div className="flex items-center gap-1.5">
           <label className="text-xs font-medium text-gray-500 dark:text-gray-400">기간</label>
@@ -97,24 +116,8 @@ export default function InspectResultPage() {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">LINE</label>
-          <select value={lineCode} onChange={(e) => setLineCode(e.target.value)} className={selectClass}>
-            <option value="">전체</option>
-            {filterOpts?.lineCodeList.map((v) => <option key={v.value} value={v.value}>{v.label}</option>)}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">머신</label>
-          <select value={machineCode} onChange={(e) => setMachineCode(e.target.value)} className={selectClass}>
-            <option value="">전체</option>
-            {filterOpts?.machineCodeList.map((v) => <option key={v.value} value={v.value}>{v.label}</option>)}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-1.5">
           <label className="text-xs font-medium text-gray-500 dark:text-gray-400">IS_LAST</label>
-          <select value={isLast} onChange={(e) => setIsLast(e.target.value)} className={selectClass}>
+          <select value={isLast} onChange={(e) => setIsLast(e.target.value)} className={inputClass}>
             <option value="">전체</option>
             <option value="Y">Y</option>
             <option value="N">N</option>
@@ -140,45 +143,143 @@ export default function InspectResultPage() {
         >
           {isLoading ? t("loading") : t("refresh")}
         </button>
+
+        <div className="ml-auto flex items-center gap-2 text-[10px] text-gray-400">
+          {selectedLines.size > 0 && <span>LINE {selectedLines.size}개</span>}
+          {selectedMachines.size > 0 && <span>머신 {selectedMachines.size}개</span>}
+        </div>
       </div>
 
-      {/* 결과 영역 */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        {error ? (
-          <div className="flex h-full items-center justify-center text-red-500">{t("error")}</div>
-        ) : !searchTrigger ? (
-          <div className="flex h-full flex-col items-center justify-center text-gray-400 dark:text-gray-500">
-            <svg className="mb-3 h-16 w-16 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      {/* 본문: 사이드바 + 결과 */}
+      <div className="flex flex-1 min-h-0">
+        {/* 사이드바 토글 버튼 (접힌 상태) */}
+        {sidebarCollapsed && (
+          <button
+            onClick={() => setSidebarCollapsed(false)}
+            className="absolute top-28 left-0 z-20 p-1.5 rounded-r-md bg-gray-100 dark:bg-gray-800 border border-l-0 border-gray-300 dark:border-gray-700 text-blue-500 hover:bg-blue-600 hover:text-white transition-all shadow-lg"
+            title="사이드바 열기"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M9 18l6-6-6-6" />
             </svg>
-            <p className="text-sm">날짜를 선택하고 검색 버튼을 눌러주세요</p>
-          </div>
-        ) : isLoading ? (
-          <div className="flex h-full items-center justify-center text-gray-400">
-            <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-            {t("loading")}
-          </div>
-        ) : (
-          <InspectResultGrid
-            rows={data?.rows ?? []}
-            totalCount={data?.totalCount ?? 0}
-            page={data?.page ?? page}
-            totalPages={data?.totalPages ?? 0}
-            pageSize={pageSize}
-            sortCol={sortCol}
-            sortDir={sortDir}
-            onPageChange={setPage}
-            onSort={(col) => {
-              if (col === sortCol) {
-                setSortDir((prev) => (prev === "ASC" ? "DESC" : "ASC"));
-              } else {
-                setSortCol(col);
-                setSortDir(col === "INSPECT_DATE" ? "DESC" : "ASC");
-              }
-              setPage(1);
-            }}
-          />
+          </button>
         )}
+
+        {/* 사이드바: LINE + 머신 체크박스 */}
+        <div className={`
+          relative bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out
+          ${sidebarCollapsed ? "w-0 min-w-0 p-0 overflow-hidden border-none" : "w-[200px] min-w-[200px] overflow-y-auto"}
+        `}>
+          <div className={sidebarCollapsed ? "hidden" : "p-3 flex flex-col gap-3"}>
+            {/* 접기 버튼 */}
+            <button
+              onClick={() => setSidebarCollapsed(true)}
+              className="self-end p-1 rounded bg-gray-200 dark:bg-gray-800 text-gray-400 hover:text-blue-500"
+              title="접기"
+            >
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+
+            {/* LINE 체크박스 */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">LINE</span>
+                <button
+                  onClick={() => setSelectedLines(new Set())}
+                  className="text-[9px] text-blue-500 hover:text-blue-400"
+                >
+                  초기화
+                </button>
+              </div>
+              <div className="space-y-0.5 max-h-40 overflow-y-auto">
+                {filterOpts?.lineCodeList.map((v) => (
+                  <label key={v.value} className="flex items-center gap-1.5 cursor-pointer py-0.5">
+                    <input
+                      type="checkbox"
+                      checked={selectedLines.has(v.value)}
+                      onChange={() => toggleLine(v.value)}
+                      className="accent-blue-500 w-3.5 h-3.5"
+                    />
+                    <span className="text-xs text-gray-700 dark:text-gray-300">{v.label}</span>
+                  </label>
+                ))}
+                {!filterOpts?.lineCodeList.length && (
+                  <span className="text-[10px] text-gray-400">{t("loading")}</span>
+                )}
+              </div>
+            </div>
+
+            {/* 머신 체크박스 */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">머신</span>
+                <button
+                  onClick={() => setSelectedMachines(new Set())}
+                  className="text-[9px] text-blue-500 hover:text-blue-400"
+                >
+                  초기화
+                </button>
+              </div>
+              <div className="space-y-0.5 max-h-60 overflow-y-auto">
+                {filterOpts?.machineCodeList.map((v) => (
+                  <label key={v.value} className="flex items-center gap-1.5 cursor-pointer py-0.5">
+                    <input
+                      type="checkbox"
+                      checked={selectedMachines.has(v.value)}
+                      onChange={() => toggleMachine(v.value)}
+                      className="accent-blue-500 w-3.5 h-3.5"
+                    />
+                    <span className="text-xs text-gray-700 dark:text-gray-300 truncate">{v.label}</span>
+                  </label>
+                ))}
+                {!filterOpts?.machineCodeList.length && (
+                  <span className="text-[10px] text-gray-400">{t("loading")}</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 결과 영역 */}
+        <div className="flex-1 min-w-0 overflow-hidden">
+          {error ? (
+            <div className="flex h-full items-center justify-center text-red-500">{t("error")}</div>
+          ) : !searchTrigger ? (
+            <div className="flex h-full flex-col items-center justify-center text-gray-400 dark:text-gray-500">
+              <svg className="mb-3 h-16 w-16 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+              <p className="text-sm">날짜를 선택하고 검색 버튼을 눌러주세요</p>
+            </div>
+          ) : isLoading ? (
+            <div className="flex h-full items-center justify-center text-gray-400">
+              <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+              {t("loading")}
+            </div>
+          ) : (
+            <InspectResultGrid
+              rows={data?.rows ?? []}
+              totalCount={data?.totalCount ?? 0}
+              page={data?.page ?? page}
+              totalPages={data?.totalPages ?? 0}
+              pageSize={pageSize}
+              sortCol={sortCol}
+              sortDir={sortDir}
+              onPageChange={setPage}
+              onSort={(col) => {
+                if (col === sortCol) {
+                  setSortDir((prev) => (prev === "ASC" ? "DESC" : "ASC"));
+                } else {
+                  setSortCol(col);
+                  setSortDir(col === "INSPECT_DATE" ? "DESC" : "ASC");
+                }
+                setPage(1);
+              }}
+            />
+          )}
+        </div>
       </div>
 
       <DisplayFooter
