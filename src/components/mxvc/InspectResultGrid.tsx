@@ -60,8 +60,10 @@ export default function InspectResultGrid({
     { field: "MODEL_CODE", headerName: "모델코드", width: 100, filter: "agTextColumnFilter" },
     { field: "MASTER_MODEL_NAME", headerName: "마스터모델", width: 120, filter: "agTextColumnFilter" },
     { field: "PCB_ITEM", headerName: "PCB_ITEM", width: 100, filter: "agTextColumnFilter" },
-    { field: "WORKSTAGE_CODE", headerName: "공정", width: 90, filter: "agTextColumnFilter" },
-    { field: "PRE_WORKSTAGE_CODE", headerName: "이전공정", width: 90, filter: "agTextColumnFilter" },
+    { field: "WORKSTAGE_CODE", headerName: "공정코드", width: 80, filter: "agTextColumnFilter" },
+    { field: "WORKSTAGE_NAME", headerName: "공정명", width: 110, filter: "agTextColumnFilter" },
+    { field: "PRE_WORKSTAGE_CODE", headerName: "이전공정", width: 80, filter: "agTextColumnFilter" },
+    { field: "PRE_WORKSTAGE_NAME", headerName: "이전공정명", width: 110, filter: "agTextColumnFilter" },
     { field: "INSPECT_RESULT", headerName: "결과", width: 80, filter: "agTextColumnFilter",
       cellClass: (params) => params.value === "PASS" || params.value === "OK" || params.value === "GOOD" || params.value === "Y"
         ? "font-bold text-green-600 dark:text-green-400"

@@ -20,6 +20,7 @@ import {
 import { useMemo } from 'react';
 import DisplayLayout from '@/components/display/DisplayLayout';
 import { fetcher } from '@/lib/fetcher';
+import { useServerTime } from '@/hooks/useServerTime';
 
 /* -- 타입 정의 -- */
 
@@ -145,14 +146,23 @@ interface Props { screenId: string }
 export default function SpcControlChart({ screenId }: Props) {
   const t = useTranslations('common');
   const theme = useChartTheme();
-  const today = new Date().toISOString().slice(0, 10);
-  const defaultFrom = new Date(Date.now() - 24 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const serverToday = useServerTime();
 
   const [processes, setProcesses] = useState<ProcessInfo[]>([]);
   const [selectedProcess, setSelectedProcess] = useState('');
   const [selectedItem, setSelectedItem] = useState('');
-  const [dateFrom, setDateFrom] = useState(defaultFrom);
-  const [dateTo, setDateTo] = useState(today);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  /* 서버 시간 로드 시 날짜 초기값 설정 */
+  useEffect(() => {
+    if (serverToday && !dateFrom) {
+      const d = new Date(serverToday + 'T00:00:00');
+      d.setDate(d.getDate() - 24);
+      setDateFrom(d.toISOString().slice(0, 10));
+      setDateTo(serverToday);
+    }
+  }, [serverToday, dateFrom]);
   const [data, setData] = useState<SpcData | null>(null);
   const [loading, setLoading] = useState(false);
 

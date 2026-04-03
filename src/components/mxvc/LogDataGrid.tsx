@@ -24,6 +24,7 @@ import {
 } from 'ag-grid-community';
 import { useTheme } from 'next-themes';
 import * as XLSX from 'xlsx';
+import { useServerTime } from '@/hooks/useServerTime';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -49,14 +50,9 @@ function isDateType(dataType: string): boolean {
   return /DATE|TIMESTAMP/i.test(dataType);
 }
 
-/** 오늘 날짜를 YYYY-MM-DD 형태로 반환 */
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-/** 7일 전 날짜를 YYYY-MM-DD 형태로 반환 */
-function weekAgo(): string {
-  const d = new Date();
+/** 기준일로부터 7일 전 날짜를 YYYY-MM-DD 형태로 반환 */
+function weekAgoFrom(base: string): string {
+  const d = new Date(base + 'T00:00:00');
   d.setDate(d.getDate() - 7);
   return d.toISOString().slice(0, 10);
 }
@@ -64,6 +60,7 @@ function weekAgo(): string {
 export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDataGridProps) {
   const t = useTranslations('common');
   const { resolvedTheme } = useTheme();
+  const serverToday = useServerTime();
   const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
   const gridRef = useRef<AgGridReact>(null);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
@@ -76,8 +73,16 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
 
   /* 날짜 필터 상태 */
   const [dateCol, setDateCol] = useState('');
-  const [fromDate, setFromDate] = useState(weekAgo);
-  const [toDate, setToDate] = useState(today);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  /* 서버 시간 로드 시 날짜 초기값 설정 */
+  useEffect(() => {
+    if (serverToday && !toDate) {
+      setFromDate(weekAgoFrom(serverToday));
+      setToDate(serverToday);
+    }
+  }, [serverToday, toDate]);
 
   /** 날짜 타입 컬럼 후보 목록 */
   const dateCols = useMemo(
@@ -176,8 +181,8 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, tableName.slice(0, 31));
-    XLSX.writeFile(wb, `${tableName}_${today()}.xlsx`);
-  }, [rows, tableName]);
+    XLSX.writeFile(wb, `${tableName}_${serverToday || new Date().toISOString().slice(0, 10)}.xlsx`);
+  }, [rows, tableName, serverToday]);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
     setGridApi(params.api);

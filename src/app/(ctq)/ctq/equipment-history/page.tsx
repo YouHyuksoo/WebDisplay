@@ -12,23 +12,27 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { useEquipmentHistory } from "@/hooks/ctq/useEquipmentHistory";
+import { useServerTime } from "@/hooks/useServerTime";
 import EquipmentHistoryTable from "@/components/ctq/EquipmentHistoryTable";
 
 const SCREEN_ID = "ctq-equip-hist";
 
-function getToday(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
 export default function EquipmentHistoryPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
+  const serverToday = useServerTime();
 
   const selectedLines = useSelectedLines(SCREEN_ID);
 
-  const [fromDate, setFromDate] = useState(getToday());
-  const [toDate, setToDate] = useState(getToday());
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  useEffect(() => {
+    if (serverToday && !fromDate) {
+      setFromDate(serverToday);
+      setToDate(serverToday);
+    }
+  }, [serverToday, fromDate]);
 
   const { data, error, loading, fetchData } = useEquipmentHistory(selectedLines, fromDate, toDate);
 
@@ -37,9 +41,10 @@ export default function EquipmentHistoryPage() {
   }, [fetchData]);
 
   const setToday = () => {
-    const today = getToday();
-    setFromDate(today);
-    setToDate(today);
+    if (serverToday) {
+      setFromDate(serverToday);
+      setToDate(serverToday);
+    }
   };
 
   return (

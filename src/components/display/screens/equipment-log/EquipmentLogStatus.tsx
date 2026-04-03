@@ -10,6 +10,7 @@ import { useState, useCallback, useEffect } from 'react';
 import useSWR from 'swr';
 import { useTranslations } from 'next-intl';
 import DisplayLayout from '@/components/display/DisplayLayout';
+import { useServerTime } from '@/hooks/useServerTime';
 import EquipmentLogGrid from './EquipmentLogGrid';
 import type { EquipmentLogRow } from '@/lib/queries/equipment-log';
 import type { FilterOptions } from '@/lib/queries/equipment-log';
@@ -29,19 +30,24 @@ interface LogResponse {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 const selectClass = 'rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200';
 const inputClass = selectClass;
 
 export default function EquipmentLogStatus({ screenId }: Props) {
   const t = useTranslations('equipmentLog');
+  const serverToday = useServerTime();
 
   /* 검색 조건 상태 */
-  const [fromDate, setFromDate] = useState(todayStr());
-  const [toDate, setToDate] = useState(todayStr());
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  /* 서버 시간 로드 후 초기값 설정 */
+  useEffect(() => {
+    if (serverToday && !fromDate) {
+      setFromDate(serverToday);
+      setToDate(serverToday);
+    }
+  }, [serverToday, fromDate]);
   const [keyword, setKeyword] = useState('');
   const [addr, setAddr] = useState('');
   const [lineCode, setLineCode] = useState('');
@@ -65,6 +71,7 @@ export default function EquipmentLogStatus({ screenId }: Props) {
       + `&workstageCode=`
       + `&sortCol=${sortCol}&sortDir=${sortDir}`
       + `&page=${page}&pageSize=${pageSize}`
+      + `&_t=${searchTrigger}`
     : null;
 
   const { data, error, isLoading } = useSWR<LogResponse>(apiUrl, fetcher, {

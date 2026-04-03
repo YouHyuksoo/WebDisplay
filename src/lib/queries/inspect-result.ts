@@ -37,6 +37,7 @@ export interface FilterOption {
 export interface InspectResultFilters {
   lineCodeList: FilterOption[];
   machineCodeList: FilterOption[];
+  workstageCodeList: FilterOption[];
 }
 
 /** 키워드 검색 WHERE 절 */
@@ -73,6 +74,7 @@ function buildInClause(col: string, values: string, prefix: string): { clause: s
 export function buildColumnFilters(filters: {
   lineCode?: string;
   machineCode?: string;
+  workstageCode?: string;
   isLast?: string;
 }): { clause: string; binds: Record<string, string> } {
   let clause = '';
@@ -85,6 +87,11 @@ export function buildColumnFilters(filters: {
   }
   if (filters.machineCode) {
     const r = buildInClause("T.MACHINE_CODE", filters.machineCode, "fm");
+    clause += r.clause;
+    binds = { ...binds, ...r.binds };
+  }
+  if (filters.workstageCode) {
+    const r = buildInClause("T.WORKSTAGE_CODE", filters.workstageCode, "fw");
     clause += r.clause;
     binds = { ...binds, ...r.binds };
   }
@@ -146,12 +153,14 @@ export function sqlInspectResultList(
           TO_CHAR(T.ENTER_DATE, 'YYYY-MM-DD HH24:MI:SS') AS ENTER_DATE,
           T.IS_LAST,
           T.WORKSTAGE_CODE,
+          NVL(F_GET_WORKSTAGE_NAME(T.WORKSTAGE_CODE), T.WORKSTAGE_CODE) AS WORKSTAGE_NAME,
           B.RUN_NO,
           B.PCB_ITEM,
           B.MODEL_NAME,
           B.MODEL_CODE,
           B.MASTER_MODEL_NAME,
-          R.PRE_WORKSTAGE_CODE
+          R.PRE_WORKSTAGE_CODE,
+          NVL(F_GET_WORKSTAGE_NAME(R.PRE_WORKSTAGE_CODE), R.PRE_WORKSTAGE_CODE) AS PRE_WORKSTAGE_NAME
         FROM IQ_MACHINE_INSPECT_RESULT T
         LEFT JOIN IP_PRODUCT_2D_BARCODE B ON B.SERIAL_NO = T.PID
         LEFT JOIN IP_PRODUCT_ROUTING_MODEL R ON R.MODEL_NAME = B.MODEL_NAME AND R.WORKSTAGE_CODE = T.WORKSTAGE_CODE AND R.ORGANIZATION_ID = 1
@@ -180,6 +189,12 @@ export function sqlFilterOptions(): string {
       WHERE INSPECT_DATE >= TO_CHAR(SYSDATE - 7, 'YYYY/MM/DD') || ' 00:00:00'
         AND MACHINE_CODE IS NOT NULL
       GROUP BY MACHINE_CODE
+      UNION ALL
+      SELECT 'WORKSTAGE_CODE', WORKSTAGE_CODE, WORKSTAGE_CODE || ' ' || NVL(F_GET_WORKSTAGE_NAME(WORKSTAGE_CODE), '')
+      FROM IQ_MACHINE_INSPECT_RESULT
+      WHERE INSPECT_DATE >= TO_CHAR(SYSDATE - 7, 'YYYY/MM/DD') || ' 00:00:00'
+        AND WORKSTAGE_CODE IS NOT NULL
+      GROUP BY WORKSTAGE_CODE
     )
     ORDER BY COL_TYPE, COL_VALUE
   `;

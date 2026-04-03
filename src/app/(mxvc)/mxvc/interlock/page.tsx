@@ -93,13 +93,13 @@ export default function InterlockPage() {
       )}
 
       {/* 필터 바 */}
-      <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/80">
-        <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
+      <div className="shrink-0 flex items-center gap-4 px-5 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/80">
+        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
           <span className="font-semibold">LINE</span>
           <select
             value={filterLine}
             onChange={(e) => setFilterLine(e.target.value)}
-            className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-xs min-w-[100px]"
+            className="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm min-w-[120px]"
           >
             <option value="">전체</option>
             {lineOptions.map((l) => (
@@ -107,12 +107,12 @@ export default function InterlockPage() {
             ))}
           </select>
         </label>
-        <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
+        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
           <span className="font-semibold">공정</span>
           <select
             value={filterWorkstage}
             onChange={(e) => setFilterWorkstage(e.target.value)}
-            className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-xs min-w-[100px]"
+            className="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm min-w-[120px]"
           >
             <option value="">전체</option>
             {workstageOptions.map((w) => (
@@ -120,32 +120,32 @@ export default function InterlockPage() {
             ))}
           </select>
         </label>
-        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
           <span className="font-semibold">검색</span>
           <input
             type="text"
             value={filterKeyword}
             onChange={(e) => setFilterKeyword(e.target.value)}
             placeholder="REQ / RETURN 내용 검색"
-            className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-xs w-48 placeholder:text-gray-400"
+            className="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm w-56 placeholder:text-gray-400"
           />
         </div>
         {(filterLine || filterWorkstage || filterKeyword) && (
           <button
             onClick={() => { setFilterLine(""); setFilterWorkstage(""); setFilterKeyword(""); }}
-            className="text-[10px] text-blue-500 hover:text-blue-400 font-medium"
+            className="text-sm text-blue-500 hover:text-blue-400 font-medium"
           >
             초기화
           </button>
         )}
-        <div className="ml-auto flex items-center gap-2">
-          <span className="text-[10px] text-gray-400">
+        <div className="ml-auto flex items-center gap-3">
+          <span className="text-sm text-gray-400">
             {filteredCards.length}개 공정
           </span>
           <button
             onClick={fetchData}
             disabled={loading}
-            className="px-3 py-1.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold disabled:opacity-50 transition-colors"
+            className="px-4 py-1.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold disabled:opacity-50 transition-colors"
           >
             {t("refresh")}
           </button>

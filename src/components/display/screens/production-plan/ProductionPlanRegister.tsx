@@ -16,6 +16,7 @@ import DisplayLayout from '@/components/display/DisplayLayout';
 import RunCardSelectModal from './RunCardSelectModal';
 import { fetcher } from '@/lib/fetcher';
 import { buildDisplayApiUrl, DEFAULT_ORG_ID, fmtNum, getSelectedLines } from '@/lib/display-helpers';
+import { useServerTime } from '@/hooks/useServerTime';
 
 /** 라인 목록 API 응답 타입 */
 interface LineItem { lineCode: string; lineName: string }
@@ -23,7 +24,7 @@ interface LineGroup { division: string; lines: LineItem[] }
 
 /** 빈 폼 초기값 */
 const EMPTY_FORM = {
-  planDate: new Date().toISOString().slice(0, 10),
+  planDate: '',
   lineCode: '',
   shiftCode: 'A',
   modelName: '',
@@ -70,11 +71,20 @@ interface ProductionPlanRegisterProps {
 }
 
 export default function ProductionPlanRegister({ screenId }: ProductionPlanRegisterProps) {
-  const today = new Date().toISOString().slice(0, 10);
+  const serverToday = useServerTime();
 
   /* ── 조회 조건 상태 ── */
-  const [searchDateFrom, setSearchDateFrom] = useState(today);
-  const [searchDateTo, setSearchDateTo] = useState(today);
+  const [searchDateFrom, setSearchDateFrom] = useState('');
+  const [searchDateTo, setSearchDateTo] = useState('');
+
+  /* 서버 시간 로드 시 날짜 초기값 설정 */
+  useEffect(() => {
+    if (serverToday && !searchDateFrom) {
+      setSearchDateFrom(serverToday);
+      setSearchDateTo(serverToday);
+      setForm((prev) => ({ ...prev, planDate: prev.planDate || serverToday }));
+    }
+  }, [serverToday, searchDateFrom]);
   const [searchLineCode, setSearchLineCode] = useState('');
 
   /* ── 등록/수정 폼 상태 ── */
@@ -133,7 +143,7 @@ export default function ProductionPlanRegister({ screenId }: ProductionPlanRegis
 
   /** 신규 버튼 */
   const handleNew = () => {
-    setForm({ ...EMPTY_FORM, planDate: searchDateFrom });
+    setForm({ ...EMPTY_FORM, planDate: searchDateFrom || serverToday });
     setEditMode(false);
     setMessage(null);
   };

@@ -16,6 +16,7 @@ import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
+import { useServerTime } from "@/hooks/useServerTime";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { useRepairStatus } from "@/hooks/ctq/useRepairStatus";
 import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
@@ -23,27 +24,24 @@ import RepairStatusTable from "@/components/ctq/RepairStatusTable";
 
 const SCREEN_ID = "ctq-repair";
 
-/** 베트남(UTC+7) 기준 오늘 날짜를 YYYY-MM-DD로 반환 */
-function getTodayVietnam(): string {
-  const now = new Date();
-  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
-  const vn = new Date(utcMs + 7 * 3600000);
-  if (vn.getHours() < 8) vn.setDate(vn.getDate() - 1);
-  const y = vn.getFullYear();
-  const m = String(vn.getMonth() + 1).padStart(2, "0");
-  const d = String(vn.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
 export default function RepairStatusPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
+  const serverToday = useServerTime();
 
   const selectedLines = useSelectedLines(SCREEN_ID);
 
   /* -- 날짜 범위 조건 (필수, 기본 당일~당일) -- */
-  const [dateFrom, setDateFrom] = useState(getTodayVietnam);
-  const [dateTo, setDateTo] = useState(getTodayVietnam);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  /* 서버 시간 로드 시 날짜 초기값 설정 */
+  useEffect(() => {
+    if (serverToday && !dateFrom) {
+      setDateFrom(serverToday);
+      setDateTo(serverToday);
+    }
+  }, [serverToday, dateFrom]);
 
   /* -- PID 검색 필터 -- */
   const [pidInput, setPidInput] = useState("");

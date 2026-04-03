@@ -28,15 +28,17 @@ export async function GET(request: Request) {
       );
       const lineCodeList: { value: string; label: string }[] = [];
       const machineCodeList: { value: string; label: string }[] = [];
+      const workstageCodeList: { value: string; label: string }[] = [];
       for (const r of rows) {
         const item = { value: r.COL_VALUE, label: r.COL_LABEL ?? r.COL_VALUE };
         if (r.COL_TYPE === 'LINE_CODE') lineCodeList.push(item);
         else if (r.COL_TYPE === 'MACHINE_CODE') machineCodeList.push(item);
+        else if (r.COL_TYPE === 'WORKSTAGE_CODE') workstageCodeList.push(item);
       }
-      return NextResponse.json({ lineCodeList, machineCodeList });
+      return NextResponse.json({ lineCodeList, machineCodeList, workstageCodeList });
     } catch (error) {
       console.error('[API inspect-result] Filters error:', error);
-      return NextResponse.json({ error: String(error), lineCodeList: [], machineCodeList: [] }, { status: 500 });
+      return NextResponse.json({ error: String(error), lineCodeList: [], machineCodeList: [], workstageCodeList: [] }, { status: 500 });
     }
   }
 
@@ -46,6 +48,7 @@ export async function GET(request: Request) {
   const keyword = searchParams.get('keyword') ?? '';
   const lineCode = searchParams.get('lineCode') ?? '';
   const machineCode = searchParams.get('machineCode') ?? '';
+  const workstageCode = searchParams.get('workstageCode') ?? '';
   const isLast = searchParams.get('isLast') ?? '';
   const sortCol = searchParams.get('sortCol') ?? 'INSPECT_DATE';
   const sortDir = (searchParams.get('sortDir') ?? 'DESC').toUpperCase() === 'ASC' ? 'ASC' as const : 'DESC' as const;
@@ -59,6 +62,7 @@ export async function GET(request: Request) {
   const { clause: colClause, binds: colBinds } = buildColumnFilters({
     lineCode: lineCode || undefined,
     machineCode: machineCode || undefined,
+    workstageCode: workstageCode || undefined,
     isLast: isLast || undefined,
   });
   const extraClause = kwClause + colClause;

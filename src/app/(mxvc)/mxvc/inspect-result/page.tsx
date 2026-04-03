@@ -15,6 +15,7 @@ import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import InspectResultGrid from "@/components/mxvc/InspectResultGrid";
 import type { InspectResultFilters } from "@/lib/queries/inspect-result";
+import { useServerTime } from "@/hooks/useServerTime";
 
 const SCREEN_ID = "mxvc-inspect-result";
 const API_BASE = "/api/mxvc/inspect-result";
@@ -29,18 +30,26 @@ interface SearchResponse {
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
-function todayStr(): string { return new Date().toISOString().slice(0, 10); }
 
 const inputClass = "rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200";
 
 export default function InspectResultPage() {
   const t = useTranslations("common");
+  const serverToday = useServerTime();
 
-  const [fromDate, setFromDate] = useState(todayStr());
-  const [toDate, setToDate] = useState(todayStr());
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  useEffect(() => {
+    if (serverToday && !fromDate) {
+      setFromDate(serverToday);
+      setToDate(serverToday);
+    }
+  }, [serverToday, fromDate]);
   const [keyword, setKeyword] = useState("");
   const [selectedLines, setSelectedLines] = useState<Set<string>>(new Set());
   const [selectedMachines, setSelectedMachines] = useState<Set<string>>(new Set());
+  const [selectedWorkstages, setSelectedWorkstages] = useState<Set<string>>(new Set());
   const [isLast, setIsLast] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(50);
@@ -55,12 +64,14 @@ export default function InspectResultPage() {
 
   const lineParam = useMemo(() => Array.from(selectedLines).join(","), [selectedLines]);
   const machineParam = useMemo(() => Array.from(selectedMachines).join(","), [selectedMachines]);
+  const workstageParam = useMemo(() => Array.from(selectedWorkstages).join(","), [selectedWorkstages]);
 
   const apiUrl = searchTrigger
     ? `${API_BASE}?fromDate=${fromDate}&toDate=${toDate}`
       + `&keyword=${encodeURIComponent(keyword)}`
       + `&lineCode=${encodeURIComponent(lineParam)}`
       + `&machineCode=${encodeURIComponent(machineParam)}`
+      + `&workstageCode=${encodeURIComponent(workstageParam)}`
       + `&isLast=${encodeURIComponent(isLast)}`
       + `&sortCol=${sortCol}&sortDir=${sortDir}`
       + `&page=${page}&pageSize=${pageSize}`
@@ -88,6 +99,14 @@ export default function InspectResultPage() {
 
   const toggleLine = (v: string) => {
     setSelectedLines((prev) => {
+      const next = new Set(prev);
+      next.has(v) ? next.delete(v) : next.add(v);
+      return next;
+    });
+  };
+
+  const toggleWorkstage = (v: string) => {
+    setSelectedWorkstages((prev) => {
       const next = new Set(prev);
       next.has(v) ? next.delete(v) : next.add(v);
       return next;
@@ -147,6 +166,7 @@ export default function InspectResultPage() {
         <div className="ml-auto flex items-center gap-2 text-[10px] text-gray-400">
           {selectedLines.size > 0 && <span>LINE {selectedLines.size}개</span>}
           {selectedMachines.size > 0 && <span>머신 {selectedMachines.size}개</span>}
+          {selectedWorkstages.size > 0 && <span>공정 {selectedWorkstages.size}개</span>}
         </div>
       </div>
 
@@ -235,6 +255,35 @@ export default function InspectResultPage() {
                   </label>
                 ))}
                 {!filterOpts?.machineCodeList.length && (
+                  <span className="text-[10px] text-gray-400">{t("loading")}</span>
+                )}
+              </div>
+            </div>
+
+            {/* 공정코드 체크박스 */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">공정</span>
+                <button
+                  onClick={() => setSelectedWorkstages(new Set())}
+                  className="text-[9px] text-blue-500 hover:text-blue-400"
+                >
+                  초기화
+                </button>
+              </div>
+              <div className="space-y-0.5 max-h-40 overflow-y-auto">
+                {filterOpts?.workstageCodeList.map((v) => (
+                  <label key={v.value} className="flex items-center gap-1.5 cursor-pointer py-0.5">
+                    <input
+                      type="checkbox"
+                      checked={selectedWorkstages.has(v.value)}
+                      onChange={() => toggleWorkstage(v.value)}
+                      className="accent-blue-500 w-3.5 h-3.5"
+                    />
+                    <span className="text-xs text-gray-700 dark:text-gray-300 truncate">{v.label}</span>
+                  </label>
+                ))}
+                {!filterOpts?.workstageCodeList.length && (
                   <span className="text-[10px] text-gray-400">{t("loading")}</span>
                 )}
               </div>
