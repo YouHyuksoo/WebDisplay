@@ -1,9 +1,9 @@
 /**
  * @file src/components/mxvc/LogDataGrid.tsx
- * @description AG Grid 기반 로그 데이터 그리드 컴포넌트.
+ * @description AG Grid 기반 로그 데이터 그리드 컴포넌트 (서버 사이드 페이지네이션).
  * 초보자 가이드:
- * - AG Grid Community로 필터/소팅/컬럼 리사이즈를 제공한다
- * - xlsx 라이브러리로 엑셀 다운로드를 구현한다
+ * - 서버 사이드 페이지네이션: page/pageSize를 API에 전달하여 필요한 만큼만 가져옴
+ * - 엑셀 다운로드: exportAll=1로 전체 데이터를 별도 요청하여 다운로드
  * - 날짜 컬럼 자동 감지: DATA_TYPE이 DATE/TIMESTAMP인 컬럼을 dateCol 후보로 사용
  * - 컬럼 정의는 API에서 받은 메타데이터로 동적 생성
  */
@@ -57,6 +57,9 @@ function weekAgoFrom(base: string): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** 페이지 사이즈 옵션 */
+const PAGE_SIZE_OPTIONS = [50, 100, 200];
+
 export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDataGridProps) {
   const t = useTranslations('common');
   const { resolvedTheme } = useTheme();
@@ -69,7 +72,13 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
+
+  /* 페이지네이션 상태 */
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(100);
+  const [totalPages, setTotalPages] = useState(0);
 
   /* 날짜 필터 상태 */
   const [dateCol, setDateCol] = useState('');
@@ -96,6 +105,8 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
     setColumns([]);
     setRows([]);
     setTotal(0);
+    setTotalPages(0);
+    setPage(1);
     setDateCol('');
     setError('');
 
@@ -121,9 +132,31 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
     })();
   }, [tableName]);
 
+  /** 데이터 조회 공통 URL 빌더 */
+  const buildUrl = useCallback(
+    (opts?: { exportAll?: boolean; p?: number }) => {
+      const params = new URLSearchParams({
+        table: tableName,
+        dateCol,
+        from: fromDate,
+        to: toDate,
+      });
+      if (opts?.exportAll) {
+        params.set('exportAll', '1');
+      } else {
+        params.set('page', String(opts?.p ?? page));
+        params.set('pageSize', String(pageSize));
+      }
+      return `${apiBase}/data?${params}`;
+    },
+    [tableName, dateCol, fromDate, toDate, page, pageSize],
+  );
+
   /** 조회 실행 */
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (p?: number) => {
     if (!tableName) return;
+    const targetPage = p ?? 1;
+    setPage(targetPage);
     setLoading(true);
     setError('');
     try {
@@ -132,21 +165,30 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
         dateCol,
         from: fromDate,
         to: toDate,
+        page: String(targetPage),
+        pageSize: String(pageSize),
       });
       const res = await fetch(`${apiBase}/data?${params}`);
       if (!res.ok) throw new Error('API 오류');
       const data = await res.json();
       setRows(data.rows ?? []);
       setTotal(data.total ?? 0);
+      setTotalPages(data.totalPages ?? 0);
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [tableName, dateCol, fromDate, toDate]);
+  }, [tableName, dateCol, fromDate, toDate, pageSize]);
+
+  /** 페이지 이동 */
+  const goToPage = useCallback((p: number) => {
+    fetchData(p);
+  }, [fetchData]);
 
   /** AG Grid 컬럼 정의 - 메타데이터 기반 동적 생성 */
   const colDefs: ColDef[] = useMemo(() => {
+    /* 컬럼 순서는 API에서 정렬되어 옴 */
     return columns.map((col) => {
       const def: ColDef = {
         field: col.COLUMN_NAME,
@@ -157,7 +199,9 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
         minWidth: 100,
       };
 
-      if (isDateType(col.DATA_TYPE)) {
+      if (col.COLUMN_NAME === 'RNUM') {
+        def.hide = true;
+      } else if (isDateType(col.DATA_TYPE)) {
         def.valueFormatter = (params) => {
           if (!params.value) return '';
           const d = new Date(params.value);
@@ -175,14 +219,36 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
     });
   }, [columns]);
 
-  /** 엑셀 다운로드 */
-  const handleExcelExport = useCallback(() => {
-    if (rows.length === 0) return;
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, tableName.slice(0, 31));
-    XLSX.writeFile(wb, `${tableName}_${serverToday || new Date().toISOString().slice(0, 10)}.xlsx`);
-  }, [rows, tableName, serverToday]);
+  /** 엑셀 다운로드 — 전체 데이터를 서버에서 조회 */
+  const handleExcelExport = useCallback(async () => {
+    if (!tableName || total === 0) return;
+    setExporting(true);
+    try {
+      const params = new URLSearchParams({
+        table: tableName,
+        dateCol,
+        from: fromDate,
+        to: toDate,
+        exportAll: '1',
+      });
+      const res = await fetch(`${apiBase}/data?${params}`);
+      if (!res.ok) throw new Error('엑셀 데이터 조회 실패');
+      const data = await res.json();
+      const exportRows = (data.rows ?? []) as Record<string, unknown>[];
+      if (exportRows.length === 0) return;
+
+      /* RNUM 컬럼 제거 */
+      const cleaned = exportRows.map(({ RNUM, ...rest }) => rest);
+      const ws = XLSX.utils.json_to_sheet(cleaned);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, tableName.slice(0, 31));
+      XLSX.writeFile(wb, `${tableName}_${serverToday || new Date().toISOString().slice(0, 10)}.xlsx`);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setExporting(false);
+    }
+  }, [tableName, dateCol, fromDate, toDate, total, serverToday]);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
     setGridApi(params.api);
@@ -271,7 +337,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
           </button>
 
           <button
-            onClick={fetchData}
+            onClick={() => fetchData(1)}
             disabled={loading}
             className="h-9 px-5 text-sm font-medium bg-blue-600 hover:bg-blue-500
                        disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500
@@ -282,12 +348,12 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
 
           <button
             onClick={handleExcelExport}
-            disabled={rows.length === 0}
+            disabled={total === 0 || exporting}
             className="h-9 px-5 text-sm font-medium bg-emerald-600 hover:bg-emerald-500
                        disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500
                        text-white rounded-lg transition-colors"
           >
-            Excel 다운로드
+            {exporting ? '다운로드 중...' : 'Excel 다운로드'}
           </button>
         </div>
       </div>
@@ -316,13 +382,80 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
             minWidth: 80,
           }}
           animateRows={false}
-          pagination={true}
-          paginationPageSize={100}
-          paginationPageSizeSelector={[50, 100, 500, 1000]}
           enableCellTextSelection={true}
           suppressCellFocus={true}
         />
       </div>
+
+      {/* 서버 사이드 페이지네이션 바 */}
+      {totalPages > 0 && (
+        <div className="flex items-center justify-between px-6 py-2 border-t
+                         border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <span>페이지당</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              className="h-8 px-2 text-sm rounded border border-gray-300 dark:border-gray-600
+                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+              {PAGE_SIZE_OPTIONS.map((s) => (
+                <option key={s} value={s}>{s}건</option>
+              ))}
+            </select>
+            <span className="ml-2">
+              전체 <strong>{total.toLocaleString()}</strong>건 중{' '}
+              <strong>{((page - 1) * pageSize + 1).toLocaleString()}</strong>~
+              <strong>{Math.min(page * pageSize, total).toLocaleString()}</strong>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => goToPage(1)}
+              disabled={page <= 1 || loading}
+              className="h-8 px-3 text-sm rounded border border-gray-300 dark:border-gray-600
+                         bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
+                         disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              ≪
+            </button>
+            <button
+              onClick={() => goToPage(page - 1)}
+              disabled={page <= 1 || loading}
+              className="h-8 px-3 text-sm rounded border border-gray-300 dark:border-gray-600
+                         bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
+                         disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              ＜
+            </button>
+            <span className="px-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+              {page} / {totalPages}
+            </span>
+            <button
+              onClick={() => goToPage(page + 1)}
+              disabled={page >= totalPages || loading}
+              className="h-8 px-3 text-sm rounded border border-gray-300 dark:border-gray-600
+                         bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
+                         disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              ＞
+            </button>
+            <button
+              onClick={() => goToPage(totalPages)}
+              disabled={page >= totalPages || loading}
+              className="h-8 px-3 text-sm rounded border border-gray-300 dark:border-gray-600
+                         bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
+                         disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              ≫
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

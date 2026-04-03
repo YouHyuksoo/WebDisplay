@@ -395,6 +395,14 @@
       "color": "#8b5cf6",
       "icon": "svg:error-log",
       "layer": 8
+    },
+    {
+      "id": "mex-traceability",
+      "title": "추적성분석",
+      "url": "/mxvc/traceability",
+      "color": "#ec4899",
+      "icon": "svg:error-log",
+      "layer": 8
     }
   ]
 }
