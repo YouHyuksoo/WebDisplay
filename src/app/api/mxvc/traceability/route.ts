@@ -205,7 +205,7 @@ async function queryReflowByAoiTime(
   const promises = REFLOW_TABLES.map(async (tableName): Promise<TimelineEvent[]> => {
     try {
       const conditions = ['LOG_TIMESTAMP BETWEEN :fromTs AND :toTs'];
-      const binds: Record<string, unknown> = { fromTs: from, toTs: latestAoi };
+      const binds: Record<string, Date | string> = { fromTs: from, toTs: latestAoi };
       if (lineCode) {
         conditions.push('LINE_CODE = :lineCode');
         binds.lineCode = lineCode;

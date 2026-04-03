@@ -78,7 +78,6 @@ const COL_LABEL: Record<string, string> = {
   STARTDT: '시작시간',
   ENDDT: '종료시간',
   PCBFILENM: 'PCB파일명',
-  LANE: '레인',
   EQPNM: '장비명',
   LINENM: '라인명',
   STEPNO: '스텝번호',
