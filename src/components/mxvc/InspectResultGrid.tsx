@@ -8,7 +8,7 @@
  */
 "use client";
 
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -20,6 +20,7 @@ import {
   type ColDef,
 } from "ag-grid-community";
 import { useTheme } from "next-themes";
+import * as XLSX from "xlsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -37,15 +38,17 @@ interface Props {
   sortDir: "ASC" | "DESC";
   onPageChange: (page: number) => void;
   onSort: (col: string) => void;
+  exportParams?: string;
 }
 
 export default function InspectResultGrid({
-  rows, totalCount, page, totalPages, pageSize, onPageChange, onSort,
+  rows, totalCount, page, totalPages, pageSize, onPageChange, onSort, exportParams,
 }: Props) {
   const t = useTranslations("common");
   const { resolvedTheme } = useTheme();
   const gridTheme = resolvedTheme === "dark" ? darkTheme : lightTheme;
   const gridRef = useRef<AgGridReact>(null);
+  const [exporting, setExporting] = useState(false);
 
   const colDefs: ColDef[] = useMemo(() => [
     { field: "NO", headerName: "No", width: 60, sortable: false, filter: false,
@@ -77,6 +80,28 @@ export default function InspectResultGrid({
     gridRef.current?.api?.autoSizeAllColumns();
   }, []);
 
+  /** 엑셀 다운로드 — 전체 데이터를 서버에서 조회 */
+  const handleExcelExport = useCallback(async () => {
+    if (totalCount === 0 || !exportParams) return;
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/mxvc/inspect-result?${exportParams}&exportAll=1`);
+      if (!res.ok) throw new Error("엑셀 데이터 조회 실패");
+      const data = await res.json();
+      const exportRows = (data.rows ?? []) as Record<string, unknown>[];
+      if (exportRows.length === 0) return;
+      const cleaned = exportRows.map(({ RNUM, ...rest }) => rest);
+      const ws = XLSX.utils.json_to_sheet(cleaned);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "InspectResult");
+      XLSX.writeFile(wb, `InspectResult_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    } catch (e) {
+      console.error("Excel export error:", e);
+    } finally {
+      setExporting(false);
+    }
+  }, [totalCount, exportParams]);
+
   return (
     <div className="flex h-full flex-col">
       {/* 결과 요약 바 */}
@@ -89,9 +114,20 @@ export default function InspectResultGrid({
             </span>
           )}
         </span>
-        <span className="text-xs text-gray-400 dark:text-gray-500">
-          {pageSize}건씩 표시
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-400 dark:text-gray-500">
+            {pageSize}건씩 표시
+          </span>
+          <button
+            onClick={handleExcelExport}
+            disabled={totalCount === 0 || exporting}
+            className="px-3 py-1 text-xs font-medium bg-emerald-600 hover:bg-emerald-500
+                       disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500
+                       text-white rounded transition-colors"
+          >
+            {exporting ? "다운로드 중..." : "Excel 다운로드"}
+          </button>
+        </div>
       </div>
 
       {/* AG Grid */}

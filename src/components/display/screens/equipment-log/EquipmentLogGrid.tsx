@@ -8,7 +8,7 @@
  */
 'use client';
 
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import {
   AllCommunityModule,
@@ -25,6 +25,9 @@ import type { EquipmentLogRow } from '@/lib/queries/equipment-log';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const gridParams = { fontSize: 11, headerFontSize: 12, rowHeight: 28, headerHeight: 32 };
+
+/** REQ '/'로 분리된 가상 컬럼 헤더명 */
+const reqPartHeaders = ['REQ_1(CMD)', 'REQ_2(LINE)', 'REQ_3(MACHINE)', 'REQ_4(PID)', 'REQ_5'];
 const lightTheme = themeQuartz.withPart(colorSchemeLight).withParams(gridParams);
 const darkTheme = themeQuartz.withPart(colorSchemeDark).withParams(gridParams);
 
@@ -34,34 +37,65 @@ interface Props {
   page: number;
   totalPages: number;
   pageSize: number;
-  sortCol: string;
-  sortDir: 'ASC' | 'DESC';
+  serverTimestamp?: string;
   onPageChange: (page: number) => void;
-  onSort: (col: string) => void;
+  onSortChange: (sorts: { col: string; dir: 'ASC' | 'DESC' }[]) => void;
 }
 
 export default function EquipmentLogGrid({
-  rows, totalCount, page, totalPages, pageSize, onPageChange, onSort,
+  rows, totalCount, page, totalPages, pageSize, onPageChange, onSortChange, serverTimestamp,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
   const gridRef = useRef<AgGridReact>(null);
   const t = useTranslations('equipmentLog');
+  const [activeSorts, setActiveSorts] = useState<{ col: string; dir: string }[]>([{ col: 'CALL_DATE', dir: 'DESC' }]);
 
   const colDefs: ColDef[] = useMemo(() => [
     { field: 'NO', headerName: 'No', width: 60, sortable: false, filter: false,
       valueGetter: (params) => params.node ? (page - 1) * pageSize + params.node.rowIndex! + 1 : '' },
+    { colId: 'ELAPSED', headerName: '경과', width: 90, sortable: false, filter: false,
+      valueGetter: (params) => {
+        const d = params.data?.CALL_DATE as string | undefined;
+        if (!d) return '';
+        const now = serverTimestamp ? new Date(serverTimestamp).getTime() : Date.now();
+        const diff = now - new Date(d).getTime();
+        if (diff < 0) return '0초';
+        const sec = Math.floor(diff / 1000);
+        if (sec < 60) return `${sec}초`;
+        const min = Math.floor(sec / 60);
+        if (min < 60) return `${min}분`;
+        const hr = Math.floor(min / 60);
+        const rm = min % 60;
+        if (hr < 24) return `${hr}시간${rm > 0 ? rm + '분' : ''}`;
+        const day = Math.floor(hr / 24);
+        const rh = hr % 24;
+        return `${day}일${rh > 0 ? rh + '시간' : ''}`;
+      },
+      cellClass: 'text-orange-500 dark:text-orange-400 font-mono text-[10px]' },
     { field: 'CALL_DATE', headerName: t('callDate'), width: 170, filter: 'agTextColumnFilter' },
     { field: 'ADDR', headerName: t('addr'), width: 100, filter: 'agTextColumnFilter',
       cellClass: 'font-semibold text-blue-700 dark:text-blue-400' },
     { field: 'LINE_NAME', headerName: t('lineCode'), width: 100, filter: 'agTextColumnFilter',
       valueFormatter: (params) => params.data?.LINE_NAME || params.data?.LINE_CODE || '-' },
     { field: 'WORKSTAGE_CODE', headerName: t('workstageCode'), width: 130, filter: 'agTextColumnFilter' },
+    { field: 'WORKSTAGE_NAME', headerName: t('workstageName'), width: 160, filter: 'agTextColumnFilter' },
     { field: 'REQ', headerName: t('reqShort'), minWidth: 200, flex: 1, filter: 'agTextColumnFilter',
       tooltipField: 'REQ' },
     { field: 'RETURN', headerName: t('returnShort'), width: 250, filter: 'agTextColumnFilter',
       tooltipField: 'RETURN' },
-  ], [page, pageSize, t]);
+    /* REQ를 '/'로 분리한 가상 컬럼들 */
+    ...reqPartHeaders.map((headerName, idx) => ({
+      colId: `REQ_PART_${idx + 1}`,
+      headerName,
+      width: idx === 3 ? 200 : 120,
+      filter: 'agTextColumnFilter' as const,
+      valueGetter: (params: { data?: Record<string, unknown> }) => {
+        const req = params.data?.REQ as string | undefined;
+        return req?.split('/')[idx] ?? '';
+      },
+    })),
+  ], [page, pageSize, t, serverTimestamp]);
 
   const onFirstDataRendered = useCallback(() => {
     gridRef.current?.api?.autoSizeAllColumns();
@@ -79,9 +113,22 @@ export default function EquipmentLogGrid({
             </span>
           )}
         </span>
-        <span className="text-xs text-gray-400 dark:text-gray-500">
-          {t('rowsPerPage', { size: pageSize })}
-        </span>
+        <div className="flex items-center gap-2">
+          {activeSorts.length > 0 && (
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-gray-400">정렬:</span>
+              {activeSorts.map((s, i) => (
+                <span key={i} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-[10px] font-medium text-blue-700 dark:text-blue-300">
+                  {i + 1}. {s.col} {s.dir === 'ASC' ? '▲' : '▼'}
+                </span>
+              ))}
+              <span className="text-[9px] text-gray-400 ml-1">(Ctrl+클릭 = 멀티정렬)</span>
+            </div>
+          )}
+          <span className="text-xs text-gray-400 dark:text-gray-500">
+            {t('rowsPerPage', { size: pageSize })}
+          </span>
+        </div>
       </div>
 
       {/* AG Grid */}
@@ -102,9 +149,15 @@ export default function EquipmentLogGrid({
           enableCellTextSelection={true}
           suppressCellFocus={true}
           tooltipShowDelay={300}
+          multiSortKey="ctrl"
           onSortChanged={(e) => {
-            const col = e.api.getColumnState().find((c) => c.sort);
-            if (col?.colId) onSort(col.colId);
+            const sorted = e.api.getColumnState()
+              .filter((c) => c.sort)
+              .sort((a, b) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0))
+              .map((c) => ({ col: c.colId!, dir: (c.sort?.toUpperCase() ?? 'ASC') as 'ASC' | 'DESC' }));
+            const result = sorted.length > 0 ? sorted : [{ col: 'CALL_DATE', dir: 'DESC' as const }];
+            setActiveSorts(result);
+            onSortChange(result);
           }}
         />
       </div>

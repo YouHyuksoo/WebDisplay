@@ -66,15 +66,16 @@ export default function InspectResultPage() {
   const machineParam = useMemo(() => Array.from(selectedMachines).join(","), [selectedMachines]);
   const workstageParam = useMemo(() => Array.from(selectedWorkstages).join(","), [selectedWorkstages]);
 
+  const filterQs = `fromDate=${fromDate}&toDate=${toDate}`
+    + `&keyword=${encodeURIComponent(keyword)}`
+    + `&lineCode=${encodeURIComponent(lineParam)}`
+    + `&machineCode=${encodeURIComponent(machineParam)}`
+    + `&workstageCode=${encodeURIComponent(workstageParam)}`
+    + `&isLast=${encodeURIComponent(isLast)}`
+    + `&sortCol=${sortCol}&sortDir=${sortDir}`;
+
   const apiUrl = searchTrigger
-    ? `${API_BASE}?fromDate=${fromDate}&toDate=${toDate}`
-      + `&keyword=${encodeURIComponent(keyword)}`
-      + `&lineCode=${encodeURIComponent(lineParam)}`
-      + `&machineCode=${encodeURIComponent(machineParam)}`
-      + `&workstageCode=${encodeURIComponent(workstageParam)}`
-      + `&isLast=${encodeURIComponent(isLast)}`
-      + `&sortCol=${sortCol}&sortDir=${sortDir}`
-      + `&page=${page}&pageSize=${pageSize}`
+    ? `${API_BASE}?${filterQs}&page=${page}&pageSize=${pageSize}`
     : null;
 
   const { data, error, isLoading } = useSWR<SearchResponse>(apiUrl, fetcher, {
@@ -188,13 +189,13 @@ export default function InspectResultPage() {
         {/* 사이드바: LINE + 머신 체크박스 */}
         <div className={`
           relative bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out
-          ${sidebarCollapsed ? "w-0 min-w-0 p-0 overflow-hidden border-none" : "w-[200px] min-w-[200px] overflow-y-auto"}
+          ${sidebarCollapsed ? "w-0 min-w-0 p-0 overflow-hidden border-none" : "w-[260px] min-w-[260px]"}
         `}>
-          <div className={sidebarCollapsed ? "hidden" : "p-3 flex flex-col gap-3"}>
+          <div className={sidebarCollapsed ? "hidden" : "p-3 flex flex-col gap-3 h-full"}>
             {/* 접기 버튼 */}
             <button
               onClick={() => setSidebarCollapsed(true)}
-              className="self-end p-1 rounded bg-gray-200 dark:bg-gray-800 text-gray-400 hover:text-blue-500"
+              className="shrink-0 self-end p-1 rounded bg-gray-200 dark:bg-gray-800 text-gray-400 hover:text-blue-500"
               title="접기"
             >
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -203,7 +204,7 @@ export default function InspectResultPage() {
             </button>
 
             {/* LINE 체크박스 */}
-            <div>
+            <div className="shrink-0">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">LINE</span>
                 <button
@@ -213,7 +214,7 @@ export default function InspectResultPage() {
                   초기화
                 </button>
               </div>
-              <div className="space-y-0.5 max-h-40 overflow-y-auto">
+              <div className="space-y-0.5">
                 {filterOpts?.lineCodeList.map((v) => (
                   <label key={v.value} className="flex items-center gap-1.5 cursor-pointer py-0.5">
                     <input
@@ -232,7 +233,7 @@ export default function InspectResultPage() {
             </div>
 
             {/* 머신 체크박스 */}
-            <div>
+            <div className="shrink-0">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">머신</span>
                 <button
@@ -242,7 +243,7 @@ export default function InspectResultPage() {
                   초기화
                 </button>
               </div>
-              <div className="space-y-0.5 max-h-60 overflow-y-auto">
+              <div className="space-y-0.5">
                 {filterOpts?.machineCodeList.map((v) => (
                   <label key={v.value} className="flex items-center gap-1.5 cursor-pointer py-0.5">
                     <input
@@ -260,9 +261,9 @@ export default function InspectResultPage() {
               </div>
             </div>
 
-            {/* 공정코드 체크박스 */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
+            {/* 공정코드 체크박스 — 남은 공간 최대 활용 */}
+            <div className="flex-1 min-h-0 flex flex-col">
+              <div className="flex items-center justify-between mb-1.5 shrink-0">
                 <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">공정</span>
                 <button
                   onClick={() => setSelectedWorkstages(new Set())}
@@ -271,7 +272,7 @@ export default function InspectResultPage() {
                   초기화
                 </button>
               </div>
-              <div className="space-y-0.5 max-h-40 overflow-y-auto">
+              <div className="space-y-0.5 overflow-y-auto flex-1">
                 {filterOpts?.workstageCodeList.map((v) => (
                   <label key={v.value} className="flex items-center gap-1.5 cursor-pointer py-0.5">
                     <input
@@ -316,6 +317,7 @@ export default function InspectResultPage() {
               pageSize={pageSize}
               sortCol={sortCol}
               sortDir={sortDir}
+              exportParams={filterQs}
               onPageChange={setPage}
               onSort={(col) => {
                 if (col === sortCol) {

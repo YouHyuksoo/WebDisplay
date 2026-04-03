@@ -22,6 +22,7 @@ export interface EquipmentLogRow {
   LINE_CODE: string | null;
   LINE_NAME: string | null;
   WORKSTAGE_CODE: string | null;
+  WORKSTAGE_NAME: string | null;
   RETURN: string | null;
 }
 
@@ -105,22 +106,31 @@ const SORT_COLUMN_MAP: Record<string, string> = {
   LINE_CODE: 'L.LINE_CODE',
   LINE_NAME: 'P.LINE_NAME',
   WORKSTAGE_CODE: 'L.WORKSTAGE_CODE',
+  WORKSTAGE_NAME: 'F_GET_WORKSTAGE_NAME(L.WORKSTAGE_CODE)',
   REQ: 'L.REQ',
   RETURN: 'L."RETURN"',
 };
 
+/** 정렬 조건 배열 → ORDER BY 절 생성 (SQL 인젝션 방지) */
+export function buildOrderByClause(
+  sorts: { col: string; dir: 'ASC' | 'DESC' }[],
+): string {
+  if (sorts.length === 0) return 'CALL_DATE DESC';
+  return sorts
+    .map((s) => `${SORT_COLUMN_MAP[s.col] ?? 'CALL_DATE'} ${s.dir}`)
+    .join(', ');
+}
+
 /**
- * 로그 목록 조회 SQL (페이지네이션 + 정렬 적용).
+ * 로그 목록 조회 SQL (페이지네이션 + 멀티 정렬 적용).
  * @param extraClause - 키워드 + 개별 필터 WHERE 절
- * @param sortCol - 정렬 컬럼 키 (SORT_COLUMN_MAP 키)
- * @param sortDir - 정렬 방향 ('ASC' | 'DESC')
+ * @param sorts - 정렬 조건 배열 (멀티 정렬 지원)
  */
 export function sqlEquipmentLogList(
   extraClause: string,
-  sortCol = 'CALL_DATE',
-  sortDir: 'ASC' | 'DESC' = 'DESC',
+  sorts: { col: string; dir: 'ASC' | 'DESC' }[] = [{ col: 'CALL_DATE', dir: 'DESC' }],
 ): string {
-  const orderExpr = SORT_COLUMN_MAP[sortCol] ?? 'CALL_DATE';
+  const orderBy = buildOrderByClause(sorts);
   return `
     SELECT * FROM (
       SELECT A.*, ROWNUM AS RNUM FROM (
@@ -131,12 +141,13 @@ export function sqlEquipmentLogList(
           L.LINE_CODE,
           P.LINE_NAME,
           L.WORKSTAGE_CODE,
+          NVL(F_GET_WORKSTAGE_NAME(L.WORKSTAGE_CODE), L.WORKSTAGE_CODE) AS WORKSTAGE_NAME,
           L."RETURN"
         FROM ICOM_WEB_SERVICE_LOG L
         LEFT JOIN IP_PRODUCT_LINE P ON P.LINE_CODE = L.LINE_CODE AND P.ORGANIZATION_ID = 1
         WHERE L.CALL_DATE BETWEEN TO_DATE(:fromDate, 'YYYY-MM-DD') AND TO_DATE(:toDate, 'YYYY-MM-DD') + 1
         ${extraClause}
-        ORDER BY ${orderExpr} ${sortDir}
+        ORDER BY ${orderBy}
       ) A
       WHERE ROWNUM <= :endRow
     )

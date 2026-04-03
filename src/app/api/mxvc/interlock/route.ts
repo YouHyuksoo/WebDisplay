@@ -17,6 +17,7 @@ const DAY_FILTER = `CALL_DATE >= TRUNC(SYSDATE) - 2 AND CALL_DATE < TRUNC(SYSDAT
 
 interface SummaryRow {
   WORKSTAGE_CODE: string;
+  WORKSTAGE_NAME: string;
   TOTAL: number;
   OK_CNT: number;
   NG_CNT: number;
@@ -40,12 +41,13 @@ async function getCards(logsPerCard: number): Promise<WorkstageCard[]> {
   const [summaryRows, logRows] = await Promise.all([
     executeQuery<SummaryRow>(
       `SELECT NVL(WORKSTAGE_CODE, '-') AS WORKSTAGE_CODE,
+              NVL(F_GET_WORKSTAGE_NAME(WORKSTAGE_CODE), WORKSTAGE_CODE) AS WORKSTAGE_NAME,
               COUNT(*) AS TOTAL,
               SUM(CASE WHEN "RETURN" LIKE 'OK%' THEN 1 ELSE 0 END) AS OK_CNT,
               SUM(CASE WHEN "RETURN" NOT LIKE 'OK%' THEN 1 ELSE 0 END) AS NG_CNT
        FROM ICOM_WEB_SERVICE_LOG
        WHERE ${DAY_FILTER}
-       GROUP BY WORKSTAGE_CODE
+       GROUP BY WORKSTAGE_CODE, F_GET_WORKSTAGE_NAME(WORKSTAGE_CODE)
        ORDER BY WORKSTAGE_CODE`,
     ),
     executeQuery<LogRow>(
@@ -85,6 +87,7 @@ async function getCards(logsPerCard: number): Promise<WorkstageCard[]> {
 
   return summaryRows.map((s) => ({
     workstageCode: s.WORKSTAGE_CODE ?? "-",
+    workstageName: s.WORKSTAGE_NAME ?? s.WORKSTAGE_CODE ?? "-",
     totalCount: s.TOTAL,
     okCount: s.OK_CNT,
     ngCount: s.NG_CNT,

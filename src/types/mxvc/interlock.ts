@@ -22,6 +22,7 @@ export interface InterlockLog {
 /** 공정별 카드 — 카드 1장 = 공정 1개 */
 export interface WorkstageCard {
   workstageCode: string;
+  workstageName: string;
   totalCount: number;
   okCount: number;
   ngCount: number;

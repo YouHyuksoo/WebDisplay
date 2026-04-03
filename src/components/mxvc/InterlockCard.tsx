@@ -64,7 +64,7 @@ export default function InterlockCard({ card }: InterlockCardProps) {
         {/* 헤더 */}
         <div className="flex items-center justify-between px-2 py-1.5 bg-gradient-to-r from-purple-100 via-fuchsia-100 to-pink-100 dark:from-purple-900/40 dark:via-fuchsia-900/40 dark:to-pink-900/40 border-b border-purple-200 dark:border-fuchsia-700/50">
           <span className="text-xs font-bold text-purple-800 dark:text-purple-200">
-            {card.workstageCode}
+            {card.workstageCode} <span className="font-normal text-purple-600 dark:text-purple-300">{card.workstageName !== card.workstageCode ? card.workstageName : ""}</span>
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-bold text-green-600 dark:text-green-400">OK {card.okCount}</span>
@@ -126,6 +126,9 @@ export default function InterlockCard({ card }: InterlockCardProps) {
             <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <span className="px-3 py-1 rounded-md text-sm font-bold bg-blue-600 text-white">{card.workstageCode}</span>
+                {card.workstageName !== card.workstageCode && (
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{card.workstageName}</span>
+                )}
                 <span className="text-xs font-bold text-green-500">OK {card.okCount}</span>
                 <span className="text-xs font-bold text-red-500">NG {card.ngCount}</span>
                 <span className="text-xs text-gray-400">총 {card.totalCount}건</span>

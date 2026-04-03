@@ -451,6 +451,7 @@
     "addr": "Destino",
     "lineCode": "Línea",
     "workstageCode": "Etapa",
+    "workstageName": "Nombre Etapa",
     "reqShort": "Solicitud",
     "returnShort": "Respuesta",
     "reqFull": "Datos de solicitud (REQ)",

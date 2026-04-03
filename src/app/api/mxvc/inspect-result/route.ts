@@ -9,6 +9,7 @@ import { NextResponse } from 'next/server';
 import { executeQuery } from '@/lib/db';
 import {
   sqlInspectResultList,
+  sqlInspectResultAll,
   sqlInspectResultCount,
   sqlFilterOptions,
   buildKeywordClause,
@@ -55,8 +56,7 @@ export async function GET(request: Request) {
   const page = Math.max(1, Number(searchParams.get('page') ?? '1'));
   const pageSize = Math.min(200, Math.max(10, Number(searchParams.get('pageSize') ?? '50')));
 
-  const startRow = (page - 1) * pageSize;
-  const endRow = page * pageSize;
+  const exportAll = searchParams.get('exportAll') === '1';
 
   const { clause: kwClause, binds: kwBinds } = buildKeywordClause(keyword || undefined);
   const { clause: colClause, binds: colBinds } = buildColumnFilters({
@@ -69,6 +69,19 @@ export async function GET(request: Request) {
   const extraBinds = { ...kwBinds, ...colBinds };
 
   try {
+    /* 엑셀 전체 다운로드 */
+    if (exportAll) {
+      const rows = await executeQuery<InspectResultRow>(
+        sqlInspectResultAll(extraClause, sortCol, sortDir),
+        { fromDate, toDate, ...extraBinds },
+      );
+      return NextResponse.json({ rows, totalCount: rows.length, timestamp: new Date().toISOString() });
+    }
+
+    /* 일반 페이지네이션 조회 */
+    const startRow = (page - 1) * pageSize;
+    const endRow = page * pageSize;
+
     const [countResult, rows] = await Promise.all([
       executeQuery<{ TOTAL_COUNT: number }>(
         sqlInspectResultCount(extraClause),

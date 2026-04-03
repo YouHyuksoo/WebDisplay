@@ -174,6 +174,41 @@ export function sqlInspectResultList(
   `;
 }
 
+/** 전체 데이터 SQL (엑셀 다운로드용 — 페이지네이션 없음) */
+export function sqlInspectResultAll(
+  extraClause: string,
+  sortCol = 'INSPECT_DATE',
+  sortDir: 'ASC' | 'DESC' = 'DESC',
+): string {
+  const orderExpr = SORT_MAP[sortCol] ?? 'T.INSPECT_DATE';
+  return `
+    SELECT
+      T.INSPECT_DATE,
+      T.LINE_CODE,
+      T.MACHINE_CODE,
+      T.PID,
+      T.INSPECT_RESULT,
+      T.TXN_TYPE,
+      TO_CHAR(T.ENTER_DATE, 'YYYY-MM-DD HH24:MI:SS') AS ENTER_DATE,
+      T.IS_LAST,
+      T.WORKSTAGE_CODE,
+      NVL(F_GET_WORKSTAGE_NAME(T.WORKSTAGE_CODE), T.WORKSTAGE_CODE) AS WORKSTAGE_NAME,
+      B.RUN_NO,
+      B.PCB_ITEM,
+      B.MODEL_NAME,
+      B.MODEL_CODE,
+      B.MASTER_MODEL_NAME,
+      R.PRE_WORKSTAGE_CODE,
+      NVL(F_GET_WORKSTAGE_NAME(R.PRE_WORKSTAGE_CODE), R.PRE_WORKSTAGE_CODE) AS PRE_WORKSTAGE_NAME
+    FROM IQ_MACHINE_INSPECT_RESULT T
+    LEFT JOIN IP_PRODUCT_2D_BARCODE B ON B.SERIAL_NO = T.PID
+    LEFT JOIN IP_PRODUCT_ROUTING_MODEL R ON R.MODEL_NAME = B.MODEL_NAME AND R.WORKSTAGE_CODE = T.WORKSTAGE_CODE AND R.ORGANIZATION_ID = 1
+    WHERE T.INSPECT_DATE BETWEEN :fromDate || ' 00:00:00' AND :toDate || ' 23:59:59'
+    ${extraClause}
+    ORDER BY ${orderExpr} ${sortDir}
+  `;
+}
+
 /** 필터 옵션 SQL (LINE_CODE, MACHINE_CODE 고유값) */
 export function sqlFilterOptions(): string {
   return `

@@ -451,6 +451,7 @@
     "addr": "Đích",
     "lineCode": "Line",
     "workstageCode": "Công đoạn",
+    "workstageName": "Tên công đoạn",
     "reqShort": "Yêu cầu",
     "returnShort": "Phản hồi",
     "reqFull": "Dữ liệu yêu cầu (REQ)",

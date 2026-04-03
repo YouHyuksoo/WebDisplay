@@ -160,6 +160,8 @@ export async function initMenuSystem(): Promise<void> {
       const favorites = state.shortcuts.filter((s) => s.layer === 0);
       state.shortcuts = [...favorites, ...cards];
       import('./cards').then((Cards) => Cards.renderCards());
+      // 서버 동기화 후 도트 인디케이터 재생성 (카테고리가 변경되었을 수 있음)
+      Sections.createDepthIndicator();
     });
     const settings = Storage.loadSettings();
 

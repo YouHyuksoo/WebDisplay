@@ -53,8 +53,7 @@ export default function EquipmentLogStatus({ screenId }: Props) {
   const [lineCode, setLineCode] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize] = useState(50);
-  const [sortCol, setSortCol] = useState('CALL_DATE');
-  const [sortDir, setSortDir] = useState<'ASC' | 'DESC'>('DESC');
+  const [sorts, setSorts] = useState<{ col: string; dir: 'ASC' | 'DESC' }[]>([{ col: 'CALL_DATE', dir: 'DESC' }]);
   const [searchTrigger, setSearchTrigger] = useState<string | null>(null);
 
   /* 필터 고유값 목록 (드롭다운 옵션) */
@@ -63,13 +62,15 @@ export default function EquipmentLogStatus({ screenId }: Props) {
   );
 
   /* 로그 검색 API URL */
+  const sortColParam = sorts.map((s) => s.col).join(',');
+  const sortDirParam = sorts.map((s) => s.dir).join(',');
   const apiUrl = searchTrigger
     ? `/api/display/50?fromDate=${fromDate}&toDate=${toDate}`
       + `&keyword=${encodeURIComponent(keyword)}`
       + `&addr=${encodeURIComponent(addr)}`
       + `&lineCode=${encodeURIComponent(lineCode)}`
       + `&workstageCode=`
-      + `&sortCol=${sortCol}&sortDir=${sortDir}`
+      + `&sortCol=${sortColParam}&sortDir=${sortDirParam}`
       + `&page=${page}&pageSize=${pageSize}`
       + `&_t=${searchTrigger}`
     : null;
@@ -91,7 +92,7 @@ export default function EquipmentLogStatus({ screenId }: Props) {
   useEffect(() => {
     if (searchTrigger) setSearchTrigger(Date.now().toString());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, sortCol, sortDir]);
+  }, [page, sorts]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => { if (e.key === 'Enter') handleSearch(); },
@@ -179,16 +180,10 @@ export default function EquipmentLogStatus({ screenId }: Props) {
               page={data?.page ?? page}
               totalPages={data?.totalPages ?? 0}
               pageSize={pageSize}
-              sortCol={sortCol}
-              sortDir={sortDir}
+              serverTimestamp={data?.timestamp}
               onPageChange={handlePageChange}
-              onSort={(col) => {
-                if (col === sortCol) {
-                  setSortDir((prev) => (prev === 'ASC' ? 'DESC' : 'ASC'));
-                } else {
-                  setSortCol(col);
-                  setSortDir(col === 'CALL_DATE' ? 'DESC' : 'ASC');
-                }
+              onSortChange={(newSorts) => {
+                setSorts(newSorts);
                 setPage(1);
               }}
             />

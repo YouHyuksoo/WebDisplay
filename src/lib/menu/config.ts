@@ -42,7 +42,7 @@ export const DEFAULT_MENU_SETTINGS: MenuSettings = {
   auroraBrightness: 1.0,
   simpleVirtualization: false,
   enable3D: true,
-  autoRolling: true,
+  autoRolling: false,
 };
 
 // ---------------------------------------------------------------------------

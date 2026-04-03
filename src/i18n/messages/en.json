@@ -451,6 +451,7 @@
     "addr": "Target",
     "lineCode": "Line",
     "workstageCode": "Stage",
+    "workstageName": "Stage Name",
     "reqShort": "Request",
     "returnShort": "Response",
     "reqFull": "Request Data (REQ)",

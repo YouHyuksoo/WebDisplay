@@ -451,6 +451,7 @@
     "addr": "대상",
     "lineCode": "라인",
     "workstageCode": "공정",
+    "workstageName": "공정명",
     "reqShort": "요청",
     "returnShort": "응답",
     "reqFull": "요청 데이터 (REQ)",

@@ -47,8 +47,13 @@ export async function GET(request: Request) {
   const addr = searchParams.get('addr') ?? '';
   const lineCode = searchParams.get('lineCode') ?? '';
   const workstageCode = searchParams.get('workstageCode') ?? '';
-  const sortCol = searchParams.get('sortCol') ?? 'CALL_DATE';
-  const sortDir = (searchParams.get('sortDir') ?? 'DESC').toUpperCase() === 'ASC' ? 'ASC' as const : 'DESC' as const;
+  /* 멀티 정렬: sortCol=COL1,COL2&sortDir=DESC,ASC */
+  const sortCols = (searchParams.get('sortCol') ?? 'CALL_DATE').split(',');
+  const sortDirs = (searchParams.get('sortDir') ?? 'DESC').split(',');
+  const sorts = sortCols.map((col, i) => ({
+    col: col.trim(),
+    dir: (sortDirs[i]?.trim().toUpperCase() === 'ASC' ? 'ASC' : 'DESC') as 'ASC' | 'DESC',
+  }));
   const page = Math.max(1, Number(searchParams.get('page') ?? '1'));
   const pageSize = Math.min(200, Math.max(10, Number(searchParams.get('pageSize') ?? '50')));
 
@@ -71,7 +76,7 @@ export async function GET(request: Request) {
         { fromDate, toDate, ...extraBinds },
       ),
       executeQuery<EquipmentLogRow>(
-        sqlEquipmentLogList(extraClause, sortCol, sortDir),
+        sqlEquipmentLogList(extraClause, sorts),
         { fromDate, toDate, startRow, endRow, ...extraBinds },
       ),
     ]);
