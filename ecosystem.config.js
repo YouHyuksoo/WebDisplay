@@ -15,16 +15,18 @@
 const path = require("path");
 const appDir = process.env.DEPLOY_DIR_WEBDISPLAY || __dirname;
 
+const appPort = parseInt(process.env.APP_PORT, 10) || 3000;
+
 module.exports = {
   apps: [
     {
       name: "mes-display",
       script: "node_modules/next/dist/bin/next",
-      args: "start -H 0.0.0.0 -p 3000",
+      args: `start -H 0.0.0.0 -p ${appPort}`,
       cwd: appDir,
       env: {
         NODE_ENV: "production",
-        PORT: 3000,
+        PORT: appPort,
       },
       watch: false,
       max_memory_restart: "1G",
