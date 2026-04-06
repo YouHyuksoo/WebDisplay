@@ -240,3 +240,45 @@ function buildTeamsPayload(type: TeamsNotificationType, data: NotificationData):
       };
   }
 }
+
+/**
+ * CTQ A등급 이상점 Teams 알림 전송
+ * @param category - 알림 카테고리
+ * @param items - A등급 라인 목록
+ * @param webhookUrl - Teams 웹훅 URL
+ * @returns 전송 성공 여부
+ */
+export async function sendCtqAGradeAlert(
+  category: 'repeatability' | 'nonConsecutive' | 'accident',
+  items: Array<{ lineCode: string; lineName: string; process: string; ngCount: number }>,
+  webhookUrl: string
+): Promise<boolean> {
+  const categoryLabel: Record<string, string> = {
+    repeatability: '반복성 (연속동일위치)',
+    nonConsecutive: '연속반복성 (비연속동일위치)',
+    accident: '사고성',
+  };
+
+  const facts = items.map((item) => ({
+    name: `${item.lineName} [${item.process}]`,
+    value: `A등급 — NG ${item.ngCount}건`,
+  }));
+  facts.push({ name: '발생시간', value: new Date().toLocaleString('ko-KR') });
+
+  const payload = {
+    '@type': 'MessageCard',
+    '@context': 'http://schema.org/extensions',
+    themeColor: 'ef4444',
+    summary: `[CTQ A등급] ${categoryLabel[category]} — ${items.length}개 라인`,
+    sections: [
+      {
+        activityTitle: `🚨 CTQ 이상점 A등급 감지: ${categoryLabel[category]}`,
+        activityText: `**${items.length}개 라인**에서 A등급 이상점이 감지되었습니다.`,
+        facts,
+        markdown: true,
+      },
+    ],
+  };
+
+  return postToTeams(webhookUrl, payload);
+}
