@@ -74,7 +74,7 @@
       "url": "/display/27",
       "color": "#818cf8",
       "icon": "svg:monitor",
-      "layer": 1
+      "layer": -1
     },
     {
       "id": "menu-21",
@@ -330,7 +330,7 @@
       "url": "/display/40",
       "color": "#8b5cf6",
       "icon": "svg:chart",
-      "layer": 1
+      "layer": -1
     },
     {
       "id": "menu-41",
@@ -338,7 +338,7 @@
       "url": "/display/41",
       "color": "#06b6d4",
       "icon": "svg:vision",
-      "layer": 1
+      "layer": -1
     },
     {
       "id": "menu-42",
@@ -346,7 +346,7 @@
       "url": "/display/42",
       "color": "#f59e0b",
       "icon": "svg:operation-rate",
-      "layer": 1
+      "layer": -1
     },
     {
       "id": "menu-43",
@@ -354,7 +354,7 @@
       "url": "/display/43",
       "color": "#10b981",
       "icon": "svg:vision",
-      "layer": 1
+      "layer": -1
     },
     {
       "id": "u1-log",
