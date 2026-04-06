@@ -48,7 +48,9 @@ function createJobManager(): JobManager {
       const ms = Math.max(1, intervalMinutes) * 60 * 1000;
       this.isRunning = true;
       this.runOnce();
-      this.intervalId = setInterval(() => this.runOnce(), ms);
+      this.intervalId = setInterval(() => {
+        this.runOnce().catch((err) => console.error('[Monitor] runOnce 오류:', err));
+      }, ms);
       console.log(`[Monitor] 시작 — ${intervalMinutes}분 주기`);
     },
 
@@ -106,7 +108,6 @@ function createJobManager(): JobManager {
 
         // 로그 기록
         for (const item of aItems) {
-          const key = `${item.lineCode}:${category}:${item.process}`;
           state = appendLog(state, {
             at: now,
             category,
@@ -115,8 +116,6 @@ function createJobManager(): JobManager {
             grade: 'A',
             notified: newAItems.some((n) => n.lineCode === item.lineCode && n.process === item.process) && notified,
           });
-          // 처리 후 해당 키를 A로 확정 (appendLog가 state를 교체하므로 다시 설정)
-          state.prevGrades[key] = 'A';
         }
       }
 
@@ -126,10 +125,15 @@ function createJobManager(): JobManager {
   };
 }
 
+/** JobManager 타입 가드 */
+function isJobManager(v: unknown): v is JobManager {
+  return typeof v === 'object' && v !== null && 'isRunning' in v;
+}
+
 /** 글로벌 싱글톤 반환 */
 export function getJobManager(): JobManager {
   const g = globalThis as Record<string, unknown>;
-  if (!g[GLOBAL_KEY]) {
+  if (!isJobManager(g[GLOBAL_KEY])) {
     g[GLOBAL_KEY] = createJobManager();
   }
   return g[GLOBAL_KEY] as JobManager;
