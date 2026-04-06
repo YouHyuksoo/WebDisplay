@@ -8,6 +8,10 @@
  * - 반환값은 A등급인 라인/공정 목록만 (B, OK 제외)
  * - getVietnamTimeRange(): 오늘 08:00 ~ 내일 08:00 (베트남 시간 기준)
  *
+ * 라인 필터 정책:
+ * - 모니터는 전체 라인을 대상으로 조회합니다 (라인 필터 없음).
+ * - 특정 라인만 모니터링하려면 line-filter.ts의 parseLines/buildLineInClause 활용.
+ *
  * 사용 중인 테이블:
  * - IQ_MACHINE_FT1_SMPS_DATA_RAW       : FT 검사이력
  * - IQ_MACHINE_ATE_SERVER_DATA_RAW     : ATE 검사이력
@@ -118,7 +122,7 @@ async function getRepeatLocationsByProcess(
   timeRange: { startStr: string; endStr: string }
 ): Promise<RepeatLocationRow[]> {
   const col = `t.${config.dateCol}`;
-  // dateType은 항상 varchar (repeatability route와 동일)
+  // 현재 FT/ATE 모두 VARCHAR 타입 — DATE 타입 공정 추가 시 조건 분기 필요
   const condition = `${col} >= :tsStart AND ${col} < :tsEnd`;
 
   const sql = `
@@ -279,7 +283,7 @@ async function getHipotSummary(
     WHERE t.INSPECT_DATE >= :tsStart AND t.INSPECT_DATE < :tsEnd
       AND (t.PID LIKE 'VN07%' OR t.PID LIKE 'VNL1%' OR t.PID LIKE 'VNA2%')
       AND t.INSPECT_RESULT NOT IN ('PASS', 'GOOD', 'OK', 'Y')
-      AND (t.QC_CONFIRM_YN IS NULL OR t.QC_CONFIRM_YN <> 'Y')
+      AND (t.QC_CONFIRM_YN IS NULL OR t.QC_CONFIRM_YN != 'Y')
       AND t.LAST_FLAG = 'Y'
       AND t.LINE_CODE IS NOT NULL
       AND NOT EXISTS (
@@ -367,7 +371,7 @@ async function getAteSummary(
     WHERE t.INSPECT_DATE >= :tsStart AND t.INSPECT_DATE < :tsEnd
       AND (t.PID LIKE 'VN07%' OR t.PID LIKE 'VNL1%' OR t.PID LIKE 'VNA2%')
       AND t.INSPECT_RESULT NOT IN ('PASS', 'GOOD', 'OK', 'Y')
-      AND (t.QC_CONFIRM_YN IS NULL OR t.QC_CONFIRM_YN <> 'Y')
+      AND (t.QC_CONFIRM_YN IS NULL OR t.QC_CONFIRM_YN != 'Y')
       AND t.LAST_FLAG = 'Y'
       AND t.LINE_CODE IS NOT NULL
       AND NOT EXISTS (
@@ -388,6 +392,9 @@ async function getAteSummary(
  * HIPOT / BURNIN / ATE 공정 각각 조회 후 A등급만 반환.
  * - HIPOT: JUDGED_COUNT >= 1 → A급
  * - BURNIN/ATE: JUDGED_COUNT >= 2 → A급
+ *
+ * B등급은 모니터링 대상 아님 (A등급 전환만 알림).
+ * 향후 B등급 알림 추가 시 bThreshold 파라미터 추가 필요.
  */
 export async function checkAccidentAGrade(): Promise<AGradeItem[]> {
   try {
@@ -438,6 +445,6 @@ export async function checkAccidentAGrade(): Promise<AGradeItem[]> {
  * 비연속성 판정에는 A등급이 없음 (B급만 존재).
  * DB 조회 없이 빈 배열 반환.
  */
-export async function checkNonConsecutiveAGrade(): Promise<AGradeItem[]> {
-  return [];
+export function checkNonConsecutiveAGrade(): Promise<AGradeItem[]> {
+  return Promise.resolve([]);
 }
