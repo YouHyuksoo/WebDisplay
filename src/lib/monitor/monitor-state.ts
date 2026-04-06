@@ -31,7 +31,7 @@ export interface MonitorLog {
 /** 저장 상태 구조 */
 export interface MonitorState {
   lastRunAt: string | null;
-  prevGrades: Record<GradeKey, string>;  // "OK" | "A" | "B"
+  prevGrades: Record<GradeKey, 'A' | 'B' | 'OK'>;
   logs: MonitorLog[];
 }
 
@@ -48,7 +48,8 @@ const DEFAULT_STATE: MonitorState = {
 export async function readMonitorState(): Promise<MonitorState> {
   try {
     const raw = await fs.readFile(STATE_PATH, 'utf-8');
-    return { ...DEFAULT_STATE, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw) as Partial<MonitorState>;
+    return { ...DEFAULT_STATE, ...parsed };
   } catch {
     return { ...DEFAULT_STATE };
   }
