@@ -20,6 +20,7 @@ import SlackWebhookSection from '@/components/u1/slack/SlackWebhookSection';
 import TeamsWebhookSection from '@/components/u1/slack/TeamsWebhookSection';
 import SlackToggleSection from '@/components/u1/slack/SlackToggleSection';
 import SlackAdvancedSection from '@/components/u1/slack/SlackAdvancedSection';
+import MonitorJobSection from '@/components/u1/slack/MonitorJobSection';
 
 const SCREEN_ID = 'u1-slack';
 
@@ -41,6 +42,12 @@ export interface SlackSettings {
   teamsWebhookUrl: string;
   teamsChannelName: string;
   teamsEnabled: boolean;
+  // --- 백그라운드 모니터 ---
+  monitorEnabled: boolean;
+  monitorIntervalMinutes: number;
+  monitorRepeatability: boolean;
+  monitorNonConsecutive: boolean;
+  monitorAccident: boolean;
 }
 
 /** 상태 메시지 타입 */
@@ -63,6 +70,11 @@ const DEFAULT_SETTINGS: SlackSettings = {
   teamsWebhookUrl: '',
   teamsChannelName: '',
   teamsEnabled: false,
+  monitorEnabled: false,
+  monitorIntervalMinutes: 5,
+  monitorRepeatability: true,
+  monitorNonConsecutive: true,
+  monitorAccident: true,
 };
 
 export default function SlackSettingsPage() {
@@ -100,7 +112,8 @@ export default function SlackSettingsPage() {
     if (
       settings.teamsWebhookUrl &&
       !settings.teamsWebhookUrl.includes('.webhook.office.com/') &&
-      !settings.teamsWebhookUrl.includes('.logic.azure.com/')
+      !settings.teamsWebhookUrl.includes('.logic.azure.com/') &&
+      !settings.teamsWebhookUrl.includes('powerplatform.com')
     ) {
       setStatus({ type: 'error', text: '유효하지 않은 Teams 웹훅 URL입니다.' });
       return;
@@ -227,12 +240,12 @@ export default function SlackSettingsPage() {
               </div>
               <button
                 onClick={() => handleToggle('isEnabled')}
-                className={`relative w-12 h-6 rounded-full transition-colors focus:outline-none ${
+                className={`relative w-12 h-6 rounded-full overflow-hidden transition-colors focus:outline-none ${
                   settings.isEnabled ? 'bg-blue-600' : 'bg-gray-600'
                 }`}
                 aria-label="Slack 알림 ON/OFF"
               >
-                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${
                   settings.isEnabled ? 'translate-x-7' : 'translate-x-1'
                 }`} />
               </button>
@@ -268,6 +281,14 @@ export default function SlackSettingsPage() {
             dailyReportTime={settings.dailyReportTime}
             onToggleMention={() => handleToggle('mentionOnUrgent')}
             onChangeTime={(val) => setSettings((prev) => ({ ...prev, dailyReportTime: val }))}
+          />
+
+          {/* 백그라운드 모니터 섹션 */}
+          <MonitorJobSection
+            settings={settings}
+            onSettingsChange={(field, value) =>
+              setSettings((prev) => ({ ...prev, [field]: value }))
+            }
           />
 
           {/* 저장 버튼 */}

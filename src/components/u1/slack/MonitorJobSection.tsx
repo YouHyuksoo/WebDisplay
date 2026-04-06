@@ -164,8 +164,8 @@ export default function MonitorJobSection({ settings, onSettingsChange }: Monito
           type="number"
           min={1}
           max={60}
-          value={(settings as unknown as Record<string, unknown>).monitorIntervalMinutes as number ?? 5}
-          onChange={(e) => onSettingsChange('monitorIntervalMinutes' as keyof SlackSettings, Number(e.target.value))}
+          value={settings.monitorIntervalMinutes ?? 5}
+          onChange={(e) => onSettingsChange('monitorIntervalMinutes', Number(e.target.value))}
           className="w-28 px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-gray-200 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm"
         />
         <p className="mt-1 text-xs text-gray-500">설정 저장 후 재시작하면 반영됩니다</p>
@@ -184,14 +184,14 @@ export default function MonitorJobSection({ settings, onSettingsChange }: Monito
               <p className="text-gray-500 text-xs mt-0.5">{item.desc}</p>
             </div>
             <button
-              onClick={() => onSettingsChange(item.field, !(settings as unknown as Record<string, unknown>)[item.field])}
+              onClick={() => onSettingsChange(item.field, !settings[item.field])}
               className={`relative w-10 h-5 rounded-full overflow-hidden transition-colors focus:outline-none flex-shrink-0 ${
-                (settings as unknown as Record<string, unknown>)[item.field] ? 'bg-orange-500' : 'bg-gray-600'
+                settings[item.field] ? 'bg-orange-500' : 'bg-gray-600'
               }`}
               type="button"
             >
               <span className={`absolute top-0.5 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                (settings as unknown as Record<string, unknown>)[item.field] ? 'translate-x-5' : 'translate-x-0.5'
+                settings[item.field] ? 'translate-x-5' : 'translate-x-0.5'
               }`} />
             </button>
           </label>
