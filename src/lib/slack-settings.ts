@@ -51,6 +51,17 @@ export interface SlackSettings {
   teamsChannelName: string;
   /** Teams 알림 ON/OFF */
   teamsEnabled: boolean;
+  // --- 백그라운드 모니터 설정 ---
+  /** 이상점 백그라운드 모니터 ON/OFF */
+  monitorEnabled: boolean;
+  /** 검사 주기 (분, 최소 1) */
+  monitorIntervalMinutes: number;
+  /** 반복성(연속동일위치) 모니터링 여부 */
+  monitorRepeatability: boolean;
+  /** 연속반복성(비연속동일위치) 모니터링 여부 */
+  monitorNonConsecutive: boolean;
+  /** 사고성 모니터링 여부 */
+  monitorAccident: boolean;
 }
 
 /** 기본 설정값 */
@@ -68,6 +79,11 @@ const DEFAULT_SETTINGS: SlackSettings = {
   teamsWebhookUrl: '',
   teamsChannelName: '',
   teamsEnabled: false,
+  monitorEnabled: false,
+  monitorIntervalMinutes: 5,
+  monitorRepeatability: true,
+  monitorNonConsecutive: true,
+  monitorAccident: true,
 };
 
 /** 설정 파일 경로 */
