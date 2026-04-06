@@ -149,10 +149,17 @@ export function loadSettings(): MenuSettings {
       // 기본값과 병합 (새 설정 항목 대응)
       return { ...DEFAULT_SETTINGS, ...parsed };
     }
+    const seeded = { ...DEFAULT_SETTINGS };
+    localStorage.setItem(KEYS.SETTINGS, JSON.stringify(seeded));
+    return seeded;
   } catch (e) {
     console.error('Failed to load settings:', e);
   }
-  return { ...DEFAULT_SETTINGS };
+  const fallback = { ...DEFAULT_SETTINGS };
+  try {
+    localStorage.setItem(KEYS.SETTINGS, JSON.stringify(fallback));
+  } catch { /* ignore */ }
+  return fallback;
 }
 
 /**

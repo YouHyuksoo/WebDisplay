@@ -13,7 +13,11 @@ import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useIndicator } from "@/hooks/ctq/useIndicator";
 import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import IndicatorTable from "@/components/ctq/IndicatorTable";
-import type { IndicatorProcessKey, MonthlyProcessData } from "@/types/ctq/indicator";
+import type {
+  IndicatorComparisonMode,
+  IndicatorProcessKey,
+  MonthlyProcessData,
+} from "@/types/ctq/indicator";
 
 const SCREEN_ID = "ctq-indicator";
 
@@ -21,10 +25,11 @@ export default function IndicatorPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
   const [minVolume, setMinVolume] = useState(200);
+  const [comparisonMode, setComparisonMode] = useState<IndicatorComparisonMode>("last-vs-current");
   const [showSettings, setShowSettings] = useState(false);
   const [tempVolume, setTempVolume] = useState(String(minVolume));
   const settingsRef = useRef<HTMLDivElement>(null);
-  const { data, error, loading, fetchData, registerCountermeasure } = useIndicator(minVolume);
+  const { data, error, loading, fetchData, registerCountermeasure } = useIndicator(minVolume, comparisonMode);
 
   const PROCESS_KEYS: IndicatorProcessKey[] = ["ICT", "HIPOT", "FT", "BURNIN", "ATE"];
 
@@ -76,6 +81,29 @@ export default function IndicatorPage() {
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4">
             <CriteriaTooltip pageKey="indicator" />
+            <div className="flex items-center gap-1 rounded-lg border border-gray-700 bg-gray-900/80 p-1">
+              <span className="px-2 text-xs text-gray-500 whitespace-nowrap">비교 기준</span>
+              <button
+                onClick={() => setComparisonMode("last-vs-current")}
+                className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+                  comparisonMode === "last-vs-current"
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-400 hover:text-white hover:bg-gray-800"
+                }`}
+              >
+                전월 / 당월
+              </button>
+              <button
+                onClick={() => setComparisonMode("before-vs-last")}
+                className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+                  comparisonMode === "before-vs-last"
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-400 hover:text-white hover:bg-gray-800"
+                }`}
+              >
+                전전월 / 전월
+              </button>
+            </div>
             {data && data.models.length > 0 && (
               <div className="flex items-center gap-4 text-xs text-gray-400">
                 <span>

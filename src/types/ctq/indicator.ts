@@ -12,6 +12,8 @@
 export type IndicatorProcessKey =
   | "ICT" | "HIPOT" | "FT" | "BURNIN" | "ATE";
 
+export type IndicatorComparisonMode = "last-vs-current" | "before-vs-last";
+
 /** 공정별 월간 데이터 (캐시 테이블 1행에 대응) */
 export interface MonthlyProcessData {
   ngCount: number;
@@ -38,6 +40,7 @@ export interface IndicatorResponse {
   models: IndicatorModelData[];
   monthBefore: MonthRange;
   lastMonth: MonthRange;
+  comparisonMode: IndicatorComparisonMode;
   lastUpdated: string;
 }
 

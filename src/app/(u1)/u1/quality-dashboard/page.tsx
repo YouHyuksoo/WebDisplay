@@ -20,7 +20,7 @@ import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { usePersistedState } from "@/hooks/ctq/usePersistedState";
 import { useU1QualityDashboard } from "@/hooks/u1/useU1QualityDashboard";
 import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
-import DashboardSidebar from "@/components/ctq/DashboardSidebar";
+import DashboardSidebar, { PRESETS } from "@/components/ctq/DashboardSidebar";
 import DashboardCharts from "@/components/ctq/DashboardCharts";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import type { DashboardSettings } from "@/types/ctq/quality-dashboard";
@@ -60,8 +60,57 @@ export default function U1QualityDashboardPage() {
       <DisplayHeader title={t("pages.u1QualityDashboard.title")} screenId={SCREEN_ID} />
 
       {/* -- 요약 바 -- */}
-      <div className="shrink-0 bg-gray-900 border-b border-gray-700 px-6 py-2">
-        <div className="flex items-center max-w-[1920px] mx-auto">
+      <div className="shrink-0 bg-gray-900 border-b border-gray-700 px-6 py-3">
+        <div className="flex items-center gap-6 max-w-[1920px] mx-auto min-h-12">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 mr-1 whitespace-nowrap">{t("pages.qualityDashboard.preset")}</span>
+            {Object.entries({ default: "presetDefault", manager: "presetManager", line: "presetLine", quality: "presetQuality", all: "presetAll" }).map(([k, v]) => (
+              <button
+                key={k}
+                onClick={() => setSettings({ ...settings, ...PRESETS[k] } as DashboardSettings)}
+                className="px-3 py-1.5 text-xs border border-gray-600 rounded-md bg-gray-800 text-gray-300 hover:border-blue-500 hover:text-blue-400 transition-colors whitespace-nowrap"
+              >
+                {t(`pages.qualityDashboard.${v}`)}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 whitespace-nowrap">{t("pages.qualityDashboard.layout")}</span>
+            <select
+              value={settings.layout}
+              onChange={(e) => setSettings({ ...settings, layout: e.target.value as DashboardSettings["layout"] })}
+              className="bg-gray-800 text-gray-200 border border-gray-600 rounded-md px-3 py-1.5 text-xs min-w-24"
+            >
+              <option value="2x3">{t("pages.qualityDashboard.layout2x3")}</option>
+              <option value="3x2">{t("pages.qualityDashboard.layout3x2")}</option>
+              <option value="2x2+1">{t("pages.qualityDashboard.layout2x2p1")}</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 whitespace-nowrap">{t("pages.qualityDashboard.palette")}</span>
+            <select
+              value={settings.palette}
+              onChange={(e) => setSettings({ ...settings, palette: e.target.value as DashboardSettings["palette"] })}
+              className="bg-gray-800 text-gray-200 border border-gray-600 rounded-md px-3 py-1.5 text-xs min-w-24"
+            >
+              <option value="blue">Blue</option>
+              <option value="rainbow">Rainbow</option>
+              <option value="warm">Warm</option>
+              <option value="cool">Cool</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 whitespace-nowrap">{t("pages.qualityDashboard.chartHeight")}</span>
+            <input
+              type="range"
+              min={120}
+              max={350}
+              value={settings.chartHeight}
+              onChange={(e) => setSettings({ ...settings, chartHeight: Number(e.target.value) })}
+              className="w-28 accent-blue-500"
+            />
+            <span className="text-xs text-blue-400 font-mono min-w-12">{settings.chartHeight}px</span>
+          </div>
           <CriteriaTooltip pageKey="qualityDashboard" />
         </div>
       </div>

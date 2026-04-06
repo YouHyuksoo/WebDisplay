@@ -9,9 +9,12 @@
  */
 
 import { useState, useCallback } from "react";
-import type { IndicatorResponse } from "@/types/ctq/indicator";
+import type { IndicatorComparisonMode, IndicatorResponse } from "@/types/ctq/indicator";
 
-export function useIndicator(minVolume: number = 200) {
+export function useIndicator(
+  minVolume: number = 200,
+  comparisonMode: IndicatorComparisonMode = "last-vs-current",
+) {
   const [data, setData] = useState<IndicatorResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,6 +24,7 @@ export function useIndicator(minVolume: number = 200) {
     try {
       const params = new URLSearchParams();
       if (minVolume !== 200) params.set("minVolume", String(minVolume));
+      params.set("comparisonMode", comparisonMode);
       if (regenerate) params.set("regenerate", "true");
       const qs = params.toString();
       const res = await fetch(`/api/ctq/indicator${qs ? `?${qs}` : ""}`);
@@ -33,7 +37,7 @@ export function useIndicator(minVolume: number = 200) {
     } finally {
       setLoading(false);
     }
-  }, [minVolume]);
+  }, [comparisonMode, minVolume]);
 
   const registerCountermeasure = useCallback(async (
     targetMonth: string,
