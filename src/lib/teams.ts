@@ -259,6 +259,15 @@ export async function sendCtqAGradeAlert(
     accident: '사고성',
   };
 
+  const categoryPath: Record<string, string> = {
+    repeatability: '/ctq/repeatability',
+    nonConsecutive: '/ctq/non-consecutive',
+    accident: '/ctq/accident',
+  };
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const pageUrl = `${baseUrl}${categoryPath[category]}`;
+
   const facts = items.map((item) => ({
     name: `${item.lineName} [${item.process}]`,
     value: `A등급 — NG ${item.ngCount}건`,
@@ -276,6 +285,13 @@ export async function sendCtqAGradeAlert(
         activityText: `**${items.length}개 라인**에서 A등급 이상점이 감지되었습니다.`,
         facts,
         markdown: true,
+      },
+    ],
+    potentialAction: [
+      {
+        '@type': 'OpenUri',
+        name: '상세 보기',
+        targets: [{ os: 'default', uri: pageUrl }],
       },
     ],
   };
