@@ -11,9 +11,11 @@ import { useTranslations } from 'next-intl';
 interface CriteriaTooltipProps {
   /** navTooltip 키 (repeatability, accident 등) */
   pageKey: string;
+  /** 팝오버 너비 클래스 (기본: w-96) */
+  widthClass?: string;
 }
 
-export default function CriteriaTooltip({ pageKey }: CriteriaTooltipProps) {
+export default function CriteriaTooltip({ pageKey, widthClass = 'w-96' }: CriteriaTooltipProps) {
   const t = useTranslations('ctq');
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -45,7 +47,7 @@ export default function CriteriaTooltip({ pageKey }: CriteriaTooltipProps) {
         {t('navTooltip.criteria')}
       </button>
       {open && (
-        <div className="absolute left-0 top-full mt-2 z-50 w-96 bg-gray-800 border border-gray-600 rounded-lg shadow-2xl overflow-hidden">
+        <div className={`absolute left-0 top-full mt-2 z-50 ${widthClass} bg-gray-800 border border-gray-600 rounded-lg shadow-2xl overflow-hidden`}>
           <div className="px-4 py-3 border-b border-gray-700">
             <h4 className="text-sm font-bold text-white">{t('navTooltip.criteria')}</h4>
           </div>

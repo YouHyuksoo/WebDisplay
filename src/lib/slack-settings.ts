@@ -52,9 +52,7 @@ export interface SlackSettings {
   /** Teams 알림 ON/OFF */
   teamsEnabled: boolean;
   // --- 백그라운드 모니터 설정 ---
-  /** 이상점 백그라운드 모니터 ON/OFF */
-  monitorEnabled: boolean;
-  /** 검사 주기 (분, 최소 1) */
+  /** 검사 주기 (분, 최소 1) — ON/OFF는 .env.local CTQ_MONITOR_ENABLED로 제어 */
   monitorIntervalMinutes: number;
   /** 반복성(연속동일위치) 모니터링 여부 */
   monitorRepeatability: boolean;
@@ -79,7 +77,6 @@ const DEFAULT_SETTINGS: SlackSettings = {
   teamsWebhookUrl: '',
   teamsChannelName: '',
   teamsEnabled: false,
-  monitorEnabled: false,
   monitorIntervalMinutes: 5,
   monitorRepeatability: true,
   monitorNonConsecutive: true,

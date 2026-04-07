@@ -14,12 +14,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * Teams 웹훅 URL 유효성 검사
- * webhook.office.com 또는 logic.azure.com 도메인 허용
+ * webhook.office.com, logic.azure.com, powerplatform.com (Power Automate) 도메인 허용
  */
 function isValidTeamsWebhookUrl(url: string): boolean {
   return (
     url.includes('.webhook.office.com/') ||
-    url.includes('.logic.azure.com/')
+    url.includes('.logic.azure.com/') ||
+    url.includes('powerplatform.com')
   );
 }
 
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (!isValidTeamsWebhookUrl(webhookUrl)) {
       return NextResponse.json(
-        { error: '유효하지 않은 Teams 웹훅 URL입니다. webhook.office.com 또는 logic.azure.com 도메인이어야 합니다.' },
+        { error: '유효하지 않은 Teams 웹훅 URL입니다. webhook.office.com, logic.azure.com, 또는 powerplatform.com 도메인이어야 합니다.' },
         { status: 400 }
       );
     }

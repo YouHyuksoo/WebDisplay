@@ -12,6 +12,24 @@
 export type IndicatorProcessKey =
   | "ICT" | "HIPOT" | "FT" | "BURNIN" | "ATE";
 
+/** 공정별 PPM 한도 — 이 이상일 때만 지표 Logic(빨강/대책서) 적용 */
+export interface ProcessPpmThresholds {
+  ICT: number;
+  HIPOT: number;
+  FT: number;
+  BURNIN: number;
+  ATE: number;
+}
+
+/** 공정별 PPM 한도 기본값 */
+export const DEFAULT_PPM_THRESHOLDS: ProcessPpmThresholds = {
+  ICT: 1000,
+  HIPOT: 100,
+  FT: 100,
+  BURNIN: 100,
+  ATE: 500,
+};
+
 export type IndicatorComparisonMode = "last-vs-current" | "before-vs-last";
 
 /** 공정별 월간 데이터 (캐시 테이블 1행에 대응) */

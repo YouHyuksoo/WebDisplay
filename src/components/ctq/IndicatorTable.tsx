@@ -20,7 +20,9 @@ import type {
   IndicatorProcessKey,
   MonthlyProcessData,
   MonthRange,
+  ProcessPpmThresholds,
 } from "@/types/ctq/indicator";
+import { DEFAULT_PPM_THRESHOLDS } from "@/types/ctq/indicator";
 import IndicatorDetailModal from "./IndicatorDetailModal";
 
 /** 대상 공정 목록 */
@@ -72,6 +74,7 @@ interface Props {
   models: IndicatorModelData[];
   monthBefore: MonthRange;
   lastMonth: MonthRange;
+  ppmThresholds?: ProcessPpmThresholds;
   onRegister: (
     targetMonth: string,
     itemCode: string,
@@ -80,7 +83,7 @@ interface Props {
   ) => Promise<void>;
 }
 
-export default function IndicatorTable({ models, monthBefore, lastMonth, onRegister }: Props) {
+export default function IndicatorTable({ models, monthBefore, lastMonth, ppmThresholds = DEFAULT_PPM_THRESHOLDS, onRegister }: Props) {
   const t = useTranslations("ctq");
   const [modal, setModal] = useState<{
     targetMonth: string;
@@ -167,6 +170,7 @@ export default function IndicatorTable({ models, monthBefore, lastMonth, onRegis
               key={model.itemCode}
               model={model}
               lastMonthKey={lastMonth.month}
+              ppmThresholds={ppmThresholds}
               onOpenModal={(processKey) =>
                 setModal({
                   targetMonth: lastMonth.month,
@@ -218,11 +222,13 @@ function SubHeaders({
 function ModelRow({
   model,
   lastMonthKey,
+  ppmThresholds,
   onOpenModal,
   onOpenDetail,
 }: {
   model: IndicatorModelData;
   lastMonthKey: string;
+  ppmThresholds: ProcessPpmThresholds;
   onOpenModal: (processKey: IndicatorProcessKey) => void;
   onOpenDetail: (processKey: IndicatorProcessKey, countermeasureNo: string) => void;
 }) {
@@ -237,6 +243,7 @@ function ModelRow({
           processKey={key}
           prev={model.monthBefore[key]}
           curr={model.lastMonth[key]}
+          ppmThreshold={ppmThresholds[key]}
           onOpenModal={() => onOpenModal(key)}
           onOpenDetail={() => {
             const cm = model.lastMonth[key]?.countermeasureNo;
@@ -253,20 +260,25 @@ function ProcessCells({
   processKey,
   prev,
   curr,
+  ppmThreshold,
   onOpenModal,
   onOpenDetail,
 }: {
   processKey: IndicatorProcessKey;
   prev?: MonthlyProcessData;
   curr?: MonthlyProcessData;
+  /** 이 PPM 이상일 때만 지표 Logic(빨강/대책서 버튼) 적용 */
+  ppmThreshold: number;
   onOpenModal: () => void;
   onOpenDetail: () => void;
 }) {
   const t = useTranslations("ctq");
   const prevPpm = prev?.ppm ?? 0;
   const currPpm = curr?.ppm ?? 0;
-  const color = getRatioColor(prevPpm, currPpm);
-  const needsAction = isOver200(prevPpm, currPpm);
+  // PPM 한도 미만이면 지표 Logic 비적용 (색상 계산에서 제외)
+  const aboveThreshold = prevPpm >= ppmThreshold || currPpm >= ppmThreshold;
+  const color = aboveThreshold ? getRatioColor(prevPpm, currPpm) : "text-gray-500";
+  const needsAction = aboveThreshold && isOver200(prevPpm, currPpm);
   const hasCountermeasure = !!curr?.countermeasureNo;
   const baseCellClass = "px-2 py-1.5 text-center border border-gray-800";
 

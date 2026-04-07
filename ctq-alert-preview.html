@@ -536,7 +536,7 @@
   let state = {
     category: 'repeatability',
     lines: [
-      { lineName: 'SMD-L1 라인', process: 'FT', ngCount: 3 },
+      { lineName: 'SMPS-1', process: 'FT', ngCount: 3 },
     ],
     showTime: true,
   };
@@ -545,26 +545,26 @@
   const PRESETS = {
     repeat1: {
       category: 'repeatability',
-      lines: [{ lineName: 'SMD-L1 라인', process: 'FT', ngCount: 3 }],
+      lines: [{ lineName: 'SMPS-1', process: 'FT', ngCount: 3 }],
     },
     repeat3: {
       category: 'repeatability',
       lines: [
-        { lineName: 'SMD-L1 라인', process: 'FT',  ngCount: 3 },
-        { lineName: 'SMD-L3 라인', process: 'ATE', ngCount: 2 },
-        { lineName: 'IMD-L2 라인', process: 'FT',  ngCount: 4 },
+        { lineName: 'SMPS-1', process: 'FT',  ngCount: 3 },
+        { lineName: 'SMPS-3', process: 'ATE', ngCount: 2 },
+        { lineName: 'SMPS-6', process: 'FT',  ngCount: 4 },
       ],
     },
     accident1: {
       category: 'accident',
-      lines: [{ lineName: 'IMD-L2 라인', process: 'HIPOT', ngCount: 1 }],
+      lines: [{ lineName: 'SMPS-2', process: 'HIPOT', ngCount: 1 }],
     },
     accident3: {
       category: 'accident',
       lines: [
-        { lineName: 'SMD-L2 라인', process: 'HIPOT',  ngCount: 2 },
-        { lineName: 'IMD-L1 라인', process: 'BURNIN', ngCount: 3 },
-        { lineName: 'SMD-L4 라인', process: 'ATE',    ngCount: 2 },
+        { lineName: 'SMPS-2', process: 'HIPOT',  ngCount: 2 },
+        { lineName: 'SMPS-4', process: 'BURNIN', ngCount: 3 },
+        { lineName: 'SMPS-9', process: 'ATE',    ngCount: 2 },
       ],
     },
   };
@@ -623,7 +623,9 @@
   function addLine() {
     const cat = state.category;
     const procOpts = PROCESS_OPTIONS[cat] || ['FT'];
-    state.lines.push({ lineName: `라인 ${state.lines.length + 1}`, process: procOpts[0], ngCount: 1 });
+    const smpsNames = ['SMPS-1','SMPS-2','SMPS-3','SMPS-4','SMPS-6','SMPS-9','SMPS-NC BOARD'];
+    const nextName = smpsNames[state.lines.length] ?? `SMPS-${state.lines.length + 1}`;
+    state.lines.push({ lineName: nextName, process: procOpts[0], ngCount: 1 });
     renderLineControls();
     updateAll();
   }

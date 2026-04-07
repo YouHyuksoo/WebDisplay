@@ -29,12 +29,8 @@ export async function register() {
     const { getSettings } = await import('@/lib/slack-settings');
 
     const settings = await getSettings();
-    if (settings.monitorEnabled) {
-      getJobManager().start(settings.monitorIntervalMinutes);
-      console.log('[instrumentation] CTQ 모니터 잡 자동 재개');
-    } else {
-      console.log('[instrumentation] CTQ 모니터 대기 중 (UI에서 비활성화됨)');
-    }
+    getJobManager().start(settings.monitorIntervalMinutes);
+    console.log(`[instrumentation] CTQ 모니터 자동 시작 — ${settings.monitorIntervalMinutes}분 주기`);
   } catch (e) {
     console.error('[instrumentation] CTQ 모니터 초기화 실패:', e);
   }

@@ -12,7 +12,7 @@ import { useState, useCallback } from "react";
 import type { IndicatorComparisonMode, IndicatorResponse } from "@/types/ctq/indicator";
 
 export function useIndicator(
-  minVolume: number = 200,
+  minPrevMonthVolume: number = 1000,
   comparisonMode: IndicatorComparisonMode = "last-vs-current",
 ) {
   const [data, setData] = useState<IndicatorResponse | null>(null);
@@ -23,7 +23,7 @@ export function useIndicator(
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (minVolume !== 200) params.set("minVolume", String(minVolume));
+      if (minPrevMonthVolume !== 1000) params.set("minPrevMonthVolume", String(minPrevMonthVolume));
       params.set("comparisonMode", comparisonMode);
       if (regenerate) params.set("regenerate", "true");
       const qs = params.toString();
@@ -37,7 +37,7 @@ export function useIndicator(
     } finally {
       setLoading(false);
     }
-  }, [comparisonMode, minVolume]);
+  }, [comparisonMode, minPrevMonthVolume]);
 
   const registerCountermeasure = useCallback(async (
     targetMonth: string,

@@ -44,13 +44,13 @@ export default function TeamsWebhookSection({
         </h3>
         <button
           onClick={onToggle}
-          className={`relative w-12 h-6 rounded-full transition-colors focus:outline-none ${
+          className={`relative w-12 h-6 rounded-full overflow-hidden transition-colors focus:outline-none ${
             isEnabled ? 'bg-purple-600' : 'bg-gray-600'
           }`}
           aria-label="Teams 알림 ON/OFF"
           type="button"
         >
-          <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+          <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${
             isEnabled ? 'translate-x-7' : 'translate-x-1'
           }`} />
         </button>
@@ -65,11 +65,11 @@ export default function TeamsWebhookSection({
           type="url"
           value={webhookUrl}
           onChange={(e) => onChange('teamsWebhookUrl', e.target.value)}
-          placeholder="https://your-org.webhook.office.com/webhookb2/..."
+          placeholder="https://your-org.webhook.office.com/... 또는 https://...powerplatform.com/..."
           className="w-full px-4 py-2.5 rounded-lg bg-gray-800 border border-gray-600 text-gray-200 placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none font-mono text-sm"
         />
         <p className="mt-1.5 text-xs text-gray-500">
-          Teams 채널 → ⋯ → 커넥터 → Incoming Webhook → 구성 → URL 복사
+          Teams Incoming Webhook URL 또는 Power Automate HTTP 트리거 URL 모두 지원합니다.
         </p>
       </div>
 

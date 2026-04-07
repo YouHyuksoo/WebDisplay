@@ -43,7 +43,6 @@ export interface SlackSettings {
   teamsChannelName: string;
   teamsEnabled: boolean;
   // --- 백그라운드 모니터 ---
-  monitorEnabled: boolean;
   monitorIntervalMinutes: number;
   monitorRepeatability: boolean;
   monitorNonConsecutive: boolean;
@@ -70,7 +69,6 @@ const DEFAULT_SETTINGS: SlackSettings = {
   teamsWebhookUrl: '',
   teamsChannelName: '',
   teamsEnabled: false,
-  monitorEnabled: false,
   monitorIntervalMinutes: 5,
   monitorRepeatability: true,
   monitorNonConsecutive: true,
@@ -200,7 +198,7 @@ export default function SlackSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex flex-col">
+      <div className="h-full bg-gray-950 flex flex-col">
         <DisplayHeader title="알림 설정 (Slack / Teams)" screenId={SCREEN_ID} />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500" />
@@ -210,11 +208,11 @@ export default function SlackSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col">
+    <div className="h-full bg-gray-950 flex flex-col">
       <DisplayHeader title="알림 설정 (Slack / Teams)" screenId={SCREEN_ID} />
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
-        <div className="max-w-2xl mx-auto space-y-4">
+        <div className="max-w-5xl mx-auto space-y-4">
 
           {/* 상태 메시지 */}
           {status && (
@@ -228,49 +226,57 @@ export default function SlackSettingsPage() {
             </div>
           )}
 
-          {/* Slack 마스터 ON/OFF */}
-          <div className="bg-gray-900 rounded-xl p-5 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-200 font-semibold flex items-center gap-2">
-                  <span className="text-blue-400">💬</span>
-                  Slack 알림
-                </p>
-                <p className="text-gray-400 text-sm mt-0.5">Slack 전체 알림 기능을 켜거나 끕니다</p>
+          {/* Slack / Teams 좌우 배치 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* 왼쪽: Slack */}
+            <div className="space-y-4">
+              {/* Slack 마스터 ON/OFF */}
+              <div className="bg-gray-900 rounded-xl p-5 border border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-200 font-semibold flex items-center gap-2">
+                      <span className="text-blue-400">💬</span>
+                      Slack 알림
+                    </p>
+                    <p className="text-gray-400 text-sm mt-0.5">Slack 전체 알림 기능을 켜거나 끕니다</p>
+                  </div>
+                  <button
+                    onClick={() => handleToggle('isEnabled')}
+                    className={`relative w-12 h-6 rounded-full overflow-hidden transition-colors focus:outline-none ${
+                      settings.isEnabled ? 'bg-blue-600' : 'bg-gray-600'
+                    }`}
+                    aria-label="Slack 알림 ON/OFF"
+                  >
+                    <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                      settings.isEnabled ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => handleToggle('isEnabled')}
-                className={`relative w-12 h-6 rounded-full overflow-hidden transition-colors focus:outline-none ${
-                  settings.isEnabled ? 'bg-blue-600' : 'bg-gray-600'
-                }`}
-                aria-label="Slack 알림 ON/OFF"
-              >
-                <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                  settings.isEnabled ? 'translate-x-7' : 'translate-x-1'
-                }`} />
-              </button>
+
+              {/* Slack 웹훅 설정 섹션 */}
+              <SlackWebhookSection
+                webhookUrl={settings.webhookUrl}
+                channelName={settings.channelName}
+                isTesting={isTestingSlack}
+                onChange={(field, value) => setSettings((prev) => ({ ...prev, [field]: value }))}
+                onTest={handleTestSlack}
+              />
+            </div>
+
+            {/* 오른쪽: Teams */}
+            <div>
+              <TeamsWebhookSection
+                webhookUrl={settings.teamsWebhookUrl}
+                channelName={settings.teamsChannelName}
+                isEnabled={settings.teamsEnabled}
+                isTesting={isTestingTeams}
+                onChange={(field, value) => setSettings((prev) => ({ ...prev, [field]: value }))}
+                onToggle={() => handleToggle('teamsEnabled')}
+                onTest={handleTestTeams}
+              />
             </div>
           </div>
-
-          {/* Slack 웹훅 설정 섹션 */}
-          <SlackWebhookSection
-            webhookUrl={settings.webhookUrl}
-            channelName={settings.channelName}
-            isTesting={isTestingSlack}
-            onChange={(field, value) => setSettings((prev) => ({ ...prev, [field]: value }))}
-            onTest={handleTestSlack}
-          />
-
-          {/* Teams 웹훅 설정 섹션 */}
-          <TeamsWebhookSection
-            webhookUrl={settings.teamsWebhookUrl}
-            channelName={settings.teamsChannelName}
-            isEnabled={settings.teamsEnabled}
-            isTesting={isTestingTeams}
-            onChange={(field, value) => setSettings((prev) => ({ ...prev, [field]: value }))}
-            onToggle={() => handleToggle('teamsEnabled')}
-            onTest={handleTestTeams}
-          />
 
           {/* 알림 토글 섹션 (Slack/Teams 공유) */}
           <SlackToggleSection settings={settings} onToggle={handleToggle} />

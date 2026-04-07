@@ -185,7 +185,7 @@ function buildResponse(
   lmRows: CacheRow[],
   mbMonth: string,
   lmMonth: string,
-  minVolume: number,
+  minPrevMonthVolume: number,
   comparisonMode: IndicatorComparisonMode
 ): IndicatorResponse {
   const modelMap = new Map<string, IndicatorModelData>();
@@ -228,10 +228,9 @@ function buildResponse(
 
     if (mbPpmSum === 0 && lmPpmSum === 0) return false;
 
-    const mbTotal = mbProcs.reduce((s, p) => s + p.totalCount, 0);
+    // 전월(lmRows 기준) 생산수량이 minPrevMonthVolume 미만이면 지표 Logic 제외
     const lmTotal = lmProcs.reduce((s, p) => s + p.totalCount, 0);
-
-    if (mbTotal < minVolume || lmTotal < minVolume) return false;
+    if (lmTotal < minPrevMonthVolume) return false;
 
     return true;
   });
@@ -262,8 +261,8 @@ export async function GET(request: NextRequest) {
       request.nextUrl.searchParams.get("comparisonMode") === "before-vs-last"
         ? "before-vs-last"
         : "last-vs-current";
-    const minVolumeParam = Number(request.nextUrl.searchParams.get("minVolume"));
-    const minVolume = minVolumeParam > 0 ? minVolumeParam : 200;
+    const minPrevMonthVolumeParam = Number(request.nextUrl.searchParams.get("minPrevMonthVolume"));
+    const minPrevMonthVolume = minPrevMonthVolumeParam > 0 ? minPrevMonthVolumeParam : 1000;
 
     let previousRows: CacheRow[] = [];
     let currentRows: CacheRow[] = [];
@@ -316,7 +315,7 @@ export async function GET(request: NextRequest) {
       currentRows,
       previousMonth,
       currentPeriodMonth,
-      minVolume,
+      minPrevMonthVolume,
       comparisonMode
     );
 

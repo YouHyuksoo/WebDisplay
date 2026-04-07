@@ -1,14 +1,15 @@
 /**
  * @file src/app/api/monitor/start/route.ts
- * @description POST /api/monitor/start — 백그라운드 잡 시작 + 설정 저장
+ * @description POST /api/monitor/start — 백그라운드 잡 런타임 시작
  *
  * 초보자 가이드:
- * - monitorEnabled: true 로 설정 파일 저장 (서버 재시작 후 자동 재개에 사용)
  * - CTQ_MONITOR_ENABLED 환경변수가 false면 시작 불가 (서버별 게이트)
+ * - 서버 재시작 시 자동 재개는 instrumentation.ts가 담당
+ * - 이 버튼은 런타임 중 임시 시작용 (재시작하면 env 기준으로 다시 결정)
  */
 import { NextResponse } from 'next/server';
 import { getJobManager } from '@/lib/monitor/ctq-monitor';
-import { getSettings, saveSettings } from '@/lib/slack-settings';
+import { getSettings } from '@/lib/slack-settings';
 
 export async function POST() {
   if (process.env.CTQ_MONITOR_ENABLED !== 'true') {
@@ -19,8 +20,6 @@ export async function POST() {
   }
 
   const settings = await getSettings();
-  await saveSettings({ ...settings, monitorEnabled: true });
-
   const job = getJobManager();
   job.start(settings.monitorIntervalMinutes);
 

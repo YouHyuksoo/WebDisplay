@@ -12,7 +12,6 @@
   "teamsWebhookUrl": "https://default3489ac633ba941fb8dbdc0d8992b46.b0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/dba4302493934b08a34653d99ae004b7/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=FXyTvvfYwx0TGeaHwHwCDsbNk0q-zHqV_x3qKT2eHnA",
   "teamsChannelName": "MES-알림",
   "teamsEnabled": true,
-  "monitorEnabled": false,
   "monitorIntervalMinutes": 5,
   "monitorRepeatability": true,
   "monitorNonConsecutive": true,

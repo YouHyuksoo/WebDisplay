@@ -17,23 +17,28 @@ import type {
   IndicatorComparisonMode,
   IndicatorProcessKey,
   MonthlyProcessData,
+  ProcessPpmThresholds,
 } from "@/types/ctq/indicator";
+import { DEFAULT_PPM_THRESHOLDS } from "@/types/ctq/indicator";
 
 const SCREEN_ID = "ctq-indicator";
 
 export default function IndicatorPage() {
   const t = useTranslations("ctq");
   const timing = useDisplayTiming();
-  const [minVolume, setMinVolume] = useState(200);
+  const [minPrevMonthVolume, setMinPrevMonthVolume] = useState(1000);
+  const [ppmThresholds, setPpmThresholds] = useState<ProcessPpmThresholds>(DEFAULT_PPM_THRESHOLDS);
   const [comparisonMode, setComparisonMode] = useState<IndicatorComparisonMode>("last-vs-current");
   const [showSettings, setShowSettings] = useState(false);
-  const [tempVolume, setTempVolume] = useState(String(minVolume));
+  // 설정 팝오버 임시 상태
+  const [tempVolume, setTempVolume] = useState(String(minPrevMonthVolume));
+  const [tempPpm, setTempPpm] = useState<ProcessPpmThresholds>(DEFAULT_PPM_THRESHOLDS);
   const settingsRef = useRef<HTMLDivElement>(null);
-  const { data, error, loading, fetchData, registerCountermeasure } = useIndicator(minVolume, comparisonMode);
+  const { data, error, loading, fetchData, registerCountermeasure } = useIndicator(minPrevMonthVolume, comparisonMode);
 
   const PROCESS_KEYS: IndicatorProcessKey[] = ["ICT", "HIPOT", "FT", "BURNIN", "ATE"];
 
-  /** 대책서 등록/미등록 건수 (200% 초과 대상만) */
+  /** 대책서 등록/미등록 건수 (200% 초과 + PPM 한도 이상 공정만) */
   const countermeasureCounts = useMemo(() => {
     if (!data) return { registered: 0, unregistered: 0 };
     let registered = 0;
@@ -42,6 +47,8 @@ export default function IndicatorPage() {
       for (const key of PROCESS_KEYS) {
         const prev = (model.monthBefore[key] as MonthlyProcessData | undefined)?.ppm ?? 0;
         const curr = (model.lastMonth[key] as MonthlyProcessData | undefined)?.ppm ?? 0;
+        // PPM 한도 미만이면 지표 Logic 제외
+        if (prev < ppmThresholds[key] && curr < ppmThresholds[key]) continue;
         if (prev > 0 && curr > 0 && (curr / prev) * 100 >= 200) {
           if (model.lastMonth[key]?.countermeasureNo) {
             registered++;
@@ -52,7 +59,7 @@ export default function IndicatorPage() {
       }
     }
     return { registered, unregistered };
-  }, [data]);
+  }, [data, ppmThresholds]);
 
   /* 초기 로딩 */
   useEffect(() => {
@@ -80,7 +87,7 @@ export default function IndicatorPage() {
       <header className="shrink-0 bg-gray-800 border-b border-gray-700 px-6 py-3">
         <div className="flex items-center justify-between max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4">
-            <CriteriaTooltip pageKey="indicator" />
+            <CriteriaTooltip pageKey="indicator" widthClass="w-[440px]" />
             <div className="flex items-center gap-1 rounded-lg border border-gray-700 bg-gray-900/80 p-1">
               <span className="px-2 text-xs text-gray-500 whitespace-nowrap">비교 기준</span>
               <button
@@ -136,7 +143,7 @@ export default function IndicatorPage() {
               disabled={loading}
               className="px-3 py-1.5 rounded bg-orange-600 hover:bg-orange-500 text-sm text-white font-medium transition-colors disabled:opacity-50"
             >
-              {loading ? t("common.dataLoading") : t("pages.indicator.regenerate")}
+              {t("pages.indicator.regenerate")}
             </button>
             {/* 새로고침 버튼 */}
             <button
@@ -158,14 +165,15 @@ export default function IndicatorPage() {
               <button
                 onClick={() => {
                   setShowSettings(!showSettings);
-                  setTempVolume(String(minVolume));
+                  setTempVolume(String(minPrevMonthVolume));
+                  setTempPpm({ ...ppmThresholds });
                 }}
                 className={`p-1.5 rounded transition-colors ${
                   showSettings
                     ? "bg-blue-600 text-white"
                     : "bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white"
                 }`}
-                title={t("pages.indicator.minVolumeSettings")}
+                title="지표 설정"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -188,46 +196,67 @@ export default function IndicatorPage() {
                 </svg>
               </button>
               {showSettings && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 p-4">
-                  <div className="text-sm font-medium text-gray-200 mb-3">
-                    {t("pages.indicator.minVolumeFilter")}
+                <div className="absolute right-0 top-full mt-2 w-80 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 p-4 space-y-4">
+                  {/* 공정별 PPM 한도 */}
+                  <div>
+                    <div className="text-sm font-medium text-gray-200 mb-0.5">공정별 PPM 한도</div>
+                    <p className="text-xs text-gray-500 mb-2">이 PPM 이상인 공정만 지표 Logic 적용</p>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                      {(["ICT", "HIPOT", "FT", "BURNIN", "ATE"] as IndicatorProcessKey[]).map((key) => (
+                        <div key={key} className="flex items-center gap-1.5">
+                          <span className="text-xs text-gray-400 w-14 shrink-0">
+                            {key === "HIPOT" ? "Hi-Pot" : key === "BURNIN" ? "Burn-in" : key}
+                          </span>
+                          <input
+                            type="number"
+                            min={0}
+                            value={tempPpm[key]}
+                            onChange={(e) => setTempPpm((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
+                            className="w-full px-2 py-1 rounded bg-gray-900 border border-gray-600 text-xs text-gray-200 focus:outline-none focus:border-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <label className="block text-xs text-gray-400 mb-1">
-                    {t("pages.indicator.minVolumeLabel")}
-                  </label>
-                  <div className="flex items-center gap-2">
+
+                  {/* 전월 최소 생산수량 */}
+                  <div>
+                    <div className="text-sm font-medium text-gray-200 mb-0.5">전월 최소 생산수량</div>
+                    <p className="text-xs text-gray-500 mb-2">이 수량 미만 모델은 지표 Logic에서 제외</p>
                     <input
                       type="number"
+                      min={1}
                       value={tempVolume}
                       onChange={(e) => setTempVolume(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          const v = Number(tempVolume);
-                          if (v > 0) {
-                            setMinVolume(v);
-                            setShowSettings(false);
-                          }
-                        }
-                      }}
-                      min={1}
-                      className="flex-1 px-2 py-1.5 rounded bg-gray-900 border border-gray-600 text-sm text-gray-200 focus:outline-none focus:border-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-full px-2 py-1.5 rounded bg-gray-900 border border-gray-600 text-sm text-gray-200 focus:outline-none focus:border-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
+                  </div>
+
+                  {/* 버튼 */}
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={() => {
+                        setTempPpm({ ...DEFAULT_PPM_THRESHOLDS });
+                        setTempVolume("1000");
+                      }}
+                      className="flex-1 px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-xs text-gray-300"
+                    >
+                      초기화
+                    </button>
                     <button
                       onClick={() => {
                         const v = Number(tempVolume);
                         if (v > 0) {
-                          setMinVolume(v);
+                          setPpmThresholds({ ...tempPpm });
+                          setMinPrevMonthVolume(v);
                           setShowSettings(false);
                         }
                       }}
-                      className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-sm text-white font-medium"
+                      className="flex-1 px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-sm text-white font-medium"
                     >
                       {t("pages.indicator.apply")}
                     </button>
                   </div>
-                  <p className="mt-2 text-xs text-gray-500">
-                    {t("pages.indicator.minVolumeDesc")}
-                  </p>
                 </div>
               )}
             </div>
@@ -258,6 +287,7 @@ export default function IndicatorPage() {
             models={data.models}
             monthBefore={data.monthBefore}
             lastMonth={data.lastMonth}
+            ppmThresholds={ppmThresholds}
             onRegister={registerCountermeasure}
           />
         )}
