@@ -295,7 +295,7 @@ function ProcessCells({
               onClick={onOpenModal}
               className="ml-1 px-1.5 py-0.5 text-[10px] rounded bg-red-600 hover:bg-red-500 text-white font-medium"
             >
-              {t('pages.indicator.register')}
+              {t('pages.indicator.gradeC')}
             </button>
           )}
           {needsAction && hasCountermeasure && (
