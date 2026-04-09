@@ -95,6 +95,8 @@
     "humidity": "HUMI"
   },
   "checkItem": {
+    "runNo": "RUN No",
+    "modelName": "Modelo",
     "metalMask": "Máscara metálica",
     "squeegee": "Rasqueta",
     "solderEpoxy": "Solder/Epoxy",
@@ -102,6 +104,7 @@
     "fullCheck": "Verificación completa",
     "masterCheck": "Verificación maestra",
     "profileInsp": "Insp. de perfil",
+    "lcrCheck": "LCR Check",
     "aoiSample": "Muestra AOI"
   },
   "solderTable": {

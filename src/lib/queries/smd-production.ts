@@ -20,36 +20,36 @@ export function buildLineFilter(lines: string[]): { clause: string; binds: Recor
 export function sqlCheckItems(lineClause: string): string {
   return `
 SELECT
-  organization_id,
-  actual_date,
-  work_shift_code,
-  line_code,
-  line_name,
-  mask_check,
-  squeeze_check,
-  ccs_check,
-  xray_check,
-  mask_check_date,
-  squeeze_check_date,
-  ccs_check_date,
-  xray_check_date,
-  solder_check,
-  solder_check_val,
-  solder_check_hour,
-  aoi_sample_check,
-  aoi_sample_check_date,
-  lv_sample_check,
-  lv_sample_check_date,
-  tilt_sample_check,
-  tilt_sample_check_date,
-  full_check,
-  full_check_date,
-  spec_check,
-  spec_check_date
-FROM IRPT_PRODUCT_LINE_MONITORING
-WHERE organization_id = :orgId
-  ${lineClause}
-ORDER BY line_code
+  v.organization_id,
+  v.line_code,
+  v.line_name,
+  v.running_run_no,
+  v.model_name,
+  v.line_status_name,
+  v.line_status_code_name,
+  v.running_lot_plan_qty,
+  v.nsnp_reason,
+  v.nsnp_status_name,
+  v.mask_check,
+  v.squeeze_check,
+  v.mask_check_date,
+  v.squeeze_check_date,
+  v.solder_check,
+  v.solder_check_val,
+  v.solder_check_hour,
+  v.lcr_check_status,
+  v.lcr_check_date,
+  v.master_check_aoi,
+  v.master_check_aoi_lot,
+  pl.squeeze_lot_no,
+  pl.squeeze_lot_no2
+FROM IRPT_PRODUCT_LINE_MONITORING v
+JOIN IP_PRODUCT_LINE pl
+  ON pl.organization_id = v.organization_id
+  AND pl.line_code = v.line_code
+WHERE v.organization_id = :orgId
+  ${lineClause.replace(/line_code/g, 'v.line_code')}
+ORDER BY v.line_code
 `;
 }
 

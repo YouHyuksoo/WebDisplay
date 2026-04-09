@@ -24,8 +24,7 @@ const CARDS_PER_PAGE = 6;
 
 /** NG 점검 키 목록 */
 const NG_KEYS = [
-  'MASK_CHECK', 'SQUEEZE_CHECK', 'SOLDER_CHECK', 'CCS_CHECK',
-  'XRAY_CHECK', 'FULL_CHECK', 'SPEC_CHECK', 'AOI_SAMPLE_CHECK',
+  'MASK_CHECK', 'SQUEEZE_CHECK', 'SOLDER_CHECK', 'MASTER_CHECK_AOI',
 ];
 
 interface FoolproofStatusProps {

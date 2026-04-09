@@ -95,14 +95,17 @@
     "humidity": "습도"
   },
   "checkItem": {
+    "runNo": "RUN No",
+    "modelName": "모델명",
     "metalMask": "메탈마스크",
     "squeegee": "스퀴지",
-    "solderEpoxy": "Solder/Epoxy",
+    "solderEpoxy": "솔더",
     "firstCheck": "First Check",
     "fullCheck": "풀체크",
     "masterCheck": "Master Check",
     "profileInsp": "프로파일검사",
-    "aoiSample": "AOI Sample"
+    "lcrCheck": "LCR Check",
+    "aoiSample": "마스터샘플"
   },
   "solderTable": {
     "line": "Line",
