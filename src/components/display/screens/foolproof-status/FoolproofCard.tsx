@@ -124,12 +124,12 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
                     {itemKey === 'RUNNING_RUN_NO' && row.RUNNING_LOT_PLAN_QTY != null && (
                       <span className="ml-2 text-zinc-400">LOT: {row.RUNNING_LOT_PLAN_QTY}</span>
                     )}
-                    {'subKey' in item && row[(item as { subKey: string }).subKey] && (
+                    {'subKey' in item && row[(item as { subKey: string }).subKey] ? (
                       <span className="ml-2 text-xs text-zinc-400">[{String(row[(item as { subKey: string }).subKey])}]</span>
-                    )}
-                    {'subKey2' in item && row[(item as { subKey2: string }).subKey2] && (
+                    ) : null}
+                    {'subKey2' in item && row[(item as { subKey2: string }).subKey2] ? (
                       <span className="ml-1 text-xs text-zinc-500">{String(row[(item as { subKey2: string }).subKey2])}</span>
-                    )}
+                    ) : null}
                   </span>
                   {'badgeKey' in item && row[(item as { badgeKey: string }).badgeKey] && (
                     <span className={`ml-auto shrink-0 rounded-lg px-4 py-1 text-base font-black ${
@@ -161,7 +161,7 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
                       </span>
                       {'rateKeys' in item && (
                         <span className="ml-auto shrink-0 text-sm font-bold text-yellow-300">
-                          {(item as { rateKeys: string[] }).rateKeys
+                          {(item as unknown as { rateKeys: string[] }).rateKeys
                             .map((rk) => row[rk] != null ? `${Number(row[rk]).toFixed(1)}%` : '').filter(Boolean).join('/')}
                         </span>
                       )}
@@ -175,7 +175,7 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
                       </span>
                       {'rateKeys' in item && (
                         <span className="ml-auto shrink-0 text-sm font-bold text-yellow-300">
-                          {(item as { rateKeys: string[] }).rateKeys
+                          {(item as unknown as { rateKeys: string[] }).rateKeys
                             .map((rk) => row[rk] != null ? `${Number(row[rk]).toFixed(1)}%` : '').filter(Boolean).join('/')}
                         </span>
                       )}
