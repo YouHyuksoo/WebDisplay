@@ -122,6 +122,7 @@ export async function GET(req: NextRequest) {
   const from = searchParams.get('from') ?? '';
   const to = searchParams.get('to') ?? '';
   const dateCol = searchParams.get('dateCol') ?? '';
+  const lineCodeParam = searchParams.get('lineCode') ?? '';
   const metaOnly = searchParams.get('metaOnly') === '1';
   const exportAll = searchParams.get('exportAll') === '1';
   const page = Math.max(1, Number(searchParams.get('page') ?? '1'));
@@ -161,16 +162,25 @@ export async function GET(req: NextRequest) {
 
     /* 2) 날짜 조건 빌드 */
     const validDateCol = dateCol && columns.some((c) => c.COLUMN_NAME === dateCol.toUpperCase());
-    const { clause: whereClause, binds } = validDateCol
+    const { clause: dateClause, binds } = validDateCol
       ? buildDateClause(dateCol.toUpperCase(), from, to)
       : { clause: '', binds: {} as Record<string, string> };
+
+    /* LINE_CODE 조건 빌드 */
+    const hasLineCodeCol = columns.some((c) => c.COLUMN_NAME === 'LINE_CODE');
+    let whereClause = dateClause;
+    const allBinds: Record<string, string | number> = { ...binds };
+    if (lineCodeParam && hasLineCodeCol && isValidColumn(lineCodeParam)) {
+      allBinds.lineCode = lineCodeParam;
+      whereClause += whereClause ? ' AND LINE_CODE = :lineCode' : ' WHERE LINE_CODE = :lineCode';
+    }
 
     const upperTable = table.toUpperCase();
 
     /* 3-A) 엑셀 전체 다운로드 모드 */
     if (exportAll) {
       const sql = `SELECT ${selectList} FROM ${upperTable}${whereClause}`;
-      const rows = await executeQuery(sql, binds);
+      const rows = await executeQuery(sql, allBinds);
       return NextResponse.json({ columns: ordered, rows: sanitizeRows(rows as Record<string, unknown>[]), total: rows.length, page: 1, pageSize: rows.length, totalPages: 1 });
     }
 
@@ -181,7 +191,7 @@ export async function GET(req: NextRequest) {
     const [countResult, rows] = await Promise.all([
       executeQuery<{ CNT: number }>(
         `SELECT COUNT(*) AS CNT FROM ${upperTable}${whereClause}`,
-        binds,
+        allBinds,
       ),
       executeQuery(
         `SELECT ${selectList} FROM (
@@ -191,7 +201,7 @@ export async function GET(req: NextRequest) {
           WHERE ROWNUM <= :endRow
         )
         WHERE RNUM > :startRow`,
-        { ...binds, startRow, endRow },
+        { ...allBinds, startRow, endRow },
       ),
     ]);
 

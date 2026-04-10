@@ -43,6 +43,12 @@ interface LogDataGridProps {
   tableName: string;
   /** API 경로 베이스 (기본값: /api/mxvc) */
   apiBase?: string;
+  /** 선택된 LINE_CODE 필터값 (빈 문자열이면 전체) */
+  lineCode?: string;
+  /** LINE_CODE 드롭다운 옵션 목록 */
+  lineCodes?: string[];
+  /** LINE_CODE 변경 콜백 */
+  onLineCodeChange?: (v: string) => void;
 }
 
 /** 날짜 타입 컬럼인지 판별 */
@@ -60,7 +66,7 @@ function weekAgoFrom(base: string): string {
 /** 페이지 사이즈 옵션 */
 const PAGE_SIZE_OPTIONS = [50, 100, 200];
 
-export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDataGridProps) {
+export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode = '', lineCodes = [], onLineCodeChange }: LogDataGridProps) {
   const t = useTranslations('common');
   const { resolvedTheme } = useTheme();
   const serverToday = useServerTime();
@@ -141,6 +147,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
         from: fromDate,
         to: toDate,
       });
+      if (lineCode) params.set('lineCode', lineCode);
       if (opts?.exportAll) {
         params.set('exportAll', '1');
       } else {
@@ -149,7 +156,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
       }
       return `${apiBase}/data?${params}`;
     },
-    [tableName, dateCol, fromDate, toDate, page, pageSize],
+    [tableName, dateCol, fromDate, toDate, lineCode, page, pageSize],
   );
 
   /** 조회 실행 */
@@ -168,6 +175,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
         page: String(targetPage),
         pageSize: String(pageSize),
       });
+      if (lineCode) params.set('lineCode', lineCode);
       const res = await fetch(`${apiBase}/data?${params}`);
       if (!res.ok) throw new Error('API 오류');
       const data = await res.json();
@@ -179,7 +187,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
     } finally {
       setLoading(false);
     }
-  }, [tableName, dateCol, fromDate, toDate, pageSize]);
+  }, [tableName, dateCol, fromDate, toDate, lineCode, pageSize]);
 
   /** 페이지 이동 */
   const goToPage = useCallback((p: number) => {
@@ -231,6 +239,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
         to: toDate,
         exportAll: '1',
       });
+      if (lineCode) params.set('lineCode', lineCode);
       const res = await fetch(`${apiBase}/data?${params}`);
       if (!res.ok) throw new Error('엑셀 데이터 조회 실패');
       const data = await res.json();
@@ -282,6 +291,26 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
 
         {/* 구분선 */}
         <div className="w-px h-7 bg-gray-300 dark:bg-gray-700" />
+
+        {/* LINE_CODE 필터 */}
+        {lineCodes.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Line</span>
+            <select
+              value={lineCode}
+              onChange={(e) => onLineCodeChange?.(e.target.value)}
+              className="h-9 px-3 text-sm rounded-lg transition-colors
+                         bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
+                         text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
+            >
+              <option value="">전체</option>
+              {lineCodes.map((lc) => (
+                <option key={lc} value={lc}>{lc}</option>
+              ))}
+            </select>
+            <div className="w-px h-7 bg-gray-300 dark:bg-gray-700" />
+          </div>
+        )}
 
         {/* 날짜 필터 */}
         {dateCols.length > 0 && (

@@ -43,6 +43,12 @@ interface MasterRow {
 
 interface Props {
   apiBase?: string;
+  /** 선택된 LINE_CODE 필터값 (빈 문자열이면 전체) */
+  lineCode?: string;
+  /** LINE_CODE 드롭다운 옵션 목록 */
+  lineCodes?: string[];
+  /** LINE_CODE 변경 콜백 */
+  onLineCodeChange?: (v: string) => void;
 }
 
 /** 기준일로부터 7일 전 datetime-local 형식 반환 */
@@ -52,7 +58,7 @@ function weekAgo(base: string): string {
   return d.toISOString().slice(0, 10) + 'T00:00';
 }
 
-export default function LogIctMasterDetail({ apiBase = '/api/mxvc' }: Props) {
+export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '', lineCodes = [], onLineCodeChange }: Props) {
   const { resolvedTheme } = useTheme();
   const serverToday = useServerTime();
   const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
@@ -82,6 +88,7 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc' }: Props) {
     setSelectedKey('');
     try {
       const p = new URLSearchParams({ mode: 'master', from: fromDate, to: toDate });
+      if (lineCode) p.set('lineCode', lineCode);
       const res = await fetch(`${apiBase}/ict?${p}`);
       if (!res.ok) throw new Error('마스터 조회 실패');
       const data = await res.json();
@@ -89,7 +96,7 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc' }: Props) {
       setTotal(data.total ?? 0);
     } catch { setMasterRows([]); }
     finally { setLoading(false); }
-  }, [apiBase, fromDate, toDate]);
+  }, [apiBase, fromDate, toDate, lineCode]);
 
   /** 디테일 조회 — 마스터 행 클릭 시 */
   const fetchDetail = useCallback(async (row: MasterRow) => {
@@ -170,6 +177,27 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc' }: Props) {
           <span className="text-sm font-bold text-blue-600 dark:text-blue-300 font-mono">LOG_ICT</span>
         </div>
         <div className="w-px h-7 bg-gray-300 dark:bg-gray-700" />
+        {/* LINE_CODE 필터 */}
+        {lineCodes.length > 0 && (
+          <>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Line</span>
+              <select
+                value={lineCode}
+                onChange={(e) => onLineCodeChange?.(e.target.value)}
+                className="h-9 px-3 text-sm rounded-lg transition-colors
+                           bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
+                           text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="">전체</option>
+                {lineCodes.map((lc) => (
+                  <option key={lc} value={lc}>{lc}</option>
+                ))}
+              </select>
+            </div>
+            <div className="w-px h-7 bg-gray-300 dark:bg-gray-700" />
+          </>
+        )}
         <div className="flex items-center gap-2 rounded-lg px-3 h-9
                         bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
           <input type="datetime-local" value={fromDate} onChange={(e) => setFromDate(e.target.value)}

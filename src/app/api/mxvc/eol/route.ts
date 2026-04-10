@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
 async function handleMaster(sp: URLSearchParams) {
   const from = sp.get('from') ?? '';
   const to = sp.get('to') ?? '';
+  const lineCodeParam = sp.get('lineCode') ?? '';
   const page = Math.max(1, Number(sp.get('page') ?? '1'));
   const pageSize = Math.min(200, Math.max(10, Number(sp.get('pageSize') ?? '100')));
 
@@ -57,6 +58,12 @@ async function handleMaster(sp: URLSearchParams) {
   } else if (to) {
     binds.toDate = normalizeDt(to);
     where = ` WHERE LOG_TIMESTAMP <= TO_DATE(:toDate, ${DT_FMT})`;
+  }
+
+  /* LINE_CODE 조건 추가 */
+  if (lineCodeParam) {
+    binds.lineCode = lineCodeParam;
+    where += where ? ' AND LINE_CODE = :lineCode' : ' WHERE LINE_CODE = :lineCode';
   }
 
   const groupSql = `
