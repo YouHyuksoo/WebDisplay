@@ -119,7 +119,7 @@ async function handleDetail(sp: URLSearchParams) {
            STEP_TIME, CAN_TX_1, CAN_RX_1, CAN_TX_2, DATA_RX_2
       FROM LOG_EOL
      WHERE EQUIPMENT_ID = :equipment AND MODEL = :model AND BARCODE = :barcode
-     ORDER BY NO`;
+     ORDER BY TO_NUMBER(REGEXP_SUBSTR(NO, '\\d+'))`;
 
   const rows = await executeQuery(sql, { equipment, model, barcode });
 

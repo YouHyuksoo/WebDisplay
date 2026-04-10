@@ -144,7 +144,9 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc' }: Props) {
 
   /** 디테일 컬럼 정의 */
   const detailCols: ColDef[] = useMemo(() => [
-    { field: 'NO', headerName: 'No', minWidth: 60, type: 'numericColumn' },
+    { field: 'NO', headerName: 'No', minWidth: 60, type: 'numericColumn',
+      comparator: (a, b) => Number(a) - Number(b),
+      valueGetter: (p) => p.data?.NO != null ? Number(p.data.NO) : null },
     { field: 'NAME', headerName: '항목명', minWidth: 140 },
     { field: 'NAME_DETAIL', headerName: '상세', minWidth: 140 },
     { field: 'STEP_RESULT', headerName: '결과', minWidth: 70 },
