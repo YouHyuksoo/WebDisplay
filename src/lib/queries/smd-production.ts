@@ -25,6 +25,7 @@ SELECT
   v.line_name,
   v.running_run_no,
   v.model_name,
+  v.model_spec,
   v.line_status_name,
   v.line_status_code_name,
   v.running_lot_plan_qty,
@@ -34,6 +35,10 @@ SELECT
   v.squeeze_check,
   v.mask_check_date,
   v.squeeze_check_date,
+  v.mask_hit_rate1,
+  v.mask_hit_rate2,
+  v.squeeze_hit_rate1,
+  v.squeeze_hit_rate2,
   v.solder_check,
   v.solder_check_val,
   v.solder_check_hour,
@@ -41,6 +46,8 @@ SELECT
   v.lcr_check_date,
   v.master_check_aoi,
   v.master_check_aoi_lot,
+  TO_CHAR(v.running_run_date, 'YYYY-MM-DD HH24:MI:SS') AS running_run_date,
+  v.pcb_item,
   pl.squeeze_lot_no,
   pl.squeeze_lot_no2
 FROM IRPT_PRODUCT_LINE_MONITORING v

@@ -14,6 +14,7 @@ import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import LogTableSidebar from '@/components/mxvc/LogTableSidebar';
 import LogDataGrid from '@/components/mxvc/LogDataGrid';
+import LogEolMasterDetail from '@/components/mxvc/LogEolMasterDetail';
 
 const SCREEN_ID = 'mxvc-log';
 
@@ -30,7 +31,10 @@ export default function MexicoLogPage() {
           selectedTable={selectedTable}
           onSelectTable={setSelectedTable}
         />
-        <LogDataGrid tableName={selectedTable} />
+        {selectedTable === 'LOG_EOL'
+          ? <LogEolMasterDetail />
+          : <LogDataGrid tableName={selectedTable} />
+        }
       </div>
 
       <DisplayFooter />

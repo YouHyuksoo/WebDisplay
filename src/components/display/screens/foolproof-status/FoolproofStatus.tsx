@@ -20,7 +20,7 @@ import { fetcher } from '@/lib/fetcher';
 import { getSelectedLines, buildDisplayApiUrl, DEFAULT_ORG_ID } from '@/lib/display-helpers';
 
 /** 한 페이지에 표시할 카드 수 */
-const CARDS_PER_PAGE = 6;
+const CARDS_PER_PAGE = 4;
 
 /** NG 점검 키 목록 */
 const NG_KEYS = [
@@ -103,7 +103,7 @@ export default function FoolproofStatus({
               {t('noData')}
             </div>
           ) : (
-            <div className="grid h-full grid-cols-2 grid-rows-3 gap-3 xl:grid-cols-3 xl:grid-rows-2">
+            <div className="grid h-full grid-cols-2 grid-rows-2 gap-3">
               {pageRows.map((row, idx) => (
                 <FoolproofCard key={row.LINE_CODE ?? idx} row={row} />
               ))}

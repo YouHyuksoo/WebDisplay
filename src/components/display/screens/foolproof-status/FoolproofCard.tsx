@@ -38,16 +38,23 @@ export interface FoolproofRow {
   LCR_CHECK_DATE?: string;
   MASTER_CHECK_AOI?: string;
   MASTER_CHECK_AOI_LOT?: string;
+  RUNNING_RUN_DATE?: string;
+  PCB_ITEM?: string;
+  MODEL_SPEC?: string;
+  MASK_HIT_RATE1?: number;
+  MASK_HIT_RATE2?: number;
+  SQUEEZE_HIT_RATE1?: number;
+  SQUEEZE_HIT_RATE2?: number;
   [key: string]: unknown;
 }
 
 /** 점검 항목 정의 — PB DataWindow 컬럼 순서 매핑 */
 const CHECK_ITEMS = [
   { labelKey: 'runNo' as const, valueKey: 'RUNNING_RUN_NO', badgeKey: 'LINE_STATUS_NAME', badgeKey2: 'LINE_STATUS_CODE_NAME' },
-  { labelKey: 'modelName' as const, valueKey: 'MODEL_NAME' },
-  { labelKey: 'metalMask' as const, statusKey: 'MASK_CHECK', dateKey: 'MASK_CHECK_DATE' },
-  { labelKey: 'squeegee' as const, statusKey: 'SQUEEZE_CHECK', dateKey: 'SQUEEZE_CHECK_DATE', lotKeys: ['SQUEEZE_LOT_NO', 'SQUEEZE_LOT_NO2'] },
-  { labelKey: 'solderEpoxy' as const, statusKey: 'SOLDER_CHECK', dateKey: 'SOLDER_CHECK_VAL' },
+  { labelKey: 'modelName' as const, valueKey: 'MODEL_NAME', subKey: 'PCB_ITEM', subKey2: 'MODEL_SPEC' },
+  { labelKey: 'metalMask' as const, statusKey: 'MASK_CHECK', dateKey: 'MASK_CHECK_DATE', rateKeys: ['MASK_HIT_RATE1', 'MASK_HIT_RATE2'] },
+  { labelKey: 'squeegee' as const, statusKey: 'SQUEEZE_CHECK', dateKey: 'SQUEEZE_CHECK_DATE', lotKeys: ['SQUEEZE_LOT_NO', 'SQUEEZE_LOT_NO2'], rateKeys: ['SQUEEZE_HIT_RATE1', 'SQUEEZE_HIT_RATE2'] },
+  { labelKey: 'solderEpoxy' as const, statusKey: 'SOLDER_CHECK', dateKey: 'SOLDER_CHECK_VAL', hourKey: 'SOLDER_CHECK_HOUR' },
   { labelKey: 'lcrCheck' as const, statusKey: 'LCR_CHECK_STATUS', dateKey: 'LCR_CHECK_DATE' },
   { labelKey: 'aoiSample' as const, statusKey: 'MASTER_CHECK_AOI', lotKeys: ['MASTER_CHECK_AOI_LOT'] },
 ] as const;
@@ -72,15 +79,20 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
         ng ? 'border-red-500' : 'border-emerald-600/50'
       }`}
     >
-      {/* 카드 헤더 — 라인명 */}
+      {/* 카드 헤더 — 라인명 + 상태변경일시 */}
       <div
-        className={`px-4 py-2 text-center text-xl font-black ${
+        className={`flex items-center justify-between px-4 py-2 ${
           ng
             ? 'bg-red-600 text-white animate-pulse'
             : 'bg-emerald-700 text-white'
         }`}
       >
-        {lineName}
+        <span className="text-xl font-black">{lineName}</span>
+        {row.RUNNING_RUN_DATE && (
+          <span className="text-base font-semibold opacity-90">
+            {row.RUNNING_RUN_DATE}
+          </span>
+        )}
       </div>
 
       {/* 점검 항목 리스트 — 균등 높이 */}
@@ -110,7 +122,13 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
                   <span className="min-w-0 flex-1 truncate text-sm font-semibold text-cyan-300">
                     {plainVal || '-'}
                     {itemKey === 'RUNNING_RUN_NO' && row.RUNNING_LOT_PLAN_QTY != null && (
-                      <span className="ml-1 text-zinc-400">({row.RUNNING_LOT_PLAN_QTY})</span>
+                      <span className="ml-2 text-zinc-400">LOT: {row.RUNNING_LOT_PLAN_QTY}</span>
+                    )}
+                    {'subKey' in item && row[(item as { subKey: string }).subKey] && (
+                      <span className="ml-2 text-xs text-zinc-400">[{String(row[(item as { subKey: string }).subKey])}]</span>
+                    )}
+                    {'subKey2' in item && row[(item as { subKey2: string }).subKey2] && (
+                      <span className="ml-1 text-xs text-zinc-500">{String(row[(item as { subKey2: string }).subKey2])}</span>
                     )}
                   </span>
                   {'badgeKey' in item && row[(item as { badgeKey: string }).badgeKey] && (
@@ -136,16 +154,41 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
                   </span>
                   {/* LOT NO 또는 값/날짜 표시 */}
                   {'lotKeys' in item ? (
-                    <span className="min-w-0 flex-1 truncate text-sm text-zinc-300">
-                      {(item as { lotKeys: readonly string[] }).lotKeys
-                        .map((lk) => String(row[lk] ?? '')).filter(Boolean).join(' / ')}
-                    </span>
+                    <>
+                      <span className="min-w-0 flex-1 truncate text-sm text-zinc-300">
+                        {(item as { lotKeys: readonly string[] }).lotKeys
+                          .map((lk) => String(row[lk] ?? '')).filter(Boolean).join(' / ')}
+                      </span>
+                      {'rateKeys' in item && (
+                        <span className="ml-auto shrink-0 text-sm font-bold text-yellow-300">
+                          {(item as { rateKeys: string[] }).rateKeys
+                            .map((rk) => row[rk] != null ? `${Number(row[rk]).toFixed(1)}%` : '').filter(Boolean).join('/')}
+                        </span>
+                      )}
+                    </>
                   ) : dateVal ? (
-                    <span className={`min-w-0 truncate text-sm ${
-                      status === 'NG' ? 'font-bold text-red-400' : 'text-zinc-300'
-                    }`}>
-                      {dateVal}
-                    </span>
+                    <>
+                      <span className={`min-w-0 truncate text-sm ${
+                        status === 'NG' ? 'font-bold text-red-400' : 'text-zinc-300'
+                      }`}>
+                        {dateVal}
+                      </span>
+                      {'rateKeys' in item && (
+                        <span className="ml-auto shrink-0 text-sm font-bold text-yellow-300">
+                          {(item as { rateKeys: string[] }).rateKeys
+                            .map((rk) => row[rk] != null ? `${Number(row[rk]).toFixed(1)}%` : '').filter(Boolean).join('/')}
+                        </span>
+                      )}
+                      {'hourKey' in item && row[(item as { hourKey: string }).hourKey] && (
+                        <span className={`ml-auto shrink-0 rounded px-2 py-0.5 text-xs font-bold ${
+                          String(row[(item as { hourKey: string }).hourKey]) === 'NG' ? 'bg-red-600 text-white' :
+                          String(row[(item as { hourKey: string }).hourKey]) === 'WN' ? 'bg-amber-500 text-black' :
+                          'bg-emerald-600 text-white'
+                        }`}>
+                          {String(row[(item as { hourKey: string }).hourKey])}
+                        </span>
+                      )}
+                    </>
                   ) : null}
                 </>
               ) : (

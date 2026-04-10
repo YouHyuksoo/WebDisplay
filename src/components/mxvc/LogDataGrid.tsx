@@ -50,11 +50,11 @@ function isDateType(dataType: string): boolean {
   return /DATE|TIMESTAMP/i.test(dataType);
 }
 
-/** 기준일로부터 7일 전 날짜를 YYYY-MM-DD 형태로 반환 */
+/** 기준일로부터 7일 전 날짜+시간을 YYYY-MM-DDTHH:mm 형태로 반환 */
 function weekAgoFrom(base: string): string {
   const d = new Date(base + 'T00:00:00');
   d.setDate(d.getDate() - 7);
-  return d.toISOString().slice(0, 10);
+  return d.toISOString().slice(0, 10) + 'T00:00';
 }
 
 /** 페이지 사이즈 옵션 */
@@ -89,7 +89,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
   useEffect(() => {
     if (serverToday && !toDate) {
       setFromDate(weekAgoFrom(serverToday));
-      setToDate(serverToday);
+      setToDate(serverToday + 'T23:59');
     }
   }, [serverToday, toDate]);
 
@@ -304,14 +304,14 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc' }: LogDat
             <div className="flex items-center gap-2 rounded-lg px-3 h-9
                             bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
               <input
-                type="date"
+                type="datetime-local"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
                 className="bg-transparent text-sm text-gray-900 dark:text-white focus:outline-none"
               />
               <span className="text-gray-400 dark:text-gray-400">~</span>
               <input
-                type="date"
+                type="datetime-local"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
                 className="bg-transparent text-sm text-gray-900 dark:text-white focus:outline-none"

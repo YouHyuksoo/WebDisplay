@@ -83,7 +83,17 @@ function buildSelectList(orderedCols: ColumnMeta[]): string {
   return orderedCols.map((c) => c.COLUMN_NAME).join(', ');
 }
 
-/** 날짜 WHERE 절 빌드 */
+/** datetime-local 값(YYYY-MM-DDTHH:MM)에서 Oracle 바인드용 문자열 반환 */
+function normalizeDatetime(val: string): string {
+  /* 날짜만 들어온 경우(YYYY-MM-DD) 시간 보정 */
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val + ' 00:00';
+  /* datetime-local 형식(YYYY-MM-DDTHH:MM) → 공백 구분으로 변환 */
+  return val.replace('T', ' ');
+}
+
+const DT_FMT = `'YYYY-MM-DD HH24:MI'`;
+
+/** 날짜+시간 WHERE 절 빌드 */
 function buildDateClause(
   dateCol: string,
   from: string,
@@ -91,17 +101,17 @@ function buildDateClause(
 ): { clause: string; binds: Record<string, string> } {
   const binds: Record<string, string> = {};
   if (dateCol && from && to) {
-    binds.fromDate = from;
-    binds.toDate = to;
-    return { clause: ` WHERE ${dateCol} BETWEEN TO_DATE(:fromDate, 'YYYY-MM-DD') AND TO_DATE(:toDate, 'YYYY-MM-DD') + 0.99999`, binds };
+    binds.fromDate = normalizeDatetime(from);
+    binds.toDate = normalizeDatetime(to);
+    return { clause: ` WHERE ${dateCol} BETWEEN TO_DATE(:fromDate, ${DT_FMT}) AND TO_DATE(:toDate, ${DT_FMT})`, binds };
   }
   if (dateCol && from) {
-    binds.fromDate = from;
-    return { clause: ` WHERE ${dateCol} >= TO_DATE(:fromDate, 'YYYY-MM-DD')`, binds };
+    binds.fromDate = normalizeDatetime(from);
+    return { clause: ` WHERE ${dateCol} >= TO_DATE(:fromDate, ${DT_FMT})`, binds };
   }
   if (dateCol && to) {
-    binds.toDate = to;
-    return { clause: ` WHERE ${dateCol} <= TO_DATE(:toDate, 'YYYY-MM-DD') + 0.99999`, binds };
+    binds.toDate = normalizeDatetime(to);
+    return { clause: ` WHERE ${dateCol} <= TO_DATE(:toDate, ${DT_FMT})`, binds };
   }
   return { clause: '', binds };
 }
