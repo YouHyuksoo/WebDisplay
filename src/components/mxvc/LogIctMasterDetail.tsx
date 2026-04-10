@@ -1,0 +1,232 @@
+/**
+ * @file src/components/mxvc/LogIctMasterDetail.tsx
+ * @description LOG_ICT 마스터-디테일 그리드.
+ * 초보자 가이드:
+ * - 상단 마스터 그리드: EQUIPMENT_ID+BARCODE+FILE_NAME 그룹, 행 클릭 시 하단에 디테일 표시
+ * - 하단 디테일 그리드: 선택한 바코드의 테스트 스텝별 측정값(DEVICE, MEAS, RESULT 등)
+ * - 마스터 데이터는 서버 GROUP BY로 가져오고, 디테일은 행 선택 시 별도 조회
+ */
+'use client';
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  colorSchemeDark,
+  colorSchemeLight,
+  themeQuartz,
+  type ColDef,
+  type RowClickedEvent,
+} from 'ag-grid-community';
+import { useTheme } from 'next-themes';
+import { useServerTime } from '@/hooks/useServerTime';
+
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+const gridParams = { fontSize: 11, headerFontSize: 12, rowHeight: 28, headerHeight: 32 };
+const lightTheme = themeQuartz.withPart(colorSchemeLight).withParams(gridParams);
+const darkTheme = themeQuartz.withPart(colorSchemeDark).withParams(gridParams);
+
+interface MasterRow {
+  EQUIPMENT_ID: string;
+  BARCODE: string;
+  FILE_NAME: string;
+  LINE_CODE: string;
+  FIRST_TIME: string;
+  BOARD: string;
+  LOG_TYPE: string;
+  IS_LAST: string;
+  IS_SAMPLE: string;
+  STEP_COUNT: number;
+}
+
+interface Props {
+  apiBase?: string;
+}
+
+/** 기준일로부터 7일 전 datetime-local 형식 반환 */
+function weekAgo(base: string): string {
+  const d = new Date(base + 'T00:00:00');
+  d.setDate(d.getDate() - 7);
+  return d.toISOString().slice(0, 10) + 'T00:00';
+}
+
+export default function LogIctMasterDetail({ apiBase = '/api/mxvc' }: Props) {
+  const { resolvedTheme } = useTheme();
+  const serverToday = useServerTime();
+  const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
+
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [masterRows, setMasterRows] = useState<MasterRow[]>([]);
+  const [detailRows, setDetailRows] = useState<Record<string, unknown>[]>([]);
+  const [selectedKey, setSelectedKey] = useState('');
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const masterRef = useRef<AgGridReact>(null);
+  const detailRef = useRef<AgGridReact>(null);
+
+  useEffect(() => {
+    if (serverToday && !toDate) {
+      setFromDate(weekAgo(serverToday));
+      setToDate(serverToday + 'T23:59');
+    }
+  }, [serverToday, toDate]);
+
+  /** 마스터 조회 */
+  const fetchMaster = useCallback(async () => {
+    setLoading(true);
+    setDetailRows([]);
+    setSelectedKey('');
+    try {
+      const p = new URLSearchParams({ mode: 'master', from: fromDate, to: toDate });
+      const res = await fetch(`${apiBase}/ict?${p}`);
+      if (!res.ok) throw new Error('마스터 조회 실패');
+      const data = await res.json();
+      setMasterRows(data.rows ?? []);
+      setTotal(data.total ?? 0);
+    } catch { setMasterRows([]); }
+    finally { setLoading(false); }
+  }, [apiBase, fromDate, toDate]);
+
+  /** 디테일 조회 — 마스터 행 클릭 시 */
+  const fetchDetail = useCallback(async (row: MasterRow) => {
+    const key = `${row.EQUIPMENT_ID}|${row.BARCODE}|${row.FILE_NAME}`;
+    if (key === selectedKey) return;
+    setSelectedKey(key);
+    setDetailLoading(true);
+    try {
+      const p = new URLSearchParams({
+        mode: 'detail',
+        equipment: row.EQUIPMENT_ID,
+        barcode: row.BARCODE,
+        fileName: row.FILE_NAME ?? '',
+      });
+      const res = await fetch(`${apiBase}/ict?${p}`);
+      if (!res.ok) throw new Error('디테일 조회 실패');
+      const data = await res.json();
+      setDetailRows(data.rows ?? []);
+    } catch { setDetailRows([]); }
+    finally { setDetailLoading(false); }
+  }, [apiBase, selectedKey]);
+
+  const onMasterRowClicked = useCallback((e: RowClickedEvent<MasterRow>) => {
+    if (e.data) fetchDetail(e.data);
+  }, [fetchDetail]);
+
+  /** 마스터 컬럼 정의 */
+  const masterCols: ColDef<MasterRow>[] = useMemo(() => [
+    { field: 'EQUIPMENT_ID', headerName: '설비', minWidth: 130 },
+    { field: 'BARCODE', headerName: '바코드', minWidth: 200 },
+    { field: 'FILE_NAME', headerName: '파일명', minWidth: 200 },
+    { field: 'LINE_CODE', headerName: '라인', minWidth: 80 },
+    {
+      field: 'FIRST_TIME', headerName: '최초시간', minWidth: 160,
+      valueFormatter: (p) => {
+        if (!p.value) return '';
+        const d = new Date(p.value);
+        return isNaN(d.getTime()) ? String(p.value) : d.toLocaleString('ko-KR');
+      },
+    },
+    { field: 'BOARD', headerName: '보드', minWidth: 100 },
+    { field: 'LOG_TYPE', headerName: '타입', minWidth: 80 },
+    { field: 'STEP_COUNT', headerName: '스텝수', minWidth: 80, type: 'numericColumn' },
+    { field: 'IS_LAST', headerName: 'Last', minWidth: 60 },
+    { field: 'IS_SAMPLE', headerName: 'Sample', minWidth: 70 },
+  ], []);
+
+  /** 디테일 컬럼 정의 */
+  const detailCols: ColDef[] = useMemo(() => [
+    { field: 'STEP', headerName: '스텝', minWidth: 70 },
+    { field: 'DEVICE', headerName: '부품', minWidth: 120 },
+    { field: 'OPEN', headerName: 'Open', minWidth: 70 },
+    { field: 'SHORT', headerName: 'Short', minWidth: 70 },
+    { field: 'IDEAL', headerName: 'Ideal', minWidth: 80 },
+    { field: 'CH_PLUS', headerName: 'CH+', minWidth: 70 },
+    { field: 'CH_MINUS', headerName: 'CH-', minWidth: 70 },
+    { field: 'LC', headerName: 'LC', minWidth: 70 },
+    { field: 'STD', headerName: 'STD', minWidth: 80 },
+    { field: 'T_PLUS', headerName: 'T+', minWidth: 70 },
+    { field: 'T_MINUS', headerName: 'T-', minWidth: 70 },
+    { field: 'MEAS', headerName: '측정값', minWidth: 90 },
+    { field: 'ERROR_PCT', headerName: '오차(%)', minWidth: 80 },
+    { field: 'RESULT', headerName: '결과', minWidth: 70 },
+    { field: 'LOG_ROWS', headerName: 'Rows', minWidth: 60 },
+  ], []);
+
+  const defaultColDef: ColDef = useMemo(() => ({
+    sortable: true, filter: true, resizable: true, minWidth: 60,
+  }), []);
+
+  return (
+    <div className="flex-1 flex flex-col min-w-0">
+      {/* 필터 바 */}
+      <div className="flex items-center gap-4 px-6 py-3.5 border-b
+                       border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Table</span>
+          <span className="text-sm font-bold text-blue-600 dark:text-blue-300 font-mono">LOG_ICT</span>
+        </div>
+        <div className="w-px h-7 bg-gray-300 dark:bg-gray-700" />
+        <div className="flex items-center gap-2 rounded-lg px-3 h-9
+                        bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+          <input type="datetime-local" value={fromDate} onChange={(e) => setFromDate(e.target.value)}
+            className="bg-transparent text-sm text-gray-900 dark:text-white focus:outline-none" />
+          <span className="text-gray-400">~</span>
+          <input type="datetime-local" value={toDate} onChange={(e) => setToDate(e.target.value)}
+            className="bg-transparent text-sm text-gray-900 dark:text-white focus:outline-none" />
+        </div>
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{total.toLocaleString()}건</span>
+          <button onClick={fetchMaster} disabled={loading}
+            className="h-9 px-5 text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:bg-gray-300
+                       dark:disabled:bg-gray-700 text-white rounded-lg transition-colors">
+            {loading ? '조회 중...' : '새로고침'}
+          </button>
+        </div>
+      </div>
+
+      {/* 마스터 그리드 */}
+      <div className="h-[45%] border-b-2 border-blue-500/30 dark:border-blue-400/30">
+        <AgGridReact<MasterRow>
+          ref={masterRef}
+          theme={gridTheme}
+          rowData={masterRows}
+          columnDefs={masterCols}
+          defaultColDef={defaultColDef}
+          rowSelection="single"
+          onRowClicked={onMasterRowClicked}
+          animateRows={false}
+          enableCellTextSelection
+          suppressCellFocus
+          onFirstDataRendered={() => masterRef.current?.api?.autoSizeAllColumns()}
+        />
+      </div>
+
+      {/* 디테일 헤더 */}
+      <div className="px-4 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400
+                       bg-gray-100 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700">
+        {selectedKey
+          ? `상세 스텝: ${selectedKey.split('|')[1]} (${detailRows.length}건)${detailLoading ? ' 조회 중...' : ''}`
+          : '마스터 행을 클릭하면 상세 스텝이 표시됩니다'}
+      </div>
+
+      {/* 디테일 그리드 */}
+      <div className="flex-1">
+        <AgGridReact
+          ref={detailRef}
+          theme={gridTheme}
+          rowData={detailRows}
+          columnDefs={detailCols}
+          defaultColDef={defaultColDef}
+          animateRows={false}
+          enableCellTextSelection
+          suppressCellFocus
+          onFirstDataRendered={() => detailRef.current?.api?.autoSizeAllColumns()}
+        />
+      </div>
+    </div>
+  );
+}
