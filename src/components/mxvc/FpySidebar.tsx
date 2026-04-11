@@ -92,29 +92,28 @@ export default function FpySidebar({
             {loading ? t("loading") : t("refresh")}
           </button>
 
-          {/* 일자 조정 */}
+          {/* 조회 기간 */}
           <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
             <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-              조회 일자
-              <span className="text-blue-600 dark:text-blue-400 font-mono float-right">
-                {(settings.dayOffset ?? 0) === 0 ? "오늘" : `${Math.abs(settings.dayOffset ?? 0)}일 전`}
-              </span>
+              조회 기간
+              {!settings.dateFrom && !settings.dateTo && (
+                <span className="text-blue-600 dark:text-blue-400 font-mono float-right">오늘</span>
+              )}
             </label>
-            <input type="range" min={-7} max={0} value={settings.dayOffset ?? 0}
-              onChange={(e) => set({ dayOffset: Number(e.target.value) })}
-              onWheel={(e) => {
-                e.preventDefault();
-                const cur = settings.dayOffset ?? 0;
-                const next = e.deltaY < 0
-                  ? Math.min(cur + 1, 0)
-                  : Math.max(cur - 1, -7);
-                set({ dayOffset: next });
-              }}
-              className="w-full accent-blue-500" />
-            <div className="flex justify-between text-[9px] text-gray-400 dark:text-gray-500 mt-1">
-              <span>7일 전</span>
-              <span>오늘</span>
+            <div className="flex flex-col gap-1.5">
+              <input type="date" value={settings.dateFrom ?? ""}
+                onChange={(e) => set({ dateFrom: e.target.value })}
+                className="w-full bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs" />
+              <div className="text-center text-[10px] text-gray-400">~</div>
+              <input type="date" value={settings.dateTo ?? ""}
+                onChange={(e) => set({ dateTo: e.target.value })}
+                className="w-full bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs" />
             </div>
+            <button
+              onClick={() => set({ dateFrom: "", dateTo: "" })}
+              className="mt-2 w-full px-2 py-1 text-[10px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors">
+              오늘 (초기화)
+            </button>
           </div>
 
           {/* 프리셋 */}

@@ -56,6 +56,7 @@ export default function FpyDashboard({ data, settings }: Props) {
                 data={data.tables[key]}
                 height={settings.chartHeight}
                 palette={colors}
+                chartType={settings.chartType ?? "bar"}
               />
             </div>
           );

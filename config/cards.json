@@ -403,6 +403,14 @@
       "color": "#ec4899",
       "icon": "svg:error-log",
       "layer": 8
+    },
+    {
+      "id": "mex-spc",
+      "title": "관리도보기",
+      "url": "/mxvc/spc",
+      "color": "#6366f1",
+      "icon": "svg:spc-chart",
+      "layer": 8
     }
   ]
 }

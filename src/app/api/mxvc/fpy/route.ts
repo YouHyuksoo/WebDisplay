@@ -27,34 +27,37 @@ interface FpyRow {
 
 
 /**
- * 작업일 경계 SQL (08:00 기준 + dayOffset)
- * dayOffset=0: 오늘, dayOffset=-1: 어제, ...
- * 과거 조회 시 end는 해당일 다음날 08:00 (풀 24시간)
+ * 작업일 경계 SQL (08:00 기준)
+ * dateFrom/dateTo가 없으면 오늘 작업일 기준
  */
-function workDayStartSql(offset: number): string {
+function workDayStartSql(): string {
   return `
     CASE WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'HH24')) >= 8
-      THEN TRUNC(SYSDATE) + 8/24 + (${offset})
-      ELSE TRUNC(SYSDATE) - 1 + 8/24 + (${offset})
-    END`;
-}
-
-function workDayEndSql(offset: number): string {
-  if (offset >= 0) return "SYSDATE";
-  return `
-    CASE WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'HH24')) >= 8
-      THEN TRUNC(SYSDATE) + 8/24 + (${offset}) + 1
-      ELSE TRUNC(SYSDATE) - 1 + 8/24 + (${offset}) + 1
+      THEN TRUNC(SYSDATE) + 8/24
+      ELSE TRUNC(SYSDATE) - 1 + 8/24
     END`;
 }
 
 /** 단일 테이블 시간대별 직행율 조회 */
 async function queryTableFpy(
   tableKey: MxvcFpyTableKey,
-  dayOffset: number,
+  dateFrom: string,
+  dateTo: string,
 ): Promise<{ key: MxvcFpyTableKey; data: TableFpyData }> {
   const cfg = TABLE_CONFIG[tableKey];
   const passIn = PASS_VALUES.map((v) => `'${v}'`).join(",");
+
+  const binds: Record<string, string> = {};
+  let whereTime: string;
+
+  if (dateFrom && dateTo) {
+    binds.fromDate = dateFrom.replace('T', ' ');
+    binds.toDate = dateTo.replace('T', ' ');
+    whereTime = `LOG_TIMESTAMP >= TO_TIMESTAMP(:fromDate || ':00', 'YYYY-MM-DD HH24:MI:SS')
+      AND LOG_TIMESTAMP <= TO_TIMESTAMP(:toDate || ':59', 'YYYY-MM-DD HH24:MI:SS')`;
+  } else {
+    whereTime = `LOG_TIMESTAMP >= (${workDayStartSql()}) AND LOG_TIMESTAMP <= SYSDATE`;
+  }
 
   const sql = `
     SELECT
@@ -62,14 +65,13 @@ async function queryTableFpy(
       COUNT(*) AS TOTAL_CNT,
       SUM(CASE WHEN ${cfg.resultCol} IN (${passIn}) THEN 1 ELSE 0 END) AS PASS_CNT
     FROM ${tableKey}
-    WHERE LOG_TIMESTAMP >= (${workDayStartSql(dayOffset)})
-      AND LOG_TIMESTAMP <= (${workDayEndSql(dayOffset)})
+    WHERE ${whereTime}
       AND ${cfg.resultCol} IS NOT NULL
     GROUP BY TO_CHAR(LOG_TIMESTAMP, 'HH24')
     ORDER BY HOUR
   `;
 
-  const rows = await executeQuery<FpyRow>(sql);
+  const rows = await executeQuery<FpyRow>(sql, binds);
 
   const hourly: HourlyFpy[] = rows.map((r) => ({
     hour: r.HOUR,
@@ -100,24 +102,30 @@ async function queryTableFpy(
 
 export async function GET(request: NextRequest) {
   try {
-    const dayOffset = Number(request.nextUrl.searchParams.get("dayOffset") ?? "0") || 0;
+    const dateFrom = request.nextUrl.searchParams.get("dateFrom") ?? "";
+    const dateTo = request.nextUrl.searchParams.get("dateTo") ?? "";
 
     /** 테이블 미존재(ORA-00942) 등 개별 오류 시 빈 데이터로 대체 */
     const safeQuery = async (k: MxvcFpyTableKey) => {
       try {
-        return await queryTableFpy(k, dayOffset);
+        return await queryTableFpy(k, dateFrom, dateTo);
       } catch {
         return { key: k, data: { hourly: [], summary: { total: 0, pass: 0, yield: 100 } } as TableFpyData };
       }
     };
 
+    /* 조회 구간 표시용 */
+    let wdSql: string;
+    if (dateFrom && dateTo) {
+      wdSql = `SELECT '${dateFrom}' AS WD_START, '${dateTo}' AS WD_END FROM DUAL`;
+    } else {
+      wdSql = `SELECT TO_CHAR(${workDayStartSql()}, 'YYYY-MM-DD HH24:MI') AS WD_START,
+                      TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI') AS WD_END FROM DUAL`;
+    }
+
     const [tableResults, workDayRows] = await Promise.all([
       Promise.all(TABLE_KEYS.map(safeQuery)),
-      executeQuery<{ WD_START: string; WD_END: string }>(
-        `SELECT TO_CHAR(${workDayStartSql(dayOffset)}, 'YYYY-MM-DD HH24:MI') AS WD_START,
-                TO_CHAR(${workDayEndSql(dayOffset)}, 'YYYY-MM-DD HH24:MI') AS WD_END
-         FROM DUAL`,
-      ),
+      executeQuery<{ WD_START: string; WD_END: string }>(wdSql),
     ]);
 
     const tables: Record<string, TableFpyData> = {};
