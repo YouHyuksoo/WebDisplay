@@ -91,13 +91,25 @@ function getCpkGrade(cpk: number): { label: string; color: string; bg: string } 
   return { label: 'D (불량)', color: '#ef4444', bg: 'bg-red-900/30 border-red-700/50' };
 }
 
-/* -- OOC 점 강조 Dot -- */
+/* -- OOC 점 강조 Dot (이탈점 클릭 가능) -- */
 
-function OocDot(props: { cx?: number; cy?: number; payload?: { id: number }; oocPoints: number[] }) {
-  const { cx, cy, payload, oocPoints } = props;
+function OocDot(props: {
+  cx?: number; cy?: number;
+  payload?: { id: number };
+  oocPoints: number[];
+  onOocClick?: (id: number) => void;
+}) {
+  const { cx, cy, payload, oocPoints, onOocClick } = props;
   if (!cx || !cy || !payload) return null;
   if (oocPoints.includes(payload.id)) {
-    return <circle cx={cx} cy={cy} r={6} fill="#ef4444" stroke="#fff" strokeWidth={2} />;
+    return (
+      <g onClick={(e) => { e.stopPropagation(); onOocClick?.(payload.id); }}
+         onMouseDown={(e) => e.stopPropagation()}
+         style={{ cursor: 'pointer' }}>
+        <circle cx={cx} cy={cy} r={12} fill="transparent" />
+        <circle cx={cx} cy={cy} r={6} fill="#ef4444" stroke="#fff" strokeWidth={2} />
+      </g>
+    );
   }
   return <circle cx={cx} cy={cy} r={3} fill="#8b5cf6" />;
 }
@@ -190,6 +202,14 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
     if (selectedItem && dateFrom && dateTo) handleSearch();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedItem]);
+
+  /* OOC(이탈점) 상세 모달 */
+  const [oocSubgroup, setOocSubgroup] = useState<Subgroup | null>(null);
+
+  const handleOocClick = useCallback((sgId: number) => {
+    const sg = data?.subgroups.find((s) => s.id === sgId);
+    if (sg) setOocSubgroup(sg);
+  }, [data]);
 
   /* RAW 데이터 모달 */
   const [rawOpen, setRawOpen] = useState(false);
@@ -337,8 +357,8 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
                     <ReferenceLine y={s.xbarLCL} stroke="#3b82f6" strokeDasharray="5 5" label={{ value: 'LCL', fill: '#3b82f6', fontSize: 10 }} />
                     <Line
                       type="monotone" dataKey="xbar" stroke="#8b5cf6" strokeWidth={2}
-                      dot={(props) => <OocDot {...props} oocPoints={s.oocPoints} />}
-                      activeDot={{ r: 5, fill: '#a78bfa' }}
+                      dot={(props) => <OocDot {...props} oocPoints={s.oocPoints} onOocClick={handleOocClick} />}
+                      activeDot={false}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -443,6 +463,85 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+      </Modal>
+
+      {/* ═══════ OOC 이탈점 상세 모달 ═══════ */}
+      <Modal
+        isOpen={!!oocSubgroup}
+        onClose={() => setOocSubgroup(null)}
+        title={`이탈점 상세 — ${oocSubgroup?.dateLabel ?? ''}`}
+        subtitle={`서브그룹 #${oocSubgroup?.id ?? ''} | X̄=${oocSubgroup?.xbar} | R=${oocSubgroup?.range}`}
+        size="lg"
+      >
+        {oocSubgroup && s && (
+          <div className="space-y-4">
+            {/* 요약 카드 */}
+            <div className="grid grid-cols-4 gap-3">
+              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
+                <div className="text-lg font-bold font-mono text-red-400">{oocSubgroup.xbar.toFixed(4)}</div>
+                <div className="text-[10px] text-zinc-500 mt-1">X̄ (평균)</div>
+              </div>
+              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
+                <div className="text-lg font-bold font-mono text-yellow-400">{oocSubgroup.range.toFixed(4)}</div>
+                <div className="text-[10px] text-zinc-500 mt-1">R (범위)</div>
+              </div>
+              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
+                <div className="text-sm font-mono text-zinc-300">
+                  UCL: <span className="text-red-400">{s.xbarUCL.toFixed(4)}</span>
+                </div>
+                <div className="text-sm font-mono text-zinc-300">
+                  LCL: <span className="text-blue-400">{s.xbarLCL.toFixed(4)}</span>
+                </div>
+              </div>
+              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
+                <div className={`text-lg font-bold ${oocSubgroup.xbar > s.xbarUCL ? 'text-red-400' : 'text-blue-400'}`}>
+                  {oocSubgroup.xbar > s.xbarUCL ? 'UCL 초과' : 'LCL 미달'}
+                </div>
+                <div className="text-[10px] text-zinc-500 mt-1">이탈 유형</div>
+              </div>
+            </div>
+
+            {/* 샘플 데이터 테이블 */}
+            <div>
+              <h4 className="text-xs font-bold text-zinc-400 uppercase mb-2">샘플 데이터 ({oocSubgroup.samples.length}개)</h4>
+              <div className="rounded-lg border border-zinc-700 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-zinc-800 text-zinc-400">
+                    <tr>
+                      <th className="px-3 py-2 text-center w-16">#</th>
+                      <th className="px-3 py-2 text-right">측정값</th>
+                      <th className="px-3 py-2 text-center">USL 대비</th>
+                      <th className="px-3 py-2 text-center">LSL 대비</th>
+                      <th className="px-3 py-2 text-center">판정</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {oocSubgroup.samples.map((val, i) => {
+                      const inSpec = val >= s.lsl && val <= s.usl;
+                      return (
+                        <tr key={i} className="border-t border-zinc-700">
+                          <td className="px-3 py-1.5 text-center text-zinc-500">{i + 1}</td>
+                          <td className={`px-3 py-1.5 text-right font-mono font-semibold ${inSpec ? 'text-indigo-300' : 'text-red-400'}`}>
+                            {val.toFixed(2)}
+                          </td>
+                          <td className="px-3 py-1.5 text-center text-xs text-zinc-500">
+                            {(s.usl - val).toFixed(2)}
+                          </td>
+                          <td className="px-3 py-1.5 text-center text-xs text-zinc-500">
+                            {(val - s.lsl).toFixed(2)}
+                          </td>
+                          <td className={`px-3 py-1.5 text-center text-xs font-semibold ${inSpec ? 'text-green-400' : 'text-red-400'}`}>
+                            {inSpec ? 'OK' : 'NG'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
       </Modal>

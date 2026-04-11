@@ -162,19 +162,31 @@ async function queryHourlyDrilldown(
   const passAll = rows.reduce((s, r) => s + r.PASS_CNT, 0);
   const pBar = totalAll > 0 ? passAll / totalAll : 1;
 
+  /* DB 결과를 Map으로 변환 */
+  const rowMap = new Map<string, RawRow>();
+  for (const r of rows) rowMap.set(r.DAY_KEY, r);
+
+  /* 00~23시 전체 채우기 */
   let oocCount = 0;
-  const hourly: DailyP[] = rows.map((r) => {
-    const n = r.TOTAL_CNT;
-    const pass = r.PASS_CNT;
-    const p = n > 0 ? pass / n : 1;
-    const sigma = n > 0 ? Math.sqrt(pBar * (1 - pBar) / n) : 0;
+  const hourly: DailyP[] = Array.from({ length: 24 }, (_, i) => {
+    const hh = String(i).padStart(2, '0');
+    const r = rowMap.get(hh);
+    const n = r?.TOTAL_CNT ?? 0;
+    const pass = r?.PASS_CNT ?? 0;
+
+    if (n === 0) {
+      return { date: hh, dateLabel: `${hh}:00`, total: 0, pass: 0, p: 0, ucl: 0, lcl: 0 };
+    }
+
+    const p = pass / n;
+    const sigma = Math.sqrt(pBar * (1 - pBar) / n);
     const ucl = Math.min(1, pBar + 3 * sigma);
     const lcl = Math.max(0, pBar - 3 * sigma);
     if (p > ucl || p < lcl) oocCount++;
 
     return {
-      date: r.DAY_KEY,
-      dateLabel: r.DAY_LABEL,
+      date: hh,
+      dateLabel: `${hh}:00`,
       total: n,
       pass,
       p: Number((p * 100).toFixed(2)),
