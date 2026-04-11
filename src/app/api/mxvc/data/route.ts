@@ -10,7 +10,7 @@
  * - dateCol은 USER_TAB_COLUMNS 메타로 존재 여부를 검증한다.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { executeQuery } from '@/lib/db';
+import { executeQuery, executeDml } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -219,6 +219,45 @@ export async function GET(req: NextRequest) {
     console.error(`LOG 데이터 조회 실패 [${table}]:`, err);
     return NextResponse.json(
       { error: `데이터 조회 실패: ${(err as Error).message}` },
+      { status: 500 },
+    );
+  }
+}
+
+/** DELETE: LOG_ID 배열로 행 삭제 */
+export async function DELETE(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { table, ids } = body as { table: string; ids: number[] };
+
+    if (!table || !isValidLogTable(table)) {
+      return NextResponse.json({ error: '유효하지 않은 테이블명' }, { status: 400 });
+    }
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: '삭제할 항목이 없습니다' }, { status: 400 });
+    }
+    if (ids.length > 500) {
+      return NextResponse.json({ error: '한 번에 최대 500건까지 삭제 가능합니다' }, { status: 400 });
+    }
+
+    /* LOG_ID IN (:id0, :id1, ...) 바인드 구성 */
+    const binds: Record<string, number> = {};
+    const placeholders = ids.map((id, i) => {
+      binds[`id${i}`] = id;
+      return `:id${i}`;
+    });
+
+    const sql = `DELETE FROM ${table} WHERE LOG_ID IN (${placeholders.join(',')})`;
+    const result = await executeDml(sql, binds);
+
+    return NextResponse.json({
+      deleted: result.rowsAffected ?? 0,
+      message: `${result.rowsAffected ?? 0}건 삭제 완료`,
+    });
+  } catch (err) {
+    console.error('LOG 데이터 삭제 실패:', err);
+    return NextResponse.json(
+      { error: `삭제 실패: ${(err as Error).message}` },
       { status: 500 },
     );
   }

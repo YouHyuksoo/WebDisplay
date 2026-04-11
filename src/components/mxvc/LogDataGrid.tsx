@@ -25,6 +25,7 @@ import {
 import { useTheme } from 'next-themes';
 import * as XLSX from 'xlsx';
 import { useServerTime } from '@/hooks/useServerTime';
+import Modal from '@/components/ui/Modal';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -80,6 +81,11 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
+
+  /* 삭제 관련 상태 */
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   /* 페이지네이션 상태 */
   const [page, setPage] = useState(1);
@@ -196,8 +202,22 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
 
   /** AG Grid 컬럼 정의 - 메타데이터 기반 동적 생성 */
   const colDefs: ColDef[] = useMemo(() => {
+    const defs: ColDef[] = [
+      {
+        headerCheckboxSelection: true,
+        checkboxSelection: true,
+        headerCheckboxSelectionFilteredOnly: true,
+        width: 50,
+        maxWidth: 50,
+        pinned: 'left',
+        suppressMovable: true,
+        sortable: false,
+        filter: false,
+        resizable: false,
+      },
+    ];
     /* 컬럼 순서는 API에서 정렬되어 옴 */
-    return columns.map((col) => {
+    columns.forEach((col) => {
       const def: ColDef = {
         field: col.COLUMN_NAME,
         headerName: col.COLUMN_NAME,
@@ -223,8 +243,9 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
         def.filter = 'agTextColumnFilter';
       }
 
-      return def;
+      defs.push(def);
     });
+    return defs;
   }, [columns]);
 
   /** 엑셀 다운로드 — 전체 데이터를 서버에서 조회 */
@@ -267,6 +288,31 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
   const onFirstDataRendered = useCallback(() => {
     gridRef.current?.api?.autoSizeAllColumns();
   }, []);
+
+  /** 선택 행 삭제 */
+  const handleDelete = useCallback(async () => {
+    if (selectedIds.length === 0) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`${apiBase}/data`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: tableName, ids: selectedIds }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || '삭제 실패');
+      }
+      setDeleteModalOpen(false);
+      setSelectedIds([]);
+      fetchData(page);
+    } catch (e) {
+      setError((e as Error).message);
+      setDeleteModalOpen(false);
+    } finally {
+      setDeleting(false);
+    }
+  }, [selectedIds, tableName, apiBase, fetchData, page]);
 
   if (!tableName) {
     return (
@@ -366,6 +412,16 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
           </button>
 
           <button
+            onClick={() => setDeleteModalOpen(true)}
+            disabled={selectedIds.length === 0}
+            className="h-9 px-5 text-sm font-medium bg-red-600 hover:bg-red-500
+                       disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500
+                       text-white rounded-lg transition-colors"
+          >
+            선택 삭제 ({selectedIds.length})
+          </button>
+
+          <button
             onClick={() => fetchData(1)}
             disabled={loading}
             className="h-9 px-5 text-sm font-medium bg-blue-600 hover:bg-blue-500
@@ -409,6 +465,11 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
             resizable: true,
             floatingFilter: showFilter,
             minWidth: 80,
+          }}
+          rowSelection="multiple"
+          onSelectionChanged={(e) => {
+            const selected = e.api.getSelectedRows() as Record<string, unknown>[];
+            setSelectedIds(selected.map((r) => Number(r.LOG_ID)).filter((id) => !isNaN(id)));
           }}
           animateRows={false}
           enableCellTextSelection={true}
@@ -485,6 +546,39 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
           </div>
         </div>
       )}
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="데이터 삭제 확인"
+        subtitle={`${tableName} 테이블에서 ${selectedIds.length}건을 삭제합니다`}
+        size="sm"
+        footer={
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDeleteModalOpen(false)}
+              className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600
+                         text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              취소
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-500
+                         disabled:opacity-50 transition-colors font-medium"
+            >
+              {deleting ? '삭제 중...' : `${selectedIds.length}건 삭제`}
+            </button>
+          </div>
+        }
+      >
+        <div className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="mb-3">선택한 <strong className="text-red-500">{selectedIds.length}건</strong>의 데이터를 삭제하시겠습니까?</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">이 작업은 되돌릴 수 없습니다.</p>
+        </div>
+      </Modal>
     </div>
   );
 }
