@@ -398,9 +398,17 @@
     },
     {
       "id": "mex-traceability",
-      "title": "추적성분석",
+      "title": "정추적(PCB→자재)",
       "url": "/mxvc/traceability",
       "color": "#ec4899",
+      "icon": "svg:error-log",
+      "layer": 8
+    },
+    {
+      "id": "mex-reverse-trace",
+      "title": "역추적(자재→PCB)",
+      "url": "/mxvc/reverse-trace",
+      "color": "#d946ef",
       "icon": "svg:error-log",
       "layer": 8
     },

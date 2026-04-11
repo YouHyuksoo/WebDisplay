@@ -85,16 +85,16 @@ export default function RunCardSearchModal({ isOpen, onClose, onSelect }: Props)
       <div
         onClick={(e) => e.stopPropagation()}
         className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700
-                   w-[700px] max-h-[80vh] flex flex-col"
+                   w-[1100px] min-h-[70vh] max-h-[90vh] flex flex-col"
       >
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">작업지시(RUN NO) 조회</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">작업지시(RUN NO) 조회</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg">×</button>
         </div>
 
         {/* 필터 */}
-        <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
               className="h-8 px-2 text-xs rounded border border-gray-300 dark:border-gray-600
@@ -124,7 +124,7 @@ export default function RunCardSearchModal({ isOpen, onClose, onSelect }: Props)
 
         {/* 테이블 */}
         <div className="flex-1 overflow-auto">
-          <table className="w-full text-xs">
+          <table className="w-full text-sm">
             <thead className="sticky top-0">
               <tr className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <th className="px-3 py-2 text-left font-semibold text-gray-600 dark:text-gray-300">RUN NO</th>
@@ -154,12 +154,12 @@ export default function RunCardSearchModal({ isOpen, onClose, onSelect }: Props)
                       ${selected === r.RUN_NO
                         ? 'bg-blue-100 dark:bg-blue-900/40'
                         : 'hover:bg-gray-50 dark:hover:bg-gray-800/40'}`}>
-                  <td className="px-3 py-1.5 font-mono font-medium text-blue-600 dark:text-blue-400">{r.RUN_NO}</td>
-                  <td className="px-3 py-1.5 text-gray-600 dark:text-gray-300">{r.RUN_DATE}</td>
-                  <td className="px-3 py-1.5 text-gray-800 dark:text-gray-200 truncate max-w-[200px]">{r.MODEL_NAME ?? '-'}</td>
-                  <td className="px-3 py-1.5 text-gray-600 dark:text-gray-300">{r.LINE_CODE ?? '-'}</td>
-                  <td className="px-3 py-1.5 text-right text-gray-600 dark:text-gray-300">{r.LOT_SIZE ?? '-'}</td>
-                  <td className="px-3 py-1.5 text-center text-gray-600 dark:text-gray-300">{r.RUN_STATUS ?? '-'}</td>
+                  <td className="px-4 py-2.5 font-mono font-medium text-blue-600 dark:text-blue-400">{r.RUN_NO}</td>
+                  <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300">{r.RUN_DATE}</td>
+                  <td className="px-4 py-2.5 text-gray-800 dark:text-gray-200 truncate max-w-[200px]">{r.MODEL_NAME ?? '-'}</td>
+                  <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300">{r.LINE_CODE ?? '-'}</td>
+                  <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-300">{r.LOT_SIZE ?? '-'}</td>
+                  <td className="px-4 py-2.5 text-center text-gray-600 dark:text-gray-300">{r.RUN_STATUS ?? '-'}</td>
                 </tr>
               ))}
             </tbody>
@@ -167,7 +167,7 @@ export default function RunCardSearchModal({ isOpen, onClose, onSelect }: Props)
         </div>
 
         {/* 하단 버튼 */}
-        <div className="shrink-0 flex items-center justify-between px-5 py-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {selected ? `선택: ${selected}` : '행을 선택하세요'}
           </span>

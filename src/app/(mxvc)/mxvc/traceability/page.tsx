@@ -125,12 +125,11 @@ export default function TraceabilityPage() {
         </label>
         <button
           onClick={() => setShowRunCardModal(true)}
-          className="px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600
+          className="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600
                      bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300
                      hover:bg-gray-100 dark:hover:bg-gray-700 text-sm transition-colors"
-          title="작업지시 검색"
         >
-          🔍
+          작업지시 검색
         </button>
         <button
           onClick={handleRunNoSearch}
@@ -138,7 +137,16 @@ export default function TraceabilityPage() {
           className="px-4 py-1.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold
                      disabled:opacity-50 transition-colors"
         >
-          조회
+          바코드 조회
+        </button>
+
+        <button
+          onClick={() => selectedBarcode && fetchTraceability(selectedBarcode)}
+          disabled={!selectedBarcode || loading}
+          className="px-4 py-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold
+                     disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          추적조회
         </button>
 
         <div className="w-px h-6 bg-gray-300 dark:bg-gray-700" />
@@ -251,17 +259,6 @@ export default function TraceabilityPage() {
             ))}
           </div>
 
-          {/* 추적조회 버튼 */}
-          <div className="shrink-0 px-3 py-2 border-t border-gray-200 dark:border-gray-700">
-            <button
-              onClick={() => selectedBarcode && fetchTraceability(selectedBarcode)}
-              disabled={!selectedBarcode || loading}
-              className="w-full py-2 text-sm font-semibold rounded bg-blue-500 hover:bg-blue-600
-                         text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              추적조회
-            </button>
-          </div>
         </aside>
 
         {/* 우측: 추적성 결과 */}
