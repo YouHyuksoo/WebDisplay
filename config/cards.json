@@ -414,7 +414,7 @@
     },
     {
       "id": "mex-spc",
-      "title": "관리도보기",
+      "title": "SPC 관리도보기",
       "url": "/mxvc/spc",
       "color": "#6366f1",
       "icon": "svg:spc-chart",
