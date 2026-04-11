@@ -71,6 +71,7 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [detailMaximized, setDetailMaximized] = useState(false);
   const masterRef = useRef<AgGridReact>(null);
   const detailRef = useRef<AgGridReact>(null);
 
@@ -217,7 +218,7 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '
       </div>
 
       {/* 마스터 그리드 */}
-      <div className="h-[45%] border-b-2 border-blue-500/30 dark:border-blue-400/30">
+      <div className={`border-b-2 border-blue-500/30 dark:border-blue-400/30 transition-all ${detailMaximized ? 'h-0 overflow-hidden' : 'h-[45%]'}`}>
         <AgGridReact<MasterRow>
           ref={masterRef}
           theme={gridTheme}
@@ -234,11 +235,30 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '
       </div>
 
       {/* 디테일 헤더 */}
-      <div className="px-4 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400
+      <div className="flex items-center justify-between px-4 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400
                        bg-gray-100 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700">
-        {selectedKey
-          ? `상세 스텝: ${selectedKey.split('|')[1]} (${detailRows.length}건)${detailLoading ? ' 조회 중...' : ''}`
-          : '마스터 행을 클릭하면 상세 스텝이 표시됩니다'}
+        <span>
+          {selectedKey
+            ? `상세 스텝: ${selectedKey.split('|')[1]} (${detailRows.length}건)${detailLoading ? ' 조회 중...' : ''}`
+            : '마스터 행을 클릭하면 상세 스텝이 표시됩니다'}
+        </span>
+        {selectedKey && (
+          <button
+            onClick={() => setDetailMaximized((v) => !v)}
+            className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            title={detailMaximized ? '원래 크기' : '최대화'}
+          >
+            {detailMaximized ? (
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+              </svg>
+            )}
+          </button>
+        )}
       </div>
 
       {/* 디테일 그리드 */}

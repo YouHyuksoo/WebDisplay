@@ -467,6 +467,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
             minWidth: 80,
           }}
           rowSelection="multiple"
+          suppressRowClickSelection={true}
           onSelectionChanged={(e) => {
             const selected = e.api.getSelectedRows() as Record<string, unknown>[];
             setSelectedIds(selected.map((r) => Number(r.LOG_ID)).filter((id) => !isNaN(id)));

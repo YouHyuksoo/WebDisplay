@@ -16,7 +16,7 @@ interface RunCardRow {
   LINE_CODE: string | null;
   LOT_SIZE: number | null;
   RUN_STATUS: string | null;
-  WORK_ORDER_NO: string | null;
+  LOT_NO: string | null;
   MFS_GROUP_NO: string | null;
 }
 
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     const rows = await executeQuery<RunCardRow>(
       `SELECT RUN_NO, TO_CHAR(RUN_DATE, 'YYYY-MM-DD') AS RUN_DATE,
               MODEL_NAME, LINE_CODE, LOT_SIZE, RUN_STATUS,
-              WORK_ORDER_NO, MFS_GROUP_NO
+              LOT_NO, MFS_GROUP_NO
          FROM IP_PRODUCT_RUN_CARD
         WHERE RUN_DATE BETWEEN TO_DATE(:fromDate, 'YYYY-MM-DD')
                              AND TO_DATE(:toDate, 'YYYY-MM-DD') + 0.99999

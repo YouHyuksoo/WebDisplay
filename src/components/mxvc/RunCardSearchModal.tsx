@@ -17,7 +17,7 @@ interface RunCard {
   LINE_CODE: string | null;
   LOT_SIZE: number | null;
   RUN_STATUS: string | null;
-  WORK_ORDER_NO: string | null;
+  LOT_NO: string | null;
   MFS_GROUP_NO: string | null;
 }
 
@@ -134,7 +134,7 @@ export default function RunCardSearchModal({ isOpen, onClose, onSelect }: Props)
                 <th className="px-3 py-2 text-left font-semibold text-gray-600 dark:text-gray-300">모델</th>
                 <th className="px-3 py-2 text-left font-semibold text-gray-600 dark:text-gray-300">라인</th>
                 <th className="px-3 py-2 text-right font-semibold text-gray-600 dark:text-gray-300">수량</th>
-                <th className="px-3 py-2 text-left font-semibold text-gray-600 dark:text-gray-300">작업지시번호</th>
+                <th className="px-3 py-2 text-left font-semibold text-gray-600 dark:text-gray-300">LOT NO</th>
                 <th className="px-3 py-2 text-left font-semibold text-gray-600 dark:text-gray-300">MFS그룹</th>
                 <th className="px-3 py-2 text-center font-semibold text-gray-600 dark:text-gray-300">상태</th>
               </tr>
@@ -163,7 +163,7 @@ export default function RunCardSearchModal({ isOpen, onClose, onSelect }: Props)
                   <td className="px-4 py-2.5 text-gray-800 dark:text-gray-200 truncate max-w-[200px]">{r.MODEL_NAME ?? '-'}</td>
                   <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300">{r.LINE_CODE ?? '-'}</td>
                   <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-300">{r.LOT_SIZE ?? '-'}</td>
-                  <td className="px-4 py-2.5 font-mono text-xs text-gray-600 dark:text-gray-300">{r.WORK_ORDER_NO ?? '-'}</td>
+                  <td className="px-4 py-2.5 font-mono text-xs text-gray-600 dark:text-gray-300">{r.LOT_NO ?? '-'}</td>
                   <td className="px-4 py-2.5 font-mono text-xs text-gray-600 dark:text-gray-300">{r.MFS_GROUP_NO ?? '-'}</td>
                   <td className="px-4 py-2.5 text-center text-gray-600 dark:text-gray-300">{r.RUN_STATUS ?? '-'}</td>
                 </tr>
