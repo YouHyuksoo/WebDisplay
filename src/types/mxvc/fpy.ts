@@ -61,7 +61,7 @@ export const TABLE_CONFIG: Record<MxvcFpyTableKey, TableColumnConfig> = {
   LOG_EOL:           { resultCol: "ARRAY_RESULT",   barcodeCol: "BARCODE" },
   LOG_COATING1:      { resultCol: "RESULT",         barcodeCol: "BARCODE" },
   LOG_COATING2:      { resultCol: "RESULT",         barcodeCol: "BARCODE" },
-  LOG_COATINGREVIEW: { resultCol: "FINAL_RESULT",   barcodeCol: "MAIN_BARCODE" },
+  LOG_COATINGREVIEW: { resultCol: "AREA_RESULT",     barcodeCol: "MAIN_BARCODE" },
   LOG_COATINGVISION: { resultCol: "FINAL_RESULT",   barcodeCol: "MAIN_BARCODE" },
   LOG_ICT:           { resultCol: "RESULT",         barcodeCol: "BARCODE" },
   LOG_AOI:           { resultCol: "RESULT",         barcodeCol: "SERIAL_NO" },

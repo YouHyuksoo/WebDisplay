@@ -17,7 +17,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const PASS_VALUES = ["OK", "PASS", "GOOD", "Y"];
+const PASS_VALUES = ["OK", "PASS", "GOOD", "Good", "Y", "SKIP", "OverKill"];
 
 interface FpyRow {
   HOUR: string;

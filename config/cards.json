@@ -411,6 +411,14 @@
       "color": "#6366f1",
       "icon": "svg:spc-chart",
       "layer": 8
+    },
+    {
+      "id": "mex-p-chart",
+      "title": "p 관리도",
+      "url": "/mxvc/p-chart",
+      "color": "#f43f5e",
+      "icon": "svg:chart",
+      "layer": 8
     }
   ]
 }
