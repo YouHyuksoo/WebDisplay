@@ -27,6 +27,8 @@ interface Props {
   onCategoryToggle: (catId: CategoryId) => void;
   onEntityClick: (node: GraphNode) => void;
   onReset?: () => void;
+  onExpandAll?: () => void;
+  onCollapseAll?: () => void;
   width: number;
   height: number;
 }

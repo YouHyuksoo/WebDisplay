@@ -257,6 +257,22 @@ export default function ReverseTracePage() {
     setHighlightedRow(null);
   }, []);
 
+  /* 전체 펼침: 데이터가 있는 카테고리 모두 펼침 */
+  const handleExpandAll = useCallback(() => {
+    const next = new Set<string>();
+    if (receipt.length > 0) next.add('cat-receipt');
+    if (issues.length > 0) next.add('cat-issue');
+    if (reelMaster.length > 0) next.add('cat-reel');
+    if (reelChanges.length > 0) next.add('cat-change');
+    if (boards.length > 0) next.add('cat-pcb');
+    setExpandedCats(next);
+  }, [receipt.length, issues.length, reelMaster.length, reelChanges.length, boards.length]);
+
+  /* 전체 접기 */
+  const handleCollapseAll = useCallback(() => {
+    setExpandedCats(new Set());
+  }, []);
+
   const graphData = useMemo(() => buildGraphData(apiData, expandedCats), [apiData, expandedCats]);
 
   return (
@@ -643,6 +659,8 @@ export default function ReverseTracePage() {
               onCategoryToggle={handleCategoryToggle}
               onEntityClick={handleEntityClick}
               onReset={handleGraphReset}
+              onExpandAll={handleExpandAll}
+              onCollapseAll={handleCollapseAll}
               width={panelDims.width}
               height={panelDims.height}
             />

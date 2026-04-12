@@ -22,6 +22,8 @@ interface Props {
   onCategoryToggle: (catId: CategoryId) => void;
   onEntityClick: (node: GraphNode) => void;
   onReset?: () => void;
+  onExpandAll?: () => void;
+  onCollapseAll?: () => void;
   width: number;
   height: number;
 }
@@ -44,7 +46,7 @@ const LAYOUT_OPTIONS: { value: LayoutMode; label: string }[] = [
 const LAYOUT_STORAGE_KEY = 'mxvc-reverse-trace-layout';
 
 export default function ReverseTrace3DGraphInner({
-  data, onCategoryToggle, onEntityClick, onReset, width, height,
+  data, onCategoryToggle, onEntityClick, onReset, onExpandAll, onCollapseAll, width, height,
 }: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fgRef = useRef<any>(null);
@@ -164,6 +166,12 @@ export default function ReverseTrace3DGraphInner({
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
+        <button onClick={onExpandAll}
+          className="px-2 py-1 text-xs rounded bg-blue-600/80 text-white hover:bg-blue-500"
+          title="모든 카테고리 펼침">전체펼침</button>
+        <button onClick={onCollapseAll}
+          className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
+          title="모든 카테고리 접기">전체접기</button>
         <button onClick={() => fgRef.current?.zoomToFit?.(600, 40)}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
           title="전체 보기 (화면에 맞춤)">중심</button>
