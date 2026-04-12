@@ -82,14 +82,14 @@ export function buildGraphData(
   const nodes: GraphNode[] = [];
   const links: GraphLink[] = [];
 
-  /* root 노드 */
+  /* root 노드 (중심 허브 - 입고 이모지와 구분되도록 🎯) */
   nodes.push({
     id: 'root',
     type: 'root',
     label: api.reelCd,
     val: 20,
     color: '#8b5cf6',
-    icon: '📦',
+    icon: '🎯',
   });
 
   /* 카테고리 노드 + root → category 엣지 */
