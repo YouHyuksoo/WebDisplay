@@ -94,7 +94,7 @@ export const TABLE_LABELS: Record<MxvcFpyTableKey, string> = {
 
 /** 사이드바 설정 */
 export interface MxvcFpySettings {
-  layout: "2x3" | "3x2" | "2x2+1";
+  layout: "2x3" | "3x2" | "4x2" | "2x2+1";
   chartType: "bar" | "area" | "line";
   chartHeight: number;
   palette: "blue" | "rainbow" | "warm" | "cool";

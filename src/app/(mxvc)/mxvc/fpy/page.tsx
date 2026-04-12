@@ -138,6 +138,7 @@ export default function MxvcFpyPage() {
               className={`${inputCls} min-w-24`}>
               <option value="2x3">2열</option>
               <option value="3x2">3열</option>
+              <option value="4x2">4열</option>
               <option value="2x2+1">2열+1</option>
             </select>
           </div>

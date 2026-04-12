@@ -20,7 +20,11 @@ interface Props {
 
 export default function FpyDashboard({ data, settings }: Props) {
   const colors = PALETTES[settings.palette] || PALETTES.blue;
-  const gridCols = settings.layout === "3x2" ? "grid-cols-3" : "grid-cols-2";
+  const gridCols = settings.layout === "4x2"
+    ? "grid-cols-4"
+    : settings.layout === "3x2"
+      ? "grid-cols-3"
+      : "grid-cols-2";
 
   const visibleTables = settings.visibleTables.filter(
     (key) => data.tables[key],
