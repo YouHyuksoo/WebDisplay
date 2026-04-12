@@ -74,19 +74,19 @@ export interface ResultBreakdown {
   ratio: number; // %
 }
 
-/** 13개 테이블 매핑 */
+/** 13개 테이블 매핑 — 모든 카드에 판정값별 breakdown 표시 */
 export const TABLE_CONFIG: Record<MxvcFpyTableKey, TableColumnConfig> = {
-  LOG_FCT:           { resultCol: "RESULT",         barcodeCol: "BARCODE",      groupedFpy: true },
-  LOG_VISION_LEGACY: { resultCol: "DEVICE_RESULT",  barcodeCol: "BARCODE" },
-  LOG_DOWNLOAD:      { resultCol: "RESULT",         barcodeCol: "BARCODE" },
-  LOG_LOWCURRENT:    { resultCol: "OVERALL_RESULT", barcodeCol: "BARCODE" },
-  LOG_VISION_NATIVE: { resultCol: "RESULT",         barcodeCol: "BARCODE" },
-  LOG_EOL:           { resultCol: "ARRAY_RESULT",   barcodeCol: "BARCODE",      groupedFpy: true },
-  LOG_COATING1:      { resultCol: "RESULT",         barcodeCol: "BARCODE" },
-  LOG_COATING2:      { resultCol: "RESULT",         barcodeCol: "BARCODE" },
-  LOG_COATINGREVIEW: { resultCol: "AREA_RESULT",     barcodeCol: "MAIN_BARCODE" },
-  LOG_COATINGVISION: { resultCol: "FINAL_RESULT",   barcodeCol: "MAIN_BARCODE" },
-  LOG_ICT:           { resultCol: "RESULT",         barcodeCol: "BARCODE",      groupedFpy: true },
+  LOG_FCT:           { resultCol: "RESULT",         barcodeCol: "BARCODE",        groupedFpy: true,  breakdown: true },
+  LOG_VISION_LEGACY: { resultCol: "DEVICE_RESULT",  barcodeCol: "BARCODE",        breakdown: true },
+  LOG_DOWNLOAD:      { resultCol: "RESULT",         barcodeCol: "BARCODE",        breakdown: true },
+  LOG_LOWCURRENT:    { resultCol: "OVERALL_RESULT", barcodeCol: "BARCODE",        breakdown: true },
+  LOG_VISION_NATIVE: { resultCol: "RESULT",         barcodeCol: "BARCODE",        breakdown: true },
+  LOG_EOL:           { resultCol: "ARRAY_RESULT",   barcodeCol: "BARCODE",        groupedFpy: true,  breakdown: true },
+  LOG_COATING1:      { resultCol: "RESULT",         barcodeCol: "BARCODE",        breakdown: true },
+  LOG_COATING2:      { resultCol: "RESULT",         barcodeCol: "BARCODE",        breakdown: true },
+  LOG_COATINGREVIEW: { resultCol: "AREA_RESULT",    barcodeCol: "MAIN_BARCODE",   breakdown: true },
+  LOG_COATINGVISION: { resultCol: "FINAL_RESULT",   barcodeCol: "MAIN_BARCODE",   breakdown: true },
+  LOG_ICT:           { resultCol: "RESULT",         barcodeCol: "BARCODE",        groupedFpy: true,  breakdown: true },
   LOG_AOI:           { resultCol: "RESULT",         barcodeCol: "SERIAL_NO",      breakdown: true },
   LOG_SPI:           { resultCol: "PCB_RESULT",     barcodeCol: "MASTER_BARCODE", breakdown: true },
 };

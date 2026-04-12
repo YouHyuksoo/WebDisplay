@@ -118,19 +118,36 @@ async function queryTableFpy(
   const totalAll = hourly.reduce((s, h) => s + h.total, 0);
   const passAll = hourly.reduce((s, h) => s + h.pass, 0);
 
-  /* 판정값별 breakdown (AOI/SPI) */
+  /* 판정값별 breakdown */
   let breakdown: { value: string; count: number; ratio: number }[] | undefined;
   if (cfg.breakdown) {
     try {
-      const bdRows = await executeQuery<{ VAL: string; CNT: number }>(
-        `SELECT ${cfg.resultCol} AS VAL, COUNT(*) AS CNT
-           FROM ${tableKey}
-          WHERE ${whereTime}
-            AND ${cfg.resultCol} IS NOT NULL
-          GROUP BY ${cfg.resultCol}
-          ORDER BY CNT DESC`,
-        binds,
-      );
+      /**
+       * groupedFpy 테이블은 바코드 대표값(MAX(resultCol))으로 집계.
+       * 일반 테이블은 row 단위 집계.
+       */
+      const bdSql = cfg.groupedFpy
+        ? `SELECT FINAL_LABEL AS VAL, COUNT(*) AS CNT FROM (
+             SELECT
+               CASE WHEN SUM(CASE WHEN ${cfg.resultCol} NOT IN (${passIn}) THEN 1 ELSE 0 END) > 0
+                    THEN 'FAIL'
+                    ELSE MAX(${cfg.resultCol})
+                    END AS FINAL_LABEL
+               FROM ${tableKey}
+              WHERE ${whereTime}
+                AND ${cfg.resultCol} IS NOT NULL
+                AND ${cfg.barcodeCol} IS NOT NULL
+              GROUP BY ${cfg.barcodeCol}
+           )
+           GROUP BY FINAL_LABEL
+           ORDER BY CNT DESC`
+        : `SELECT ${cfg.resultCol} AS VAL, COUNT(*) AS CNT
+             FROM ${tableKey}
+            WHERE ${whereTime}
+              AND ${cfg.resultCol} IS NOT NULL
+            GROUP BY ${cfg.resultCol}
+            ORDER BY CNT DESC`;
+      const bdRows = await executeQuery<{ VAL: string; CNT: number }>(bdSql, binds);
       const bdTotal = bdRows.reduce((s, r) => s + r.CNT, 0);
       breakdown = bdRows.map((r) => ({
         value: r.VAL,
