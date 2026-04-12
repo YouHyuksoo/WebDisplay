@@ -230,6 +230,31 @@ async function queryReflowByAoiTime(
 export async function GET(req: NextRequest) {
   const barcode = req.nextUrl.searchParams.get('barcode')?.trim() ?? '';
   const includeMaterial = req.nextUrl.searchParams.get('material') === '1';
+  const mode = req.nextUrl.searchParams.get('mode') ?? '';
+  /** 포함할 테이블 목록 (콤마 구분). 빈 값이면 전체 포함 */
+  const selectedTablesParam = req.nextUrl.searchParams.get('tables') ?? '';
+  const selectedTables = selectedTablesParam
+    ? new Set(selectedTablesParam.split(',').map((s) => s.trim()).filter(Boolean))
+    : null;
+
+  /* mode=tables: LOG_ 테이블 + 마스터/출하 테이블 목록 반환 (체크박스 구성용) */
+  if (mode === 'tables') {
+    try {
+      const logTables = await findLogTablesWithBarcode();
+      return NextResponse.json({
+        tables: [
+          'IP_PRODUCT_2D_BARCODE',
+          'IP_PRODUCT_PACK_SERIAL',
+          'IP_PRODUCT_WORK_QC',
+          'IMCN_JIG_INPUT_HIST',
+          'IM_ITEM_SOLDER_INPUT_HIST',
+          ...logTables.map((t) => t.tableName),
+        ],
+      });
+    } catch (err) {
+      return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+    }
+  }
 
   if (!barcode) {
     return NextResponse.json({ error: 'barcode 파라미터가 필요합니다' }, { status: 400 });
@@ -243,11 +268,15 @@ export async function GET(req: NextRequest) {
       { bcode: barcode },
     );
     const masterRaw = masterRows[0] ?? null;
-    const master = masterRaw ? sanitizeRow(masterRaw) : null;
+    /* IP_PRODUCT_2D_BARCODE 체크 해제 시 master 숨김 (단, RUN_NO/MODEL_NAME은 내부적으로 사용) */
+    const masterRawSanitized = masterRaw ? sanitizeRow(masterRaw) : null;
+    const master = selectedTables && !selectedTables.has('IP_PRODUCT_2D_BARCODE')
+      ? null
+      : masterRawSanitized;
 
-    /* ── 2. RUN_CARD / MODEL_MASTER 병렬 조회 ── */
-    const runNo = master?.['RUN_NO'] as string | undefined;
-    const modelName = master?.['MODEL_NAME'] as string | undefined;
+    /* ── 2. RUN_CARD / MODEL_MASTER 병렬 조회 (master 체크 여부와 무관) ── */
+    const runNo = masterRawSanitized?.['RUN_NO'] as string | undefined;
+    const modelName = masterRawSanitized?.['MODEL_NAME'] as string | undefined;
 
     const [runCardRows, modelMasterRows] = await Promise.all([
       runNo
@@ -271,20 +300,34 @@ export async function GET(req: NextRequest) {
 
     /* ── 3. LOG_ 테이블 자동 탐지 ── */
     const t1 = Date.now();
-    const logTables = await findLogTablesWithBarcode();
-    console.log(`[추적성] 3단계 테이블탐지: ${Date.now() - t1}ms (${logTables.length}개)`);
+    const allLogTables = await findLogTablesWithBarcode();
+    /* 선택된 테이블만 필터 (selectedTables가 null이면 전체) */
+    const logTables = selectedTables
+      ? allLogTables.filter((t) => selectedTables.has(t.tableName))
+      : allLogTables;
+    console.log(`[추적성] 3단계 테이블탐지: ${Date.now() - t1}ms (${logTables.length}/${allLogTables.length}개)`);
 
     /* ── 4. 모든 LOG_ 테이블 + 고정 테이블 병렬 조회 ── */
     const logPromises = logTables.map(({ tableName, barcodeCols, dateCols }) =>
       timed(queryLogTable(tableName, barcodeCols, dateCols, barcode), tableName),
     );
 
-    const workQcPromise = timed(queryFixedTable(
-      'IP_PRODUCT_WORK_QC',
-      ['PID', 'BARCODE', 'MASTER_BARCODE'],
-      ['REG_DATE', 'CREATE_DATE', 'UPDATE_DATE'],
-      barcode, 'repair',
-    ).catch(() => [] as TimelineEvent[]), 'WORK_QC');
+    /* 수리이력 (IP_PRODUCT_WORK_QC) — SERIAL_NO 조건 */
+    const workQcPromise: Promise<TimelineEvent[]> =
+      !selectedTables || selectedTables.has('IP_PRODUCT_WORK_QC')
+        ? timed(executeQuery<Record<string, unknown>>(
+            `SELECT * FROM IP_PRODUCT_WORK_QC WHERE SERIAL_NO = :bcode ORDER BY QC_DATE DESC`,
+            { bcode: barcode },
+          ).then((rows) => rows.map((row) => {
+            const safe = sanitizeRow(row);
+            const ts = safe['QC_DATE'] ?? safe['REPAIR_DATE'] ?? safe['ENTER_DATE'] ?? '';
+            return {
+              source: 'IP_PRODUCT_WORK_QC', type: 'repair' as const,
+              timestamp: String(ts),
+              data: safe,
+            };
+          })).catch(() => [] as TimelineEvent[]), 'WORK_QC')
+        : Promise.resolve([]);
 
     const workstageIoPromise = timed(queryFixedTable(
       'IP_PRODUCT_WORKSTAGE_IO',
@@ -299,6 +342,58 @@ export async function GET(req: NextRequest) {
       ['INSPECT_DATE', 'ENTER_DATE'],
       barcode, 'log',
     ).catch(() => [] as TimelineEvent[]), 'INSPECT_RESULT');
+
+    /* 출하정보 (IP_PRODUCT_PACK_SERIAL) — 선택 시에만 조회 */
+    const packSerialPromise: Promise<TimelineEvent[]> =
+      !selectedTables || selectedTables.has('IP_PRODUCT_PACK_SERIAL')
+        ? timed(executeQuery<Record<string, unknown>>(
+            `SELECT * FROM IP_PRODUCT_PACK_SERIAL WHERE BARCODE = :bcode`,
+            { bcode: barcode },
+          ).then((rows) => rows.map((row) => {
+            const safe = sanitizeRow(row);
+            const ts = safe['SCAN_DATE'] ?? safe['ENTER_DATE'] ?? safe['FINAL_INSPECT_DATE'] ?? '';
+            return {
+              source: 'IP_PRODUCT_PACK_SERIAL', type: 'log' as const,
+              timestamp: String(ts),
+              data: safe,
+            };
+          })).catch(() => [] as TimelineEvent[]), 'PACK_SERIAL')
+        : Promise.resolve([]);
+
+    /* 지그투입이력 (IMCN_JIG_INPUT_HIST) — RUN_NO 조건 */
+    const runNoForChildren = masterRawSanitized?.['RUN_NO'] as string | undefined;
+    const jigInputPromise: Promise<TimelineEvent[]> =
+      runNoForChildren && (!selectedTables || selectedTables.has('IMCN_JIG_INPUT_HIST'))
+        ? timed(executeQuery<Record<string, unknown>>(
+            `SELECT * FROM IMCN_JIG_INPUT_HIST WHERE RUN_NO = :runNo ORDER BY INPUT_DATE DESC`,
+            { runNo: runNoForChildren },
+          ).then((rows) => rows.map((row) => {
+            const safe = sanitizeRow(row);
+            const ts = safe['INPUT_DATE'] ?? safe['ENTER_DATE'] ?? '';
+            return {
+              source: 'IMCN_JIG_INPUT_HIST', type: 'log' as const,
+              timestamp: String(ts),
+              data: safe,
+            };
+          })).catch(() => [] as TimelineEvent[]), 'JIG_INPUT')
+        : Promise.resolve([]);
+
+    /* 솔더투입이력 (IM_ITEM_SOLDER_INPUT_HIST) — RUN_NO 조건 */
+    const solderInputPromise: Promise<TimelineEvent[]> =
+      runNoForChildren && (!selectedTables || selectedTables.has('IM_ITEM_SOLDER_INPUT_HIST'))
+        ? timed(executeQuery<Record<string, unknown>>(
+            `SELECT * FROM IM_ITEM_SOLDER_INPUT_HIST WHERE RUN_NO = :runNo ORDER BY INPUT_DATE DESC`,
+            { runNo: runNoForChildren },
+          ).then((rows) => rows.map((row) => {
+            const safe = sanitizeRow(row);
+            const ts = safe['INPUT_DATE'] ?? safe['ENTER_DATE'] ?? '';
+            return {
+              source: 'IM_ITEM_SOLDER_INPUT_HIST', type: 'log' as const,
+              timestamp: String(ts),
+              data: safe,
+            };
+          })).catch(() => [] as TimelineEvent[]), 'SOLDER_INPUT')
+        : Promise.resolve([]);
 
     /* ── 4-B. 자재(MATERIAL) — 토글 ON일 때만 조회 ── */
     let materialBoardPromise: Promise<TimelineEvent[]> = Promise.resolve([]);
@@ -328,6 +423,7 @@ export async function GET(req: NextRequest) {
     const t2 = Date.now();
     const allResults = await Promise.all([
       ...logPromises, workQcPromise, workstageIoPromise, inspectResultPromise,
+      packSerialPromise, jigInputPromise, solderInputPromise,
       materialBoardPromise, materialDetailPromise,
     ]);
     console.log(`[추적성] 4단계 병렬조회: ${Date.now() - t2}ms`);

@@ -8,7 +8,7 @@
  */
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import TraceabilityMaster from '@/components/mxvc/TraceabilityMaster';
@@ -44,6 +44,33 @@ export default function TraceabilityPage() {
   /* RUN NO 조회 모달 */
   const [showRunCardModal, setShowRunCardModal] = useState(false);
 
+  /* 추적 대상 테이블 체크박스 */
+  const [availableTables, setAvailableTables] = useState<string[]>([]);
+  const [selectedTables, setSelectedTables] = useState<Set<string>>(new Set());
+
+  /* 페이지 로드 시 테이블 목록 조회 */
+  useEffect(() => {
+    fetch('/api/mxvc/traceability?mode=tables')
+      .then((res) => res.json())
+      .then((json: { tables: string[] }) => {
+        const tbls = json.tables ?? [];
+        setAvailableTables(tbls);
+        setSelectedTables(new Set(tbls)); // 기본 전체 선택
+      })
+      .catch(() => {});
+  }, []);
+
+  const toggleTable = (t: string) => {
+    setSelectedTables((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      return next;
+    });
+  };
+
+  const allChecked = availableTables.length > 0 && selectedTables.size === availableTables.length;
+
   /** RUN_NO로 바코드 목록 조회 */
   const handleRunNoSearch = useCallback(async () => {
     const trimmed = runNo.trim();
@@ -75,6 +102,9 @@ export default function TraceabilityPage() {
     try {
       const params = new URLSearchParams({ barcode });
       if (includeMaterial) params.set('material', '1');
+      if (selectedTables.size > 0 && selectedTables.size < availableTables.length) {
+        params.set('tables', Array.from(selectedTables).join(','));
+      }
       const res = await fetch(`/api/mxvc/traceability?${params}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json: TraceabilityResponse = await res.json();
@@ -84,7 +114,7 @@ export default function TraceabilityPage() {
     } finally {
       setLoading(false);
     }
-  }, [includeMaterial]);
+  }, [includeMaterial, selectedTables, availableTables.length]);
 
   /** 사이드바 찾기에서 Enter → 목록 필터 or 직접 바코드 조회 */
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -230,7 +260,7 @@ export default function TraceabilityPage() {
           </div>
 
           {/* 목록 */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto min-h-0">
             {listLoading && (
               <div className="flex items-center justify-center py-8 text-xs text-gray-400">
                 <span className="w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full animate-spin mr-2" />
@@ -259,6 +289,47 @@ export default function TraceabilityPage() {
             ))}
           </div>
 
+          {/* 추적 대상 테이블 체크박스 */}
+          {availableTables.length > 0 && (
+            <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 flex flex-col max-h-[40%]">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/60">
+                <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  추적 대상 ({selectedTables.size}/{availableTables.length})
+                </span>
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={allChecked}
+                    onChange={() =>
+                      setSelectedTables(allChecked ? new Set() : new Set(availableTables))
+                    }
+                    className="w-3 h-3 accent-blue-500"
+                  />
+                  <span className="text-[10px] text-gray-600 dark:text-gray-400">전체</span>
+                </label>
+              </div>
+              <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
+                {availableTables.map((t) => (
+                  <label key={t} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60 px-1 py-0.5 rounded">
+                    <input
+                      type="checkbox"
+                      checked={selectedTables.has(t)}
+                      onChange={() => toggleTable(t)}
+                      className="w-3.5 h-3.5 accent-blue-500"
+                    />
+                    <span className="text-[11px] font-mono text-gray-700 dark:text-gray-300 truncate">
+                      {t === 'IP_PRODUCT_2D_BARCODE' ? '바코드마스터'
+                        : t === 'IP_PRODUCT_PACK_SERIAL' ? '출하정보'
+                        : t === 'IP_PRODUCT_WORK_QC' ? '수리이력'
+                        : t === 'IMCN_JIG_INPUT_HIST' ? '지그투입이력'
+                        : t === 'IM_ITEM_SOLDER_INPUT_HIST' ? '솔더투입이력'
+                        : t.replace(/^LOG_/, '')}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
         </aside>
 
         {/* 우측: 추적성 결과 */}
