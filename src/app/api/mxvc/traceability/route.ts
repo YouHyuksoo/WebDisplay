@@ -128,13 +128,18 @@ async function queryLogTable(
   try {
     const rows = await executeQuery<Record<string, unknown>>(sql, { bcode: barcodeValue });
     /**
-     * 실제 검사 시간 컬럼 우선 선택 (등록/생성일 제외).
-     * 우선순위: LOG_TIMESTAMP > *_DATE (INSPECT/START 등) > ENTER/LAST_MODIFY 제외
+     * 실제 검사 시간 컬럼 우선 선택 (등록/생성일 + LOG_TIMESTAMP/LOG_TIME 제외).
+     * LOG_TIMESTAMP는 DB insert 시각이라 실제 검사 시각이 아님.
+     * 우선순위: INSPECT_DATE > START_TIME > END_TIME > 기타 > (fallback) LOG_TIMESTAMP/LOG_TIME
      */
     const excludeDate = (c: string) => /^(ENTER|LAST_MODIFY|CREATE|UPDATE|REG)_?(DATE|DT)$/i.test(c);
-    const preferredTs = ['LOG_TIMESTAMP', 'LOG_TIME', 'INSPECT_DATE', 'START_TIME', 'END_TIME']
+    const preferredTs = ['INSPECT_DATE', 'START_TIME', 'END_TIME', 'RUN_DATE', 'ACTUAL_DATE']
       .find((c) => dateCols.includes(c));
-    const tsCol = preferredTs ?? dateCols.find((c) => !excludeDate(c)) ?? null;
+    const fallbackTs = ['LOG_TIMESTAMP', 'LOG_TIME'].find((c) => dateCols.includes(c));
+    const otherTs = dateCols.find((c) =>
+      !excludeDate(c) && !['LOG_TIMESTAMP', 'LOG_TIME'].includes(c)
+    );
+    const tsCol = preferredTs ?? otherTs ?? fallbackTs ?? null;
     return rows.map((row) => {
       const safe = sanitizeRow(row);
       let timestamp = '';
