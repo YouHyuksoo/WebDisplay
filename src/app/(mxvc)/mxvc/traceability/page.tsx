@@ -8,13 +8,30 @@
  */
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import * as XLSX from 'xlsx';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import TraceabilityMaster from '@/components/mxvc/TraceabilityMaster';
 import TraceabilityTimeline from '@/components/mxvc/TraceabilityTimeline';
 import RunCardSearchModal from '@/components/mxvc/RunCardSearchModal';
 import type { TraceabilityResponse } from '@/types/mxvc/traceability';
+
+/** 섹션 라벨 매핑 (TraceabilityTimeline의 SOURCE_LABEL과 동일) */
+const SOURCE_LABEL: Record<string, string> = {
+  MATERIAL_BOARD: '자재(BOARD)',
+  MATERIAL_DETAIL: '자재(상세)',
+  IQ_MACHINE_INSPECT_RESULT: '공정설비통신',
+  IP_PRODUCT_2D_BARCODE: '바코드마스터',
+  IP_PRODUCT_PACK_SERIAL: '출하정보',
+  IP_PRODUCT_WORK_QC: '수리이력',
+  IMCN_JIG_INPUT_HIST: '지그투입이력',
+  IM_ITEM_SOLDER_INPUT_HIST: '솔더투입이력',
+  IP_PRODUCT_WORKSTAGE_IO: '공정이동',
+};
+function sectionLabel(source: string): string {
+  return SOURCE_LABEL[source] ?? source.replace(/^LOG_/i, '').replace(/^IP_PRODUCT_/i, '');
+}
 
 const SCREEN_ID = 'mxvc-traceability';
 
@@ -135,6 +152,138 @@ export default function TraceabilityPage() {
 
   const resultCount = data?.timeline?.length ?? 0;
 
+  /** 섹션별 그룹핑 (source 기준) */
+  const groupedSections = useMemo(() => {
+    if (!data?.timeline) return [] as Array<{ source: string; label: string; rows: Record<string, unknown>[] }>;
+    const map = new Map<string, Record<string, unknown>[]>();
+    for (const ev of data.timeline) {
+      if (!map.has(ev.source)) map.set(ev.source, []);
+      map.get(ev.source)!.push(ev.data);
+    }
+    return Array.from(map.entries()).map(([source, rows]) => ({
+      source,
+      label: sectionLabel(source),
+      rows,
+    }));
+  }, [data]);
+
+  const hasExport = !!data && groupedSections.length > 0;
+
+  /** Excel 다운로드: 마스터 + 섹션별 시트 */
+  const handleExportExcel = useCallback(() => {
+    if (!hasExport || !data) return;
+    const wb = XLSX.utils.book_new();
+
+    /* 마스터 시트 */
+    if (data.master) {
+      const ws = XLSX.utils.json_to_sheet([data.master]);
+      XLSX.utils.book_append_sheet(wb, ws, '마스터');
+    }
+    if (data.runCard) {
+      const ws = XLSX.utils.json_to_sheet([data.runCard]);
+      XLSX.utils.book_append_sheet(wb, ws, 'RunCard');
+    }
+    if (data.modelMaster) {
+      const ws = XLSX.utils.json_to_sheet([data.modelMaster]);
+      XLSX.utils.book_append_sheet(wb, ws, '모델마스터');
+    }
+
+    /* 섹션별 시트 (이름 31자 제한, 중복 회피) */
+    const usedNames = new Set<string>();
+    for (const sec of groupedSections) {
+      if (sec.rows.length === 0) continue;
+      let name = sec.label.slice(0, 31);
+      let i = 1;
+      while (usedNames.has(name)) name = `${sec.label.slice(0, 27)}_${i++}`;
+      usedNames.add(name);
+      const ws = XLSX.utils.json_to_sheet(sec.rows);
+      XLSX.utils.book_append_sheet(wb, ws, name);
+    }
+
+    const fileName = `추적성_${selectedBarcode || 'data'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  }, [hasExport, data, groupedSections, selectedBarcode]);
+
+  /** HTML 테이블 생성 공통 함수 */
+  const buildSectionHtml = useCallback((print: boolean) => {
+    if (!data) return '';
+    const toTable = (rows: Record<string, unknown>[], title: string, color: string) => {
+      if (rows.length === 0) return '';
+      const cols = Array.from(new Set(rows.flatMap((r) => Object.keys(r))));
+      const thead = cols.map((c) => `<th>${c}</th>`).join('');
+      const tbody = rows.map((r) =>
+        `<tr>${cols.map((c) => `<td>${String(r[c] ?? '')}</td>`).join('')}</tr>`
+      ).join('');
+      return `<section><h2 style="color:${color}">${title} (${rows.length}건)</h2><table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></section>`;
+    };
+    const masterHtml = data.master
+      ? toTable([data.master], '마스터 (IP_PRODUCT_2D_BARCODE)', '#2563eb')
+      : '';
+    const runCardHtml = data.runCard
+      ? toTable([data.runCard as Record<string, unknown>], 'RunCard', '#0891b2')
+      : '';
+    const modelHtml = data.modelMaster
+      ? toTable([data.modelMaster as Record<string, unknown>], '모델마스터', '#9333ea')
+      : '';
+    const sectionsHtml = groupedSections
+      .map((s) => toTable(s.rows, s.label, '#059669'))
+      .join('');
+
+    const style = print
+      ? `@page { size: A4 landscape; margin: 10mm; }
+         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 0; color: #222; }
+         h1 { color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 6px; font-size: 18px; }
+         h2 { margin-top: 16px; padding-bottom: 3px; border-bottom: 1px solid #ddd; font-size: 13px; page-break-after: avoid; }
+         table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 6px; page-break-inside: auto; }
+         th, td { border: 1px solid #ccc; padding: 3px 5px; text-align: left; }
+         th { background: #eee; font-weight: 600; }
+         tr { page-break-inside: avoid; }
+         .meta { color: #666; font-size: 10px; margin-bottom: 12px; }`
+      : `body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; background: #f8f9fa; color: #222; }
+         h1 { color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
+         h2 { margin-top: 30px; padding-bottom: 4px; border-bottom: 1px solid #ddd; font-size: 16px; }
+         table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; background: white; }
+         th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
+         th { background: #f0f0f0; font-weight: 600; }
+         tr:nth-child(even) td { background: #fafafa; }
+         .meta { color: #666; font-size: 12px; margin-bottom: 20px; }`;
+
+    return `<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"/><title>추적성 ${selectedBarcode}</title>
+<style>${style}</style></head>
+<body>
+<h1>추적성 리포트 — ${selectedBarcode}</h1>
+<p class="meta">생성일: ${new Date().toLocaleString('ko-KR')} / 이벤트 ${resultCount}건 / 섹션 ${groupedSections.length}개</p>
+${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
+</body></html>`;
+  }, [data, groupedSections, selectedBarcode, resultCount]);
+
+  /** HTML 다운로드 */
+  const handleExportHtml = useCallback(() => {
+    if (!hasExport) return;
+    const html = buildSectionHtml(false);
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `추적성_${selectedBarcode || 'data'}_${new Date().toISOString().slice(0, 10)}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [hasExport, buildSectionHtml, selectedBarcode]);
+
+  /** PDF 다운로드 (브라우저 인쇄 대화상자) */
+  const handleExportPdf = useCallback(() => {
+    if (!hasExport) return;
+    const printWin = window.open('', '_blank', 'width=1200,height=800');
+    if (!printWin) return;
+    printWin.document.write(buildSectionHtml(true));
+    printWin.document.close();
+    printWin.onload = () => {
+      printWin.focus();
+      printWin.print();
+    };
+  }, [hasExport, buildSectionHtml]);
+
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-white overflow-hidden">
       <DisplayHeader title="멕시코전장 추적성분석" screenId={SCREEN_ID} />
@@ -220,8 +369,25 @@ export default function TraceabilityPage() {
           </>
         )}
 
-        <div className="ml-auto text-sm text-gray-500 dark:text-gray-400">
-          {data && `${resultCount}개 이벤트`}
+        <div className="ml-auto flex items-center gap-2">
+          {data && (
+            <span className="text-sm text-gray-500 dark:text-gray-400">{resultCount}개 이벤트</span>
+          )}
+          {hasExport && (
+            <>
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">받아내기:</span>
+              <button onClick={handleExportHtml}
+                className="px-3 py-1.5 rounded text-xs font-semibold bg-sky-500 hover:bg-sky-600 text-white transition-colors"
+                title="HTML 파일로 저장">HTML</button>
+              <button onClick={handleExportExcel}
+                className="px-3 py-1.5 rounded text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+                title="Excel(xlsx) 파일로 저장">Excel</button>
+              <button onClick={handleExportPdf}
+                className="px-3 py-1.5 rounded text-xs font-semibold bg-rose-500 hover:bg-rose-600 text-white transition-colors"
+                title="인쇄 대화상자에서 PDF 저장">PDF</button>
+            </>
+          )}
         </div>
       </div>
 
