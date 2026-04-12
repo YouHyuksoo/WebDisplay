@@ -124,9 +124,9 @@ export default function ReverseTrace3DGraphInner({
     <div className="relative w-full h-full bg-[#1a1a2e]">
       {/* 툴바 */}
       <div className="absolute top-2 right-2 z-10 flex gap-1">
-        <button onClick={() => fgRef.current?.cameraPosition({ x: 0, y: 0, z: 200 }, { x: 0, y: 0, z: 0 }, 1000)}
+        <button onClick={() => fgRef.current?.zoomToFit?.(600, 40)}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
-          title="중심으로">중심</button>
+          title="전체 보기 (화면에 맞춤)">중심</button>
         <button onClick={onReset}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
           title="리셋">리셋</button>
@@ -160,6 +160,10 @@ export default function ReverseTrace3DGraphInner({
         linkOpacity={0.3}
         linkColor={() => '#ffffff'}
         onNodeClick={handleNodeClick}
+        onEngineStop={() => {
+          /* 시뮬레이션 안정화 후 카메라를 그래프에 맞춰 줌 */
+          fgRef.current?.zoomToFit?.(400, 40);
+        }}
         controlType="trackball"
       />}
     </div>
