@@ -28,6 +28,7 @@ const SOURCE_LABEL: Record<string, string> = {
   IMCN_JIG_INPUT_HIST: '지그투입이력',
   IM_ITEM_SOLDER_INPUT_HIST: '솔더투입이력',
   IP_PRODUCT_WORKSTAGE_IO: '공정이동',
+  LOG_LCR: 'LCR 측정로그',
 };
 function sectionLabel(source: string): string {
   return SOURCE_LABEL[source] ?? source.replace(/^LOG_/i, '').replace(/^IP_PRODUCT_/i, '');
@@ -489,6 +490,7 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
                         : t === 'IP_PRODUCT_WORK_QC' ? '수리이력'
                         : t === 'IMCN_JIG_INPUT_HIST' ? '지그투입이력'
                         : t === 'IM_ITEM_SOLDER_INPUT_HIST' ? '솔더투입이력'
+                        : t === 'LOG_LCR' ? 'LCR 측정로그'
                         : t.replace(/^LOG_/, '')}
                     </span>
                   </label>

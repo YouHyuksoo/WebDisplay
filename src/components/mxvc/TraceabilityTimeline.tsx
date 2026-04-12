@@ -112,6 +112,7 @@ const SOURCE_LABEL: Record<string, string> = {
   IMCN_JIG_INPUT_HIST: '지그투입이력',
   IM_ITEM_SOLDER_INPUT_HIST: '솔더투입이력',
   IP_PRODUCT_WORKSTAGE_IO: '공정이동',
+  LOG_LCR: 'LCR 측정로그',
 };
 
 function displayName(source: string): string {

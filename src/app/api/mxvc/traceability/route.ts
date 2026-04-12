@@ -260,6 +260,7 @@ export async function GET(req: NextRequest) {
           'IP_PRODUCT_WORK_QC',
           'IMCN_JIG_INPUT_HIST',
           'IM_ITEM_SOLDER_INPUT_HIST',
+          'LOG_LCR',
           ...logTables.map((t) => t.tableName),
         ],
       });
@@ -411,6 +412,24 @@ export async function GET(req: NextRequest) {
           })).catch(() => [] as TimelineEvent[]), 'SOLDER_INPUT')
         : Promise.resolve([]);
 
+    /* LCR 로그 (LOG_LCR) — LCR_MSG 컬럼이 RUN_NO 값 */
+    const lcrPromise: Promise<TimelineEvent[]> =
+      runNoForChildren && (!selectedTables || selectedTables.has('LOG_LCR'))
+        ? timed(executeQuery<Record<string, unknown>>(
+            `SELECT * FROM LOG_LCR WHERE LCR_MSG = :runNo`,
+            { runNo: runNoForChildren },
+          ).then((rows) => rows.map((row) => {
+            const safe = sanitizeRow(row);
+            /* 실제 검사 시간 우선: DTIME > LOG_TIMESTAMP (fallback) */
+            const ts = safe['DTIME'] ?? safe['LOG_TIMESTAMP'] ?? '';
+            return {
+              source: 'LOG_LCR', type: 'log' as const,
+              timestamp: String(ts),
+              data: safe,
+            };
+          })).catch(() => [] as TimelineEvent[]), 'LCR')
+        : Promise.resolve([]);
+
     /* ── 4-B. 자재(MATERIAL) — 토글 ON일 때만 조회 ── */
     let materialBoardPromise: Promise<TimelineEvent[]> = Promise.resolve([]);
     let materialDetailPromise: Promise<TimelineEvent[]> = Promise.resolve([]);
@@ -439,7 +458,7 @@ export async function GET(req: NextRequest) {
     const t2 = Date.now();
     const allResults = await Promise.all([
       ...logPromises, workQcPromise, workstageIoPromise, inspectResultPromise,
-      packSerialPromise, jigInputPromise, solderInputPromise,
+      packSerialPromise, jigInputPromise, solderInputPromise, lcrPromise,
       materialBoardPromise, materialDetailPromise,
     ]);
     console.log(`[추적성] 4단계 병렬조회: ${Date.now() - t2}ms`);
