@@ -11,7 +11,7 @@
  */
 'use client';
 
-import { useRef, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import ForceGraph3D, { ForceGraphMethods } from 'react-force-graph-3d';
 import * as THREE from 'three';
 import SpriteText from 'three-spritetext';
@@ -26,11 +26,41 @@ interface Props {
   height: number;
 }
 
+/** 지원하는 레이아웃 모드 */
+type LayoutMode = 'force' | 'radialout' | 'radialin' | 'td' | 'bu' | 'lr' | 'rl' | 'zout' | 'zin';
+
+const LAYOUT_OPTIONS: { value: LayoutMode; label: string }[] = [
+  { value: 'force',     label: 'Force (자유)' },
+  { value: 'radialout', label: '방사형 (외곽)' },
+  { value: 'radialin',  label: '방사형 (내곽)' },
+  { value: 'td',        label: '계층 (위→아래)' },
+  { value: 'bu',        label: '계층 (아래→위)' },
+  { value: 'lr',        label: '계층 (왼→오)' },
+  { value: 'rl',        label: '계층 (오→왼)' },
+  { value: 'zout',      label: 'Z축 (앞→뒤)' },
+  { value: 'zin',       label: 'Z축 (뒤→앞)' },
+];
+
+const LAYOUT_STORAGE_KEY = 'mxvc-reverse-trace-layout';
+
 export default function ReverseTrace3DGraphInner({
   data, onCategoryToggle, onEntityClick, onReset, width, height,
 }: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fgRef = useRef<any>(null);
+
+  /* 레이아웃 모드 (localStorage 영구 저장) */
+  const [layout, setLayout] = useState<LayoutMode>('force');
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem(LAYOUT_STORAGE_KEY) : null;
+    if (saved && LAYOUT_OPTIONS.some((o) => o.value === saved)) {
+      setLayout(saved as LayoutMode);
+    }
+  }, []);
+  const handleLayoutChange = useCallback((next: LayoutMode) => {
+    setLayout(next);
+    try { localStorage.setItem(LAYOUT_STORAGE_KEY, next); } catch { /* noop */ }
+  }, []);
 
   /* 생성된 Three.js 객체 추적 — unmount 시 WebGL 메모리 해제용 */
   const createdObjectsRef = useRef<{ geometries: THREE.BufferGeometry[]; materials: THREE.Material[] }>({
@@ -123,7 +153,17 @@ export default function ReverseTrace3DGraphInner({
   return (
     <div className="relative w-full h-full bg-[#1a1a2e]">
       {/* 툴바 */}
-      <div className="absolute top-2 right-2 z-10 flex gap-1">
+      <div className="absolute top-2 right-2 z-10 flex gap-1 items-center">
+        <select
+          value={layout}
+          onChange={(e) => handleLayoutChange(e.target.value as LayoutMode)}
+          className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white border border-gray-600 hover:bg-gray-700 focus:outline-none"
+          title="레이아웃 모드"
+        >
+          {LAYOUT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
         <button onClick={() => fgRef.current?.zoomToFit?.(600, 40)}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
           title="전체 보기 (화면에 맞춤)">중심</button>
@@ -147,6 +187,8 @@ export default function ReverseTrace3DGraphInner({
         width={width}
         height={height}
         backgroundColor="#1a1a2e"
+        dagMode={layout === 'force' ? undefined : layout}
+        dagLevelDistance={50}
         nodeThreeObject={nodeThreeObject}
         nodeLabel={nodeLabel}
         /* Force 파라미터 약화 — 펼침/접힘 시 급격한 재배치 완화 */
