@@ -421,6 +421,22 @@
       "layer": 8
     },
     {
+      "id": "mex-foolproof",
+      "title": "종합F/P현황",
+      "url": "/mxvc/foolproof",
+      "color": "#a78bfa",
+      "icon": "svg:stencil",
+      "layer": 8
+    },
+    {
+      "id": "mex-production-kpi",
+      "title": "라인별생산현황",
+      "url": "/mxvc/production-kpi",
+      "color": "#22d3ee",
+      "icon": "svg:production",
+      "layer": 8
+    },
+    {
       "id": "mex-p-chart",
       "title": "p 관리도",
       "url": "/mxvc/p-chart",
