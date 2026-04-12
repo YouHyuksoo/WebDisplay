@@ -106,6 +106,12 @@ const SOURCE_LABEL: Record<string, string> = {
   MATERIAL_BOARD: '자재(BOARD)',
   MATERIAL_DETAIL: '자재(상세)',
   IQ_MACHINE_INSPECT_RESULT: '공정설비통신',
+  IP_PRODUCT_2D_BARCODE: '바코드마스터',
+  IP_PRODUCT_PACK_SERIAL: '출하정보',
+  IP_PRODUCT_WORK_QC: '수리이력',
+  IMCN_JIG_INPUT_HIST: '지그투입이력',
+  IM_ITEM_SOLDER_INPUT_HIST: '솔더투입이력',
+  IP_PRODUCT_WORKSTAGE_IO: '공정이동',
 };
 
 function displayName(source: string): string {
