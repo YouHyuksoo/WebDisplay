@@ -127,7 +127,14 @@ async function queryLogTable(
 
   try {
     const rows = await executeQuery<Record<string, unknown>>(sql, { bcode: barcodeValue });
-    const tsCol = dateCols[0] ?? null;
+    /**
+     * 실제 검사 시간 컬럼 우선 선택 (등록/생성일 제외).
+     * 우선순위: LOG_TIMESTAMP > *_DATE (INSPECT/START 등) > ENTER/LAST_MODIFY 제외
+     */
+    const excludeDate = (c: string) => /^(ENTER|LAST_MODIFY|CREATE|UPDATE|REG)_?(DATE|DT)$/i.test(c);
+    const preferredTs = ['LOG_TIMESTAMP', 'LOG_TIME', 'INSPECT_DATE', 'START_TIME', 'END_TIME']
+      .find((c) => dateCols.includes(c));
+    const tsCol = preferredTs ?? dateCols.find((c) => !excludeDate(c)) ?? null;
     return rows.map((row) => {
       const safe = sanitizeRow(row);
       let timestamp = '';
@@ -320,7 +327,8 @@ export async function GET(req: NextRequest) {
             { bcode: barcode },
           ).then((rows) => rows.map((row) => {
             const safe = sanitizeRow(row);
-            const ts = safe['QC_DATE'] ?? safe['REPAIR_DATE'] ?? safe['ENTER_DATE'] ?? '';
+            /* 실제 검사/수리 시간만 사용 (등록일 ENTER_DATE 제외) */
+            const ts = safe['QC_DATE'] ?? safe['REPAIR_DATE'] ?? '';
             return {
               source: 'IP_PRODUCT_WORK_QC', type: 'repair' as const,
               timestamp: String(ts),
@@ -332,14 +340,14 @@ export async function GET(req: NextRequest) {
     const workstageIoPromise = timed(queryFixedTable(
       'IP_PRODUCT_WORKSTAGE_IO',
       ['PID', 'BARCODE', 'MASTER_BARCODE'],
-      ['IO_DATE', 'CREATE_DATE', 'REG_DATE'],
+      ['IO_DATE'],  /* 실제 공정 이동 시간만 (등록/생성일 제외) */
       barcode, 'stage_move',
     ).catch(() => [] as TimelineEvent[]), 'WORKSTAGE_IO');
 
     const inspectResultPromise = timed(queryFixedTable(
       'IQ_MACHINE_INSPECT_RESULT',
       ['PID'],
-      ['INSPECT_DATE', 'ENTER_DATE'],
+      ['INSPECT_DATE'],
       barcode, 'log',
     ).catch(() => [] as TimelineEvent[]), 'INSPECT_RESULT');
 
@@ -351,7 +359,8 @@ export async function GET(req: NextRequest) {
             { bcode: barcode },
           ).then((rows) => rows.map((row) => {
             const safe = sanitizeRow(row);
-            const ts = safe['SCAN_DATE'] ?? safe['ENTER_DATE'] ?? safe['FINAL_INSPECT_DATE'] ?? '';
+            /* 실제 스캔/검사 시간만 (등록일 ENTER_DATE 제외) */
+            const ts = safe['SCAN_DATE'] ?? safe['FINAL_INSPECT_DATE'] ?? '';
             return {
               source: 'IP_PRODUCT_PACK_SERIAL', type: 'log' as const,
               timestamp: String(ts),
@@ -369,7 +378,8 @@ export async function GET(req: NextRequest) {
             { runNo: runNoForChildren },
           ).then((rows) => rows.map((row) => {
             const safe = sanitizeRow(row);
-            const ts = safe['INPUT_DATE'] ?? safe['ENTER_DATE'] ?? '';
+            /* 실제 투입 시간만 (등록일 ENTER_DATE 제외) */
+            const ts = safe['INPUT_DATE'] ?? '';
             return {
               source: 'IMCN_JIG_INPUT_HIST', type: 'log' as const,
               timestamp: String(ts),
@@ -386,7 +396,8 @@ export async function GET(req: NextRequest) {
             { runNo: runNoForChildren },
           ).then((rows) => rows.map((row) => {
             const safe = sanitizeRow(row);
-            const ts = safe['INPUT_DATE'] ?? safe['ENTER_DATE'] ?? '';
+            /* 실제 투입 시간만 (등록일 ENTER_DATE 제외) */
+            const ts = safe['INPUT_DATE'] ?? '';
             return {
               source: 'IM_ITEM_SOLDER_INPUT_HIST', type: 'log' as const,
               timestamp: String(ts),
