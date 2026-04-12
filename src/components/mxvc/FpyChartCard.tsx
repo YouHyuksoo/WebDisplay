@@ -77,14 +77,33 @@ export default function FpyChartCard({ tableKey, data, height, chartType }: Prop
     }
   }, [tableKey]);
 
-  /* X축 props */
+  /* X축 props — 일별 레벨에서는 날짜 라벨을 클릭 가능한 버튼으로 표시 */
   const xAxisLabelFormatter = level === 'hourly'
     ? (v: string) => `${v}시`
     : (v: string) => v.slice(5); // MM-DD
+
+  const dailyClickableTick = (props: Record<string, unknown>) => {
+    const { x, y, payload } = props as { x: number; y: number; payload: { value: string } };
+    return (
+      <text
+        x={x} y={y + 12}
+        textAnchor="middle"
+        fill="#60a5fa"
+        fontSize={10}
+        style={{ cursor: 'pointer', textDecoration: 'underline' }}
+        onClick={() => handleDayClick(payload.value)}
+      >
+        {payload.value.slice(5)}
+      </text>
+    );
+  };
+
   const xAxisProps = {
     dataKey: "hour" as const,
-    tick: { fill: "#94a3b8", fontSize: 10 },
-    tickFormatter: xAxisLabelFormatter,
+    tick: level === 'daily'
+      ? dailyClickableTick
+      : { fill: "#94a3b8", fontSize: 10 },
+    tickFormatter: level === 'daily' ? undefined : xAxisLabelFormatter,
     interval: 'preserveStartEnd' as const,
   };
   const yAxisProps = {
@@ -156,7 +175,7 @@ export default function FpyChartCard({ tableKey, data, height, chartType }: Prop
             ({summary.pass}/{summary.total})
           </span>
           {level === 'daily' && hourly.length > 0 && (
-            <span className="text-[10px] text-gray-500">날짜 클릭 → 시간별</span>
+            <span className="text-[10px] text-blue-500">X축 날짜 클릭 → 시간별</span>
           )}
         </div>
       </div>
