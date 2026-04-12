@@ -26,6 +26,8 @@ interface Props {
   height: number;
   palette: string[];
   chartType: "bar" | "area" | "line";
+  maximized?: boolean;
+  onToggleMaximize?: () => void;
 }
 
 type Level = 'summary' | 'daily' | 'hourly';
@@ -50,7 +52,7 @@ const TOOLTIP_STYLE = {
 
 const GRID_STROKE = "#1f2937";
 
-export default function FpyChartCard({ tableKey, data, height, chartType }: Props) {
+export default function FpyChartCard({ tableKey, data, height, chartType, maximized, onToggleMaximize }: Props) {
   const t = useTranslations("common");
   const label = TABLE_LABELS[tableKey];
   const { summary, hourly } = data;
@@ -129,18 +131,35 @@ export default function FpyChartCard({ tableKey, data, height, chartType }: Prop
     const color = getSummaryColor(summary.yield);
     return (
       <div
-        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-6
+        className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-6
                    flex flex-col items-center justify-center cursor-pointer
                    hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
         style={{ minHeight: height }}
         onClick={() => setLevel('daily')}
         title="클릭하여 일별 상세"
       >
+        {onToggleMaximize && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleMaximize(); }}
+            className="absolute top-2 right-2 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+            title={maximized ? '원래 크기' : '최대화'}
+          >
+            {maximized ? (
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+              </svg>
+            )}
+          </button>
+        )}
         <div className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-2">{label}</div>
-        <div className={`text-5xl font-extrabold font-mono ${color}`}>
+        <div className={`font-extrabold font-mono ${color} ${maximized ? 'text-8xl' : 'text-5xl'}`}>
           {summary.yield.toFixed(1)}%
         </div>
-        <div className="text-xs text-gray-400 dark:text-gray-500 mt-2 font-mono">
+        <div className={`text-gray-400 dark:text-gray-500 mt-2 font-mono ${maximized ? 'text-lg' : 'text-xs'}`}>
           {summary.pass.toLocaleString()} / {summary.total.toLocaleString()}
         </div>
         <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-3">클릭하여 일별 상세 →</div>
@@ -176,6 +195,23 @@ export default function FpyChartCard({ tableKey, data, height, chartType }: Prop
           </span>
           {level === 'daily' && hourly.length > 0 && (
             <span className="text-[10px] text-blue-500">X축 날짜 클릭 → 시간별</span>
+          )}
+          {onToggleMaximize && (
+            <button
+              onClick={onToggleMaximize}
+              className="ml-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+              title={maximized ? '원래 크기' : '최대화'}
+            >
+              {maximized ? (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                </svg>
+              )}
+            </button>
           )}
         </div>
       </div>

@@ -9,6 +9,7 @@
  */
 "use client";
 
+import { useState } from "react";
 import type { MxvcFpyResponse, MxvcFpySettings, MxvcFpyTableKey } from "@/types/mxvc/fpy";
 import { PALETTES } from "@/types/ctq/quality-dashboard";
 import FpyChartCard from "./FpyChartCard";
@@ -30,37 +31,54 @@ export default function FpyDashboard({ data, settings }: Props) {
     (key) => data.tables[key],
   );
 
+  /* 최대화된 카드 key — 하나만 최대화 가능 */
+  const [maximizedKey, setMaximizedKey] = useState<MxvcFpyTableKey | null>(null);
+  const maximized = maximizedKey !== null;
+
+  /* 최대화 시 다른 카드는 숨기고 해당 카드만 표시 */
+  const tablesToRender = maximized
+    ? visibleTables.filter((k) => k === maximizedKey)
+    : visibleTables;
+
   return (
     <div className="flex-1 overflow-y-auto p-4">
-      {/* 요약 바 */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <SummaryCard
-          label="작업일"
-          value={`${data.workDay.start.slice(5)} ~ ${data.workDay.end.slice(11)}`}
-          color="text-blue-400"
-        />
-        <SummaryCard
-          label="조회 테이블"
-          value={`${visibleTables.length}개`}
-          color="text-cyan-400"
-        />
-        <OverallYieldCard tables={data.tables} visibleKeys={visibleTables} />
-      </div>
+      {/* 요약 바 (최대화 시 숨김) */}
+      {!maximized && (
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <SummaryCard
+            label="작업일"
+            value={`${data.workDay.start.slice(5)} ~ ${data.workDay.end.slice(11)}`}
+            color="text-blue-400"
+          />
+          <SummaryCard
+            label="조회 테이블"
+            value={`${visibleTables.length}개`}
+            color="text-cyan-400"
+          />
+          <OverallYieldCard tables={data.tables} visibleKeys={visibleTables} />
+        </div>
+      )}
 
       {/* 차트 그리드 */}
-      <div className={`grid ${gridCols} gap-3`}>
-        {visibleTables.map((key, i) => {
-          const isLast = settings.layout === "2x2+1"
-            && i === visibleTables.length - 1
-            && visibleTables.length % 2 === 1;
+      <div className={maximized ? "grid grid-cols-1 gap-3" : `grid ${gridCols} gap-3`}>
+        {tablesToRender.map((key, i) => {
+          const isLast = !maximized
+            && settings.layout === "2x2+1"
+            && i === tablesToRender.length - 1
+            && tablesToRender.length % 2 === 1;
           return (
             <div key={key} className={isLast ? "col-span-full" : ""}>
               <FpyChartCard
                 tableKey={key}
                 data={data.tables[key]}
-                height={settings.chartHeight}
+                /* 최대화 시 높이 2.5배로 확대 */
+                height={maximized ? Math.max(settings.chartHeight * 2.5, 500) : settings.chartHeight}
                 palette={colors}
                 chartType={settings.chartType ?? "bar"}
+                maximized={maximizedKey === key}
+                onToggleMaximize={() =>
+                  setMaximizedKey((prev) => (prev === key ? null : key))
+                }
               />
             </div>
           );
