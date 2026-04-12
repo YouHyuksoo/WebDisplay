@@ -119,6 +119,8 @@ export default function ReverseTracePage() {
   const [boards, setBoards] = useState<BoardSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  /** 조회 시점 고정 ReelCd — 입력 타이핑 중 그래프 재계산 방지 */
+  const [searchedReelCd, setSearchedReelCd] = useState('');
 
   /* 드릴다운: 선택된 BoardSN → 장착 상세 */
   const [expandedBoard, setExpandedBoard] = useState('');
@@ -146,6 +148,7 @@ export default function ReverseTracePage() {
     setExpandedBoard('');
     setDetails([]);
     setError('');
+    setSearchedReelCd(trimmed);
     try {
       const res = await fetch(`/api/mxvc/reverse-trace?reelCd=${encodeURIComponent(trimmed)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -184,7 +187,19 @@ export default function ReverseTracePage() {
     }
   }, [reelCd, expandedBoard]);
 
-  const hasData = receipt.length > 0 || issues.length > 0 || reelMaster.length > 0 || reelChanges.length > 0 || boards.length > 0;
+  /* 그래프 데이터 (조회 시점 ReelCd 사용) */
+  const apiData: ApiResponse | null = useMemo(() => {
+    if (!receipt.length && !issues.length && !reelMaster.length && !reelChanges.length && !boards.length) {
+      return null;
+    }
+    return {
+      reelCd: searchedReelCd || 'Unknown',
+      lotNo: '',
+      receipt, issues, reelMaster, reelChanges, boards,
+    };
+  }, [searchedReelCd, receipt, issues, reelMaster, reelChanges, boards]);
+
+  const hasData = apiData !== null;
 
   /* 우측 패널 크기 추적 */
   useEffect(() => {
@@ -238,18 +253,6 @@ export default function ReverseTracePage() {
     setExpandedCats(new Set());
     setHighlightedRow(null);
   }, []);
-
-  /* 그래프 데이터 */
-  const apiData: ApiResponse | null = useMemo(() => {
-    if (!receipt.length && !issues.length && !reelMaster.length && !reelChanges.length && !boards.length) {
-      return null;
-    }
-    return {
-      reelCd: reelCd.trim() || 'Unknown',
-      lotNo: '',
-      receipt, issues, reelMaster, reelChanges, boards,
-    };
-  }, [reelCd, receipt, issues, reelMaster, reelChanges, boards]);
 
   const graphData = useMemo(() => buildGraphData(apiData, expandedCats), [apiData, expandedCats]);
 
@@ -340,9 +343,9 @@ export default function ReverseTracePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {receipt.map((r, i) => (
+                    {receipt.map((r) => (
                       <tr
-                        key={i}
+                        key={r.ITEM_BARCODE}
                         id={`row-${r.ITEM_BARCODE}`}
                         className={`border-t border-gray-100 dark:border-gray-800 transition-colors ${
                           highlightedRow?.id === r.ITEM_BARCODE ? 'bg-yellow-100 dark:bg-yellow-900/40' : ''
