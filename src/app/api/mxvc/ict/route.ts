@@ -116,7 +116,7 @@ async function handleDetail(sp: URLSearchParams) {
   }
 
   const sql = `
-    SELECT STEP, DEVICE, OPEN, SHORT, BOARD, LOG_TYPE,
+    SELECT LOG_ID, STEP, DEVICE, OPEN, SHORT, BOARD, LOG_TYPE,
            IDEAL, CH_PLUS, CH_MINUS, LC, STD,
            T_PLUS, T_MINUS, MEAS, ERROR_PCT, RESULT, LOG_ROWS
       FROM LOG_ICT

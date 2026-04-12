@@ -119,7 +119,7 @@ async function handleDetail(sp: URLSearchParams) {
   }
 
   const sql = `
-    SELECT NO, NAME, NAME_DETAIL, STEP_RESULT, VOLT_V,
+    SELECT LOG_ID, NO, NAME, NAME_DETAIL, STEP_RESULT, VOLT_V,
            MIN_1, TYP_1, MAX_2, MEAS_1,
            MIN_2, TYP_2, MAX_2_2, MEAS_2,
            CAN_STD, MEAS_CAN, DTC_CODE, MEAS_DTC_CODE,

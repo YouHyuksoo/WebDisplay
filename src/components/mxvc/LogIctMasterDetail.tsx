@@ -21,6 +21,7 @@ import {
 } from 'ag-grid-community';
 import { useTheme } from 'next-themes';
 import { useServerTime } from '@/hooks/useServerTime';
+import Modal from '@/components/ui/Modal';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -72,6 +73,11 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '
   const [loading, setLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailMaximized, setDetailMaximized] = useState(false);
+  /* 디테일 선택 삭제 */
+  const [selectedDetailIds, setSelectedDetailIds] = useState<number[]>([]);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const masterRef = useRef<AgGridReact>(null);
   const detailRef = useRef<AgGridReact>(null);
 
@@ -145,8 +151,15 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '
     { field: 'IS_SAMPLE', headerName: 'Sample', minWidth: 70 },
   ], []);
 
-  /** 디테일 컬럼 정의 */
+  /** 디테일 컬럼 정의 (체크박스 + 스텝 컬럼) */
   const detailCols: ColDef[] = useMemo(() => [
+    {
+      headerCheckboxSelection: true,
+      checkboxSelection: true,
+      headerCheckboxSelectionFilteredOnly: true,
+      width: 50, maxWidth: 50, pinned: 'left',
+      suppressMovable: true, sortable: false, filter: false, resizable: false,
+    },
     { field: 'STEP', headerName: '스텝', minWidth: 70 },
     { field: 'DEVICE', headerName: '부품', minWidth: 120 },
     { field: 'OPEN', headerName: 'Open', minWidth: 70 },
@@ -243,21 +256,31 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '
             : '마스터 행을 클릭하면 상세 스텝이 표시됩니다'}
         </span>
         {selectedKey && (
-          <button
-            onClick={() => setDetailMaximized((v) => !v)}
-            className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            title={detailMaximized ? '원래 크기' : '최대화'}
-          >
-            {detailMaximized ? (
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-              </svg>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setDeleteModalOpen(true)}
+              disabled={selectedDetailIds.length === 0}
+              className="px-2 py-0.5 text-[11px] rounded bg-red-600 hover:bg-red-500 text-white font-medium
+                       disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500 transition-colors"
+            >
+              선택 삭제 ({selectedDetailIds.length})
+            </button>
+            <button
+              onClick={() => setDetailMaximized((v) => !v)}
+              className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              title={detailMaximized ? '원래 크기' : '최대화'}
+            >
+              {detailMaximized ? (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                </svg>
+              )}
+            </button>
+          </div>
         )}
       </div>
 
@@ -269,12 +292,79 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '
           rowData={detailRows}
           columnDefs={detailCols}
           defaultColDef={defaultColDef}
+          rowSelection="multiple"
+          suppressRowClickSelection={true}
+          onSelectionChanged={(e) => {
+            const selected = e.api.getSelectedRows() as Record<string, unknown>[];
+            setSelectedDetailIds(selected.map((r) => Number(r.LOG_ID)).filter((id) => !isNaN(id)));
+          }}
           animateRows={false}
           enableCellTextSelection
           suppressCellFocus
           onFirstDataRendered={() => detailRef.current?.api?.autoSizeAllColumns()}
         />
       </div>
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="디테일 스텝 삭제 확인"
+        subtitle={`LOG_ICT 테이블에서 선택한 스텝 ${selectedDetailIds.length}건 삭제`}
+        size="sm"
+        footer={
+          <div className="flex gap-2">
+            <button onClick={() => setDeleteModalOpen(false)}
+              className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              취소
+            </button>
+            <button onClick={async () => {
+                setDeleting(true);
+                setDeleteError('');
+                try {
+                  const res = await fetch(`${apiBase}/data`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ table: 'LOG_ICT', ids: selectedDetailIds }),
+                  });
+                  if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || '삭제 실패');
+                  }
+                  setDeleteModalOpen(false);
+                  setSelectedDetailIds([]);
+                  /* 디테일 재조회: selectedKey = EQUIPMENT_ID|BARCODE|FILE_NAME */
+                  if (selectedKey) {
+                    const [eq, bc, fn] = selectedKey.split('|');
+                    setDetailLoading(true);
+                    try {
+                      const params = new URLSearchParams({ mode: 'detail', equipment: eq, barcode: bc, fileName: fn });
+                      const r = await fetch(`${apiBase}/ict?${params}`);
+                      if (r.ok) {
+                        const d = await r.json();
+                        setDetailRows(d.rows ?? []);
+                      }
+                    } finally { setDetailLoading(false); }
+                  }
+                } catch (e) {
+                  setDeleteError((e as Error).message);
+                } finally {
+                  setDeleting(false);
+                }
+              }}
+              disabled={deleting}
+              className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-500 disabled:opacity-50 transition-colors font-medium">
+              {deleting ? '삭제 중...' : `${selectedDetailIds.length}건 삭제`}
+            </button>
+          </div>
+        }
+      >
+        <div className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="mb-3">선택한 <strong className="text-red-500">{selectedDetailIds.length}</strong>건의 스텝 로그를 삭제하시겠습니까?</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">이 작업은 되돌릴 수 없습니다.</p>
+          {deleteError && <p className="mt-2 text-xs text-red-500">{deleteError}</p>}
+        </div>
+      </Modal>
     </div>
   );
 }
