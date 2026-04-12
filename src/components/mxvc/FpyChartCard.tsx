@@ -38,6 +38,15 @@ function getYieldColor(y: number): string {
   return "#4ade80";
 }
 
+/** breakdown 판정값별 색상 (AOI/SPI) */
+function getBreakdownColor(v: string): string {
+  const upper = v.toUpperCase();
+  if (upper === 'GOOD' || upper === 'PASS' || upper === 'OK') return 'text-green-400';
+  if (upper === 'OVERKILL') return 'text-yellow-400';
+  if (upper === 'NG' || upper === 'FAIL') return 'text-red-400';
+  return 'text-gray-400';
+}
+
 function getSummaryColor(y: number): string {
   if (y < 90) return "text-red-400";
   if (y < 95) return "text-yellow-400";
@@ -175,6 +184,20 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
             <div className={`text-gray-400 dark:text-gray-500 mt-2 font-mono ${maximized ? 'text-lg' : 'text-xs'}`}>
               {summary.pass.toLocaleString()} / {summary.total.toLocaleString()}
             </div>
+
+            {/* breakdown (AOI/SPI 등): 판정값별 비율 */}
+            {summary.breakdown && summary.breakdown.length > 0 && (
+              <div className={`mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1 ${maximized ? 'text-base' : 'text-[10px]'}`}>
+                {summary.breakdown.map((b) => (
+                  <div key={b.value} className="flex items-center gap-1">
+                    <span className={`font-semibold ${getBreakdownColor(b.value)}`}>{b.value}</span>
+                    <span className={`font-mono ${getBreakdownColor(b.value)}`}>{b.ratio.toFixed(1)}%</span>
+                    <span className="text-gray-500 dark:text-gray-600 font-mono">({b.count})</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-3">클릭하여 일별 상세 →</div>
           </>
         )}

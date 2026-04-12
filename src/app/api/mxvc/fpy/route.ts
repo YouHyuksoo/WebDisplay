@@ -118,6 +118,30 @@ async function queryTableFpy(
   const totalAll = hourly.reduce((s, h) => s + h.total, 0);
   const passAll = hourly.reduce((s, h) => s + h.pass, 0);
 
+  /* 판정값별 breakdown (AOI/SPI) */
+  let breakdown: { value: string; count: number; ratio: number }[] | undefined;
+  if (cfg.breakdown) {
+    try {
+      const bdRows = await executeQuery<{ VAL: string; CNT: number }>(
+        `SELECT ${cfg.resultCol} AS VAL, COUNT(*) AS CNT
+           FROM ${tableKey}
+          WHERE ${whereTime}
+            AND ${cfg.resultCol} IS NOT NULL
+          GROUP BY ${cfg.resultCol}
+          ORDER BY CNT DESC`,
+        binds,
+      );
+      const bdTotal = bdRows.reduce((s, r) => s + r.CNT, 0);
+      breakdown = bdRows.map((r) => ({
+        value: r.VAL,
+        count: r.CNT,
+        ratio: bdTotal > 0 ? Math.round((r.CNT / bdTotal) * 10000) / 100 : 0,
+      }));
+    } catch {
+      /* breakdown 실패해도 본 데이터는 반환 */
+    }
+  }
+
   return {
     key: tableKey,
     data: {
@@ -128,6 +152,7 @@ async function queryTableFpy(
         yield: totalAll > 0
           ? Math.round((passAll / totalAll) * 10000) / 100
           : 100,
+        breakdown,
       },
     },
   };

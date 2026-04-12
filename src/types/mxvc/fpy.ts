@@ -19,7 +19,13 @@ export interface HourlyFpy {
 /** 테이블별 직행율 요약 + 시간대 상세 */
 export interface TableFpyData {
   hourly: HourlyFpy[];
-  summary: { total: number; pass: number; yield: number };
+  summary: {
+    total: number;
+    pass: number;
+    yield: number;
+    /** AOI/SPI 등 세분화된 판정값별 집계 */
+    breakdown?: ResultBreakdown[];
+  };
 }
 
 /** API 응답 */
@@ -54,6 +60,18 @@ export interface TableColumnConfig {
    * 판정은 그룹의 resultCol 대표값(MAX) 사용.
    */
   groupedFpy?: boolean;
+  /**
+   * 판정값별 세부 집계 반환 여부 (AOI/SPI 등).
+   * summary.breakdown에 각 판정값 건수/비율 포함.
+   */
+  breakdown?: boolean;
+}
+
+/** 판정값별 세부 집계 (breakdown) */
+export interface ResultBreakdown {
+  value: string;
+  count: number;
+  ratio: number; // %
 }
 
 /** 13개 테이블 매핑 */
@@ -69,8 +87,8 @@ export const TABLE_CONFIG: Record<MxvcFpyTableKey, TableColumnConfig> = {
   LOG_COATINGREVIEW: { resultCol: "AREA_RESULT",     barcodeCol: "MAIN_BARCODE" },
   LOG_COATINGVISION: { resultCol: "FINAL_RESULT",   barcodeCol: "MAIN_BARCODE" },
   LOG_ICT:           { resultCol: "RESULT",         barcodeCol: "BARCODE",      groupedFpy: true },
-  LOG_AOI:           { resultCol: "RESULT",         barcodeCol: "SERIAL_NO" },
-  LOG_SPI:           { resultCol: "PCB_RESULT",     barcodeCol: "MASTER_BARCODE" },
+  LOG_AOI:           { resultCol: "RESULT",         barcodeCol: "SERIAL_NO",      breakdown: true },
+  LOG_SPI:           { resultCol: "PCB_RESULT",     barcodeCol: "MASTER_BARCODE", breakdown: true },
 };
 
 export const TABLE_KEYS: MxvcFpyTableKey[] = Object.keys(TABLE_CONFIG) as MxvcFpyTableKey[];
