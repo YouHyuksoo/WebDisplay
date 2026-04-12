@@ -61,8 +61,9 @@ async function queryTableFpy(
 
   /**
    * 쿼리 분기:
-   * 1) groupedFpy=true (EOL/ICT/FCT) → BARCODE+FILE_NAME 그룹핑하여 1건 카운트
-   *                                   판정은 그룹의 resultCol(최종 판정) 대표값 사용
+   * 1) groupedFpy=true (EOL/ICT/FCT) → BARCODE 단위 1건 카운트 (진짜 FPY 계산)
+   *    - 같은 바코드의 검사 이력 중 FAIL이 하나라도 있으면 그 바코드는 FAIL
+   *    - 재검사로 합격해도 "직행"이 아니므로 FAIL로 집계
    * 2) 일반 (그 외)                  → 단순 row 단위 PASS/FAIL 카운트
    */
   const sql = cfg.groupedFpy
@@ -70,18 +71,18 @@ async function queryTableFpy(
       SELECT
         TO_CHAR(MIN_TS, 'HH24') AS HOUR,
         COUNT(*) AS TOTAL_CNT,
-        SUM(CASE WHEN FINAL_RESULT IN (${passIn}) THEN 1 ELSE 0 END) AS PASS_CNT
+        SUM(PASS_FLAG) AS PASS_CNT
       FROM (
         SELECT
           ${cfg.barcodeCol} AS BCODE,
-          FILE_NAME,
           MIN(LOG_TIMESTAMP) AS MIN_TS,
-          MAX(${cfg.resultCol}) AS FINAL_RESULT
+          CASE WHEN SUM(CASE WHEN ${cfg.resultCol} NOT IN (${passIn}) THEN 1 ELSE 0 END) = 0
+               THEN 1 ELSE 0 END AS PASS_FLAG
         FROM ${tableKey}
         WHERE ${whereTime}
           AND ${cfg.resultCol} IS NOT NULL
           AND ${cfg.barcodeCol} IS NOT NULL
-        GROUP BY ${cfg.barcodeCol}, FILE_NAME
+        GROUP BY ${cfg.barcodeCol}
       )
       GROUP BY TO_CHAR(MIN_TS, 'HH24')
       ORDER BY HOUR
