@@ -20,6 +20,7 @@ import {
   type RowClickedEvent,
 } from 'ag-grid-community';
 import { useTheme } from 'next-themes';
+import * as XLSX from 'xlsx';
 import { useServerTime } from '@/hooks/useServerTime';
 import Modal from '@/components/ui/Modal';
 
@@ -226,6 +227,30 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '
             className="h-9 px-5 text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:bg-gray-300
                        dark:disabled:bg-gray-700 text-white rounded-lg transition-colors">
             {loading ? '조회 중...' : '새로고침'}
+          </button>
+          <button
+            onClick={() => {
+              if (masterRows.length === 0) return;
+              const wb = XLSX.utils.book_new();
+              const masterClean = masterRows.map((r) => ({ ...r })) as Record<string, unknown>[];
+              XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(masterClean), 'LOG_ICT 마스터');
+              if (detailRows.length > 0) {
+                const cleaned = detailRows.map((row) => {
+                  const o: Record<string, unknown> = {};
+                  for (const [k, v] of Object.entries(row)) if (k !== 'RNUM') o[k] = v;
+                  return o;
+                });
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cleaned), 'LOG_ICT 디테일');
+              }
+              const today = serverToday || new Date().toISOString().slice(0, 10);
+              XLSX.writeFile(wb, `LOG_ICT_${today}.xlsx`);
+            }}
+            disabled={masterRows.length === 0}
+            className="h-9 px-5 text-sm font-medium bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-300
+                       dark:disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-lg transition-colors"
+            title="마스터 + 선택된 디테일을 각 시트로 저장"
+          >
+            Excel 다운로드
           </button>
         </div>
       </div>
