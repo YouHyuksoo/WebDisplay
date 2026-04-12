@@ -467,7 +467,10 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           {/* ═══ 1. 입고이력 ═══ */}
           {receipt.length > 0 && (
             <section>
-              <h3 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-2">입고이력</h3>
+              <h3 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-2">
+                입고이력
+                <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">IM_ITEM_RECEIPT_BARCODE</span>
+              </h3>
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-emerald-50 dark:bg-emerald-900/20 text-gray-600 dark:text-gray-300">
@@ -520,7 +523,10 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           {/* ═══ 2. 출고이력 ═══ */}
           {issues.length > 0 && (
             <section>
-              <h3 className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase mb-2">출고이력 ({issues.length}건)</h3>
+              <h3 className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase mb-2">
+                출고이력 ({issues.length}건)
+                <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">IM_ITEM_ISSUE</span>
+              </h3>
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-orange-50 dark:bg-orange-900/20 text-gray-600 dark:text-gray-300">
@@ -568,7 +574,10 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           {/* ═══ 3. 릴 투입이력 (HW_ITS_REEL 마스터) ═══ */}
           {reelMaster.length > 0 && (
             <section>
-              <h3 className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase mb-2">릴 투입이력 ({reelMaster.length}건)</h3>
+              <h3 className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase mb-2">
+                릴 투입이력 ({reelMaster.length}건)
+                <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">HW_ITS_REEL</span>
+              </h3>
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-cyan-50 dark:bg-cyan-900/20 text-gray-600 dark:text-gray-300">
@@ -620,7 +629,10 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           {/* ═══ 4. 릴교환이력 ═══ */}
           {reelChanges.length > 0 && (
             <section>
-              <h3 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase mb-2">릴교환이력 ({reelChanges.length}건)</h3>
+              <h3 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase mb-2">
+                릴교환이력 ({reelChanges.length}건)
+                <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">HW_ITS_REELCHANGEHISTORY</span>
+              </h3>
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-purple-50 dark:bg-purple-900/20 text-gray-600 dark:text-gray-300">
@@ -664,7 +676,10 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           {/* ═══ 5. 사용된 PCB 목록 ═══ */}
           {boards.length > 0 && (
             <section>
-              <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-2">사용된 PCB ({boards.length}건)</h3>
+              <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-2">
+                사용된 PCB ({boards.length}건)
+                <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">HW_VW_LTS</span>
+              </h3>
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-blue-50 dark:bg-blue-900/20 text-gray-600 dark:text-gray-300">
