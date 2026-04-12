@@ -49,21 +49,28 @@ export type MxvcFpyTableKey =
 export interface TableColumnConfig {
   resultCol: string;
   barcodeCol: string;
+  /**
+   * 스텝 기반 테이블 여부 — true면 바코드(+FILE_NAME) 그룹별로 집계.
+   * 하나라도 FAIL이면 전체 FAIL로 처리하여 진짜 FPY 계산.
+   */
+  groupedFpy?: boolean;
+  /** 그룹핑 FPY에서 스텝 판정에 사용할 컬럼 (기본: resultCol) */
+  stepResultCol?: string;
 }
 
 /** 13개 테이블 매핑 */
 export const TABLE_CONFIG: Record<MxvcFpyTableKey, TableColumnConfig> = {
-  LOG_FCT:           { resultCol: "RESULT",         barcodeCol: "BARCODE" },
+  LOG_FCT:           { resultCol: "RESULT",         barcodeCol: "BARCODE",      groupedFpy: true, stepResultCol: "RESULT" },
   LOG_VISION_LEGACY: { resultCol: "DEVICE_RESULT",  barcodeCol: "BARCODE" },
   LOG_DOWNLOAD:      { resultCol: "RESULT",         barcodeCol: "BARCODE" },
   LOG_LOWCURRENT:    { resultCol: "OVERALL_RESULT", barcodeCol: "BARCODE" },
   LOG_VISION_NATIVE: { resultCol: "RESULT",         barcodeCol: "BARCODE" },
-  LOG_EOL:           { resultCol: "ARRAY_RESULT",   barcodeCol: "BARCODE" },
+  LOG_EOL:           { resultCol: "ARRAY_RESULT",   barcodeCol: "BARCODE",      groupedFpy: true, stepResultCol: "STEP_RESULT" },
   LOG_COATING1:      { resultCol: "RESULT",         barcodeCol: "BARCODE" },
   LOG_COATING2:      { resultCol: "RESULT",         barcodeCol: "BARCODE" },
   LOG_COATINGREVIEW: { resultCol: "AREA_RESULT",     barcodeCol: "MAIN_BARCODE" },
   LOG_COATINGVISION: { resultCol: "FINAL_RESULT",   barcodeCol: "MAIN_BARCODE" },
-  LOG_ICT:           { resultCol: "RESULT",         barcodeCol: "BARCODE" },
+  LOG_ICT:           { resultCol: "RESULT",         barcodeCol: "BARCODE",      groupedFpy: true, stepResultCol: "RESULT" },
   LOG_AOI:           { resultCol: "RESULT",         barcodeCol: "SERIAL_NO" },
   LOG_SPI:           { resultCol: "PCB_RESULT",     barcodeCol: "MASTER_BARCODE" },
 };
