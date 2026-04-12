@@ -11,6 +11,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import ReverseTrace3DGraph from '@/components/mxvc/ReverseTrace3DGraph';
@@ -273,6 +274,114 @@ export default function ReverseTracePage() {
     setExpandedCats(new Set());
   }, []);
 
+  /* ═══════ 데이터 내보내기 ═══════ */
+
+  /** Excel 다운로드: 5개 시트 (입고/출고/릴투입/릴교환/PCB) */
+  const handleExportExcel = useCallback(() => {
+    if (!hasData) return;
+    const wb = XLSX.utils.book_new();
+    const addSheet = <T extends object>(rows: T[], name: string) => {
+      if (rows.length === 0) return;
+      const ws = XLSX.utils.json_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, name);
+    };
+    addSheet(receipt, '입고이력');
+    addSheet(issues, '출고이력');
+    addSheet(reelMaster, '릴투입이력');
+    addSheet(reelChanges, '릴교환이력');
+    addSheet(boards, '사용된PCB');
+    const fileName = `역추적_${searchedReelCd || 'data'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  }, [hasData, receipt, issues, reelMaster, reelChanges, boards, searchedReelCd]);
+
+  /** HTML 다운로드: 모든 섹션 테이블을 단일 HTML 문서로 */
+  const handleExportHtml = useCallback(() => {
+    if (!hasData) return;
+    const toTable = <T extends object>(rows: T[], title: string, color: string) => {
+      if (rows.length === 0) return '';
+      const cols = Object.keys(rows[0]);
+      const thead = cols.map((c) => `<th>${c}</th>`).join('');
+      const tbody = rows.map((r) =>
+        `<tr>${cols.map((c) => `<td>${String((r as Record<string, unknown>)[c] ?? '')}</td>`).join('')}</tr>`
+      ).join('');
+      return `<section><h2 style="color:${color}">${title} (${rows.length}건)</h2><table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></section>`;
+    };
+    const html = `<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"/><title>역추적 ${searchedReelCd}</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; background: #f8f9fa; color: #222; }
+h1 { color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
+h2 { margin-top: 30px; padding-bottom: 4px; border-bottom: 1px solid #ddd; font-size: 16px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; background: white; }
+th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
+th { background: #f0f0f0; font-weight: 600; }
+tr:nth-child(even) td { background: #fafafa; }
+.meta { color: #666; font-size: 12px; margin-bottom: 20px; }
+</style></head>
+<body>
+<h1>역추적 리포트 — ${searchedReelCd}</h1>
+<p class="meta">생성일: ${new Date().toLocaleString('ko-KR')} / 입고 ${receipt.length}건 · 출고 ${issues.length}건 · 릴투입 ${reelMaster.length}건 · 릴교환 ${reelChanges.length}건 · PCB ${boards.length}건</p>
+${toTable(receipt, '입고이력', '#059669')}
+${toTable(issues, '출고이력', '#d97706')}
+${toTable(reelMaster, '릴 투입이력', '#0891b2')}
+${toTable(reelChanges, '릴교환이력', '#9333ea')}
+${toTable(boards, '사용된 PCB', '#2563eb')}
+</body></html>`;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `역추적_${searchedReelCd || 'data'}_${new Date().toISOString().slice(0, 10)}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [hasData, receipt, issues, reelMaster, reelChanges, boards, searchedReelCd]);
+
+  /** PDF 다운로드: 브라우저 인쇄 대화상자 → PDF로 저장 */
+  const handleExportPdf = useCallback(() => {
+    if (!hasData) return;
+    /* 동일한 HTML을 새 창에서 열고 print 호출 */
+    const toTable = <T extends object>(rows: T[], title: string, color: string) => {
+      if (rows.length === 0) return '';
+      const cols = Object.keys(rows[0]);
+      const thead = cols.map((c) => `<th>${c}</th>`).join('');
+      const tbody = rows.map((r) =>
+        `<tr>${cols.map((c) => `<td>${String((r as Record<string, unknown>)[c] ?? '')}</td>`).join('')}</tr>`
+      ).join('');
+      return `<section><h2 style="color:${color}">${title} (${rows.length}건)</h2><table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></section>`;
+    };
+    const printWin = window.open('', '_blank', 'width=1200,height=800');
+    if (!printWin) return;
+    printWin.document.write(`<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"/><title>역추적 ${searchedReelCd}</title>
+<style>
+@page { size: A4 landscape; margin: 10mm; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 0; color: #222; }
+h1 { color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 6px; font-size: 18px; }
+h2 { margin-top: 16px; padding-bottom: 3px; border-bottom: 1px solid #ddd; font-size: 13px; page-break-after: avoid; }
+table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 6px; page-break-inside: auto; }
+th, td { border: 1px solid #ccc; padding: 3px 5px; text-align: left; }
+th { background: #eee; font-weight: 600; }
+tr { page-break-inside: avoid; }
+.meta { color: #666; font-size: 10px; margin-bottom: 12px; }
+section { page-break-inside: auto; }
+</style></head>
+<body>
+<h1>역추적 리포트 — ${searchedReelCd}</h1>
+<p class="meta">생성일: ${new Date().toLocaleString('ko-KR')} / 입고 ${receipt.length}건 · 출고 ${issues.length}건 · 릴투입 ${reelMaster.length}건 · 릴교환 ${reelChanges.length}건 · PCB ${boards.length}건</p>
+${toTable(receipt, '입고이력', '#059669')}
+${toTable(issues, '출고이력', '#d97706')}
+${toTable(reelMaster, '릴 투입이력', '#0891b2')}
+${toTable(reelChanges, '릴교환이력', '#9333ea')}
+${toTable(boards, '사용된 PCB', '#2563eb')}
+</body></html>`);
+    printWin.document.close();
+    /* 페이지 로드 후 자동 인쇄 대화상자 */
+    printWin.onload = () => {
+      printWin.focus();
+      printWin.print();
+    };
+  }, [hasData, receipt, issues, reelMaster, reelChanges, boards, searchedReelCd]);
+
   const graphData = useMemo(() => buildGraphData(apiData, expandedCats), [apiData, expandedCats]);
 
   return (
@@ -311,6 +420,22 @@ export default function ReverseTracePage() {
               {' / '}PCB <strong className="text-blue-500">{boards.length}</strong>건
             </span>
           </>
+        )}
+
+        {/* 데이터 내보내기 */}
+        {hasData && (
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400">받아내기:</span>
+            <button onClick={handleExportHtml}
+              className="px-3 py-1.5 rounded text-xs font-semibold bg-sky-500 hover:bg-sky-600 text-white transition-colors"
+              title="HTML 파일로 저장">HTML</button>
+            <button onClick={handleExportExcel}
+              className="px-3 py-1.5 rounded text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+              title="Excel(xlsx) 파일로 저장">Excel</button>
+            <button onClick={handleExportPdf}
+              className="px-3 py-1.5 rounded text-xs font-semibold bg-rose-500 hover:bg-rose-600 text-white transition-colors"
+              title="인쇄 대화상자에서 PDF 저장">PDF</button>
+          </div>
         )}
       </div>
 
