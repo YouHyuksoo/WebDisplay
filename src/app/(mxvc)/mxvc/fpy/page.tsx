@@ -29,7 +29,6 @@ const PRESET_LABELS: Record<string, string> = {
   default: "기본",
   all: "전체",
   smt: "SMT",
-  coating: "코팅",
   inspection: "검사",
 };
 

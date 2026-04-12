@@ -131,9 +131,6 @@ export const FPY_PRESETS: Record<string, Partial<MxvcFpySettings>> = {
   smt: {
     visibleTables: ["LOG_SPI", "LOG_AOI"],
   },
-  coating: {
-    visibleTables: ["LOG_COATING1", "LOG_COATING2", "LOG_COATINGREVIEW", "LOG_COATINGVISION"],
-  },
   inspection: {
     visibleTables: [
       "LOG_FCT", "LOG_ICT", "LOG_EOL", "LOG_LOWCURRENT",

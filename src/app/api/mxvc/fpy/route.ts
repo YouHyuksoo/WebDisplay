@@ -38,11 +38,12 @@ function workDayStartSql(): string {
     END`;
 }
 
-/** 단일 테이블 시간대별 직행율 조회 */
+/** 단일 테이블 직행율 조회 (bucket: 'hour' = 시간대별, 'day' = 일별) */
 async function queryTableFpy(
   tableKey: MxvcFpyTableKey,
   dateFrom: string,
   dateTo: string,
+  bucket: 'hour' | 'day' = 'hour',
 ): Promise<{ key: MxvcFpyTableKey; data: TableFpyData }> {
   const cfg = TABLE_CONFIG[tableKey];
   const passIn = PASS_VALUES.map((v) => `'${v}'`).join(",");
@@ -59,19 +60,24 @@ async function queryTableFpy(
     whereTime = `LOG_TIMESTAMP >= (${workDayStartSql()}) AND LOG_TIMESTAMP <= SYSDATE`;
   }
 
+  /* 시간 단위 버킷 표현식 */
+  const bucketExpr = bucket === 'day'
+    ? `TO_CHAR(LOG_TIMESTAMP, 'YYYY-MM-DD')`
+    : `TO_CHAR(LOG_TIMESTAMP, 'HH24')`;
+  const bucketExprForGrouped = bucket === 'day'
+    ? `TO_CHAR(MIN_TS, 'YYYY-MM-DD')`
+    : `TO_CHAR(MIN_TS, 'HH24')`;
+
   /**
    * 쿼리 분기:
-   * 1) groupedFpy=true (EOL/ICT/FCT) → BARCODE 단위 1건 카운트 (진짜 FPY 계산)
-   *    - 같은 바코드의 검사 이력 중 FAIL이 하나라도 있으면 그 바코드는 FAIL
-   *    - 재검사로 합격해도 "직행"이 아니므로 FAIL로 집계
-   * 2) 일반 (그 외)                  → 단순 row 단위 PASS/FAIL 카운트
+   * 1) groupedFpy=true (EOL/ICT/FCT) → BARCODE 단위 1건 카운트 (진짜 FPY)
+   * 2) 일반 (그 외)                  → 단순 row 단위 PASS/FAIL
    */
   const sql = cfg.groupedFpy
     ? `
-      SELECT
-        TO_CHAR(MIN_TS, 'HH24') AS HOUR,
-        COUNT(*) AS TOTAL_CNT,
-        SUM(PASS_FLAG) AS PASS_CNT
+      SELECT ${bucketExprForGrouped} AS HOUR,
+             COUNT(*) AS TOTAL_CNT,
+             SUM(PASS_FLAG) AS PASS_CNT
       FROM (
         SELECT
           ${cfg.barcodeCol} AS BCODE,
@@ -84,18 +90,17 @@ async function queryTableFpy(
           AND ${cfg.barcodeCol} IS NOT NULL
         GROUP BY ${cfg.barcodeCol}
       )
-      GROUP BY TO_CHAR(MIN_TS, 'HH24')
+      GROUP BY ${bucketExprForGrouped}
       ORDER BY HOUR
     `
     : `
-      SELECT
-        TO_CHAR(LOG_TIMESTAMP, 'HH24') AS HOUR,
-        COUNT(*) AS TOTAL_CNT,
-        SUM(CASE WHEN ${cfg.resultCol} IN (${passIn}) THEN 1 ELSE 0 END) AS PASS_CNT
+      SELECT ${bucketExpr} AS HOUR,
+             COUNT(*) AS TOTAL_CNT,
+             SUM(CASE WHEN ${cfg.resultCol} IN (${passIn}) THEN 1 ELSE 0 END) AS PASS_CNT
       FROM ${tableKey}
       WHERE ${whereTime}
         AND ${cfg.resultCol} IS NOT NULL
-      GROUP BY TO_CHAR(LOG_TIMESTAMP, 'HH24')
+      GROUP BY ${bucketExpr}
       ORDER BY HOUR
     `;
 
@@ -130,13 +135,26 @@ async function queryTableFpy(
 
 export async function GET(request: NextRequest) {
   try {
-    const dateFrom = request.nextUrl.searchParams.get("dateFrom") ?? "";
-    const dateTo = request.nextUrl.searchParams.get("dateTo") ?? "";
+    const dateFromRaw = request.nextUrl.searchParams.get("dateFrom") ?? "";
+    const dateToRaw = request.nextUrl.searchParams.get("dateTo") ?? "";
+    const bucketParam = request.nextUrl.searchParams.get("bucket") ?? "day";
+    const drillDate = request.nextUrl.searchParams.get("drillDate") ?? "";
+    const bucket: 'hour' | 'day' = bucketParam === 'hour' ? 'hour' : 'day';
+
+    /* drillDate 지정 시: 해당 일자의 시간대별로 강제 (YYYY-MM-DD T00:00 ~ T23:59) */
+    let dateFrom = dateFromRaw;
+    let dateTo = dateToRaw;
+    let effectiveBucket: 'hour' | 'day' = bucket;
+    if (drillDate) {
+      dateFrom = `${drillDate}T00:00`;
+      dateTo = `${drillDate}T23:59`;
+      effectiveBucket = 'hour';
+    }
 
     /** 테이블 미존재(ORA-00942) 등 개별 오류 시 빈 데이터로 대체 */
     const safeQuery = async (k: MxvcFpyTableKey) => {
       try {
-        return await queryTableFpy(k, dateFrom, dateTo);
+        return await queryTableFpy(k, dateFrom, dateTo, effectiveBucket);
       } catch {
         return { key: k, data: { hourly: [], summary: { total: 0, pass: 0, yield: 100 } } as TableFpyData };
       }
