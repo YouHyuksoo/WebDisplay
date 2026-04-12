@@ -46,7 +46,17 @@ export default function ReverseTrace3DGraphInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.nodes.length, width, height]);
 
-  /* 노드 스프라이트 생성: 아이콘 + 텍스트 라벨 */
+  /* 생성된 Three.js 객체 추적 — unmount 시 WebGL 메모리 해제용 */
+  const createdObjectsRef = useRef<{ geometries: THREE.BufferGeometry[]; materials: THREE.Material[] }>({
+    geometries: [],
+    materials: [],
+  });
+
+  /**
+   * 노드 스프라이트 생성: 아이콘 + 텍스트 라벨
+   * deps가 비어있는 이유: 이 콜백은 "팩토리 함수" — node 인수는 매 호출마다 달라지지만
+   * 콜백 자체의 구현은 불변이므로 재생성할 필요 없음.
+   */
   const nodeThreeObject = useCallback((node: GraphNode) => {
     const group = new THREE.Group();
 
@@ -55,6 +65,10 @@ export default function ReverseTrace3DGraphInner({
     const mat = new THREE.MeshBasicMaterial({ color: node.color });
     const sphere = new THREE.Mesh(geom, mat);
     group.add(sphere);
+
+    /* dispose 추적 */
+    createdObjectsRef.current.geometries.push(geom);
+    createdObjectsRef.current.materials.push(mat);
 
     /* 텍스트 라벨 (스프라이트) */
     const labelText = node.icon ? `${node.icon} ${node.label}` : node.label;
@@ -67,6 +81,17 @@ export default function ReverseTrace3DGraphInner({
     group.add(sprite);
 
     return group;
+  }, []);
+
+  /* unmount 시 WebGL 메모리 해제 */
+  useEffect(() => {
+    const ref = createdObjectsRef.current;
+    return () => {
+      ref.geometries.forEach((g) => g.dispose());
+      ref.materials.forEach((m) => m.dispose());
+      ref.geometries.length = 0;
+      ref.materials.length = 0;
+    };
   }, []);
 
   const handleNodeClick = useCallback((node: GraphNode) => {
