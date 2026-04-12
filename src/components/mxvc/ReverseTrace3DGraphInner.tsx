@@ -11,7 +11,7 @@
  */
 'use client';
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useMemo } from 'react';
 import ForceGraph3D, { ForceGraphMethods } from 'react-force-graph-3d';
 import * as THREE from 'three';
 import SpriteText from 'three-spritetext';
@@ -37,6 +37,30 @@ export default function ReverseTrace3DGraphInner({
     geometries: [],
     materials: [],
   });
+
+  /**
+   * 노드 위치 캐시 — 펼침/접힘 시 기존 노드 위치를 고정하여 급격한 레이아웃 변화 방지.
+   * 키: node.id, 값: {x, y, z}
+   */
+  const positionsRef = useRef<Map<string, { x: number; y: number; z: number }>>(new Map());
+
+  /**
+   * graphData를 가공: 이미 위치가 캐시된 노드는 fx/fy/fz로 고정.
+   * 새 노드(ex: 처음 펼친 entity)는 고정 없이 자유롭게 배치됨.
+   */
+  const pinnedData = useMemo(() => {
+    const positions = positionsRef.current;
+    return {
+      nodes: data.nodes.map((n) => {
+        const saved = positions.get(n.id);
+        if (saved) {
+          return { ...n, fx: saved.x, fy: saved.y, fz: saved.z };
+        }
+        return { ...n };
+      }),
+      links: data.links,
+    };
+  }, [data]);
 
   /**
    * 노드 스프라이트 생성: 아이콘 + 텍스트 라벨
@@ -111,9 +135,16 @@ export default function ReverseTrace3DGraphInner({
         <button onClick={() => fgRef.current?.cameraPosition({ x: 0, y: 0, z: 200 }, { x: 0, y: 0, z: 0 }, 1000)}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
           title="중심으로">중심</button>
-        <button onClick={onReset}
+        <button onClick={() => {
+            /* 위치 캐시 초기화 → 자유 재배치 허용 */
+            positionsRef.current.clear();
+            onReset?.();
+          }}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
-          title="리셋">리셋</button>
+          title="리셋 (위치 재배치)">리셋</button>
+        <button onClick={() => positionsRef.current.clear()}
+          className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
+          title="노드 위치 자유 재배치 (펼침 상태 유지)">재배치</button>
       </div>
 
       {/* 범례 */}
@@ -127,12 +158,21 @@ export default function ReverseTrace3DGraphInner({
 
       <ForceGraph3D
         ref={fgRef}
-        graphData={data}
+        graphData={pinnedData}
         width={width}
         height={height}
         backgroundColor="#1a1a2e"
         nodeThreeObject={nodeThreeObject}
         nodeLabel={nodeLabel}
+        onEngineTick={() => {
+          /* 시뮬레이션 중 노드 좌표를 캐시 — 다음 렌더에서 fx/fy/fz로 고정 */
+          pinnedData.nodes.forEach((n) => {
+            const nn = n as { id: string; x?: number; y?: number; z?: number };
+            if (nn.x !== undefined && nn.y !== undefined && nn.z !== undefined) {
+              positionsRef.current.set(nn.id, { x: nn.x, y: nn.y, z: nn.z });
+            }
+          });
+        }}
         linkDirectionalParticles={(l) => (l as { particles?: number }).particles ?? 1}
         linkDirectionalParticleSpeed={0.005}
         linkDirectionalParticleWidth={1.5}
