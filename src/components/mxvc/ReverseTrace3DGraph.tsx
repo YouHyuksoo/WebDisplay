@@ -15,7 +15,7 @@ import type { GraphData, GraphNode, CategoryId } from './reverseTraceGraphBuilde
 const Inner = dynamic(() => import('./ReverseTrace3DGraphInner'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-[#0a0a1e] text-white text-sm">
+    <div className="w-full h-full flex items-center justify-center bg-[#1a1a2e] text-white text-sm">
       <span className="w-6 h-6 border-2 border-gray-600 border-t-blue-400 rounded-full animate-spin mr-2" />
       3D 그래프 로딩 중...
     </div>

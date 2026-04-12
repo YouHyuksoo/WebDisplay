@@ -15,7 +15,6 @@ import { useRef, useEffect, useCallback } from 'react';
 import ForceGraph3D, { ForceGraphMethods } from 'react-force-graph-3d';
 import * as THREE from 'three';
 import SpriteText from 'three-spritetext';
-import { createBloomPass } from '@/lib/three/bloomPass';
 import type { GraphData, GraphNode, CategoryId } from './reverseTraceGraphBuilder';
 
 interface Props {
@@ -32,19 +31,6 @@ export default function ReverseTrace3DGraphInner({
 }: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fgRef = useRef<any>(null);
-
-  /* Bloom 후처리 (노드 100개 이하일 때만) */
-  useEffect(() => {
-    if (!fgRef.current) return;
-    if (data.nodes.length > 100) return;
-    const composer = fgRef.current.postProcessingComposer();
-    const pass = createBloomPass(width, height);
-    composer.addPass(pass);
-    return () => {
-      composer.removePass(pass);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.nodes.length, width, height]);
 
   /* 생성된 Three.js 객체 추적 — unmount 시 WebGL 메모리 해제용 */
   const createdObjectsRef = useRef<{ geometries: THREE.BufferGeometry[]; materials: THREE.Material[] }>({
@@ -119,7 +105,7 @@ export default function ReverseTrace3DGraphInner({
   }, []);
 
   return (
-    <div className="relative w-full h-full bg-[#0a0a1e]">
+    <div className="relative w-full h-full bg-[#1a1a2e]">
       {/* 툴바 */}
       <div className="absolute top-2 right-2 z-10 flex gap-1">
         <button onClick={() => fgRef.current?.cameraPosition({ x: 0, y: 0, z: 200 }, { x: 0, y: 0, z: 0 }, 1000)}
@@ -144,7 +130,7 @@ export default function ReverseTrace3DGraphInner({
         graphData={data}
         width={width}
         height={height}
-        backgroundColor="#0a0a1e"
+        backgroundColor="#1a1a2e"
         nodeThreeObject={nodeThreeObject}
         nodeLabel={nodeLabel}
         linkDirectionalParticles={(l) => (l as { particles?: number }).particles ?? 1}
