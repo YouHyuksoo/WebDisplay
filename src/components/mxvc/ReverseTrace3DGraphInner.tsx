@@ -38,29 +38,6 @@ export default function ReverseTrace3DGraphInner({
     materials: [],
   });
 
-  /**
-   * 노드 위치 캐시 — 펼침/접힘 시 기존 노드 위치를 고정하여 급격한 레이아웃 변화 방지.
-   * 키: node.id, 값: {x, y, z}
-   */
-  const positionsRef = useRef<Map<string, { x: number; y: number; z: number }>>(new Map());
-
-  /**
-   * graphData를 가공: 이미 위치가 캐시된 노드는 fx/fy/fz로 고정.
-   * 새 노드(ex: 처음 펼친 entity)는 고정 없이 자유롭게 배치됨.
-   */
-  const pinnedData = useMemo(() => {
-    const positions = positionsRef.current;
-    return {
-      nodes: data.nodes.map((n) => {
-        const saved = positions.get(n.id);
-        if (saved) {
-          return { ...n, fx: saved.x, fy: saved.y, fz: saved.z };
-        }
-        return { ...n };
-      }),
-      links: data.links,
-    };
-  }, [data]);
 
   /**
    * 노드 스프라이트 생성: 아이콘 + 텍스트 라벨
@@ -92,6 +69,21 @@ export default function ReverseTrace3DGraphInner({
 
     return group;
   }, []);
+
+  /* Force 파라미터 약화: link distance 짧게, charge(반발력) 약하게 */
+  useEffect(() => {
+    if (!fgRef.current) return;
+    const fg = fgRef.current;
+    try {
+      const linkForce = fg.d3Force?.('link');
+      if (linkForce?.distance) linkForce.distance(30);   /* 기본 ~60 → 30 (더 짧게) */
+      const chargeForce = fg.d3Force?.('charge');
+      if (chargeForce?.strength) chargeForce.strength(-30);  /* 기본 -30~-100 → -30 (약한 반발력) */
+      fg.d3ReheatSimulation?.();
+    } catch {
+      /* 라이브러리 내부 API 변경 대비 - 실패해도 시각화는 동작 */
+    }
+  }, [data]);
 
   /* unmount 시 WebGL 메모리 해제 */
   useEffect(() => {
@@ -135,16 +127,9 @@ export default function ReverseTrace3DGraphInner({
         <button onClick={() => fgRef.current?.cameraPosition({ x: 0, y: 0, z: 200 }, { x: 0, y: 0, z: 0 }, 1000)}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
           title="중심으로">중심</button>
-        <button onClick={() => {
-            /* 위치 캐시 초기화 → 자유 재배치 허용 */
-            positionsRef.current.clear();
-            onReset?.();
-          }}
+        <button onClick={onReset}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
-          title="리셋 (위치 재배치)">리셋</button>
-        <button onClick={() => positionsRef.current.clear()}
-          className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
-          title="노드 위치 자유 재배치 (펼침 상태 유지)">재배치</button>
+          title="리셋">리셋</button>
       </div>
 
       {/* 범례 */}
@@ -158,21 +143,17 @@ export default function ReverseTrace3DGraphInner({
 
       <ForceGraph3D
         ref={fgRef}
-        graphData={pinnedData}
+        graphData={data}
         width={width}
         height={height}
         backgroundColor="#1a1a2e"
         nodeThreeObject={nodeThreeObject}
         nodeLabel={nodeLabel}
-        onEngineTick={() => {
-          /* 시뮬레이션 중 노드 좌표를 캐시 — 다음 렌더에서 fx/fy/fz로 고정 */
-          pinnedData.nodes.forEach((n) => {
-            const nn = n as { id: string; x?: number; y?: number; z?: number };
-            if (nn.x !== undefined && nn.y !== undefined && nn.z !== undefined) {
-              positionsRef.current.set(nn.id, { x: nn.x, y: nn.y, z: nn.z });
-            }
-          });
-        }}
+        /* Force 파라미터 약화 — 펼침/접힘 시 급격한 재배치 완화 */
+        d3AlphaDecay={0.05}        /* 기본 0.0228 → 시뮬레이션 빨리 수렴 */
+        d3VelocityDecay={0.6}      /* 기본 0.4 → 속도 감쇠 강화 (관성 감소) */
+        cooldownTicks={60}         /* 60 tick 후 자동 정지 */
+        warmupTicks={0}
         linkDirectionalParticles={(l) => (l as { particles?: number }).particles ?? 1}
         linkDirectionalParticleSpeed={0.005}
         linkDirectionalParticleWidth={1.5}
