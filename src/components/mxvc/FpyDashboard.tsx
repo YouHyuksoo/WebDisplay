@@ -119,19 +119,26 @@ function OverallYieldCard({
       passAll += t.summary.pass;
     }
   }
-  const overall = totalAll > 0
-    ? Math.round((passAll / totalAll) * 10000) / 100
-    : 0;
-  const color = overall < 90
-    ? "text-red-400"
-    : overall < 95
-      ? "text-yellow-400"
-      : "text-green-400";
+  const isEmpty = totalAll === 0;
+  const overall = isEmpty
+    ? 0
+    : Math.round((passAll / totalAll) * 10000) / 100;
+  const color = isEmpty
+    ? "text-gray-400"
+    : overall < 90
+      ? "text-red-400"
+      : overall < 95
+        ? "text-yellow-400"
+        : "text-green-400";
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800/60 rounded-lg p-3 text-center">
-      <div className={`text-2xl font-extrabold font-mono ${color}`}>{overall.toFixed(1)}%</div>
-      <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">종합 직행율</div>
+      <div className={`text-2xl font-extrabold font-mono ${color}`}>
+        {isEmpty ? '—' : `${overall.toFixed(1)}%`}
+      </div>
+      <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+        {isEmpty ? '데이터 없음' : '종합 직행율'}
+      </div>
     </div>
   );
 }

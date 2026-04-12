@@ -128,15 +128,19 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
 
   /* Level 0: 요약 카드 */
   if (level === 'summary') {
-    const color = getSummaryColor(summary.yield);
+    const isEmpty = summary.total === 0;
+    const color = isEmpty ? 'text-gray-400 dark:text-gray-500' : getSummaryColor(summary.yield);
     return (
       <div
-        className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-6
-                   flex flex-col items-center justify-center cursor-pointer
-                   hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
+        className={`relative bg-white dark:bg-gray-900 border rounded-xl p-6
+                   flex flex-col items-center justify-center transition-colors ${
+          isEmpty
+            ? 'border-gray-200 dark:border-gray-800 opacity-60 cursor-default'
+            : 'border-gray-200 dark:border-gray-700 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500'
+        }`}
         style={{ minHeight: height }}
-        onClick={() => setLevel('daily')}
-        title="클릭하여 일별 상세"
+        onClick={() => { if (!isEmpty) setLevel('daily'); }}
+        title={isEmpty ? '데이터 없음' : '클릭하여 일별 상세'}
       >
         {onToggleMaximize && (
           <button
@@ -156,13 +160,24 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
           </button>
         )}
         <div className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-2">{label}</div>
-        <div className={`font-extrabold font-mono ${color} ${maximized ? 'text-8xl' : 'text-5xl'}`}>
-          {summary.yield.toFixed(1)}%
-        </div>
-        <div className={`text-gray-400 dark:text-gray-500 mt-2 font-mono ${maximized ? 'text-lg' : 'text-xs'}`}>
-          {summary.pass.toLocaleString()} / {summary.total.toLocaleString()}
-        </div>
-        <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-3">클릭하여 일별 상세 →</div>
+        {isEmpty ? (
+          <>
+            <div className={`font-extrabold font-mono ${color} ${maximized ? 'text-6xl' : 'text-3xl'}`}>
+              —
+            </div>
+            <div className="text-gray-400 dark:text-gray-500 mt-2 text-xs">데이터 없음</div>
+          </>
+        ) : (
+          <>
+            <div className={`font-extrabold font-mono ${color} ${maximized ? 'text-8xl' : 'text-5xl'}`}>
+              {summary.yield.toFixed(1)}%
+            </div>
+            <div className={`text-gray-400 dark:text-gray-500 mt-2 font-mono ${maximized ? 'text-lg' : 'text-xs'}`}>
+              {summary.pass.toLocaleString()} / {summary.total.toLocaleString()}
+            </div>
+            <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-3">클릭하여 일별 상세 →</div>
+          </>
+        )}
       </div>
     );
   }
@@ -187,12 +202,18 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
           </h3>
         </div>
         <div className="flex items-center gap-2 text-xs">
-          <span className={`font-bold font-mono ${getSummaryColor(summary.yield)}`}>
-            {summary.yield.toFixed(1)}%
-          </span>
-          <span className="text-gray-400 dark:text-gray-500">
-            ({summary.pass}/{summary.total})
-          </span>
+          {summary.total === 0 ? (
+            <span className="font-bold font-mono text-gray-400">— 데이터 없음</span>
+          ) : (
+            <>
+              <span className={`font-bold font-mono ${getSummaryColor(summary.yield)}`}>
+                {summary.yield.toFixed(1)}%
+              </span>
+              <span className="text-gray-400 dark:text-gray-500">
+                ({summary.pass}/{summary.total})
+              </span>
+            </>
+          )}
           {level === 'daily' && hourly.length > 0 && (
             <span className="text-[10px] text-blue-500">X축 날짜 클릭 → 시간별</span>
           )}
