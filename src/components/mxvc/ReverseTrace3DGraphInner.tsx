@@ -110,19 +110,19 @@ export default function ReverseTrace3DGraphInner({
       <div className="absolute top-2 right-2 z-10 flex gap-1">
         <button onClick={() => fgRef.current?.cameraPosition({ x: 0, y: 0, z: 200 }, { x: 0, y: 0, z: 0 }, 1000)}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
-          title="중심으로">🎯</button>
+          title="중심으로">중심</button>
         <button onClick={onReset}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
-          title="리셋">🔄</button>
+          title="리셋">리셋</button>
       </div>
 
       {/* 범례 */}
       <div className="absolute bottom-2 left-2 z-10 flex gap-3 text-[10px] text-white bg-black/50 px-2 py-1 rounded">
-        <span>📦 입고</span>
-        <span>🚚 출고</span>
-        <span>🔧 릴투입</span>
-        <span>🔄 교환</span>
-        <span>🔩 PCB</span>
+        <span className="text-emerald-400">▼ 입고</span>
+        <span className="text-amber-400">▲ 출고</span>
+        <span className="text-cyan-400">● 릴투입</span>
+        <span className="text-purple-400">⟲ 교환</span>
+        <span className="text-blue-400">■ PCB</span>
       </div>
 
       <ForceGraph3D

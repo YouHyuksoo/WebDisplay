@@ -633,7 +633,7 @@ export default function ReverseTracePage() {
               className="absolute top-2 left-2 z-20 px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
               title={maximized ? '원래 크기 (ESC)' : '최대화'}
             >
-              {maximized ? '🗗' : '🗖'}
+              {maximized ? '축소' : '확대'}
             </button>
             <ReverseTrace3DGraph
               data={graphData}

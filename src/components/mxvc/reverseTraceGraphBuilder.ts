@@ -66,11 +66,11 @@ export interface GraphData {
 }
 
 const CAT_META: Record<CategoryId, { color: string; icon: string; label: string }> = {
-  'cat-receipt': { color: '#10b981', icon: '📦', label: '입고' },
-  'cat-issue':   { color: '#f59e0b', icon: '🚚', label: '출고' },
-  'cat-reel':    { color: '#06b6d4', icon: '🔧', label: '릴투입' },
-  'cat-change':  { color: '#a855f7', icon: '🔄', label: '릴교환' },
-  'cat-pcb':     { color: '#3b82f6', icon: '🔩', label: 'PCB' },
+  'cat-receipt': { color: '#10b981', icon: '▼', label: '입고' },
+  'cat-issue':   { color: '#f59e0b', icon: '▲', label: '출고' },
+  'cat-reel':    { color: '#06b6d4', icon: '●', label: '릴투입' },
+  'cat-change':  { color: '#a855f7', icon: '⟲', label: '릴교환' },
+  'cat-pcb':     { color: '#3b82f6', icon: '■', label: 'PCB' },
 };
 
 export function buildGraphData(
@@ -82,14 +82,14 @@ export function buildGraphData(
   const nodes: GraphNode[] = [];
   const links: GraphLink[] = [];
 
-  /* root 노드 (중심 허브 - 입고 이모지와 구분되도록 🎯) */
+  /* root 노드 (중심 허브) */
   nodes.push({
     id: 'root',
     type: 'root',
     label: api.reelCd,
     val: 20,
     color: '#8b5cf6',
-    icon: '🎯',
+    icon: '◆',
   });
 
   /* 카테고리 노드 + root → category 엣지 */
