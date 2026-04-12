@@ -201,17 +201,20 @@ export default function ReverseTracePage() {
 
   const hasData = apiData !== null;
 
-  /* 우측 패널 크기 추적 */
+  /* 우측 패널 크기 추적 — hasData 변경 시 패널이 새로 마운트되므로 재등록 필요 */
   useEffect(() => {
     const el = rightPanelRef.current;
     if (!el) return;
+    /* 초기 크기 즉시 계산 (ResizeObserver 첫 콜백 전에 그래프 렌더 가능하도록) */
+    const rect = el.getBoundingClientRect();
+    setPanelDims({ width: rect.width, height: rect.height });
     const ro = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
       setPanelDims({ width, height });
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, [maximized, rightWidth]);
+  }, [maximized, rightWidth, hasData]);
 
   /* 하이라이트 자동 제거 (2초) */
   useEffect(() => {

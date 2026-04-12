@@ -141,7 +141,7 @@ export default function ReverseTrace3DGraphInner({
         <span className="text-blue-400">■ PCB</span>
       </div>
 
-      <ForceGraph3D
+      {(width > 0 && height > 0) && <ForceGraph3D
         ref={fgRef}
         graphData={data}
         width={width}
@@ -161,7 +161,7 @@ export default function ReverseTrace3DGraphInner({
         linkColor={() => '#ffffff'}
         onNodeClick={handleNodeClick}
         controlType="trackball"
-      />
+      />}
     </div>
   );
 }
