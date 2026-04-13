@@ -196,31 +196,31 @@ export function sqlQcStats(dateFrom: string, dateTo: string): {
  */
 export const sqlMagazine = `
   SELECT
-    MAGAZINE_NO                                              AS MAGAZINE_NO,
-    NVL(MODEL_NAME, MAGAZINE_NO)                            AS MODEL_NAME,
-    NVL(WORKSTAGE_CODE, '-')                                AS WORKSTAGE_CODE,
-    NVL(CURRENT_QTY, 0)                                    AS CURRENT_QTY,
-    TO_CHAR(LAST_MODIFY_DATE, 'MM-DD HH24:MI')             AS LAST_MODIFY_TIME,
-    LAST_MODIFY_DATE                                        AS LAST_MODIFY_DATE
+    MAGAZINE_NO                                          AS MAGAZINE_NO,
+    NVL(MODEL_NAME, MAGAZINE_NO)                         AS MODEL_NAME,
+    NVL(WORKSTAGE_CODE, '-')                             AS WORKSTAGE_CODE,
+    NVL(CURRENT_QTY, 0)                                 AS CURRENT_QTY,
+    TO_CHAR(RECEIPT_DATE, 'MM-DD HH24:MI')              AS LAST_MODIFY_TIME,
+    RECEIPT_DATE                                         AS LAST_MODIFY_DATE
   FROM IP_PRODUCT_MAGAZINE_INVENTORY
-  ORDER BY MODEL_NAME, WORKSTAGE_CODE, MAGAZINE_NO
+  ORDER BY RECEIPT_DATE ASC
 `;
 
 /**
- * IRPT_PRODUCT_LINE_TARGET_MONITORING — 생산 계획/목표/실적 집계.
- * @param lineClause - buildLineFilter()로 생성한 라인 WHERE 조각 (없으면 빈 문자열)
+ * IP_PRODUCT_LINE — 라인별 생산 LOT 계획 수량.
+ * @param lineClause - buildLineFilter()로 생성한 LINE_CODE 필터 (빈 문자열 = 전체)
  */
-export function sqlProductionKpiAgg(lineClause: string): string {
+export function sqlProductionPlanLines(lineClause: string): string {
   return `
     SELECT
-      SUM(NVL(lot_qty, 0))     AS PLAN_QTY,
-      SUM(NVL(target_plan, 0)) AS TARGET_QTY,
-      SUM(NVL(actual_qty, 0))  AS ACTUAL_QTY,
-      CASE WHEN SUM(NVL(target_plan, 0)) > 0
-           THEN ROUND(SUM(NVL(actual_qty, 0)) / SUM(NVL(target_plan, 0)) * 100, 1)
-           ELSE 0 END          AS ACHIEVEMENT_RATE
-    FROM IRPT_PRODUCT_LINE_TARGET_MONITORING
-    WHERE organization_id = :orgId
-    ${lineClause}
+      LINE_NAME                    AS LINE_NAME,
+      NVL(MODEL_NAME, '-')         AS MODEL_NAME,
+      RUN_NO                       AS RUN_NO,
+      F_GET_RUN_LOT_QTY(RUN_NO)   AS PLAN_QTY
+    FROM IP_PRODUCT_LINE
+    WHERE MES_DISPLAY_YN = 'Y'
+      AND RUN_NO IS NOT NULL
+      ${lineClause}
+    ORDER BY LINE_CODE
   `;
 }

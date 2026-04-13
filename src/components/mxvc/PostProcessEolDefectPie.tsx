@@ -17,11 +17,12 @@ interface Props {
 }
 
 const PIE_COLORS = [
-  '#ef4444', '#fb923c', '#f59e0b', '#10b981',
-  '#60a5fa', '#a78bfa', '#f472b6', '#6b7280',
+  '#ef4444', '#fb923c', '#f59e0b', '#10b981', '#34d399',
+  '#60a5fa', '#818cf8', '#a78bfa', '#f472b6', '#fb7185',
+  '#6b7280', // 기타
 ];
 
-const MAX_SLICES = 8;
+const MAX_SLICES = 11; // 상위 10개 + 기타
 
 function buildPieData(rows: PostProcessEolStepDefect[]) {
   const sorted = [...rows].sort((a, b) => b.failCount - a.failCount);
@@ -114,6 +115,7 @@ export default function PostProcessEolDefectPie({ eolStepDefects, height = 260 }
     <div className="flex flex-col shrink-0" style={{ width: '38%', minWidth: 260 }}>
       <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1 px-4">
         EOL 스텝별 불량 분포
+        <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">최근 7일</span>
         {hasData && (
           <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">
             총 {total}건

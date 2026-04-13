@@ -16,6 +16,7 @@ import { useState, useEffect, useCallback } from 'react';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import useDisplayTiming from '@/hooks/useDisplayTiming';
+import { useSelectedLines } from '@/hooks/ctq/useSelectedLines';
 import PostProcessKpiCards from './PostProcessKpiCards';
 import PostProcessDefectChart from './PostProcessDefectChart';
 import PostProcessFpyChart from './PostProcessFpyChart';
@@ -26,12 +27,12 @@ import type { PostProcessResponse } from '@/types/mxvc/post-process';
 const SCREEN_ID = 'mxvc-post-process';
 
 const EMPTY_KPI = {
-  planQty: 0, targetQty: 0, actualQty: 0, achievementRate: 0,
-  defectRate: 0, retestRate: 0, retestCount: 0, repairWaiting: 0, repairDone: 0,
+  planQty: 0, planLines: [], defectRate: 0, retestRate: 0, retestCount: 0, repairWaiting: 0, repairDone: 0,
 };
 
 export default function PostProcessDashboard() {
-  const timing = useDisplayTiming();
+  const timing       = useDisplayTiming();
+  const selectedLines = useSelectedLines(SCREEN_ID);
 
   const [data,    setData]    = useState<PostProcessResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,7 +41,7 @@ export default function PostProcessDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/mxvc/post-process');
+      const res = await fetch(`/api/mxvc/post-process?lines=${encodeURIComponent(selectedLines)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());
       setError(null);
@@ -49,7 +50,7 @@ export default function PostProcessDashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedLines]);
 
   /* 자동 갱신 */
   useEffect(() => {
@@ -70,7 +71,11 @@ export default function PostProcessDashboard() {
         {/* 좌측 메인 (80%) */}
         <div className="flex-1 flex flex-col min-h-0 overflow-auto" style={{ minWidth: 0 }}>
           {/* KPI 카드 */}
-          <PostProcessKpiCards kpi={kpi} />
+          <PostProcessKpiCards
+            kpi={kpi}
+            ictTotal={data?.defectByTable.find((d) => d.tableKey === 'LOG_ICT')?.total ?? 0}
+            eolTotal={data?.defectByTable.find((d) => d.tableKey === 'LOG_EOL')?.total ?? 0}
+          />
 
           {/* 오류 표시 */}
           {error && (

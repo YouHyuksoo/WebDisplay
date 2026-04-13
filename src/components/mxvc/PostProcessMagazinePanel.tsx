@@ -35,9 +35,10 @@ function groupByModel(rows: PostProcessMagazineRow[]) {
 }
 
 export default function PostProcessMagazinePanel({ magazine }: Props) {
-  const groups  = groupByModel(magazine);
-  const total   = magazine.reduce((s, r) => s + r.currentQty, 0);
-  const isEmpty = magazine.length === 0;
+  const active  = magazine.filter((r) => r.currentQty > 0);
+  const groups  = groupByModel(active);
+  const total   = active.reduce((s, r) => s + r.currentQty, 0);
+  const isEmpty = active.length === 0;
 
   return (
     <div className="flex flex-col h-full border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
@@ -49,7 +50,7 @@ export default function PostProcessMagazinePanel({ magazine }: Props) {
         {!isEmpty && (
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
             전체 <span className="font-bold text-blue-600 dark:text-blue-400">{total.toLocaleString()}</span>개
-            &nbsp;·&nbsp; {magazine.length}개 매거진
+            &nbsp;·&nbsp; {active.length}개 매거진
           </p>
         )}
       </div>
