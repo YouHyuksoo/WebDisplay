@@ -13,6 +13,7 @@ import { getKpiRateStyle } from '../../shared/status-styles';
 /** 라인 KPI 데이터 행 */
 export interface ProductionKpiRow {
   LINE_NAME?: string;
+  RUN_NO?: string;
   MODEL_NAME?: string;
   PRODUCT_GROUP?: string;
   PLAN_QTY?: number;
@@ -20,6 +21,7 @@ export interface ProductionKpiRow {
   OUTPUT_QTY?: number;
   DIFF_QTY?: number;
   ACHIEVEMENT_RATE?: number;
+  ST_QTY?: number;
   [key: string]: unknown;
 }
 
@@ -44,23 +46,41 @@ export default function ProductionKpiCard({ row }: ProductionKpiCardProps) {
   const color = getKpiRateStyle(rate);
 
   return (
-    <div className={`flex h-full flex-col border-2 ${color.border} bg-zinc-950`}>
-      {/* 헤더: 라인명 + 모델 + 제품군 */}
-      <div className={`flex items-center justify-between ${color.headerBg} border-b-4 ${color.border} px-10 py-6`}>
-        <div className="flex items-center gap-8">
-          <span className={`text-8xl font-black ${color.text}`}>
-            {row.LINE_NAME ?? '-'}
-          </span>
-          <span className="text-6xl font-bold text-white">
+    <div className={`flex h-full flex-col border-2 border-zinc-700 bg-zinc-950`}>
+      {/* 헤더: 라인명 | 모델명 + SPEC(아래) | 이모지 */}
+      <div className={`flex items-center gap-8 bg-zinc-900 border-b-4 border-zinc-700 px-10 py-5`}>
+        {/* 라인명 */}
+        <span className="shrink-0 text-8xl font-black text-white">
+          {row.LINE_NAME ?? '-'}
+        </span>
+
+        {/* 모델명 + SPEC + RUN_NO 수직 스택 */}
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="whitespace-nowrap text-5xl font-bold text-white">
             {row.MODEL_NAME ?? '-'}
           </span>
+          <div className="flex items-center gap-4">
+            <span className="truncate text-2xl text-zinc-400">
+              {row.PRODUCT_GROUP ?? '-'}
+            </span>
+            {row.RUN_NO && (
+              <span className="shrink-0 rounded bg-zinc-700 px-3 py-0.5 text-xl font-bold text-zinc-300">
+                {row.RUN_NO}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-6">
-          <span className="rounded-xl bg-zinc-800 px-6 py-3 text-4xl font-bold text-zinc-300">
-            {row.PRODUCT_GROUP ?? '-'}
-          </span>
-          <span className="text-7xl">{color.emoji}</span>
-        </div>
+
+        {/* ST 배지 */}
+        {row.ST_QTY != null && (
+          <div className="shrink-0 flex flex-col items-center gap-1">
+            <span className="text-xl font-bold text-zinc-500">ST</span>
+            <span className="text-4xl font-black text-zinc-300">{row.ST_QTY}s</span>
+          </div>
+        )}
+
+        {/* 이모지 */}
+        <span className="shrink-0 text-7xl">{color.emoji}</span>
       </div>
 
       {/* 데이터 행 — flex-1로 남은 공간 균등 분배 */}
@@ -74,18 +94,18 @@ export default function ProductionKpiCard({ row }: ProductionKpiCardProps) {
             {t('diff')}
           </div>
           <div className="flex flex-1 items-center justify-end gap-10 px-10">
+            <span className={`text-8xl font-black ${color.text}`}>
+              {rate}%
+            </span>
             <span className={`text-8xl font-black ${diff >= 0 ? 'text-cyan-400' : 'text-red-400'}`}>
               {diff >= 0 ? '+' : ''}{fmt(diff)}
-            </span>
-            <span className={`rounded-2xl border-4 px-8 py-3 text-8xl font-black ${color.text} ${color.bg} ${color.border}`}>
-              {rate}%
             </span>
           </div>
         </div>
       </div>
 
       {/* 범례 바 */}
-      <div className={`flex items-center justify-center gap-10 border-t-4 ${color.border} bg-zinc-900 px-10 py-4 text-2xl text-zinc-500`}>
+      <div className={`flex items-center justify-center gap-10 border-t-4 border-zinc-700 bg-zinc-900 px-10 py-4 text-2xl text-zinc-500`}>
         <span className="flex items-center gap-2">
           <span className="inline-block h-5 w-5 rounded-full bg-cyan-500" />
           {'>'}= 95%
@@ -108,18 +128,23 @@ function KpiRow({
   label,
   value,
   valueClass = 'text-zinc-100',
+  suffix,
 }: {
   label: string;
   value: string;
   valueClass?: string;
+  suffix?: string;
 }) {
   return (
     <div className="flex flex-1 items-center">
       <div className="w-1/3 px-10 text-5xl font-black text-zinc-400">
         {label}
       </div>
-      <div className={`flex-1 px-10 text-right text-8xl font-black ${valueClass}`}>
-        {value}
+      <div className={`flex flex-1 items-baseline justify-end gap-4 px-10`}>
+        <span className={`text-8xl font-black ${valueClass}`}>{value}</span>
+        {suffix && (
+          <span className="text-3xl font-bold text-zinc-500">{suffix}</span>
+        )}
       </div>
     </div>
   );

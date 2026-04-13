@@ -59,12 +59,12 @@ export interface KpiRateStyle {
 /** KPI 달성률에 따른 색상 세트 반환 */
 export function getKpiRateStyle(rate: number): KpiRateStyle {
   if (rate >= KPI_GOOD_THRESHOLD) {
-    return { border: 'border-cyan-500', text: 'text-cyan-400', bg: 'bg-cyan-500/10', headerBg: 'bg-cyan-900/40', emoji: ':-)' };
+    return { border: 'border-cyan-500', text: 'text-cyan-400', bg: 'bg-cyan-500/10', headerBg: 'bg-cyan-900/40', emoji: '😄' };
   }
   if (rate >= KPI_WARNING_THRESHOLD) {
-    return { border: 'border-yellow-500', text: 'text-yellow-400', bg: 'bg-yellow-500/10', headerBg: 'bg-yellow-900/40', emoji: ':-|' };
+    return { border: 'border-yellow-500', text: 'text-yellow-400', bg: 'bg-yellow-500/10', headerBg: 'bg-yellow-900/40', emoji: '😐' };
   }
-  return { border: 'border-red-500', text: 'text-red-500', bg: 'bg-red-500/10', headerBg: 'bg-red-900/40', emoji: ':-(' };
+  return { border: 'border-red-500', text: 'text-red-500', bg: 'bg-red-500/10', headerBg: 'bg-red-900/40', emoji: '😡' };
 }
 
 /* ─────────────── Assy 달성률 텍스트 색상 ─────────────── */

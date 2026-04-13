@@ -97,7 +97,7 @@ export default function LogTableSidebar({
           <button
             key={t.TABLE_NAME}
             onClick={() => onSelectTable(t.TABLE_NAME)}
-            className={`w-full text-left px-4 py-2.5 transition-colors
+            className={`w-full text-left px-4 py-1.5 transition-colors
               border-b border-gray-100 dark:border-gray-800
               ${
                 selectedTable === t.TABLE_NAME

@@ -58,7 +58,7 @@ async function handleSummary(reelCd: string) {
   const parts = reelCd.split('-');
   const lotNo = parts.length >= 2 ? parts.slice(1, -1).join('-') : reelCd;
 
-  const [receiptRows, issueRows, boardRows] = await Promise.all([
+  const [receiptRows, issueRows, reelMasterRows, reelChangeRows, boardRows] = await Promise.all([
     /* 입고이력 */
     executeQuery(
       `SELECT ITEM_BARCODE, ITEM_CODE, LOT_NO, SCAN_DATE, SCAN_QTY,
@@ -76,6 +76,43 @@ async function handleSummary(reelCd: string) {
         WHERE MATERIAL_MFS = :lotNo
         ORDER BY ISSUE_DATE DESC`,
       { lotNo },
+    ),
+    /* 릴 투입이력 (HW_ITS_REEL, SQL Server 동의어 — 대소문자 주의) */
+    executeQuery(
+      `SELECT CAST("ReelCd" AS VARCHAR2(200)) AS "ReelCd",
+              CAST("PartNo" AS VARCHAR2(100)) AS "PartNo",
+              TO_NUMBER("CurrentCnt") AS "CurrentCnt",
+              TO_NUMBER("InitCnt") AS "InitCnt",
+              CAST("VendorNm" AS VARCHAR2(200)) AS "VendorNm",
+              CAST("VendorLot" AS VARCHAR2(200)) AS "VendorLot",
+              CAST("PartType" AS VARCHAR2(100)) AS "PartType",
+              CAST("UseYN" AS VARCHAR2(20)) AS "UseYN",
+              CAST("MSLLevel" AS VARCHAR2(20)) AS "MSLLevel",
+              TO_NUMBER("MSLStatus") AS "MSLStatus",
+              TO_NUMBER("RemainTime") AS "RemainTime",
+              CAST("LastLoadDt" AS TIMESTAMP) AS "LastLoadDt",
+              CAST("RegDt" AS TIMESTAMP) AS "RegDt",
+              CAST("MSLUpdateTime" AS TIMESTAMP) AS "MSLUpdateTime",
+              CAST("Memo" AS VARCHAR2(500)) AS "Memo"
+         FROM HW_ITS_REEL
+        WHERE "ReelCd" = :reelCd`,
+      { reelCd },
+    ),
+    /* 릴교환이력 (HW_ITS_REELCHANGEHISTORY, SQL Server 동의어 — 대소문자 주의) */
+    executeQuery(
+      `SELECT TO_NUMBER("ReelChangeID") AS "ReelChangeID",
+              CAST("ReelCd" AS VARCHAR2(200)) AS "ReelCd",
+              CAST("PartNo" AS VARCHAR2(100)) AS "PartNo",
+              CAST("FeederCd" AS VARCHAR2(100)) AS "FeederCd",
+              CAST("FeederSlot" AS VARCHAR2(100)) AS "FeederSlot",
+              CAST("EqpCd" AS VARCHAR2(100)) AS "EqpCd",
+              CAST("ReelInstallDt" AS TIMESTAMP) AS "ReelInstallDt",
+              CAST("ReelUninstallDt" AS TIMESTAMP) AS "ReelUninstallDt",
+              TO_NUMBER("MapID") AS "MapID"
+         FROM HW_ITS_REELCHANGEHISTORY
+        WHERE "ReelCd" = :reelCd
+        ORDER BY "ReelInstallDt" DESC`,
+      { reelCd },
     ),
     /* 사용된 BoardSN */
     executeQuery(
@@ -101,6 +138,8 @@ async function handleSummary(reelCd: string) {
     lotNo,
     receipt: sanitize(receiptRows as Record<string, unknown>[]),
     issues: sanitize(issueRows as Record<string, unknown>[]),
+    reelMaster: sanitize(reelMasterRows as Record<string, unknown>[]),
+    reelChanges: sanitize(reelChangeRows as Record<string, unknown>[]),
     boards: sanitize(boardRows as Record<string, unknown>[]),
     total: boardRows.length,
   });

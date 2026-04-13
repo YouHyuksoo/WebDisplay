@@ -90,7 +90,7 @@
     "statusIdle": "대기",
     "planQty": "계획수량",
     "targetQty": "목표",
-    "resultQty": "결과",
+    "resultQty": "생산실적",
     "temp": "온도",
     "humidity": "습도"
   },

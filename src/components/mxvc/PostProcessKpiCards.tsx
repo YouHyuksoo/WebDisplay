@@ -72,10 +72,14 @@ export default function PostProcessKpiCards({ kpi }: Props) {
         valueClass={badCls(kpi.defectRate)}
       />
       <KpiCard
-        label="재검사율"
-        value={`${kpi.retestRate.toFixed(2)}%`}
-        sub="동일 바코드 2회 이상 검사"
-        valueClass={badCls(kpi.retestRate)}
+        label="재검 건수"
+        value={`${kpi.retestCount.toLocaleString()}건`}
+        sub="동일 바코드 FILE_NAME 2회 이상"
+        valueClass={kpi.retestCount === 0
+          ? 'text-emerald-500 dark:text-emerald-400'
+          : kpi.retestCount <= 5
+          ? 'text-yellow-500 dark:text-yellow-400'
+          : 'text-red-500 dark:text-red-400'}
       />
       <KpiCard
         label="수리 현황"
