@@ -115,7 +115,7 @@ export default function PostProcessEolDefectPie({ eolStepDefects, height = 260 }
     <div className="flex flex-col shrink-0" style={{ width: '38%', minWidth: 260 }}>
       <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1 px-4">
         EOL 스텝별 불량 분포
-        <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">최근 7일</span>
+        <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">최근 3일</span>
         {hasData && (
           <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">
             총 {total}건

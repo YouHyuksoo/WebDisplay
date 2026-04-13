@@ -19,9 +19,6 @@ import useDisplayTiming from '@/hooks/useDisplayTiming';
 import { fetcher } from '@/lib/fetcher';
 import { getSelectedLines, buildDisplayApiUrl, DEFAULT_ORG_ID } from '@/lib/display-helpers';
 
-/** 한 페이지에 표시할 카드 수 */
-const CARDS_PER_PAGE = 4;
-
 /** NG 점검 키 목록 */
 const NG_KEYS = [
   'MASK_CHECK', 'SQUEEZE_CHECK', 'SOLDER_CHECK', 'MASTER_CHECK_AOI',
@@ -38,6 +35,18 @@ export default function FoolproofStatus({
   const timing = useDisplayTiming();
   const [selectedLines, setSelectedLines] = useState(() => getSelectedLines(screenId));
   const [currentPage, setCurrentPage] = useState(0);
+
+  /* 모바일(< 480px) = 1개, 태블릿(< 768px) = 2개, 데스크톱 = 4개 */
+  const [cardsPerPage, setCardsPerPage] = useState(4);
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      setCardsPerPage(w < 480 ? 1 : w < 768 ? 2 : 4);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const { data, error, isLoading } = useSWR(
     buildDisplayApiUrl(screenId, { orgId: DEFAULT_ORG_ID, lines: encodeURIComponent(selectedLines) }),
@@ -57,7 +66,7 @@ export default function FoolproofStatus({
   }, [screenId, handleLineChange]);
 
   const rows: FoolproofRow[] = data?.rows ?? [];
-  const totalPages = Math.max(1, Math.ceil(rows.length / CARDS_PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(rows.length / cardsPerPage));
 
   /* 페이지 자동 전환 타이머 — 데이터 새로고침과 독립 */
   useEffect(() => {
@@ -74,8 +83,8 @@ export default function FoolproofStatus({
   }, [totalPages, currentPage]);
 
   const pageRows = rows.slice(
-    currentPage * CARDS_PER_PAGE,
-    (currentPage + 1) * CARDS_PER_PAGE,
+    currentPage * cardsPerPage,
+    (currentPage + 1) * cardsPerPage,
   );
 
   const ngCount = useMemo(
@@ -89,7 +98,7 @@ export default function FoolproofStatus({
         {ngCount > 0 && <NgAlertBanner message={t('foolproofNgWarning', { count: ngCount })} showIcon={false} compact />}
 
         {/* 카드 그리드 — 현재 페이지만 표시 */}
-        <div className="min-h-0 flex-1 p-3">
+        <div className="min-h-0 flex-1 p-2 md:p-3">
           {isLoading ? (
             <div className="flex h-full items-center justify-center text-zinc-400 dark:text-zinc-500">
               {t('loading')}
@@ -103,7 +112,13 @@ export default function FoolproofStatus({
               {t('noData')}
             </div>
           ) : (
-            <div className="grid h-full grid-cols-2 grid-rows-2 gap-3">
+            <div className={`grid h-full gap-2 md:gap-3 ${
+              cardsPerPage === 1
+                ? 'grid-cols-1 grid-rows-1'
+                : cardsPerPage === 2
+                ? 'grid-cols-1 grid-rows-2'
+                : 'grid-cols-2 grid-rows-2'
+            }`}>
               {pageRows.map((row, idx) => (
                 <FoolproofCard key={row.LINE_CODE ?? idx} row={row} />
               ))}
@@ -113,7 +128,7 @@ export default function FoolproofStatus({
 
         {/* 페이지 인디케이터 */}
         {totalPages > 1 && (
-          <div className="flex shrink-0 items-center justify-center gap-3 pb-2">
+          <div className="flex shrink-0 items-center justify-center gap-3 pb-1 md:pb-2">
             {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i}

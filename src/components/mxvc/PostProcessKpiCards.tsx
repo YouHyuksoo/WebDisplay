@@ -7,7 +7,7 @@
  * - EOL검사실적: LOG_EOL IS_LAST='Y' 바코드 수
  * - 불량율: 5개 LOG 테이블 바코드 단위 불량율
  * - 재검 건수: 동일 바코드 FILE_NAME 2회 이상
- * - 수리대기/완료: IP_PRODUCT_WORK_QC.QC_INSPECT_HANDLING ('W'=대기, 'U'=완료)
+ * - 수리대기/완료: IP_PRODUCT_WORK_QC.RECEIPT_DEFICIT ('1'=대기, '2'=완료)
  */
 import type { PostProcessKpi } from '@/types/mxvc/post-process';
 
@@ -43,7 +43,7 @@ function KpiCard({ label, value, sub, valueClass = '' }: CardProps) {
 
 export default function PostProcessKpiCards({ kpi, ictTotal, eolTotal }: Props) {
   return (
-    <div className="grid grid-cols-3 gap-4 px-6 py-4 shrink-0">
+    <div className="grid grid-cols-3 gap-4 flex-1 min-w-0">
       {/* 생산 계획 — 라인별 모델명/RUN_NO 표시 */}
       <div className="flex flex-col justify-between rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">생산 계획</span>

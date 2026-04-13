@@ -21,6 +21,7 @@ import {
   sqlQcStats,
   sqlMagazine,
   sqlProductionPlanLines,
+  sqlSampleHist,
 } from '@/lib/queries/post-process';
 import type {
   PostProcessResponse,
@@ -30,6 +31,7 @@ import type {
   PostProcessDefectByTable,
   PostProcessEolStepDefect,
   PostProcessMagazineRow,
+  PostProcessSampleHistRow,
 } from '@/types/mxvc/post-process';
 
 export const dynamic = 'force-dynamic';
@@ -85,8 +87,8 @@ export async function GET(req: NextRequest) {
     const { where: timeWhere, binds: timeBind } = buildTimeWhere('', '');
     const { sql: qcSql, binds: qcBinds }        = sqlQcStats('', '');
 
-    // ─── 1차 병렬: 생산계획 + 수리 + 매거진 + 5개 테이블 stats ───
-    const [prodRows, qcRows, magazineRows, ...statsArr] = await Promise.all([
+    // ─── 1차 병렬: 생산계획 + 수리 + 매거진 + 샘플이력 + 5개 테이블 stats ───
+    const [prodRows, qcRows, magazineRows, sampleHistRows, ...statsArr] = await Promise.all([
       executeQuery<{ LINE_NAME: string; MODEL_NAME: string; RUN_NO: string; PLAN_QTY: number }>(
         sqlProductionPlanLines(lineClause), lineBinds,
       ).catch(() => []),
@@ -98,17 +100,21 @@ export async function GET(req: NextRequest) {
         sqlMagazine, {},
       ).catch(() => []),
 
+      executeQuery<{ MODEL_NAME: string; SAMPLE_TYPE: string; SAMPLE_LABEL: string; GOOD_CNT: number; DEFECT_CNT: number; TOTAL_CNT: number }>(
+        sqlSampleHist, {},
+      ).catch(() => []),
+
       ...POST_PROCESS_TABLES.map((k) => fetchTableStats(k, timeWhere, timeBind)),
     ]);
 
-    // EOL 스텝별 불량은 최근 7일 기준 (당일 데이터만으론 샘플이 적을 수 있음)
-    const eolWhere7Days = `LOG_TIMESTAMP >= TRUNC(SYSDATE) - 6 AND LOG_TIMESTAMP <= SYSDATE`;
+    // EOL 스텝별 불량은 최근 3일 기준 (당일 포함 TRUNC(SYSDATE)-2 ~ SYSDATE)
+    const eolWhere3Days = `LOG_TIMESTAMP >= TRUNC(SYSDATE) - 2 AND LOG_TIMESTAMP <= SYSDATE`;
 
     // ─── 2차 병렬: FPY 시간대별 + EOL 스텝별 불량 분포 ───
     const [fpyArr, eolDefectRows] = await Promise.all([
       Promise.all(POST_PROCESS_TABLES.map((k) => fetchTableFpy(k, timeWhere, timeBind))),
       executeQuery<{ NAME_DETAIL: string; FAIL_CNT: number }>(
-        sqlEolStepDefects(eolWhere7Days), {},
+        sqlEolStepDefects(eolWhere3Days), {},
       ).catch(() => []),
     ]);
 
@@ -161,6 +167,17 @@ export async function GET(req: NextRequest) {
       eolDefectRows as { NAME_DETAIL: string; FAIL_CNT: number }[]
     ).map((r) => ({ nameDetail: r.NAME_DETAIL, failCount: r.FAIL_CNT }));
 
+    const sampleHist: PostProcessSampleHistRow[] = (
+      sampleHistRows as { MODEL_NAME: string; SAMPLE_TYPE: string; SAMPLE_LABEL: string; GOOD_CNT: number; DEFECT_CNT: number; TOTAL_CNT: number }[]
+    ).map((r) => ({
+      modelName:   r.MODEL_NAME,
+      sampleType:  r.SAMPLE_TYPE,
+      sampleLabel: r.SAMPLE_LABEL,
+      goodCnt:     r.GOOD_CNT   ?? 0,
+      defectCnt:   r.DEFECT_CNT ?? 0,
+      totalCnt:    r.TOTAL_CNT  ?? 0,
+    }));
+
     const magazine: PostProcessMagazineRow[] = (
       magazineRows as { MAGAZINE_NO: string; MODEL_NAME: string; WORKSTAGE_CODE: string; CURRENT_QTY: number; LAST_MODIFY_TIME: string; LAST_MODIFY_DATE: string }[]
     ).map((r) => ({
@@ -178,6 +195,7 @@ export async function GET(req: NextRequest) {
       defectByTable,
       eolStepDefects,
       magazine,
+      sampleHist,
       lastUpdated: new Date().toISOString(),
     };
     return NextResponse.json(res);

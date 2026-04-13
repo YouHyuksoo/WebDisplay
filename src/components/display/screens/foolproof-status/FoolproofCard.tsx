@@ -81,13 +81,13 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
     >
       {/* 카드 헤더 — 라인명 + 상태변경일시 */}
       <div
-        className={`flex items-center justify-between px-4 py-2 ${
+        className={`flex items-center justify-between px-3 py-1 md:px-4 md:py-2 ${
           ng
             ? 'bg-red-600 text-white animate-pulse'
             : 'bg-emerald-700 text-white'
         }`}
       >
-        <span className="text-xl font-black">{lineName}</span>
+        <span className="text-lg font-black md:text-xl">{lineName}</span>
         {row.RUNNING_RUN_DATE && (
           <span className="text-base font-semibold opacity-90">
             {row.RUNNING_RUN_DATE}
@@ -108,18 +108,18 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
           return (
             <div
               key={itemKey}
-              className={`flex items-center gap-2 px-3 py-1 ${
+              className={`flex items-center gap-1 px-2 py-0.5 md:gap-2 md:px-3 md:py-1 ${
                 idx % 2 === 0 ? 'bg-zinc-900 dark:bg-zinc-900' : 'bg-zinc-800/50 dark:bg-zinc-800/50'
               }`}
             >
               {/* 항목명 */}
-              <span className="w-28 shrink-0 truncate text-sm font-bold text-white">
+              <span className="w-20 shrink-0 truncate text-xs font-bold text-white md:w-28 md:text-sm">
                 {tCheck(item.labelKey)}
               </span>
 
               {isValueOnly ? (
                 <>
-                  <span className="min-w-0 flex-1 truncate text-sm font-semibold text-cyan-300">
+                  <span className="min-w-0 flex-1 truncate text-xs font-semibold text-cyan-300 md:text-sm">
                     {plainVal || '-'}
                     {itemKey === 'RUNNING_RUN_NO' && row.RUNNING_LOT_PLAN_QTY != null && (
                       <span className="ml-2 text-zinc-400">LOT: {row.RUNNING_LOT_PLAN_QTY}</span>
@@ -149,7 +149,7 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
               ) : isActive ? (
                 <>
                   {/* 상태 뱃지 */}
-                  <span className={`shrink-0 rounded px-2.5 py-0.5 text-sm font-black ${getCheckBadgeClass(status)}`}>
+                  <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-black md:px-2.5 md:text-sm ${getCheckBadgeClass(status)}`}>
                     {status}
                   </span>
                   {/* LOT NO 또는 값/날짜 표시 */}
@@ -201,7 +201,7 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
 
       {/* NSNP 사유 상태바 */}
       {row.NSNP_REASON && (
-        <div className="shrink-0 bg-amber-600 px-4 py-1.5 text-center text-sm font-bold text-white">
+        <div className="shrink-0 bg-amber-600 px-3 py-1 text-center text-xs font-bold text-white md:px-4 md:py-1.5 md:text-sm">
           {row.NSNP_STATUS_NAME && <span>[{row.NSNP_STATUS_NAME}]</span>} {row.NSNP_REASON}
         </div>
       )}

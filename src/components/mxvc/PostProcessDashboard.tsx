@@ -22,6 +22,7 @@ import PostProcessDefectChart from './PostProcessDefectChart';
 import PostProcessFpyChart from './PostProcessFpyChart';
 import PostProcessEolDefectPie from './PostProcessEolDefectPie';
 import PostProcessMagazinePanel from './PostProcessMagazinePanel';
+import PostProcessSampleCard from './PostProcessSampleCard';
 import type { PostProcessResponse } from '@/types/mxvc/post-process';
 
 const SCREEN_ID = 'mxvc-post-process';
@@ -70,12 +71,15 @@ export default function PostProcessDashboard() {
 
         {/* 좌측 메인 (80%) */}
         <div className="flex-1 flex flex-col min-h-0 overflow-auto" style={{ minWidth: 0 }}>
-          {/* KPI 카드 */}
-          <PostProcessKpiCards
-            kpi={kpi}
-            ictTotal={data?.defectByTable.find((d) => d.tableKey === 'LOG_ICT')?.total ?? 0}
-            eolTotal={data?.defectByTable.find((d) => d.tableKey === 'LOG_EOL')?.total ?? 0}
-          />
+          {/* KPI 카드 + 샘플 이력 — 가로 배치, 동일 높이 */}
+          <div className="flex items-stretch gap-4 px-6 py-4 shrink-0">
+            <PostProcessKpiCards
+              kpi={kpi}
+              ictTotal={data?.defectByTable.find((d) => d.tableKey === 'LOG_ICT')?.total ?? 0}
+              eolTotal={data?.defectByTable.find((d) => d.tableKey === 'LOG_EOL')?.total ?? 0}
+            />
+            <PostProcessSampleCard sampleHist={data?.sampleHist ?? []} />
+          </div>
 
           {/* 오류 표시 */}
           {error && (

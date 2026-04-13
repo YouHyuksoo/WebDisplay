@@ -1,9 +1,9 @@
 /**
  * @file src/components/mxvc/PostProcessDefectChart.tsx
- * @description 검사공정별 불량율 / 재검 건수 BarChart (ECharts)
+ * @description 검사공정별 양품율 / 재검 건수 BarChart (ECharts)
  * 초보자 가이드:
- * - 좌: 공정별 불량율 % — ≤1% 녹색, ≤3% 노랑, 초과 빨강
- * - 우: 공정별 재검 건수 — ≤2건 파랑, ≤5건 주황, 초과 빨강
+ * - 좌: 공정별 양품율 % (= 100 - 불량율) — ≥99% 녹색, ≥97% 노랑, 미만 빨강
+ * - 우: 공정별 재검 건수 — 0건 녹색, ≤2건 파랑, ≤5건 주황, 초과 빨강
  * - x축: 공정명 (ICT, EOL, COATING 1, COATING 2, DOWNLOAD)
  */
 'use client';
@@ -16,9 +16,10 @@ interface Props {
   height?: number;
 }
 
-function defectColor(rate: number): string {
-  if (rate <= 1) return '#10b981';
-  if (rate <= 3) return '#f59e0b';
+/** 양품율 기준 색상 — 높을수록 좋음 */
+function yieldColor(rate: number): string {
+  if (rate >= 99) return '#10b981';
+  if (rate >= 97) return '#f59e0b';
   return '#ef4444';
 }
 
@@ -48,6 +49,15 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
   const hasData  = defectByTable.some((d) => d.total > 0);
   const labels   = defectByTable.map((d) => d.label);
 
+  // total=0이면 null — ECharts가 막대를 그리지 않아 "데이터 없음"과 "100%"를 구분
+  const yRates = defectByTable.map((d): number | null =>
+    d.total > 0 ? Math.round((1 - d.fail / d.total) * 10000) / 100 : null,
+  );
+  // null 제외한 실제 값만으로 y축 min 계산
+  const validRates = yRates.filter((r): r is number => r !== null);
+  const minRate    = validRates.length > 0 ? Math.min(...validRates) : 90;
+  const yAxisMin   = Math.max(0, Math.floor(minRate / 10) * 10);
+
   const noDataBox = (
     <div
       className="flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-400 dark:text-gray-500"
@@ -57,12 +67,14 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
     </div>
   );
 
-  const defectOption = {
+  const yieldOption = {
     backgroundColor: 'transparent',
     grid: { top: 36, right: 16, bottom: 24, left: 52 },
     xAxis: { type: 'category', data: labels, ...AXIS_STYLE },
     yAxis: {
       type: 'value',
+      min: yAxisMin,
+      max: 100,
       splitLine: SPLIT_LINE,
       axisLabel: { color: '#9ca3af', fontSize: 11, formatter: '{value}%' },
     },
@@ -71,29 +83,32 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
       ...TOOLTIP_STYLE,
       formatter: (params: { name: string; value: number }[]) => {
         const p = params[0];
-        return `<b style="color:#9ca3af">${p.name}</b><br/>불량율: <b>${p.value.toFixed(2)}%</b>`;
+        return `<b style="color:#9ca3af">${p.name}</b><br/>양품율: <b>${p.value.toFixed(2)}%</b>`;
       },
     },
     series: [{
       type: 'bar',
-      data: defectByTable.map((d) => ({
-        value: d.defectRate,
-        itemStyle: {
-          color: {
-            type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [
-              { offset: 0, color: defectColor(d.defectRate) },
-              { offset: 1, color: defectColor(d.defectRate) + '44' },
-            ],
+      data: yRates.map((yRate) => {
+        const color = yRate != null ? yieldColor(yRate) : '#6b7280';
+        return {
+          value: yRate,
+          itemStyle: {
+            color: {
+              type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color },
+                { offset: 1, color: color + '44' },
+              ],
+            },
+            borderRadius: [5, 5, 0, 0],
           },
-          borderRadius: [5, 5, 0, 0],
-        },
-      })),
+        };
+      }),
       barWidth: '50%',
       label: {
         show: true, position: 'top',
-        formatter: (p: { value: number }) => p.value > 0 ? `${p.value.toFixed(1)}%` : '',
-        color: '#fca5a5', fontSize: 11, fontWeight: 700,
+        formatter: (p: { value: number | null }) => p.value != null ? `${p.value.toFixed(2)}%` : '-',
+        color: '#6ee7b7', fontSize: 11, fontWeight: 700,
       },
     }],
     animation: true, animationDuration: 600, animationEasing: 'cubicOut' as const,
@@ -102,7 +117,7 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
   const retestOption = {
     backgroundColor: 'transparent',
     grid: { top: 36, right: 16, bottom: 24, left: 52 },
-    xAxis: { type: 'category', data: labels, ...AXIS_STYLE },
+    xAxis: { type: 'category', data: defectByTable.map((d) => d.label), ...AXIS_STYLE },
     yAxis: {
       type: 'value',
       minInterval: 1,
@@ -143,20 +158,20 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
   };
 
   return (
-    <div className="px-6 pb-2 shrink-0 grid grid-cols-2 gap-4">
-      {/* 불량율 */}
-      <div>
+    <div className="px-6 pb-2 shrink-0 flex gap-4">
+      {/* 양품율 — 나머지 폭 채움 */}
+      <div className="flex-1 min-w-0">
         <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">
-          공정별 불량율
+          공정별 양품율
           <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">당일 08:00 ~ 현재</span>
         </h3>
         {!hasData ? noDataBox : (
-          <ReactECharts option={defectOption} style={{ height, width: '100%' }} notMerge lazyUpdate />
+          <ReactECharts option={yieldOption} style={{ height, width: '100%' }} notMerge lazyUpdate />
         )}
       </div>
 
-      {/* 재검 건수 */}
-      <div>
+      {/* 재검 건수 — EOL 파이차트와 동일한 폭 (38%, min 260px) */}
+      <div className="shrink-0" style={{ width: '38%', minWidth: 260 }}>
         <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">
           공정별 재검 건수
           <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">당일 08:00 ~ 현재</span>

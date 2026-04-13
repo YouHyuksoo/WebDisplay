@@ -19,8 +19,8 @@ export interface PostProcessKpi {
   defectRate:    number;  // 불량율 % (불량바코드 / 전체바코드 × 100)
   retestRate:    number;  // 재검사율 % (재검바코드 / 전체바코드 × 100)
   retestCount:   number;  // 재검 건수 (동일 바코드 FILE_NAME 2회 이상)
-  repairWaiting: number;  // 수리대기 건수 (QC_INSPECT_HANDLING = 'W')
-  repairDone:    number;  // 수리완료 건수 (QC_INSPECT_HANDLING = 'U')
+  repairWaiting: number;  // 수리대기 건수 (RECEIPT_DEFICIT = '1')
+  repairDone:    number;  // 수리완료 건수 (RECEIPT_DEFICIT = '2')
 }
 
 /** 시간대별 직행율 행 */
@@ -58,6 +58,16 @@ export interface PostProcessEolStepDefect {
   failCount: number;   // 해당 스텝 불량 건수
 }
 
+/** 샘플 바코드 입력 이력 행 (imcn_sample_bcr_input_hist) — 모델 × 샘플타입 단위 */
+export interface PostProcessSampleHistRow {
+  modelName:   string;  // 생산모델명
+  sampleType:  string;  // 'C'=ICT, 'E'=EOL, 'T'=COATING 등
+  sampleLabel: string;  // ISYS_BASECODE CODE_MEAN_KOR 값
+  goodCnt:     number;  // 양품(OK) 등록 건수
+  defectCnt:   number;  // 불량(NG) 등록 건수
+  totalCnt:    number;  // 합계
+}
+
 /** API 응답 */
 export interface PostProcessResponse {
   kpi: PostProcessKpi;
@@ -69,5 +79,7 @@ export interface PostProcessResponse {
   eolStepDefects: PostProcessEolStepDefect[];
   /** 매거진 대기재공 목록 */
   magazine: PostProcessMagazineRow[];
+  /** 당일 생산모델별 샘플 마스터 등록 이력 (양품/불량) */
+  sampleHist: PostProcessSampleHistRow[];
   lastUpdated: string;
 }

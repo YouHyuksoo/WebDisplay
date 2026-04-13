@@ -10,33 +10,31 @@
  * 6. sqlProductionKpiAgg — IRPT_PRODUCT_LINE_TARGET_MONITORING 집계
  */
 
-/** 검사공정 5개 테이블 */
+/** 검사공정 4개 테이블 (COATING1·COATING2는 작업공정 → 제외) */
 export const POST_PROCESS_TABLES = [
-  'LOG_ICT', 'LOG_EOL', 'LOG_COATING1', 'LOG_COATING2', 'LOG_DOWNLOAD',
+  'LOG_ICT', 'LOG_EOL', 'LOG_COATINGVISION', 'LOG_DOWNLOAD',
 ] as const;
 export type PostProcessTableKey = typeof POST_PROCESS_TABLES[number];
 
 /** 테이블 표시명 */
 export const POST_PROCESS_TABLE_LABELS: Record<PostProcessTableKey, string> = {
-  LOG_ICT:      'ICT',
-  LOG_EOL:      'EOL',
-  LOG_COATING1: 'COATING 1',
-  LOG_COATING2: 'COATING 2',
-  LOG_DOWNLOAD: 'DOWNLOAD',
+  LOG_ICT:           'ICT',
+  LOG_EOL:           'EOL',
+  LOG_COATINGVISION: 'COATING VISION',
+  LOG_DOWNLOAD:      'DOWNLOAD',
 };
 
 /**
  * 각 테이블의 최종 판정 컬럼 / 바코드 컬럼.
- * 모든 테이블이 IS_LAST 컬럼을 가지므로 IS_LAST='Y' 행만 대상으로 집계한다.
+ * LOG_COATINGVISION은 바코드 컬럼이 MAIN_BARCODE (타 테이블은 BARCODE).
  * IS_LAST='Y': 한 검사 실행(FILE_NAME)의 최종 판정 행
- *   → 재검사 = 동일 BARCODE에 IS_LAST='Y' 행이 2개 이상
+ *   → 재검사 = 동일 바코드에 FILE_NAME이 2개 이상
  */
 const TABLE_COLS: Record<PostProcessTableKey, { result: string; barcode: string }> = {
-  LOG_ICT:      { result: 'RESULT',       barcode: 'BARCODE' },
-  LOG_EOL:      { result: 'ARRAY_RESULT', barcode: 'BARCODE' },
-  LOG_COATING1: { result: 'RESULT',       barcode: 'BARCODE' },
-  LOG_COATING2: { result: 'RESULT',       barcode: 'BARCODE' },
-  LOG_DOWNLOAD: { result: 'RESULT',       barcode: 'BARCODE' },
+  LOG_ICT:           { result: 'RESULT',       barcode: 'BARCODE'      },
+  LOG_EOL:           { result: 'ARRAY_RESULT', barcode: 'BARCODE'      },
+  LOG_COATINGVISION: { result: 'RESULT',       barcode: 'MAIN_BARCODE' },
+  LOG_DOWNLOAD:      { result: 'RESULT',       barcode: 'BARCODE'      },
 };
 
 /** PASS 판정값 목록 */
@@ -164,7 +162,7 @@ export function sqlEolStepDefects(timeWhere: string): string {
 
 /**
  * IP_PRODUCT_WORK_QC — 수리대기/완료 건수.
- * QC_INSPECT_HANDLING: 'W' = 대기, 'U' = 완료
+ * RECEIPT_DEFICIT: '1' = 대기, '2' = 완료
  */
 export function sqlQcStats(dateFrom: string, dateTo: string): {
   sql: string;
@@ -180,8 +178,8 @@ export function sqlQcStats(dateFrom: string, dateTo: string): {
   return {
     sql: `
       SELECT
-        SUM(CASE WHEN QC_INSPECT_HANDLING = 'W' THEN 1 ELSE 0 END) AS WAITING,
-        SUM(CASE WHEN QC_INSPECT_HANDLING = 'U' THEN 1 ELSE 0 END) AS DONE
+        SUM(CASE WHEN RECEIPT_DEFICIT = '1' THEN 1 ELSE 0 END) AS WAITING,
+        SUM(CASE WHEN RECEIPT_DEFICIT = '2' THEN 1 ELSE 0 END) AS DONE
       FROM IP_PRODUCT_WORK_QC
       WHERE ${where}
     `,
@@ -204,6 +202,29 @@ export const sqlMagazine = `
     RECEIPT_DATE                                         AS LAST_MODIFY_DATE
   FROM IP_PRODUCT_MAGAZINE_INVENTORY
   ORDER BY RECEIPT_DATE ASC
+`;
+
+/**
+ * imcn_sample_bcr_input_hist — 당일 샘플 마스터 등록 이력 (양품/불량 구분).
+ * INSPECT_RESULT: 'OK'=양품, 'NG'=불량
+ * SAMPLE_TYPE: ISYS_BASECODE CODE_TYPE='SAMPLE TYPE' 에서 한국어 레이블 조인
+ * 당일 기준: TRUNC(INPUT_DATE) = TRUNC(SYSDATE)
+ */
+export const sqlSampleHist = `
+  SELECT
+    NVL(h.MODEL_NAME, '-')               AS MODEL_NAME,
+    h.SAMPLE_TYPE,
+    NVL(b.CODE_MEAN_KOR, h.SAMPLE_TYPE)  AS SAMPLE_LABEL,
+    SUM(CASE WHEN h.INSPECT_RESULT = 'OK' THEN 1 ELSE 0 END) AS GOOD_CNT,
+    SUM(CASE WHEN h.INSPECT_RESULT = 'NG' THEN 1 ELSE 0 END) AS DEFECT_CNT,
+    COUNT(*)                              AS TOTAL_CNT
+  FROM imcn_sample_bcr_input_hist h
+  LEFT JOIN ISYS_BASECODE b
+    ON b.CODE_TYPE = 'SAMPLE TYPE'
+   AND b.CODE_NAME = h.SAMPLE_TYPE
+  WHERE TRUNC(h.INPUT_DATE) = TRUNC(SYSDATE)
+  GROUP BY h.MODEL_NAME, h.SAMPLE_TYPE, b.CODE_MEAN_KOR
+  ORDER BY h.MODEL_NAME, h.SAMPLE_TYPE
 `;
 
 /**
