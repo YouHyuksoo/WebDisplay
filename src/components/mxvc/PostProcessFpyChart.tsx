@@ -72,7 +72,7 @@ export default function PostProcessFpyChart({ fpyChart, height = 260 }: Props) {
             <XAxis dataKey="hour" tick={{ fontSize: 11 }} />
             <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 11 }} width={42} />
             <Tooltip
-              formatter={(v: number) => (v != null ? `${v.toFixed(1)}%` : '-')}
+              formatter={(v: number | undefined) => (v != null ? `${v.toFixed(1)}%` : '-')}
               contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: 6 }}
               labelStyle={{ color: '#9ca3af' }}
               itemStyle={{ color: '#e5e7eb' }}
