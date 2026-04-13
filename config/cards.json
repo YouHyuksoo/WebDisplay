@@ -443,6 +443,14 @@
       "color": "#f43f5e",
       "icon": "svg:chart",
       "layer": 8
+    },
+    {
+      "id": "menu-mxvc-post-process",
+      "title": "후공정생산현황",
+      "url": "/mxvc/post-process",
+      "color": "#10b981",
+      "icon": "svg:chart-bar",
+      "layer": 8
     }
   ]
 }

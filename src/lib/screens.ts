@@ -50,4 +50,8 @@ export const SCREENS: Record<string, ScreenConfig> = {
   '50': { id: '50', title: 'Equipment Call History Search', titleKo: '설비호출이력검색', titleEs: 'Búsqueda de historial de llamadas', titleVi: 'Tìm kiếm lịch sử cuộc gọi thiết bị', window: 'w_display_equipment_log', group: 'equipment' },
 
   '60': { id: '60', title: 'SPC Control Chart', titleKo: '관리도보기', titleEs: 'Gráfico de control SPC', titleVi: 'Biểu đồ kiểm soát SPC', window: '', group: 'spc-monitoring' },
+
+  // 멕시코전장 독립 화면 (display/ 화면과 별도 라인 선택 저장)
+  'mxvc-production-kpi': { id: 'mxvc-production-kpi', title: 'Line Production KPI (MXVC)', titleKo: '라인별생산현황(멕시코전장)', titleEs: 'KPI de producción por línea (MXVC)', titleVi: 'KPI sản xuất theo Line (MXVC)', window: '', group: 'mxvc', lineFilter: true },
+  'mxvc-post-process': { id: 'mxvc-post-process', title: 'Post-Process Production Status (MXVC)', titleKo: '후공정생산현황(멕시코전장)', titleEs: 'Estado de Producción Post-Proceso (MXVC)', window: '', group: 'mxvc' },
 };
