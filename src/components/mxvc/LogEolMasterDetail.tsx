@@ -152,7 +152,12 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
         return isNaN(d.getTime()) ? String(p.value) : d.toLocaleString('ko-KR');
       },
     },
-    { field: 'ARRAY_RESULT', headerName: '결과', minWidth: 80 },
+    {
+      field: 'ARRAY_RESULT', headerName: '결과', minWidth: 80,
+      cellStyle: (p) => /FAIL/i.test(String(p.value ?? ''))
+        ? { backgroundColor: '#ef444466', color: '#fca5a5', fontWeight: 600 }
+        : null,
+    },
     { field: 'LABEL', headerName: '라벨', minWidth: 120 },
     { field: 'STEP_COUNT', headerName: '스텝수', minWidth: 80, type: 'numericColumn' },
     { field: 'START_TIME', headerName: '시작시간', minWidth: 140 },
@@ -175,7 +180,12 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
       valueGetter: (p) => p.data?.NO != null ? Number(p.data.NO) : null },
     { field: 'NAME', headerName: '항목명', minWidth: 140 },
     { field: 'NAME_DETAIL', headerName: '상세', minWidth: 140 },
-    { field: 'STEP_RESULT', headerName: '결과', minWidth: 70 },
+    {
+      field: 'STEP_RESULT', headerName: '결과', minWidth: 70,
+      cellStyle: (p) => /FAIL/i.test(String(p.value ?? ''))
+        ? { backgroundColor: '#ef444466', color: '#fca5a5', fontWeight: 600 }
+        : null,
+    },
     { field: 'VOLT_V', headerName: 'Volt', minWidth: 70 },
     { field: 'MIN_1', headerName: 'Min1', minWidth: 70 },
     { field: 'TYP_1', headerName: 'Typ1', minWidth: 70 },
