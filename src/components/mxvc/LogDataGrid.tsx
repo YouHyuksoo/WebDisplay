@@ -24,7 +24,7 @@ import {
 } from 'ag-grid-community';
 import { useTheme } from 'next-themes';
 import * as XLSX from 'xlsx';
-import { useServerTime } from '@/hooks/useServerTime';
+import { useServerTime, useServerNow } from '@/hooks/useServerTime';
 import Modal from '@/components/ui/Modal';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -71,6 +71,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
   const t = useTranslations('common');
   const { resolvedTheme } = useTheme();
   const serverToday = useServerTime();
+  const serverNow = useServerNow();
   const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
   const gridRef = useRef<AgGridReact>(null);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
@@ -99,11 +100,11 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
 
   /* 서버 시간 로드 시 날짜 초기값 설정 */
   useEffect(() => {
-    if (serverToday && !toDate) {
+    if (serverToday && serverNow && !toDate) {
       setFromDate(weekAgoFrom(serverToday));
-      setToDate(serverToday + 'T23:59');
+      setToDate(serverNow);
     }
-  }, [serverToday, toDate]);
+  }, [serverToday, serverNow, toDate]);
 
   /** 날짜 타입 컬럼 후보 목록 */
   const dateCols = useMemo(

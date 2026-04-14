@@ -21,7 +21,7 @@ import {
 } from 'ag-grid-community';
 import { useTheme } from 'next-themes';
 import * as XLSX from 'xlsx';
-import { useServerTime } from '@/hooks/useServerTime';
+import { useServerTime, useServerNow } from '@/hooks/useServerTime';
 import Modal from '@/components/ui/Modal';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -63,6 +63,7 @@ function weekAgo(base: string): string {
 export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '', lineCodes = [], onLineCodeChange }: Props) {
   const { resolvedTheme } = useTheme();
   const serverToday = useServerTime();
+  const serverNow = useServerNow();
   const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
 
   const [fromDate, setFromDate] = useState('');
@@ -83,11 +84,11 @@ export default function LogIctMasterDetail({ apiBase = '/api/mxvc', lineCode = '
   const detailRef = useRef<AgGridReact>(null);
 
   useEffect(() => {
-    if (serverToday && !toDate) {
+    if (serverToday && serverNow && !toDate) {
       setFromDate(weekAgo(serverToday));
-      setToDate(serverToday + 'T23:59');
+      setToDate(serverNow);
     }
-  }, [serverToday, toDate]);
+  }, [serverToday, serverNow, toDate]);
 
   /** 마스터 조회 */
   const fetchMaster = useCallback(async () => {

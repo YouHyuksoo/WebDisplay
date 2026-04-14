@@ -2,7 +2,7 @@
  * @file src/components/mxvc/LogEolMasterDetail.tsx
  * @description LOG_EOL 마스터-디테일 그리드.
  * 초보자 가이드:
- * - 상단 마스터 그리드: EQUIPMENT+MODEL+BARCODE 그룹, 행 클릭 시 하단에 디테일 표시
+ * - 상단 마스터 그리드: EQUIPMENT+MODEL+BARCODE+FILE_NAME 그룹, 행 클릭 시 하단에 디테일 표시
  * - 하단 디테일 그리드: 선택한 바코드의 테스트 스텝별 측정값
  * - 마스터 데이터는 서버 GROUP BY로 가져오고, 디테일은 행 선택 시 별도 조회
  */
@@ -21,7 +21,7 @@ import {
 } from 'ag-grid-community';
 import { useTheme } from 'next-themes';
 import * as XLSX from 'xlsx';
-import { useServerTime } from '@/hooks/useServerTime';
+import { useServerTime, useServerNow } from '@/hooks/useServerTime';
 import Modal from '@/components/ui/Modal';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -34,6 +34,7 @@ interface MasterRow {
   EQUIPMENT_ID: string;
   MODEL: string;
   BARCODE: string;
+  FILE_NAME: string;
   LINE_CODE: string;
   FIRST_TIME: string;
   ARRAY_RESULT: string;
@@ -66,6 +67,7 @@ function weekAgo(base: string): string {
 export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '', lineCodes = [], onLineCodeChange }: Props) {
   const { resolvedTheme } = useTheme();
   const serverToday = useServerTime();
+  const serverNow = useServerNow();
   const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
 
   const [fromDate, setFromDate] = useState('');
@@ -86,11 +88,11 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
   const detailRef = useRef<AgGridReact>(null);
 
   useEffect(() => {
-    if (serverToday && !toDate) {
+    if (serverToday && serverNow && !toDate) {
       setFromDate(weekAgo(serverToday));
-      setToDate(serverToday + 'T23:59');
+      setToDate(serverNow);
     }
-  }, [serverToday, toDate]);
+  }, [serverToday, serverNow, toDate]);
 
   /** 마스터 조회 */
   const fetchMaster = useCallback(async () => {
@@ -111,7 +113,7 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
 
   /** 디테일 조회 — 마스터 행 클릭 시 */
   const fetchDetail = useCallback(async (row: MasterRow) => {
-    const key = `${row.EQUIPMENT_ID}|${row.MODEL}|${row.BARCODE}`;
+    const key = `${row.EQUIPMENT_ID}|${row.MODEL}|${row.BARCODE}|${row.FILE_NAME}`;
     if (key === selectedKey) return;
     setSelectedKey(key);
     setDetailLoading(true);
@@ -121,6 +123,7 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
         equipment: row.EQUIPMENT_ID,
         model: row.MODEL ?? '',
         barcode: row.BARCODE,
+        fileName: row.FILE_NAME ?? '',
       });
       const res = await fetch(`${apiBase}/eol?${p}`);
       if (!res.ok) throw new Error('디테일 조회 실패');
@@ -139,6 +142,7 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
     { field: 'EQUIPMENT_ID', headerName: '설비', minWidth: 130 },
     { field: 'MODEL', headerName: '모델', minWidth: 140 },
     { field: 'BARCODE', headerName: '바코드', minWidth: 200 },
+    { field: 'FILE_NAME', headerName: '파일명', minWidth: 200 },
     { field: 'LINE_CODE', headerName: '라인', minWidth: 80 },
     {
       field: 'FIRST_TIME', headerName: '최초시간', minWidth: 160,
@@ -372,10 +376,10 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
                   setSelectedDetailIds([]);
                   /* 디테일 재조회: 현재 선택된 마스터 키로 재호출 (selectedKey 기반) */
                   if (selectedKey) {
-                    const [eq, md, bc] = selectedKey.split('|');
+                    const [eq, md, bc, fn] = selectedKey.split('|');
                     setDetailLoading(true);
                     try {
-                      const params = new URLSearchParams({ mode: 'detail', equipment: eq, model: md, barcode: bc });
+                      const params = new URLSearchParams({ mode: 'detail', equipment: eq, model: md, barcode: bc, fileName: fn ?? '' });
                       const r = await fetch(`${apiBase}/eol?${params}`);
                       if (r.ok) {
                         const d = await r.json();

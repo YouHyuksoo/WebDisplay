@@ -2,8 +2,8 @@
  * @file src/app/api/mxvc/eol/route.ts
  * @description LOG_EOL 마스터-디테일 전용 API.
  * 초보자 가이드:
- * - mode=master: EQUIPMENT_ID + MODEL + BARCODE 로 GROUP BY한 마스터 데이터 반환
- * - mode=detail: 특정 EQUIPMENT_ID + MODEL + BARCODE 의 스텝별 상세 데이터 반환
+ * - mode=master: EQUIPMENT_ID + MODEL + BARCODE + FILE_NAME 으로 GROUP BY한 마스터 데이터 반환
+ * - mode=detail: 특정 EQUIPMENT_ID + MODEL + BARCODE + FILE_NAME 의 스텝별 상세 데이터 반환
  * - 날짜 필터는 마스터 모드에서만 사용 (LOG_TIMESTAMP 기준)
  */
 import { NextRequest, NextResponse } from 'next/server';
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/** 마스터: EQUIPMENT + MODEL + BARCODE 그룹핑 */
+/** 마스터: EQUIPMENT + MODEL + BARCODE + FILE_NAME 그룹핑 */
 async function handleMaster(sp: URLSearchParams) {
   const from = sp.get('from') ?? '';
   const to = sp.get('to') ?? '';
@@ -67,7 +67,7 @@ async function handleMaster(sp: URLSearchParams) {
   }
 
   const groupSql = `
-    SELECT EQUIPMENT_ID, MODEL, BARCODE,
+    SELECT EQUIPMENT_ID, MODEL, BARCODE, FILE_NAME,
            MIN(LINE_CODE) AS LINE_CODE,
            MIN(LOG_TIMESTAMP) AS FIRST_TIME,
            MAX(ARRAY_RESULT) AS ARRAY_RESULT,
@@ -79,7 +79,7 @@ async function handleMaster(sp: URLSearchParams) {
            MAX(IS_SAMPLE) AS IS_SAMPLE,
            COUNT(*) AS STEP_COUNT
       FROM LOG_EOL${where}
-     GROUP BY EQUIPMENT_ID, MODEL, BARCODE`;
+     GROUP BY EQUIPMENT_ID, MODEL, BARCODE, FILE_NAME`;
 
   const countSql = `SELECT COUNT(*) AS CNT FROM (${groupSql})`;
   const startRow = (page - 1) * pageSize;
@@ -108,15 +108,18 @@ async function handleMaster(sp: URLSearchParams) {
   });
 }
 
-/** 디테일: 특정 바코드의 스텝별 데이터 */
+/** 디테일: 특정 바코드+파일의 스텝별 데이터 */
 async function handleDetail(sp: URLSearchParams) {
   const equipment = sp.get('equipment') ?? '';
   const model = sp.get('model') ?? '';
   const barcode = sp.get('barcode') ?? '';
+  const fileName = sp.get('fileName') ?? '';
 
   if (!equipment || !barcode) {
     return NextResponse.json({ error: '필수 파라미터 누락' }, { status: 400 });
   }
+
+  const fileCondition = fileName ? ' AND FILE_NAME = :fileName' : '';
 
   const sql = `
     SELECT LOG_ID, NO, NAME, NAME_DETAIL, STEP_RESULT, VOLT_V,
@@ -125,10 +128,12 @@ async function handleDetail(sp: URLSearchParams) {
            CAN_STD, MEAS_CAN, DTC_CODE, MEAS_DTC_CODE,
            STEP_TIME, CAN_TX_1, CAN_RX_1, CAN_TX_2, DATA_RX_2
       FROM LOG_EOL
-     WHERE EQUIPMENT_ID = :equipment AND MODEL = :model AND BARCODE = :barcode
+     WHERE EQUIPMENT_ID = :equipment AND MODEL = :model AND BARCODE = :barcode${fileCondition}
      ORDER BY TO_NUMBER(REGEXP_SUBSTR(NO, '\\d+'))`;
 
-  const rows = await executeQuery(sql, { equipment, model, barcode });
+  const binds: Record<string, string> = { equipment, model, barcode };
+  if (fileName) binds.fileName = fileName;
+  const rows = await executeQuery(sql, binds);
 
   return NextResponse.json({
     rows: sanitize(rows as Record<string, unknown>[]),
