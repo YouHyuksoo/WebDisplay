@@ -23,9 +23,11 @@ interface DisplayHeaderProps {
   screenId?: string;
   /** 설정 모달 렌더 함수. 미지정 시 기본 LineSelectModal 사용 */
   renderSettingsModal?: (props: { isOpen: boolean; onClose: () => void; screenId: string }) => React.ReactNode;
+  /** 헤더 우측 아이콘 영역 앞에 삽입할 추가 콘텐츠 */
+  extraHeaderContent?: React.ReactNode;
 }
 
-export default function DisplayHeader({ title, screenId, renderSettingsModal }: DisplayHeaderProps) {
+export default function DisplayHeader({ title, screenId, renderSettingsModal, extraHeaderContent }: DisplayHeaderProps) {
   const t = useTranslations('display');
   const router = useRouter();
   const locale = useLocale();
@@ -75,6 +77,12 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal }: 
         <span className="font-mono text-white bg-zinc-800 px-3 py-1 rounded-md border border-zinc-700">
           {time}
         </span>
+
+        {extraHeaderContent && (
+          <div className="flex items-center mr-1">
+            {extraHeaderContent}
+          </div>
+        )}
 
         <div className="flex items-center gap-1.5 ml-2 border-l border-zinc-700 pl-4">
           {/* 다국어 선택 */}

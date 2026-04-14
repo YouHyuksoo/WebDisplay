@@ -72,17 +72,20 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
   const tCheck = useTranslations('checkItem');
   const lineName = String(row.LINE_NAME ?? row.LINE_CODE ?? '-');
   const ng = hasNg(row);
+  const noRun = !row.RUNNING_RUN_NO; // Run No 없음 = 비가동 상태
 
   return (
     <div
       className={`flex h-full flex-col overflow-hidden rounded-xl border-2 bg-zinc-900 dark:bg-zinc-900 ${
-        ng ? 'border-red-500' : 'border-emerald-600/50'
+        noRun ? 'border-zinc-600' : ng ? 'border-red-500' : 'border-emerald-600/50'
       }`}
     >
       {/* 카드 헤더 — 라인명 + 상태변경일시 */}
       <div
         className={`flex items-center justify-between px-3 py-1 md:px-4 md:py-2 ${
-          ng
+          noRun
+            ? 'bg-zinc-600 text-zinc-300'
+            : ng
             ? 'bg-red-600 text-white animate-pulse'
             : 'bg-emerald-700 text-white'
         }`}

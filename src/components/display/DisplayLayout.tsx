@@ -20,6 +20,8 @@ interface DisplayLayoutProps {
   message?: string;
   /** 설정 모달 렌더 함수. 미지정 시 기본 LineSelectModal 사용 */
   renderSettingsModal?: (props: { isOpen: boolean; onClose: () => void; screenId: string }) => React.ReactNode;
+  /** 헤더 우측 아이콘 영역 앞에 삽입할 추가 콘텐츠 */
+  extraHeaderContent?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -28,6 +30,7 @@ export default function DisplayLayout({
   screenId,
   message,
   renderSettingsModal,
+  extraHeaderContent,
   children,
 }: DisplayLayoutProps) {
   const router = useRouter();
@@ -46,7 +49,7 @@ export default function DisplayLayout({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-white dark:bg-zinc-950">
-      <DisplayHeader title={resolvedTitle} screenId={screenId} renderSettingsModal={renderSettingsModal} />
+      <DisplayHeader title={resolvedTitle} screenId={screenId} renderSettingsModal={renderSettingsModal} extraHeaderContent={extraHeaderContent} />
       <main className="min-h-0 flex-1 overflow-hidden">
         {children}
       </main>
