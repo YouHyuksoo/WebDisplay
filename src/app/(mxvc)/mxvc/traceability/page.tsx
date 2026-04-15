@@ -19,8 +19,9 @@ import type { TraceabilityResponse } from '@/types/mxvc/traceability';
 
 /** 섹션 라벨 매핑 (TraceabilityTimeline의 SOURCE_LABEL과 동일) */
 const SOURCE_LABEL: Record<string, string> = {
-  MATERIAL_BOARD: '자재(BOARD)',
-  MATERIAL_DETAIL: '자재(상세)',
+  MATERIAL_BOARD: '자재(한화-BOARD)',
+  MATERIAL_DETAIL: '자재(한화-상세)',
+  MATERIAL_PANASONIC: '자재투입',
   IQ_MACHINE_INSPECT_RESULT: '공정설비통신',
   IP_PRODUCT_2D_BARCODE: '바코드마스터',
   IP_PRODUCT_PACK_SERIAL: '출하정보',
@@ -54,7 +55,7 @@ export default function TraceabilityPage() {
   const [error, setError] = useState('');
 
   /* 옵션 */
-  const [includeMaterial, setIncludeMaterial] = useState(false);
+  const [materialType, setMaterialType] = useState<'none' | 'hanwha' | 'panasonic'>('none');
   const [viewMode, setViewMode] = useState<'process' | 'timeline'>('process');
 
   /* 사이드바 찾기 */
@@ -119,7 +120,7 @@ export default function TraceabilityPage() {
     setData(null);
     try {
       const params = new URLSearchParams({ barcode });
-      if (includeMaterial) params.set('material', '1');
+      if (materialType !== 'none') params.set('materialType', materialType);
       if (selectedTables.size > 0 && selectedTables.size < availableTables.length) {
         params.set('tables', Array.from(selectedTables).join(','));
       }
@@ -132,7 +133,7 @@ export default function TraceabilityPage() {
     } finally {
       setLoading(false);
     }
-  }, [includeMaterial, selectedTables, availableTables.length]);
+  }, [materialType, selectedTables, availableTables.length]);
 
   /** 사이드바 찾기에서 Enter → 목록 필터 or 직접 바코드 조회 */
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -331,15 +332,25 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
 
         <div className="w-px h-6 bg-gray-300 dark:bg-gray-700" />
 
-        <label className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={includeMaterial}
-            onChange={(e) => setIncludeMaterial(e.target.checked)}
-            className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600"
-          />
-          자재포함
-        </label>
+        {/* 자재 포함 — 마운터 종류 선택 */}
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">자재:</span>
+          <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-xs">
+            {(['none', 'hanwha', 'panasonic'] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => setMaterialType(type)}
+                className={`px-2.5 py-1 transition-colors ${
+                  materialType === type
+                    ? 'bg-blue-500 text-white font-semibold'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                } ${type !== 'none' ? 'border-l border-gray-300 dark:border-gray-600' : ''}`}
+              >
+                {type === 'none' ? '미포함' : type === 'hanwha' ? '한화' : '파나소닉'}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* 뷰 모드 토글 */}
         {data && (

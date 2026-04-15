@@ -103,8 +103,9 @@ const BADGE: Record<TimelineEventType, { css: string; dot: string; text: string 
 
 /** 소스명 → 표시명 */
 const SOURCE_LABEL: Record<string, string> = {
-  MATERIAL_BOARD: '자재(BOARD)',
-  MATERIAL_DETAIL: '자재(상세)',
+  MATERIAL_BOARD: '자재(한화-BOARD)',
+  MATERIAL_DETAIL: '자재(한화-상세)',
+  MATERIAL_PANASONIC: '자재투입',
   IQ_MACHINE_INSPECT_RESULT: '공정설비통신',
   IP_PRODUCT_2D_BARCODE: '바코드마스터',
   IP_PRODUCT_PACK_SERIAL: '출하정보',
@@ -119,15 +120,28 @@ function displayName(source: string): string {
   return SOURCE_LABEL[source] ?? source.replace(/^LOG_/i, '').replace(/^IP_PRODUCT_/i, '');
 }
 
-/** 타임스탬프 포맷 */
+/**
+ * ISO 날짜 문자열 → 'YYYY-MM-DD HH:MM:SS' (타임존 제거)
+ * '2026-04-13T11:37:10.913000' → '2026-04-13 11:37:10'
+ */
+function fmtDateStr(s: string): string {
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(s)) {
+    return s.slice(0, 10) + ' ' + s.slice(11, 19);
+  }
+  return s;
+}
+
+/** 타임스탬프 포맷 (타임라인 헤더용) */
 function fmtTs(iso: string): string {
   if (!iso) return '--:--';
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return iso;
-  return d.toLocaleString('ko-KR', {
-    month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
-  });
+  return fmtDateStr(iso);
+}
+
+/** 셀 값 포맷 — 날짜 문자열이면 YYYY-MM-DD HH:MM:SS, 아니면 그대로 */
+function fmtVal(v: unknown): string {
+  if (v == null) return '-';
+  const s = String(v);
+  return fmtDateStr(s);
 }
 
 /** 그룹: 같은 소스의 이벤트 묶음 */
@@ -265,8 +279,8 @@ function SectionGrid({ group }: { group: Group }) {
                       return (
                         <td key={col} className="px-2 py-1 text-gray-800 dark:text-gray-200 whitespace-nowrap max-w-[300px] truncate
                                               border-r border-gray-200 dark:border-gray-700 last:border-r-0"
-                            title={val != null ? String(val) : ''}>
-                          {val != null ? String(val) : '-'}
+                            title={fmtVal(val)}>
+                          {fmtVal(val)}
                         </td>
                       );
                     })}
@@ -357,7 +371,7 @@ function TimelineCard({ event, totalCount = 1 }: { event: TimelineEvent; totalCo
         {/* 요약: 첫 3개 필드 */}
         {!expanded && (
           <div className="px-3 pb-2 text-xs text-gray-600 dark:text-gray-300 truncate">
-            {entries.slice(0, 3).map(([k, v]) => `${colLabel(k)}: ${v}`).join(' | ') || '-'}
+            {entries.slice(0, 3).map(([k, v]) => `${colLabel(k)}: ${fmtVal(v)}`).join(' | ') || '-'}
           </div>
         )}
 
@@ -369,7 +383,7 @@ function TimelineCard({ event, totalCount = 1 }: { event: TimelineEvent; totalCo
                 {entries.map(([k, v]) => (
                   <tr key={k} className="border-b border-gray-50 dark:border-gray-800 last:border-0">
                     <td className="py-0.5 pr-3 font-medium text-gray-500 dark:text-gray-400 w-40 align-top whitespace-nowrap">{colLabel(k)}</td>
-                    <td className="py-0.5 text-gray-800 dark:text-gray-200 break-all">{String(v)}</td>
+                    <td className="py-0.5 text-gray-800 dark:text-gray-200 break-all">{fmtVal(v)}</td>
                   </tr>
                 ))}
               </tbody>

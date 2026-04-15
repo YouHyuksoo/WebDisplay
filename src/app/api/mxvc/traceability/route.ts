@@ -239,9 +239,144 @@ async function queryReflowByAoiTime(
   return (await Promise.all(promises)).flat();
 }
 
+/* ─────────────────────────────────────────────
+ * 자재 조회 루틴 — 마운터 종류별 분리
+ * ─────────────────────────────────────────────*/
+
+/**
+ * 한화 마운터 자재 조회
+ * HW_VW_LTS_BOARD / HW_VW_LTS 뷰 기반 (BOARDSN = 바코드)
+ */
+async function queryMaterialHanwha(barcode: string): Promise<TimelineEvent[]> {
+  const [boardEvents, detailEvents] = await Promise.all([
+    timed(
+      executeQuery<Record<string, unknown>>(
+        `SELECT * FROM HW_VW_LTS_BOARD WHERE BOARDSN = :bcode`,
+        { bcode: barcode },
+      ).then((rows) => rows.map((row) => {
+        const safe = sanitizeRow(row);
+        return {
+          source: 'MATERIAL_BOARD', type: 'log' as const,
+          timestamp: safe['STARTDT'] ? String(safe['STARTDT']) : '',
+          data: safe,
+        };
+      })).catch(() => [] as TimelineEvent[]),
+      'HW_MATERIAL_BOARD',
+    ),
+    timed(
+      executeQuery<Record<string, unknown>>(
+        `SELECT * FROM HW_VW_LTS WHERE BOARDSN = :bcode`,
+        { bcode: barcode },
+      ).then((rows) => rows.map((row) => {
+        const safe = sanitizeRow(row);
+        return {
+          source: 'MATERIAL_DETAIL', type: 'log' as const,
+          timestamp: safe['STARTDT'] ? String(safe['STARTDT']) : '',
+          data: safe,
+        };
+      })).catch(() => [] as TimelineEvent[]),
+      'HW_MATERIAL_DETAIL',
+    ),
+  ]);
+  return [...boardEvents, ...detailEvents];
+}
+
+/**
+ * 파나소닉 마운터 자재 조회
+ * IB_SMT_CHECKHIST + IM_ITEM_RECEIPT_BARCODE + ID_ITEM 기반
+ * RUN_NO 기준 피딩 이력 — SPI/MAOI/AOI 검사 시간 이전 투입 자재만 포함
+ *
+ * @param barcode  SERIAL_NO (바코드)
+ * @param orgId    ORGANIZATION_ID (IP_PRODUCT_2D_BARCODE에서 추출)
+ */
+async function queryMaterialPanasonic(
+  barcode: string,
+  orgId: string,
+): Promise<TimelineEvent[]> {
+  /*
+   * 파나소닉 마운터 자재 포함 조회
+   *   - IB_SMT_CHECKHIST        : 파나소닉 SMT 피딩 체크 이력
+   *   - IM_ITEM_RECEIPT_BARCODE : 자재 수입 바코드 (ITEM_BARCODE PK, SCAN_PARTNAME과 조인)
+   *   - ID_ITEM                 : 아이템 마스터 (MSL 정보)
+   *   - LOG_SPI_VD              : SPI 검사 로그 (MASTER_BARCODE 기준, INSPECTION_DATE VARCHAR2 'YYYY-MM-DD')
+   *
+   * inspect_date 기준: LOG_SPI_VD에서 해당 MASTER_BARCODE의 최초 검사 시각(MIN)
+   *   → SPI 검사 시점 이전 투입된 자재만 포함 (check_date <= inspect_date)
+   *   → valid_date가 inspect_date 이후인 유효 자재만 포함
+   *   → INSPECTION_DATE 형식 이상값(예: '-101') 제거 — REGEXP_LIKE로 'YYYY-MM-DD' 검증
+   */
+  const sql = `
+    SELECT F_GET_LINE_NAME(c.line_code, 1)                                   AS line_name,
+           c.location_code,
+           c.pcb_item,
+           DECODE(c.check_type, '1','CCS', '2','REEL', c.check_type)         AS check_type,
+           c.scan_partname,
+           b.supplier_barcode,
+           b.supplier_lot_no,
+           b.manufacture_week,
+           DECODE(c.scan_qty, 0, c.vendor_name, TRIM(TO_CHAR(c.scan_qty)))   AS scan_qty,
+           c.check_date                                                        AS feeding_date,
+           b.reel_destroy_date,
+           i.msl_level,
+           i.msl_max_time,
+           F_GET_MSL_PASSED_TIME(b.item_barcode)                              AS msl_passed_time,
+           c.valid_date,
+           c.check_date,
+           z.inspect_date
+      FROM ib_smt_checkhist c,
+           im_item_receipt_barcode b,
+           id_item i,
+           (
+             SELECT MIN(
+                      TO_DATE(x.INSPECTION_DATE || ' ' || x.INSPECTION_START_TIME,
+                              'YYYY-MM-DD HH24:MI:SS')
+                    ) AS inspect_date
+               FROM log_spi_vd x
+              WHERE x.MASTER_BARCODE = :serialNo
+                AND REGEXP_LIKE(x.INSPECTION_DATE, '^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+                AND REGEXP_LIKE(x.INSPECTION_START_TIME, '^[0-9]{2}:[0-9]{2}:[0-9]{2}$')
+           ) z
+     WHERE c.scan_partname = b.item_barcode
+       AND c.item_code     = i.item_code
+       AND c.run_no = (
+             SELECT run_no
+               FROM ip_product_2d_barcode
+              WHERE serial_no LIKE :serialNo
+                AND organization_id = :orgId
+                AND ROWNUM = 1
+           )
+       AND c.check_type   IN ('1','2')
+       AND c.check_status  = 'P'
+       AND c.check_date   <= z.inspect_date
+       AND NVL(c.valid_date, SYSDATE) > z.inspect_date
+  `;
+
+  try {
+    const rows = await executeQuery<Record<string, unknown>>(sql, { serialNo: barcode, orgId });
+    return rows.map((row) => {
+      const safe = sanitizeRow(row);
+      return {
+        source: 'MATERIAL_PANASONIC', type: 'log' as const,
+        timestamp: safe['FEEDING_DATE'] ? String(safe['FEEDING_DATE']) : '',
+        data: safe,
+      };
+    });
+  } catch (err) {
+    console.error('[추적성] MATERIAL_PANASONIC 실패:', (err as Error).message);
+    return [];
+  }
+}
+
+/* ───────────────────────────────────────────── */
+
 export async function GET(req: NextRequest) {
   const barcode = req.nextUrl.searchParams.get('barcode')?.trim() ?? '';
-  const includeMaterial = req.nextUrl.searchParams.get('material') === '1';
+  /**
+   * materialType: 'hanwha' | 'panasonic' | '' (미지정 = 미포함)
+   * 클라이언트에서 자재 포함 시 반드시 타입을 명시
+   */
+  const materialType = req.nextUrl.searchParams.get('materialType')?.trim() ?? '';
+  const includeMaterial = materialType === 'hanwha' || materialType === 'panasonic';
   const mode = req.nextUrl.searchParams.get('mode') ?? '';
   /** 포함할 테이블 목록 (콤마 구분). 빈 값이면 전체 포함 */
   const selectedTablesParam = req.nextUrl.searchParams.get('tables') ?? '';
@@ -430,36 +565,26 @@ export async function GET(req: NextRequest) {
           })).catch(() => [] as TimelineEvent[]), 'LCR')
         : Promise.resolve([]);
 
-    /* ── 4-B. 자재(MATERIAL) — 토글 ON일 때만 조회 ── */
-    let materialBoardPromise: Promise<TimelineEvent[]> = Promise.resolve([]);
-    let materialDetailPromise: Promise<TimelineEvent[]> = Promise.resolve([]);
+    /* ── 4-B. 자재(MATERIAL) — materialType에 따라 루틴 분기 ── */
+    let materialPromise: Promise<TimelineEvent[]> = Promise.resolve([]);
 
     if (includeMaterial) {
-      console.log('[추적성] 자재 포함 조회');
-      materialBoardPromise = timed(executeQuery<Record<string, unknown>>(
-        `SELECT * FROM HW_VW_LTS_BOARD WHERE BOARDSN = :bcode`,
-        { bcode: barcode },
-      ).then((rows) => rows.map((row) => ({
-        source: 'MATERIAL_BOARD', type: 'log' as const,
-        timestamp: sanitizeRow(row)['STARTDT'] ? String(sanitizeRow(row)['STARTDT']) : '',
-        data: sanitizeRow(row),
-      }))).catch(() => [] as TimelineEvent[]), 'MATERIAL_BOARD');
-
-      materialDetailPromise = timed(executeQuery<Record<string, unknown>>(
-        `SELECT * FROM HW_VW_LTS WHERE BOARDSN = :bcode`,
-        { bcode: barcode },
-      ).then((rows) => rows.map((row) => ({
-        source: 'MATERIAL_DETAIL', type: 'log' as const,
-        timestamp: sanitizeRow(row)['STARTDT'] ? String(sanitizeRow(row)['STARTDT']) : '',
-        data: sanitizeRow(row),
-      }))).catch(() => [] as TimelineEvent[]), 'MATERIAL_DETAIL');
+      if (materialType === 'hanwha') {
+        console.log('[추적성] 자재 포함 조회 — 한화 마운터');
+        materialPromise = timed(queryMaterialHanwha(barcode), 'MATERIAL_HANWHA');
+      } else if (materialType === 'panasonic') {
+        console.log('[추적성] 자재 포함 조회 — 파나소닉 마운터');
+        /* ORGANIZATION_ID: IP_PRODUCT_2D_BARCODE에서 이미 조회한 masterRaw에서 추출 */
+        const orgId = String(masterRawSanitized?.['ORGANIZATION_ID'] ?? '');
+        materialPromise = timed(queryMaterialPanasonic(barcode, orgId), 'MATERIAL_PANASONIC');
+      }
     }
 
     const t2 = Date.now();
     const allResults = await Promise.all([
       ...logPromises, workQcPromise, workstageIoPromise, inspectResultPromise,
       packSerialPromise, jigInputPromise, solderInputPromise, lcrPromise,
-      materialBoardPromise, materialDetailPromise,
+      materialPromise,
     ]);
     console.log(`[추적성] 4단계 병렬조회: ${Date.now() - t2}ms`);
 
@@ -483,14 +608,17 @@ export async function GET(req: NextRequest) {
       });
 
     /* 조회 시도한 테이블 목록 (데이터 유무와 무관) */
+    const materialTables =
+      materialType === 'hanwha'    ? ['MATERIAL_BOARD', 'MATERIAL_DETAIL'] :
+      materialType === 'panasonic' ? ['MATERIAL_PANASONIC'] :
+      [];
     const queriedTables = [
       ...logTables.map((t) => t.tableName),
       ...REFLOW_TABLES,
       'IQ_MACHINE_INSPECT_RESULT',
-      'MATERIAL_BOARD',
-      'MATERIAL_DETAIL',
       'IP_PRODUCT_WORK_QC',
       'IP_PRODUCT_WORKSTAGE_IO',
+      ...materialTables,
     ];
 
     const response: TraceabilityResponse = { master, runCard, modelMaster, timeline, queriedTables };
