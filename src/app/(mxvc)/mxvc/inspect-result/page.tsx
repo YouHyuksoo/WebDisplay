@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 import DisplayHeader from "@/components/display/DisplayHeader";
 import DisplayFooter from "@/components/display/DisplayFooter";
 import InspectResultGrid from "@/components/mxvc/InspectResultGrid";
+import Spinner from "@/components/ui/Spinner";
 import type { InspectResultFilters } from "@/lib/queries/inspect-result";
 import { useServerTime } from "@/hooks/useServerTime";
 
@@ -304,9 +305,8 @@ export default function InspectResultPage() {
               <p className="text-sm">날짜를 선택하고 검색 버튼을 눌러주세요</p>
             </div>
           ) : isLoading ? (
-            <div className="flex h-full items-center justify-center text-gray-400">
-              <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-              {t("loading")}
+            <div className="flex h-full items-center justify-center">
+              <Spinner size="md" label={t("loading")} />
             </div>
           ) : (
             <InspectResultGrid

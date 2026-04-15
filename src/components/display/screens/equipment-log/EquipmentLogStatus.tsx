@@ -12,6 +12,7 @@ import { useTranslations } from 'next-intl';
 import DisplayLayout from '@/components/display/DisplayLayout';
 import { useServerTime } from '@/hooks/useServerTime';
 import EquipmentLogGrid from './EquipmentLogGrid';
+import Spinner from '@/components/ui/Spinner';
 import type { EquipmentLogRow } from '@/lib/queries/equipment-log';
 import type { FilterOptions } from '@/lib/queries/equipment-log';
 
@@ -169,9 +170,8 @@ export default function EquipmentLogStatus({ screenId }: Props) {
               <p className="text-sm">{t('searchGuide')}</p>
             </div>
           ) : isLoading ? (
-            <div className="flex h-full items-center justify-center text-gray-400">
-              <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-              {t('searching')}
+            <div className="flex h-full items-center justify-center">
+              <Spinner size="md" label={t('searching')} />
             </div>
           ) : (
             <EquipmentLogGrid

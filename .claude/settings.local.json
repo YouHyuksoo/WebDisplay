@@ -6,7 +6,8 @@
       "Bash(curl:*)",
       "Bash(find C:\\\\Project\\\\WebDisplay\\\\src\\\\lib\\\\menu:*)",
       "Bash(npx next:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "mcp__Claude_Preview__preview_start"
     ]
   },
   "outputStyle": "Explanatory"

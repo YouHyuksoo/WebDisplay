@@ -21,6 +21,7 @@ import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { useRepairStatus } from "@/hooks/ctq/useRepairStatus";
 import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import RepairStatusTable from "@/components/ctq/RepairStatusTable";
+import Spinner from "@/components/ui/Spinner";
 
 const SCREEN_ID = "ctq-repair";
 
@@ -118,10 +119,7 @@ export default function RepairStatusPage() {
               className="px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 text-sm text-gray-300 hover:text-white transition-colors disabled:opacity-50"
             >
               {loading ? (
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 border-2 border-gray-500 border-t-white rounded-full animate-spin" />
-                  {t("common.dataLoading")}
-                </span>
+                <Spinner size="sm" label={t("common.dataLoading")} labelClassName="text-white" className="gap-1.5" />
               ) : (
                 t("common.refresh")
               )}
@@ -138,10 +136,7 @@ export default function RepairStatusPage() {
           </div>
         )}
         {loading && !data && (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
-            <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
-            {t("common.dataLoading")}
-          </div>
+          <Spinner fullscreen size="lg" vertical label={t("common.dataLoading")} />
         )}
         {data && data.rows.length === 0 && (
           <div className="flex items-center justify-center" style={{ minHeight: "calc(100vh - 200px)" }}>

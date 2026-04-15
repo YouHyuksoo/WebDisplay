@@ -19,6 +19,7 @@ import { useServerTime } from "@/hooks/useServerTime";
 import { useMxvcPChart } from "@/hooks/mxvc/useMxvcPChart";
 import FpyChartSidebar from "@/components/mxvc/FpyChartSidebar";
 import PChartDashboard from "@/components/mxvc/PChartDashboard";
+import Spinner from "@/components/ui/Spinner";
 import type { MxvcFpySettings } from "@/types/mxvc/fpy";
 import { DEFAULT_FPY_SETTINGS, FPY_PRESETS } from "@/types/mxvc/fpy";
 
@@ -181,9 +182,8 @@ export default function MxvcPChartPage() {
             </div>
           )}
           {loading && !data && (
-            <div className="flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-3">
-              <span className="w-8 h-8 border-4 border-gray-300 dark:border-gray-700 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin" />
-              {t("loading")}
+            <div className="flex-1 flex items-center justify-center">
+              <Spinner size="lg" vertical label={t("loading")} />
             </div>
           )}
           {data && <PChartDashboard data={data} settings={settings} />}

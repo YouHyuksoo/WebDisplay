@@ -317,7 +317,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
 
   if (!tableName) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-500">
+      <div className="flex-1 flex items-center justify-center text-zinc-500">
         좌측에서 테이블을 선택해 주세요
       </div>
     );
@@ -326,71 +326,57 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
   return (
     <div className="flex-1 flex flex-col min-w-0">
       {/* 필터 바 */}
-      <div className="flex items-center gap-4 px-6 py-3.5 border-b
-                       border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60">
+      <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 border-b border-zinc-700 bg-zinc-900">
         {/* 테이블명 */}
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Table</span>
-          <span className="text-sm font-bold text-blue-600 dark:text-blue-300 font-mono">
-            {tableName}
-          </span>
+          <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Table</span>
+          <span className="text-sm font-bold text-blue-300 font-mono">{tableName}</span>
         </div>
 
-        {/* 구분선 */}
-        <div className="w-px h-7 bg-gray-300 dark:bg-gray-700" />
+        <div className="w-px h-6 bg-zinc-700" />
 
         {/* LINE_CODE 필터 */}
         {lineCodes.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Line</span>
-            <select
-              value={lineCode}
-              onChange={(e) => onLineCodeChange?.(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg transition-colors
-                         bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
-                         text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
-            >
-              <option value="">전체</option>
-              {lineCodes.map((lc) => (
-                <option key={lc} value={lc}>{lc}</option>
-              ))}
-            </select>
-            <div className="w-px h-7 bg-gray-300 dark:bg-gray-700" />
-          </div>
+          <>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Line</span>
+              <select
+                value={lineCode}
+                onChange={(e) => onLineCodeChange?.(e.target.value)}
+                className="h-8 px-2 text-sm rounded border border-zinc-600 bg-zinc-800 text-zinc-100 focus:outline-none focus:border-blue-500 [color-scheme:dark]"
+              >
+                <option value="">전체</option>
+                {lineCodes.map((lc) => <option key={lc} value={lc}>{lc}</option>)}
+              </select>
+            </div>
+            <div className="w-px h-6 bg-zinc-700" />
+          </>
         )}
 
         {/* 날짜 필터 */}
         {dateCols.length > 0 && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <select
               value={dateCol}
               onChange={(e) => setDateCol(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg transition-colors
-                         bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
-                         text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
+              className="h-8 px-2 text-sm rounded border border-zinc-600 bg-zinc-800 text-zinc-100 focus:outline-none focus:border-blue-500 [color-scheme:dark]"
             >
               <option value="">날짜 컬럼 선택</option>
-              {dateCols.map((c) => (
-                <option key={c.COLUMN_NAME} value={c.COLUMN_NAME}>
-                  {c.COLUMN_NAME}
-                </option>
-              ))}
+              {dateCols.map((c) => <option key={c.COLUMN_NAME} value={c.COLUMN_NAME}>{c.COLUMN_NAME}</option>)}
             </select>
-
-            <div className="flex items-center gap-2 rounded-lg px-3 h-9
-                            bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+            <div className="flex items-center gap-1.5 rounded border border-zinc-600 bg-zinc-800 px-2 h-8">
               <input
                 type="datetime-local"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="bg-transparent text-sm text-gray-900 dark:text-white focus:outline-none"
+                className="bg-transparent text-sm text-zinc-100 focus:outline-none [color-scheme:dark]"
               />
-              <span className="text-gray-400 dark:text-gray-400">~</span>
+              <span className="text-zinc-500">~</span>
               <input
                 type="datetime-local"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
-                className="bg-transparent text-sm text-gray-900 dark:text-white focus:outline-none"
+                className="bg-transparent text-sm text-zinc-100 focus:outline-none [color-scheme:dark]"
               />
             </div>
           </div>
@@ -398,16 +384,13 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
 
         {/* 액션 버튼 */}
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-300 mr-2">
-            {total.toLocaleString()}건
-          </span>
+          <span className="text-sm font-medium text-zinc-400 mr-1">{total.toLocaleString()}건</span>
 
           <button
             onClick={() => setShowFilter((v) => !v)}
-            className={`h-9 px-5 text-sm font-medium rounded-lg transition-colors
-              ${showFilter
-                ? 'bg-indigo-600 text-white'
-                : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'}`}
+            className={`h-8 px-4 text-sm font-medium rounded transition-colors ${
+              showFilter ? 'bg-indigo-600 text-white' : 'border border-zinc-600 bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+            }`}
           >
             필터
           </button>
@@ -415,9 +398,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
           <button
             onClick={() => setDeleteModalOpen(true)}
             disabled={selectedIds.length === 0}
-            className="h-9 px-5 text-sm font-medium bg-red-600 hover:bg-red-500
-                       disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500
-                       text-white rounded-lg transition-colors"
+            className="h-8 px-4 text-sm font-medium rounded bg-red-600 hover:bg-red-500 text-white transition-colors disabled:opacity-40"
           >
             선택 삭제 ({selectedIds.length})
           </button>
@@ -425,9 +406,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
           <button
             onClick={() => fetchData(1)}
             disabled={loading}
-            className="h-9 px-5 text-sm font-medium bg-blue-600 hover:bg-blue-500
-                       disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500
-                       text-white rounded-lg transition-colors"
+            className="h-8 px-4 text-sm font-medium rounded bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-40"
           >
             {loading ? t('loading') : t('refresh')}
           </button>
@@ -435,18 +414,16 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
           <button
             onClick={handleExcelExport}
             disabled={total === 0 || exporting}
-            className="h-9 px-5 text-sm font-medium bg-emerald-600 hover:bg-emerald-500
-                       disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500
-                       text-white rounded-lg transition-colors"
+            className="h-8 px-4 text-sm font-medium rounded bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-40"
           >
-            {exporting ? '다운로드 중...' : 'Excel 다운로드'}
+            {exporting ? '다운로드 중...' : 'Excel'}
           </button>
         </div>
       </div>
 
       {/* 에러 */}
       {error && (
-        <div className="px-4 py-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20">
+        <div className="px-4 py-2 text-sm text-red-400 bg-red-900/20 border-b border-red-800">
           {error}
         </div>
       )}
@@ -481,70 +458,41 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
 
       {/* 서버 사이드 페이지네이션 바 */}
       {totalPages > 0 && (
-        <div className="flex items-center justify-between px-6 py-2 border-t
-                         border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex items-center justify-between px-4 py-2 border-t border-zinc-700 bg-zinc-900">
+          <div className="flex items-center gap-2 text-sm text-zinc-400">
             <span>페이지당</span>
             <select
               value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="h-8 px-2 text-sm rounded border border-gray-300 dark:border-gray-600
-                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+              className="h-7 px-2 text-sm rounded border border-zinc-600 bg-zinc-800 text-zinc-100 [color-scheme:dark]"
             >
-              {PAGE_SIZE_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s}건</option>
-              ))}
+              {PAGE_SIZE_OPTIONS.map((s) => <option key={s} value={s}>{s}건</option>)}
             </select>
-            <span className="ml-2">
-              전체 <strong>{total.toLocaleString()}</strong>건 중{' '}
-              <strong>{((page - 1) * pageSize + 1).toLocaleString()}</strong>~
-              <strong>{Math.min(page * pageSize, total).toLocaleString()}</strong>
+            <span className="ml-1">
+              전체 <strong className="text-zinc-200">{total.toLocaleString()}</strong>건 중{' '}
+              <strong className="text-zinc-200">{((page - 1) * pageSize + 1).toLocaleString()}</strong>~
+              <strong className="text-zinc-200">{Math.min(page * pageSize, total).toLocaleString()}</strong>
             </span>
           </div>
 
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => goToPage(1)}
-              disabled={page <= 1 || loading}
-              className="h-8 px-3 text-sm rounded border border-gray-300 dark:border-gray-600
-                         bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
-                         disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              ≪
-            </button>
-            <button
-              onClick={() => goToPage(page - 1)}
-              disabled={page <= 1 || loading}
-              className="h-8 px-3 text-sm rounded border border-gray-300 dark:border-gray-600
-                         bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
-                         disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              ＜
-            </button>
-            <span className="px-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-              {page} / {totalPages}
-            </span>
-            <button
-              onClick={() => goToPage(page + 1)}
-              disabled={page >= totalPages || loading}
-              className="h-8 px-3 text-sm rounded border border-gray-300 dark:border-gray-600
-                         bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
-                         disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              ＞
-            </button>
-            <button
-              onClick={() => goToPage(totalPages)}
-              disabled={page >= totalPages || loading}
-              className="h-8 px-3 text-sm rounded border border-gray-300 dark:border-gray-600
-                         bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
-                         disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              ≫
-            </button>
+            {(['≪', '＜'] as const).map((label, i) => (
+              <button
+                key={label}
+                onClick={() => goToPage(i === 0 ? 1 : page - 1)}
+                disabled={(i === 0 ? page <= 1 : page <= 1) || loading}
+                className="h-7 px-3 text-sm rounded border border-zinc-600 bg-zinc-800 text-zinc-300 disabled:opacity-40 hover:bg-zinc-700 transition-colors"
+              >{label}</button>
+            ))}
+            <span className="px-3 text-sm font-medium text-zinc-300">{page} / {totalPages}</span>
+            {(['＞', '≫'] as const).map((label, i) => (
+              <button
+                key={label}
+                onClick={() => goToPage(i === 0 ? page + 1 : totalPages)}
+                disabled={(i === 0 ? page >= totalPages : page >= totalPages) || loading}
+                className="h-7 px-3 text-sm rounded border border-zinc-600 bg-zinc-800 text-zinc-300 disabled:opacity-40 hover:bg-zinc-700 transition-colors"
+              >{label}</button>
+            ))}
           </div>
         </div>
       )}

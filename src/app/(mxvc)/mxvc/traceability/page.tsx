@@ -9,31 +9,30 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import * as XLSX from 'xlsx';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import TraceabilityMaster from '@/components/mxvc/TraceabilityMaster';
 import TraceabilityTimeline from '@/components/mxvc/TraceabilityTimeline';
 import RunCardSearchModal from '@/components/mxvc/RunCardSearchModal';
+import Spinner from '@/components/ui/Spinner';
 import type { TraceabilityResponse } from '@/types/mxvc/traceability';
 
-/** 섹션 라벨 매핑 (TraceabilityTimeline의 SOURCE_LABEL과 동일) */
-const SOURCE_LABEL: Record<string, string> = {
-  MATERIAL_BOARD: '자재(한화-BOARD)',
-  MATERIAL_DETAIL: '자재(한화-상세)',
-  MATERIAL_PANASONIC: '자재투입',
-  IQ_MACHINE_INSPECT_RESULT: '공정설비통신',
-  IP_PRODUCT_2D_BARCODE: '바코드마스터',
-  IP_PRODUCT_PACK_SERIAL: '출하정보',
-  IP_PRODUCT_WORK_QC: '수리이력',
-  IMCN_JIG_INPUT_HIST: '지그투입이력',
-  IM_ITEM_SOLDER_INPUT_HIST: '솔더투입이력',
-  IP_PRODUCT_WORKSTAGE_IO: '공정이동',
-  LOG_LCR: 'LCR 측정로그',
-};
-function sectionLabel(source: string): string {
-  return SOURCE_LABEL[source] ?? source.replace(/^LOG_/i, '').replace(/^IP_PRODUCT_/i, '');
-}
+/** 섹션 라벨 키 목록 (sources 네임스페이스와 매칭) */
+const KNOWN_SOURCE_KEYS = new Set([
+  'MATERIAL_BOARD',
+  'MATERIAL_DETAIL',
+  'MATERIAL_PANASONIC',
+  'IQ_MACHINE_INSPECT_RESULT',
+  'IP_PRODUCT_2D_BARCODE',
+  'IP_PRODUCT_PACK_SERIAL',
+  'IP_PRODUCT_WORK_QC',
+  'IMCN_JIG_INPUT_HIST',
+  'IM_ITEM_SOLDER_INPUT_HIST',
+  'IP_PRODUCT_WORKSTAGE_IO',
+  'LOG_LCR',
+]);
 
 const SCREEN_ID = 'mxvc-traceability';
 
@@ -43,6 +42,13 @@ interface BarcodeItem {
 }
 
 export default function TraceabilityPage() {
+  const t = useTranslations('mxvc.traceability');
+
+  const sectionLabel = useCallback((source: string): string => {
+    if (KNOWN_SOURCE_KEYS.has(source)) return t(`sources.${source}`);
+    return source.replace(/^LOG_/i, '').replace(/^IP_PRODUCT_/i, '');
+  }, [t]);
+
   /* RUN_NO & 바코드 목록 */
   const [runNo, setRunNo] = useState('');
   const [barcodes, setBarcodes] = useState<BarcodeItem[]>([]);
@@ -167,7 +173,7 @@ export default function TraceabilityPage() {
       label: sectionLabel(source),
       rows,
     }));
-  }, [data]);
+  }, [data, sectionLabel]);
 
   const hasExport = !!data && groupedSections.length > 0;
 
@@ -179,7 +185,7 @@ export default function TraceabilityPage() {
     /* 마스터 시트 */
     if (data.master) {
       const ws = XLSX.utils.json_to_sheet([data.master]);
-      XLSX.utils.book_append_sheet(wb, ws, '마스터');
+      XLSX.utils.book_append_sheet(wb, ws, t('sheetMaster'));
     }
     if (data.runCard) {
       const ws = XLSX.utils.json_to_sheet([data.runCard]);
@@ -187,7 +193,7 @@ export default function TraceabilityPage() {
     }
     if (data.modelMaster) {
       const ws = XLSX.utils.json_to_sheet([data.modelMaster]);
-      XLSX.utils.book_append_sheet(wb, ws, '모델마스터');
+      XLSX.utils.book_append_sheet(wb, ws, t('sheetModelMaster'));
     }
 
     /* 섹션별 시트 (이름 31자 제한, 중복 회피) */
@@ -202,9 +208,9 @@ export default function TraceabilityPage() {
       XLSX.utils.book_append_sheet(wb, ws, name);
     }
 
-    const fileName = `추적성_${selectedBarcode || 'data'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const fileName = `${t('fileNameBase')}_${selectedBarcode || 'data'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
     XLSX.writeFile(wb, fileName);
-  }, [hasExport, data, groupedSections, selectedBarcode]);
+  }, [hasExport, data, groupedSections, selectedBarcode, t]);
 
   /** HTML 테이블 생성 공통 함수 */
   const buildSectionHtml = useCallback((print: boolean) => {
@@ -216,16 +222,16 @@ export default function TraceabilityPage() {
       const tbody = rows.map((r) =>
         `<tr>${cols.map((c) => `<td>${String(r[c] ?? '')}</td>`).join('')}</tr>`
       ).join('');
-      return `<section><h2 style="color:${color}">${title} (${rows.length}건)</h2><table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></section>`;
+      return `<section><h2 style="color:${color}">${title} (${t('eventCount', { count: rows.length })})</h2><table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></section>`;
     };
     const masterHtml = data.master
-      ? toTable([data.master], '마스터 (IP_PRODUCT_2D_BARCODE)', '#2563eb')
+      ? toTable([data.master], t('reportMaster'), '#2563eb')
       : '';
     const runCardHtml = data.runCard
       ? toTable([data.runCard as Record<string, unknown>], 'RunCard', '#0891b2')
       : '';
     const modelHtml = data.modelMaster
-      ? toTable([data.modelMaster as Record<string, unknown>], '모델마스터', '#9333ea')
+      ? toTable([data.modelMaster as Record<string, unknown>], t('sheetModelMaster'), '#9333ea')
       : '';
     const sectionsHtml = groupedSections
       .map((s) => toTable(s.rows, s.label, '#059669'))
@@ -251,14 +257,14 @@ export default function TraceabilityPage() {
          .meta { color: #666; font-size: 12px; margin-bottom: 20px; }`;
 
     return `<!DOCTYPE html>
-<html lang="ko"><head><meta charset="utf-8"/><title>추적성 ${selectedBarcode}</title>
+<html><head><meta charset="utf-8"/><title>${t('reportTitle', { barcode: selectedBarcode })}</title>
 <style>${style}</style></head>
 <body>
-<h1>추적성 리포트 — ${selectedBarcode}</h1>
-<p class="meta">생성일: ${new Date().toLocaleString('ko-KR')} / 이벤트 ${resultCount}건 / 섹션 ${groupedSections.length}개</p>
+<h1>${t('reportTitle', { barcode: selectedBarcode })}</h1>
+<p class="meta">${t('reportMeta', { date: new Date().toLocaleString(), events: resultCount, sections: groupedSections.length })}</p>
 ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
 </body></html>`;
-  }, [data, groupedSections, selectedBarcode, resultCount]);
+  }, [data, groupedSections, selectedBarcode, resultCount, t]);
 
   /** HTML 다운로드 */
   const handleExportHtml = useCallback(() => {
@@ -268,10 +274,10 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `추적성_${selectedBarcode || 'data'}_${new Date().toISOString().slice(0, 10)}.html`;
+    a.download = `${t('fileNameBase')}_${selectedBarcode || 'data'}_${new Date().toISOString().slice(0, 10)}.html`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [hasExport, buildSectionHtml, selectedBarcode]);
+  }, [hasExport, buildSectionHtml, selectedBarcode, t]);
 
   /** PDF 다운로드 (브라우저 인쇄 대화상자) */
   const handleExportPdf = useCallback(() => {
@@ -288,18 +294,18 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
 
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-white overflow-hidden">
-      <DisplayHeader title="멕시코전장 추적성분석" screenId={SCREEN_ID} />
+      <DisplayHeader title={t('pageTitle')} screenId={SCREEN_ID} />
 
       {/* 상단 바: RUN_NO 입력 + 옵션 */}
       <div className="shrink-0 flex items-center gap-3 px-5 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/80">
         <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-          <span className="font-semibold shrink-0">RUN NO</span>
+          <span className="font-semibold shrink-0">{t('runNo')}</span>
           <input
             type="text"
             value={runNo}
             onChange={(e) => setRunNo(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleRunNoSearch()}
-            placeholder="작업지시번호 입력"
+            placeholder={t('runNoPlaceholder')}
             className="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600
                        bg-white dark:bg-gray-800 text-sm w-48 placeholder:text-gray-400"
           />
@@ -310,7 +316,7 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
                      bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300
                      hover:bg-gray-100 dark:hover:bg-gray-700 text-sm transition-colors"
         >
-          작업지시 검색
+          {t('searchRunCard')}
         </button>
         <button
           onClick={handleRunNoSearch}
@@ -318,7 +324,7 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
           className="px-4 py-1.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold
                      disabled:opacity-50 transition-colors"
         >
-          바코드 조회
+          {t('queryBarcode')}
         </button>
 
         <button
@@ -327,14 +333,14 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
           className="px-4 py-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold
                      disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          추적조회
+          {t('queryTrace')}
         </button>
 
         <div className="w-px h-6 bg-gray-300 dark:bg-gray-700" />
 
         {/* 자재 포함 — 마운터 종류 선택 */}
         <div className="flex items-center gap-1">
-          <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">자재:</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">{t('materialLabel')}</span>
           <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-xs">
             {(['none', 'hanwha', 'panasonic'] as const).map((type) => (
               <button
@@ -346,7 +352,7 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
                     : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 } ${type !== 'none' ? 'border-l border-gray-300 dark:border-gray-600' : ''}`}
               >
-                {type === 'none' ? '미포함' : type === 'hanwha' ? '한화' : '파나소닉'}
+                {type === 'none' ? t('materialNone') : type === 'hanwha' ? t('materialHanwha') : t('materialPanasonic')}
               </button>
             ))}
           </div>
@@ -365,7 +371,7 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
                     : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
-                공정별
+                {t('viewProcess')}
               </button>
               <button
                 onClick={() => setViewMode('timeline')}
@@ -375,7 +381,7 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
                     : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
-                타임라인
+                {t('viewTimeline')}
               </button>
             </div>
           </>
@@ -383,21 +389,21 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
 
         <div className="ml-auto flex items-center gap-2">
           {data && (
-            <span className="text-sm text-gray-500 dark:text-gray-400">{resultCount}개 이벤트</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{t('eventCount', { count: resultCount })}</span>
           )}
           {hasExport && (
             <>
               <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">받아내기:</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{t('exportLabel')}</span>
               <button onClick={handleExportHtml}
                 className="px-3 py-1.5 rounded text-xs font-semibold bg-sky-500 hover:bg-sky-600 text-white transition-colors"
-                title="HTML 파일로 저장">HTML</button>
+                title={t('exportHtmlTitle')}>HTML</button>
               <button onClick={handleExportExcel}
                 className="px-3 py-1.5 rounded text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
-                title="Excel(xlsx) 파일로 저장">Excel</button>
+                title={t('exportExcelTitle')}>Excel</button>
               <button onClick={handleExportPdf}
                 className="px-3 py-1.5 rounded text-xs font-semibold bg-rose-500 hover:bg-rose-600 text-white transition-colors"
-                title="인쇄 대화상자에서 PDF 저장">PDF</button>
+                title={t('exportPdfTitle')}>PDF</button>
             </>
           )}
         </div>
@@ -422,16 +428,16 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              placeholder="바코드 찾기 (Enter: 직접 조회)"
+              placeholder={t('sidebarPlaceholder')}
               className="w-full px-2.5 py-1.5 text-xs rounded border border-gray-300 dark:border-gray-600
                          bg-white dark:bg-gray-800 text-gray-900 dark:text-white
                          placeholder:text-gray-400 focus:outline-none focus:border-blue-500"
             />
             <div className="flex items-center justify-between mt-1.5 text-[10px] text-gray-400 dark:text-gray-500">
-              <span>{filteredBarcodes.length} / {barcodes.length}건</span>
+              <span>{t('sidebarCount', { filtered: filteredBarcodes.length, total: barcodes.length })}</span>
               {search && (
                 <button onClick={() => setSearch('')} className="text-blue-500 hover:text-blue-400">
-                  초기화
+                  {t('resetFilter')}
                 </button>
               )}
             </div>
@@ -440,14 +446,13 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
           {/* 목록 */}
           <div className="flex-1 overflow-y-auto min-h-0">
             {listLoading && (
-              <div className="flex items-center justify-center py-8 text-xs text-gray-400">
-                <span className="w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full animate-spin mr-2" />
-                조회 중...
+              <div className="flex items-center justify-center py-8">
+                <Spinner size="sm" label={t('loadingList')} />
               </div>
             )}
             {!listLoading && barcodes.length === 0 && (
               <div className="flex items-center justify-center py-8 text-xs text-gray-400 dark:text-gray-500">
-                RUN NO를 입력하고 조회하세요
+                {t('enterRunNo')}
               </div>
             )}
             {filteredBarcodes.map((b) => (
@@ -472,7 +477,7 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
             <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 flex flex-col max-h-[40%]">
               <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/60">
                 <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  추적 대상 ({selectedTables.size}/{availableTables.length})
+                  {t('traceTargets', { selected: selectedTables.size, total: availableTables.length })}
                 </span>
                 <label className="flex items-center gap-1 cursor-pointer">
                   <input
@@ -483,26 +488,20 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
                     }
                     className="w-3 h-3 accent-blue-500"
                   />
-                  <span className="text-[10px] text-gray-600 dark:text-gray-400">전체</span>
+                  <span className="text-[10px] text-gray-600 dark:text-gray-400">{t('selectAllLabel')}</span>
                 </label>
               </div>
               <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
-                {availableTables.map((t) => (
-                  <label key={t} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60 px-1 py-0.5 rounded">
+                {availableTables.map((tbl) => (
+                  <label key={tbl} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60 px-1 py-0.5 rounded">
                     <input
                       type="checkbox"
-                      checked={selectedTables.has(t)}
-                      onChange={() => toggleTable(t)}
+                      checked={selectedTables.has(tbl)}
+                      onChange={() => toggleTable(tbl)}
                       className="w-3.5 h-3.5 accent-blue-500"
                     />
                     <span className="text-[11px] font-mono text-gray-700 dark:text-gray-300 truncate">
-                      {t === 'IP_PRODUCT_2D_BARCODE' ? '바코드마스터'
-                        : t === 'IP_PRODUCT_PACK_SERIAL' ? '출하정보'
-                        : t === 'IP_PRODUCT_WORK_QC' ? '수리이력'
-                        : t === 'IMCN_JIG_INPUT_HIST' ? '지그투입이력'
-                        : t === 'IM_ITEM_SOLDER_INPUT_HIST' ? '솔더투입이력'
-                        : t === 'LOG_LCR' ? 'LCR 측정로그'
-                        : t.replace(/^LOG_/, '')}
+                      {sectionLabel(tbl)}
                     </span>
                   </label>
                 ))}
@@ -514,9 +513,8 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
         {/* 우측: 추적성 결과 */}
         <div className="flex-1 flex flex-col min-w-0 overflow-auto">
           {loading ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <span className="w-8 h-8 border-3 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full animate-spin" />
-              <span className="text-sm text-gray-500 dark:text-gray-400">추적성 데이터 취합 중입니다...</span>
+            <div className="flex-1 flex items-center justify-center">
+              <Spinner size="lg" vertical label={t('loadingTrace')} />
             </div>
           ) : data ? (
             <div className="space-y-4 pb-4">
@@ -529,7 +527,7 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-              {barcodes.length > 0 ? '좌측에서 바코드를 선택하세요' : 'RUN NO를 조회하세요'}
+              {barcodes.length > 0 ? t('selectBarcode') : t('selectRunNo')}
             </div>
           )}
         </div>

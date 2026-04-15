@@ -11,6 +11,8 @@
 
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 interface SlackAdvancedSectionProps {
   mentionOnUrgent: boolean;
   dailyReportTime: string;
@@ -27,11 +29,13 @@ export default function SlackAdvancedSection({
   onToggleMention,
   onChangeTime,
 }: SlackAdvancedSectionProps) {
+  const t = useTranslations('ctq.pages.slackSettings');
+
   return (
     <div className="bg-gray-900 rounded-xl p-5 border border-gray-700 space-y-4">
       <h3 className="text-gray-200 font-semibold flex items-center gap-2">
         <span className="text-blue-400">⚙️</span>
-        고급 옵션
+        {t('advancedOptions')}
       </h3>
 
       {/* 긴급 시 @channel 멘션 */}
@@ -39,9 +43,9 @@ export default function SlackAdvancedSection({
         <div className="flex items-center gap-3">
           <span className="text-lg text-orange-400">📢</span>
           <div>
-            <p className="text-gray-200 text-sm font-medium">긴급 시 @channel 멘션</p>
+            <p className="text-gray-200 text-sm font-medium">{t('mentionOnUrgent')}</p>
             <p className="text-gray-500 text-xs mt-0.5">
-              라인 정지, 합격률 급락 등 긴급 상황 시 채널 전체에 알림
+              {t('mentionOnUrgentDesc')}
             </p>
           </div>
         </div>
@@ -50,7 +54,7 @@ export default function SlackAdvancedSection({
           className={`relative w-10 h-5 rounded-full transition-colors focus:outline-none flex-shrink-0 ${
             mentionOnUrgent ? 'bg-blue-600' : 'bg-gray-600'
           }`}
-          aria-label="긴급 멘션 ON/OFF"
+          aria-label={t('mentionOnUrgent')}
           type="button"
         >
           <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
@@ -64,9 +68,9 @@ export default function SlackAdvancedSection({
         <div className="flex items-center gap-3 mb-3">
           <span className="text-lg text-green-400">📅</span>
           <div>
-            <p className="text-gray-200 text-sm font-medium">일일 리포트 발송 시간</p>
+            <p className="text-gray-200 text-sm font-medium">{t('dailyReportTime')}</p>
             <p className="text-gray-500 text-xs mt-0.5">
-              매일 이 시간에 생산 요약 리포트를 발송합니다 (비워두면 비활성)
+              {t('dailyReportTimeDesc')}
             </p>
           </div>
         </div>

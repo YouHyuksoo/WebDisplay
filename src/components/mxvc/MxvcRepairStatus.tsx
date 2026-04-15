@@ -16,6 +16,11 @@ import DisplayFooter from '@/components/display/DisplayFooter';
 import useDisplayTiming from '@/hooks/useDisplayTiming';
 import { useServerTime } from '@/hooks/useServerTime';
 import RepairStatusTable from '@/components/ctq/RepairStatusTable';
+import RepairDefectPie from '@/components/mxvc/repair-status/RepairDefectPie';
+import RepairQcResultPie from '@/components/mxvc/repair-status/RepairQcResultPie';
+import RepairModelBar from '@/components/mxvc/repair-status/RepairModelBar';
+import RepairWorkstageBar from '@/components/mxvc/repair-status/RepairWorkstageBar';
+import Spinner from '@/components/ui/Spinner';
 import type { RepairStatusRow } from '@/types/ctq/repair-status';
 
 const SCREEN_ID = 'mxvc-repair-status';
@@ -226,10 +231,7 @@ export default function MxvcRepairStatus() {
               className="h-8 px-4 text-sm font-medium rounded bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-40"
             >
               {loading ? (
-                <span className="flex items-center gap-1.5">
-                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-blue-300 border-t-white" />
-                  로딩중
-                </span>
+                <Spinner size="sm" label="로딩중" labelClassName="text-white" className="gap-1.5" />
               ) : '새로고침'}
             </button>
             <button
@@ -242,27 +244,46 @@ export default function MxvcRepairStatus() {
           </div>
         </div>
 
-        {/* 본문 */}
-        <main className="min-h-0 flex-1 overflow-hidden">
-          {error && (
-            <div className="mx-6 mt-4 rounded-lg border border-red-700 bg-red-900/30 p-4 text-sm text-red-300">
-              조회 오류: {error}
-            </div>
-          )}
-          {loading && !data && (
-            <div className="flex h-32 items-center justify-center gap-3 text-zinc-500">
-              <span className="h-6 w-6 animate-spin rounded-full border-4 border-zinc-700 border-t-blue-400" />
-              데이터 로딩 중...
-            </div>
-          )}
-          {data && data.rows.length === 0 && (
-            <div className="flex items-center justify-center p-16 text-zinc-500">
-              해당 기간 수리 현황 데이터가 없습니다.
-            </div>
-          )}
-          {data && data.rows.length > 0 && (
-            <RepairStatusTable rows={data.rows} />
-          )}
+        {/* 본문 — 좌: 그리드 / 우: 차트 3종 */}
+        <main className="min-h-0 flex-1 overflow-hidden flex flex-row">
+          {/* 좌측 그리드 영역 (~70%) */}
+          <section className="min-h-0 min-w-0 flex-1 overflow-hidden">
+            {error && (
+              <div className="mx-6 mt-4 rounded-lg border border-red-700 bg-red-900/30 p-4 text-sm text-red-300">
+                조회 오류: {error}
+              </div>
+            )}
+            {loading && !data && (
+              <Spinner fullscreen size="lg" vertical label="데이터 로딩 중..." />
+            )}
+            {data && data.rows.length === 0 && (
+              <div className="flex items-center justify-center p-16 text-zinc-500">
+                해당 기간 수리 현황 데이터가 없습니다.
+              </div>
+            )}
+            {data && data.rows.length > 0 && (
+              <RepairStatusTable rows={data.rows} />
+            )}
+          </section>
+
+          {/* 우측 차트 영역 (30%) */}
+          <aside className="w-[32%] min-w-[440px] max-w-[560px] shrink-0 border-l border-zinc-800 bg-zinc-950 overflow-y-auto">
+            {data && data.rows.length > 0 ? (
+              <div className="flex flex-col divide-y divide-zinc-800">
+                {/* 상단: 파이 2개 나란히 */}
+                <div className="grid grid-cols-2 divide-x divide-zinc-800">
+                  <RepairDefectPie   rows={data.rows} />
+                  <RepairQcResultPie rows={data.rows} />
+                </div>
+                <RepairModelBar     rows={data.rows} />
+                <RepairWorkstageBar rows={data.rows} />
+              </div>
+            ) : (
+              <div className="flex h-full items-center justify-center p-8 text-center text-xs text-zinc-600">
+                조회 데이터가 있으면<br />차트가 표시됩니다.
+              </div>
+            )}
+          </aside>
         </main>
 
         <DisplayFooter loading={loading} lastUpdated={data?.lastUpdated} />

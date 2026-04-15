@@ -39,10 +39,10 @@
   will-change: transform, opacity;
 }
 
-/* 반응형 중앙 정렬 */
+/* 반응형 중앙 정렬 — 사이드 메뉴(color-bar ~50px, depth-indicator ~50px) 침범 방지 */
 @media (max-width: 900px) {
   .section-cards {
-    width: 90vw;
+    width: calc(100vw - 120px); /* 양쪽 60px 여백 확보 */
   }
 }
 
@@ -118,20 +118,20 @@
 .shortcut-card {
   --card-color: var(--accent);
   position: relative;
-  width: 160px;
-  height: 170px;
+  width: 150px;
+  height: 150px;
   background: rgba(15, 15, 25, 0.18); /* 더 묵직한 어두운 톤 + 투명도 상향 */
   backdrop-filter: blur(30px); /* 블러 강도 상향으로 배경 분리감 개선 */
   -webkit-backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: 18px;
+  padding: 16px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 9px;
   color: var(--text-primary);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* 그림자 강화 */
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),

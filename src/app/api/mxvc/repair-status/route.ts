@@ -89,14 +89,14 @@ export async function GET(request: NextRequest) {
              NVL(t.MODEL_NAME, '-')                                                                       AS MODEL_NAME,
              NVL(F_GET_WORKSTAGE_NAME(t.WORKSTAGE_CODE), NVL(t.WORKSTAGE_CODE, '-'))                     AS WORKSTAGE_NAME,
              NVL(F_GET_WORKSTAGE_NAME(t.REPAIR_WORKSTAGE_CODE), NVL(t.REPAIR_WORKSTAGE_CODE, '-'))       AS REPAIR_WORKSTAGE_NAME,
-             NVL(F_GET_BASECODE('QC RESULT', t.QC_RESULT, 'C', 1), NVL(t.QC_RESULT, '-'))               AS QC_RESULT_NAME,
-             NVL(F_GET_BASECODE('REPAIR RESULT CODE', t.REPAIR_RESULT_CODE, 'C', 1), NVL(t.REPAIR_RESULT_CODE, '-')) AS REPAIR_RESULT_NAME,
-             NVL(F_GET_BASECODE('RECEIPT DEFICIT', t.RECEIPT_DEFICIT, 'C', 1), NVL(t.RECEIPT_DEFICIT, '-')) AS RECEIPT_NAME,
+             NVL(F_GET_BASECODE('QC RESULT', t.QC_RESULT, 'K', 1), NVL(t.QC_RESULT, '-'))               AS QC_RESULT_NAME,
+             NVL(F_GET_BASECODE('REPAIR RESULT CODE', t.REPAIR_RESULT_CODE, 'K', 1), NVL(t.REPAIR_RESULT_CODE, '-')) AS REPAIR_RESULT_NAME,
+             NVL(F_GET_BASECODE('RECEIPT DEFICIT', t.RECEIPT_DEFICIT, 'K', 1), NVL(t.RECEIPT_DEFICIT, '-')) AS RECEIPT_NAME,
              NVL(t.LOCATION_CODE, '-')                                                                    AS LOCATION_CODE,
-             NVL(F_GET_BASECODE('QC INSPECT HANDLING', t.QC_INSPECT_HANDLING, 'C', 1), NVL(t.QC_INSPECT_HANDLING, '-')) AS HANDLING_NAME,
+             NVL(F_GET_BASECODE('QC INSPECT HANDLING', t.QC_INSPECT_HANDLING, 'K', 1), NVL(t.QC_INSPECT_HANDLING, '-')) AS HANDLING_NAME,
              NVL(t.BAD_POSITION, '-')                                                                     AS DEFECT_ITEM_CODE,
              NVL(t.BAD_REASON_CODE, '-')                                                                  AS BAD_REASON_CODE,
-             NVL(F_GET_CODE_MASTER('WQC BAD REASON CODE', t.BAD_REASON_CODE, 'C', 1), NVL(t.BAD_REASON_CODE, '-')) AS BAD_REASON_NAME
+             NVL(F_GET_CODE_MASTER('WQC BAD REASON CODE', t.BAD_REASON_CODE, 'K', 1), NVL(t.BAD_REASON_CODE, '-')) AS BAD_REASON_NAME
       FROM IP_PRODUCT_WORK_QC t
       WHERE t.QC_DATE >= TO_DATE(:tsStart, 'YYYY/MM/DD HH24:MI:SS')
         AND t.QC_DATE <  TO_DATE(:tsEnd,   'YYYY/MM/DD HH24:MI:SS')

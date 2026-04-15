@@ -8,7 +8,7 @@
  * - WizardState: 메인 페이지에서 관리하는 위자드 상태
  */
 
-export type TraceMode = 'immediate' | 'issue' | 'run' | 'feeder' | 'excel';
+export type TraceMode = 'immediate' | 'issue' | 'run' | 'feeder' | 'excel' | 'refid';
 
 export interface ReelCandidateBase {
   reelCd: string;
@@ -30,16 +30,25 @@ export interface RunCandidate extends ReelCandidateBase {
 }
 
 export interface FeederCandidate extends ReelCandidateBase {
-  partNo:      string;
-  installDt:   string;
-  uninstallDt: string | null;
+  partNo:    string;
+  slotNo:    string;
+  eqpNm:     string;
+  startDt:   string;
 }
 
 export interface ExcelCandidate extends ReelCandidateBase {
   rowIndex: number;
 }
 
-export type ReelCandidate = IssueCandidate | RunCandidate | FeederCandidate | ExcelCandidate;
+export interface RefIdCandidate extends ReelCandidateBase {
+  referenceId: string;
+  startDt:     string;
+  partNo:      string;
+  eqpNm:       string;
+  lineNm:      string;
+}
+
+export type ReelCandidate = IssueCandidate | RunCandidate | FeederCandidate | ExcelCandidate | RefIdCandidate;
 
 export interface CandidatesResponse {
   mode:       Exclude<TraceMode, 'immediate' | 'excel'>;
@@ -49,7 +58,8 @@ export interface CandidatesResponse {
 
 export interface IssueModeInput  { dateFrom: string; dateTo: string; itemCode: string; }
 export interface RunModeInput    { runNo: string; }
-export interface FeederModeInput { date: string; eqpCd: string; feederCd: string; }
+export interface FeederModeInput { startDtFrom: string; startDtTo: string; eqpNm: string; feederSlot: string; }
+export interface RefIdModeInput  { referenceId: string; startDtFrom: string; startDtTo: string; }
 
 /** 메인 페이지 위자드 상태 */
 export interface WizardState {
@@ -63,6 +73,7 @@ export const MODE_LABELS: Record<TraceMode, string> = {
   immediate: '즉시입력',
   issue:     '출고기준',
   run:       '런번호로 추적',
-  feeder:    '피더번호로 추적',
+  feeder:    '슬롯번호로 추적',
   excel:     '엑셀 업로드',
+  refid:     'ReferenceID로 추적',
 };

@@ -8,6 +8,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import ReactECharts from 'echarts-for-react';
 import type { PostProcessDefectByTable } from '@/types/mxvc/post-process';
 
@@ -46,6 +47,7 @@ const AXIS_STYLE = {
 const SPLIT_LINE = { lineStyle: { color: '#374151', opacity: 0.4, type: 'dashed' as const } };
 
 export default function PostProcessDefectChart({ defectByTable, height = 200 }: Props) {
+  const t = useTranslations('mxvc.postProcess');
   const hasData  = defectByTable.some((d) => d.total > 0);
   const labels   = defectByTable.map((d) => d.label);
 
@@ -53,17 +55,14 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
   const yRates = defectByTable.map((d): number | null =>
     d.total > 0 ? Math.round((1 - d.fail / d.total) * 10000) / 100 : null,
   );
-  // null 제외한 실제 값만으로 y축 min 계산
-  const validRates = yRates.filter((r): r is number => r !== null);
-  const minRate    = validRates.length > 0 ? Math.min(...validRates) : 90;
-  const yAxisMin   = Math.max(0, Math.floor(minRate / 10) * 10);
+  const yAxisMin = 0;
 
   const noDataBox = (
     <div
       className="flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-400 dark:text-gray-500"
       style={{ height }}
     >
-      데이터 없음
+      {t('noData')}
     </div>
   );
 
@@ -81,9 +80,10 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
     tooltip: {
       trigger: 'axis',
       ...TOOLTIP_STYLE,
-      formatter: (params: { name: string; value: number }[]) => {
+      formatter: (params: { name: string; value: number | null }[]) => {
         const p = params[0];
-        return `<b style="color:#9ca3af">${p.name}</b><br/>양품율: <b>${p.value.toFixed(2)}%</b>`;
+        const val = p.value != null ? `${p.value.toFixed(2)}%` : '-';
+        return `<b style="color:#9ca3af">${p.name}</b><br/>${t('yieldLabel')}: <b>${val}</b>`;
       },
     },
     series: [{
@@ -122,14 +122,14 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
       type: 'value',
       minInterval: 1,
       splitLine: SPLIT_LINE,
-      axisLabel: { color: '#9ca3af', fontSize: 11, formatter: '{value}건' },
+      axisLabel: { color: '#9ca3af', fontSize: 11, formatter: `{value}${t('countUnit')}` },
     },
     tooltip: {
       trigger: 'axis',
       ...TOOLTIP_STYLE,
       formatter: (params: { name: string; value: number }[]) => {
         const p = params[0];
-        return `<b style="color:#9ca3af">${p.name}</b><br/>재검 건수: <b>${p.value}건</b>`;
+        return `<b style="color:#9ca3af">${p.name}</b><br/>${t('retestLabel')}: <b>${p.value}${t('countUnit')}</b>`;
       },
     },
     series: [{
@@ -150,7 +150,7 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
       barWidth: '50%',
       label: {
         show: true, position: 'top',
-        formatter: (p: { value: number }) => p.value > 0 ? `${p.value}건` : '',
+        formatter: (p: { value: number }) => p.value > 0 ? `${p.value}${t('countUnit')}` : '',
         color: '#93c5fd', fontSize: 11, fontWeight: 700,
       },
     }],
@@ -162,8 +162,8 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
       {/* 양품율 — 나머지 폭 채움 */}
       <div className="flex-1 min-w-0">
         <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">
-          공정별 양품율
-          <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">당일 08:00 ~ 현재</span>
+          {t('yieldRateTitle')}
+          <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">{t('timeRangeHint')}</span>
         </h3>
         {!hasData ? noDataBox : (
           <ReactECharts option={yieldOption} style={{ height, width: '100%' }} notMerge lazyUpdate />
@@ -173,8 +173,8 @@ export default function PostProcessDefectChart({ defectByTable, height = 200 }: 
       {/* 재검 건수 — EOL 파이차트와 동일한 폭 (38%, min 260px) */}
       <div className="shrink-0" style={{ width: '38%', minWidth: 260 }}>
         <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">
-          공정별 재검 건수
-          <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">당일 08:00 ~ 현재</span>
+          {t('retestCountTitle')}
+          <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">{t('timeRangeHint')}</span>
         </h3>
         {!hasData ? noDataBox : (
           <ReactECharts option={retestOption} style={{ height, width: '100%' }} notMerge lazyUpdate />

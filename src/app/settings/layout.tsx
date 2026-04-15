@@ -4,6 +4,7 @@
  */
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import "../globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +17,9 @@ export default function SettingsLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <LocaleProvider>{children}</LocaleProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

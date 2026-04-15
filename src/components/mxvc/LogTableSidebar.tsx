@@ -57,69 +57,55 @@ export default function LogTableSidebar({
   });
 
   return (
-    <aside className="w-64 min-w-[256px] border-r border-gray-200 dark:border-gray-700 flex flex-col min-h-0
-                       bg-gray-50 dark:bg-gray-900">
+    <aside className="w-56 min-w-[224px] border-r border-zinc-700 flex flex-col min-h-0 bg-zinc-900">
       {/* 헤더 */}
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-2">
-          LOG 테이블 목록
-        </h2>
+      <div className="px-4 py-3 border-b border-zinc-700">
+        <h2 className="text-sm font-bold text-zinc-100 mb-2">LOG 테이블</h2>
         <input
           type="text"
           placeholder="테이블 검색..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-3 py-1.5 text-sm rounded
-                     bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
-                     text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
-                     focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-1.5 text-xs rounded border border-zinc-600 bg-zinc-800
+                     text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500"
         />
       </div>
 
       {/* 테이블 목록 */}
       <div className="flex-1 overflow-y-auto">
         {loading && (
-          <div className="px-4 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">
-            {t('loading')}
-          </div>
+          <div className="px-4 py-8 text-center text-zinc-500 text-xs">{t('loading')}</div>
         )}
         {error && (
-          <div className="px-4 py-4 text-center text-red-500 dark:text-red-400 text-sm">
-            {error}
-          </div>
+          <div className="px-4 py-4 text-center text-red-400 text-xs">{error}</div>
         )}
         {!loading && !error && filtered.length === 0 && (
-          <div className="px-4 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">
-            테이블 없음
-          </div>
+          <div className="px-4 py-8 text-center text-zinc-500 text-xs">테이블 없음</div>
         )}
         {filtered.map((t) => (
           <button
             key={t.TABLE_NAME}
             onClick={() => onSelectTable(t.TABLE_NAME)}
-            className={`w-full text-left px-4 py-1.5 transition-colors
-              border-b border-gray-100 dark:border-gray-800
-              ${
-                selectedTable === t.TABLE_NAME
-                  ? 'bg-blue-50 dark:bg-blue-600/20 text-blue-600 dark:text-blue-300 border-l-2 border-l-blue-500'
-                  : 'text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/60'
-              }`}
+            className={`w-full text-left px-4 py-1.5 transition-colors border-b border-zinc-800 ${
+              selectedTable === t.TABLE_NAME
+                ? 'bg-blue-600/20 text-blue-300 border-l-2 border-l-blue-500'
+                : 'text-zinc-300 hover:bg-zinc-800'
+            }`}
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-bold text-[13px] truncate">{t.ALIAS ?? t.TABLE_NAME}</span>
-              {t.COMMENTS && (
-                <span className="text-[11px] text-gray-500 dark:text-gray-400 shrink-0 truncate max-w-[100px]">
-                  {t.COMMENTS}
-                </span>
-              )}
-            </div>
+            <span className="font-bold text-sm truncate block">
+              {t.ALIAS ?? t.TABLE_NAME}
+            </span>
+            {t.COMMENTS && (
+              <span className="text-[11px] text-zinc-500 truncate block">
+                {t.COMMENTS}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
       {/* 푸터 */}
-      <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700
-                       text-xs text-gray-500 dark:text-gray-400">
+      <div className="px-4 py-2 border-t border-zinc-700 text-xs text-zinc-500">
         {tables.length}개 테이블
       </div>
     </aside>

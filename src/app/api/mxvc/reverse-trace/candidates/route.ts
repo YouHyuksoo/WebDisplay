@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
     if (mode === 'issue')  return await handleIssue(sp);
     if (mode === 'run')    return await handleRun(sp);
     if (mode === 'feeder') return await handleFeeder(sp);
-    return NextResponse.json({ error: 'mode 파라미터가 필요합니다 (issue | run | feeder)' }, { status: 400 });
+    if (mode === 'refid')  return await handleRefId(sp);
+    return NextResponse.json({ error: 'mode 파라미터가 필요합니다 (issue | run | feeder | refid)' }, { status: 400 });
   } catch (err) {
     console.error('candidates API 오류:', err);
     return NextResponse.json(
@@ -52,6 +53,8 @@ async function handleIssue(sp: URLSearchParams) {
      WHERE iss.ISSUE_DATE >= TO_DATE(:dateFrom, 'YYYY-MM-DD')
        AND iss.ISSUE_DATE <  TO_DATE(:dateTo,   'YYYY-MM-DD') + 1
        AND iss.ITEM_CODE = :itemCode
+       AND iss.ISSUE_DEFICIT = '3'
+       AND iss.LOT_DIVIDE_SEQUENCE IS NULL
      ORDER BY "issueDate" DESC
      FETCH FIRST 500 ROWS ONLY`;
 
@@ -74,6 +77,8 @@ async function handleRun(sp: URLSearchParams) {
       JOIN IM_ITEM_RECEIPT_BARCODE rb
         ON rb.LOT_NO = iss.MATERIAL_MFS AND rb.ITEM_CODE = iss.ITEM_CODE
      WHERE iss.RUN_NO = :runNo
+       AND iss.ISSUE_DEFICIT = '3'
+       AND iss.LOT_DIVIDE_SEQUENCE IS NULL
      ORDER BY "issueDate" DESC
      FETCH FIRST 500 ROWS ONLY`;
 
@@ -82,27 +87,56 @@ async function handleRun(sp: URLSearchParams) {
 }
 
 async function handleFeeder(sp: URLSearchParams) {
-  const date     = sp.get('date')     ?? '';
-  const eqpCd    = sp.get('eqpCd')    ?? '';
-  const feederCd = sp.get('feederCd') ?? '';
-  if (!date || !eqpCd || !feederCd) {
-    return NextResponse.json({ error: 'date, eqpCd, feederCd 모두 필요합니다' }, { status: 400 });
+  const startDtFrom = sp.get('startDtFrom') ?? '';
+  const startDtTo   = sp.get('startDtTo')   ?? '';
+  const eqpNm       = sp.get('eqpNm')       ?? '';
+  const feederSlot  = sp.get('feederSlot')  ?? '';
+  if (!startDtFrom || !startDtTo || !eqpNm || !feederSlot) {
+    return NextResponse.json({ error: 'startDtFrom, startDtTo, eqpNm, feederSlot 모두 필요합니다' }, { status: 400 });
   }
 
   const sql = `
-    SELECT DISTINCT
-           CAST("ReelCd" AS VARCHAR2(200))                                  AS "reelCd",
-           CAST("PartNo" AS VARCHAR2(100))                                  AS "partNo",
-           TO_CHAR(CAST("ReelInstallDt" AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS')   AS "installDt",
-           TO_CHAR(CAST("ReelUninstallDt" AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') AS "uninstallDt"
-      FROM HW_ITS_REELCHANGEHISTORY
-     WHERE "EqpCd"    = :eqpCd
-       AND "FeederCd" = :feederCd
-       AND "ReelInstallDt" < TRUNC(TO_DATE(:targetDate, 'YYYY-MM-DD')) + 1
-       AND ( "ReelUninstallDt" IS NULL
-             OR "ReelUninstallDt" >= TRUNC(TO_DATE(:targetDate, 'YYYY-MM-DD')) )
-     ORDER BY "installDt" DESC`;
+    SELECT CAST("ReelCd" AS VARCHAR2(200))                                      AS "reelCd",
+           MAX(CAST("PartNo" AS VARCHAR2(100)))                                  AS "partNo",
+           MAX(TRIM(CAST("SlotNo" AS VARCHAR2(50))))                             AS "slotNo",
+           MAX(CAST("EqpNm" AS VARCHAR2(200)))                                   AS "eqpNm",
+           TO_CHAR(MIN(CAST("StartDt" AS TIMESTAMP)), 'YYYY-MM-DD HH24:MI:SS')  AS "startDt"
+      FROM HW_VW_LTS
+     WHERE CAST("EqpNm" AS VARCHAR2(200)) = :eqpNm
+       AND TRIM(CAST("SlotNo" AS VARCHAR2(50))) = :feederSlot
+       AND CAST("StartDt" AS TIMESTAMP) >= TRUNC(TO_DATE(:startDtFrom, 'YYYY-MM-DD'))
+       AND CAST("StartDt" AS TIMESTAMP) <  TRUNC(TO_DATE(:startDtTo,   'YYYY-MM-DD')) + 1
+     GROUP BY CAST("ReelCd" AS VARCHAR2(200))
+     ORDER BY "startDt" DESC
+     FETCH FIRST 500 ROWS ONLY`;
 
-  const rows = await executeQuery(sql, { eqpCd, feederCd, targetDate: date });
+  const rows = await executeQuery(sql, { eqpNm, feederSlot, startDtFrom, startDtTo });
   return NextResponse.json({ mode: 'feeder', candidates: rows, total: rows.length });
+}
+
+async function handleRefId(sp: URLSearchParams) {
+  const referenceId  = sp.get('referenceId')  ?? '';
+  const startDtFrom  = sp.get('startDtFrom')  ?? '';
+  const startDtTo    = sp.get('startDtTo')    ?? '';
+  if (!referenceId || !startDtFrom || !startDtTo) {
+    return NextResponse.json({ error: 'referenceId, startDtFrom, startDtTo 모두 필요합니다' }, { status: 400 });
+  }
+
+  const sql = `
+    SELECT CAST("ReelCd"      AS VARCHAR2(200)) AS "reelCd",
+           MAX(CAST("ReferenceID" AS VARCHAR2(200))) AS "referenceId",
+           TO_CHAR(MIN(CAST("StartDt" AS TIMESTAMP)), 'YYYY-MM-DD HH24:MI:SS') AS "startDt",
+           MAX(CAST("PartNo"      AS VARCHAR2(100))) AS "partNo",
+           MAX(CAST("EqpNm"       AS VARCHAR2(200))) AS "eqpNm",
+           MAX(CAST("LineNm"      AS VARCHAR2(100))) AS "lineNm"
+      FROM HW_VW_LTS
+     WHERE CAST("ReferenceID" AS VARCHAR2(200)) = :referenceId
+       AND CAST("StartDt" AS TIMESTAMP) >= TRUNC(TO_DATE(:startDtFrom, 'YYYY-MM-DD'))
+       AND CAST("StartDt" AS TIMESTAMP) <  TRUNC(TO_DATE(:startDtTo,   'YYYY-MM-DD')) + 1
+     GROUP BY CAST("ReelCd" AS VARCHAR2(200))
+     ORDER BY "startDt" DESC
+     FETCH FIRST 500 ROWS ONLY`;
+
+  const rows = await executeQuery(sql, { referenceId, startDtFrom, startDtTo });
+  return NextResponse.json({ mode: 'refid', candidates: rows, total: rows.length });
 }

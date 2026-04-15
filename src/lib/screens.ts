@@ -54,4 +54,5 @@ export const SCREENS: Record<string, ScreenConfig> = {
   // 멕시코전장 독립 화면 (display/ 화면과 별도 라인 선택 저장)
   'mxvc-production-kpi': { id: 'mxvc-production-kpi', title: 'Line Production KPI (MXVC)', titleKo: '라인별생산현황(멕시코전장)', titleEs: 'KPI de producción por línea (MXVC)', titleVi: 'KPI sản xuất theo Line (MXVC)', window: '', group: 'mxvc', lineFilter: true },
   'mxvc-post-process': { id: 'mxvc-post-process', title: 'Post-Process Production Status (MXVC)', titleKo: '후공정생산현황(멕시코전장)', titleEs: 'Estado de Producción Post-Proceso (MXVC)', window: '', group: 'mxvc', lineFilter: true },
+  'mxvc-repair-status': { id: 'mxvc-repair-status', title: 'Repair Status (MXVC)', titleKo: '수리현황(멕시코전장)', titleEs: 'Estado de Reparación (MXVC)', titleVi: 'Tình trạng sửa chữa (MXVC)', window: '', group: 'mxvc', lineFilter: false },
 };

@@ -13,6 +13,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import useDisplayTiming from '@/hooks/useDisplayTiming';
@@ -23,6 +24,7 @@ import PostProcessFpyChart from './PostProcessFpyChart';
 import PostProcessEolDefectPie from './PostProcessEolDefectPie';
 import PostProcessMagazinePanel from './PostProcessMagazinePanel';
 import PostProcessSampleCard from './PostProcessSampleCard';
+import Spinner from '@/components/ui/Spinner';
 import type { PostProcessResponse } from '@/types/mxvc/post-process';
 
 const SCREEN_ID = 'mxvc-post-process';
@@ -32,17 +34,19 @@ const EMPTY_KPI = {
 };
 
 export default function PostProcessDashboard() {
+  const t = useTranslations('mxvc.postProcess');
   const timing       = useDisplayTiming();
   const selectedLines = useSelectedLines(SCREEN_ID);
 
-  const [data,    setData]    = useState<PostProcessResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
+  const [data,     setData]    = useState<PostProcessResponse | null>(null);
+  const [loading,  setLoading] = useState(false);
+  const [error,    setError]   = useState<string | null>(null);
+  const [eolDays,  setEolDays] = useState(3);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/mxvc/post-process?lines=${encodeURIComponent(selectedLines)}`);
+      const res = await fetch(`/api/mxvc/post-process?lines=${encodeURIComponent(selectedLines)}&eolDays=${eolDays}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());
       setError(null);
@@ -51,7 +55,7 @@ export default function PostProcessDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [selectedLines]);
+  }, [selectedLines, eolDays]);
 
   /* 자동 갱신 */
   useEffect(() => {
@@ -64,7 +68,7 @@ export default function PostProcessDashboard() {
 
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-white overflow-hidden">
-      <DisplayHeader title="후공정생산현황" screenId={SCREEN_ID} />
+      <DisplayHeader title={t('title')} screenId={SCREEN_ID} />
 
       {/* ── 콘텐츠 영역: 좌 80% 메인 / 우 20% 매거진 패널 ── */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
@@ -72,7 +76,7 @@ export default function PostProcessDashboard() {
         {/* 좌측 메인 (80%) */}
         <div className="flex-1 flex flex-col min-h-0 overflow-auto" style={{ minWidth: 0 }}>
           {/* KPI 카드 + 샘플 이력 — 가로 배치, 동일 높이 */}
-          <div className="flex items-stretch gap-4 px-6 py-4 shrink-0">
+          <div className="flex items-stretch gap-4 px-6 py-4 shrink-0 overflow-hidden">
             <PostProcessKpiCards
               kpi={kpi}
               ictTotal={data?.defectByTable.find((d) => d.tableKey === 'LOG_ICT')?.total ?? 0}
@@ -84,15 +88,14 @@ export default function PostProcessDashboard() {
           {/* 오류 표시 */}
           {error && (
             <div className="mx-6 my-2 px-4 py-2 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-400">
-              조회 오류: {error}
+              {t('errorMsg', { error })}
             </div>
           )}
 
           {/* 로딩 */}
           {loading && !data && (
-            <div className="flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-3">
-              <span className="w-8 h-8 border-4 border-gray-300 dark:border-gray-700 border-t-blue-500 rounded-full animate-spin" />
-              데이터 조회 중...
+            <div className="flex-1 flex items-center justify-center">
+              <Spinner size="lg" vertical label={t('loadingMsg')} />
             </div>
           )}
 
@@ -105,7 +108,11 @@ export default function PostProcessDashboard() {
                 <div className="flex-1 min-w-0">
                   <PostProcessFpyChart fpyChart={data.fpyChart} />
                 </div>
-                <PostProcessEolDefectPie eolStepDefects={data.eolStepDefects} />
+                <PostProcessEolDefectPie
+                  eolStepDefects={data.eolStepDefects}
+                  days={eolDays}
+                  onDaysChange={setEolDays}
+                />
               </div>
             </>
           )}

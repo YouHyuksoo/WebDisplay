@@ -15,12 +15,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import SlackWebhookSection from '@/components/u1/slack/SlackWebhookSection';
 import TeamsWebhookSection from '@/components/u1/slack/TeamsWebhookSection';
 import SlackToggleSection from '@/components/u1/slack/SlackToggleSection';
 import SlackAdvancedSection from '@/components/u1/slack/SlackAdvancedSection';
 import MonitorJobSection from '@/components/u1/slack/MonitorJobSection';
+import Spinner from '@/components/ui/Spinner';
 
 const SCREEN_ID = 'u1-slack';
 
@@ -76,6 +78,7 @@ const DEFAULT_SETTINGS: SlackSettings = {
 };
 
 export default function SlackSettingsPage() {
+  const t = useTranslations('ctq.pages.slackSettings');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isTestingSlack, setIsTestingSlack] = useState(false);
@@ -95,15 +98,15 @@ export default function SlackSettingsPage() {
     fetch('/api/slack-settings')
       .then((r) => r.json())
       .then((data) => setSettings({ ...DEFAULT_SETTINGS, ...data }))
-      .catch(() => setStatus({ type: 'error', text: '설정을 불러오는데 실패했습니다.' }))
+      .catch(() => setStatus({ type: 'error', text: t('loadFailed') }))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [t]);
 
   // 설정 저장
   const handleSave = async () => {
     // Slack URL 검증
     if (settings.webhookUrl && !settings.webhookUrl.startsWith('https://hooks.slack.com/')) {
-      setStatus({ type: 'error', text: '유효하지 않은 Slack 웹훅 URL입니다.' });
+      setStatus({ type: 'error', text: t('invalidSlackUrl') });
       return;
     }
     // Teams URL 검증
@@ -113,7 +116,7 @@ export default function SlackSettingsPage() {
       !settings.teamsWebhookUrl.includes('.logic.azure.com/') &&
       !settings.teamsWebhookUrl.includes('powerplatform.com')
     ) {
-      setStatus({ type: 'error', text: '유효하지 않은 Teams 웹훅 URL입니다.' });
+      setStatus({ type: 'error', text: t('invalidTeamsUrl') });
       return;
     }
 
@@ -127,13 +130,13 @@ export default function SlackSettingsPage() {
       if (res.ok) {
         const data = await res.json();
         setSettings({ ...DEFAULT_SETTINGS, ...data });
-        setStatus({ type: 'success', text: '알림 설정이 저장되었습니다.' });
+        setStatus({ type: 'success', text: t('saveSuccess') });
       } else {
         const err = await res.json();
-        setStatus({ type: 'error', text: err.error || '저장에 실패했습니다.' });
+        setStatus({ type: 'error', text: err.error || t('saveFailed') });
       }
     } catch {
-      setStatus({ type: 'error', text: '저장 중 오류가 발생했습니다.' });
+      setStatus({ type: 'error', text: t('saveError') });
     } finally {
       setIsSaving(false);
     }
@@ -142,7 +145,7 @@ export default function SlackSettingsPage() {
   // Slack 테스트
   const handleTestSlack = async () => {
     if (!settings.webhookUrl) {
-      setStatus({ type: 'error', text: 'Slack 웹훅 URL을 먼저 입력해주세요.' });
+      setStatus({ type: 'error', text: t('enterSlackUrl') });
       return;
     }
     setIsTestingSlack(true);
@@ -153,13 +156,13 @@ export default function SlackSettingsPage() {
         body: JSON.stringify({ webhookUrl: settings.webhookUrl }),
       });
       if (res.ok) {
-        setStatus({ type: 'success', text: 'Slack 테스트 메시지를 전송했습니다. Slack을 확인해주세요!' });
+        setStatus({ type: 'success', text: t('slackTestSuccess') });
       } else {
         const err = await res.json();
-        setStatus({ type: 'error', text: err.error || 'Slack 테스트 전송에 실패했습니다.' });
+        setStatus({ type: 'error', text: err.error || t('slackTestFailed') });
       }
     } catch {
-      setStatus({ type: 'error', text: 'Slack 테스트 중 오류가 발생했습니다.' });
+      setStatus({ type: 'error', text: t('slackTestError') });
     } finally {
       setIsTestingSlack(false);
     }
@@ -168,7 +171,7 @@ export default function SlackSettingsPage() {
   // Teams 테스트
   const handleTestTeams = async () => {
     if (!settings.teamsWebhookUrl) {
-      setStatus({ type: 'error', text: 'Teams 웹훅 URL을 먼저 입력해주세요.' });
+      setStatus({ type: 'error', text: t('enterTeamsUrl') });
       return;
     }
     setIsTestingTeams(true);
@@ -179,13 +182,13 @@ export default function SlackSettingsPage() {
         body: JSON.stringify({ webhookUrl: settings.teamsWebhookUrl }),
       });
       if (res.ok) {
-        setStatus({ type: 'success', text: 'Teams 테스트 메시지를 전송했습니다. Teams를 확인해주세요!' });
+        setStatus({ type: 'success', text: t('teamsTestSuccess') });
       } else {
         const err = await res.json();
-        setStatus({ type: 'error', text: err.error || 'Teams 테스트 전송에 실패했습니다.' });
+        setStatus({ type: 'error', text: err.error || t('teamsTestFailed') });
       }
     } catch {
-      setStatus({ type: 'error', text: 'Teams 테스트 중 오류가 발생했습니다.' });
+      setStatus({ type: 'error', text: t('teamsTestError') });
     } finally {
       setIsTestingTeams(false);
     }
@@ -199,9 +202,9 @@ export default function SlackSettingsPage() {
   if (isLoading) {
     return (
       <div className="h-full bg-gray-950 flex flex-col">
-        <DisplayHeader title="알림 설정 (Slack / Teams)" screenId={SCREEN_ID} />
+        <DisplayHeader title={t('title')} screenId={SCREEN_ID} />
         <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500" />
+          <Spinner size="lg" />
         </div>
       </div>
     );
@@ -209,7 +212,7 @@ export default function SlackSettingsPage() {
 
   return (
     <div className="h-full bg-gray-950 flex flex-col">
-      <DisplayHeader title="알림 설정 (Slack / Teams)" screenId={SCREEN_ID} />
+      <DisplayHeader title={t('title')} screenId={SCREEN_ID} />
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
         <div className="max-w-5xl mx-auto space-y-4">
@@ -236,16 +239,16 @@ export default function SlackSettingsPage() {
                   <div>
                     <p className="text-gray-200 font-semibold flex items-center gap-2">
                       <span className="text-blue-400">💬</span>
-                      Slack 알림
+                      {t('slackAlert')}
                     </p>
-                    <p className="text-gray-400 text-sm mt-0.5">Slack 전체 알림 기능을 켜거나 끕니다</p>
+                    <p className="text-gray-400 text-sm mt-0.5">{t('slackAlertDesc')}</p>
                   </div>
                   <button
                     onClick={() => handleToggle('isEnabled')}
                     className={`relative w-12 h-6 rounded-full overflow-hidden transition-colors focus:outline-none ${
                       settings.isEnabled ? 'bg-blue-600' : 'bg-gray-600'
                     }`}
-                    aria-label="Slack 알림 ON/OFF"
+                    aria-label={t('slackAlertOnOff')}
                   >
                     <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${
                       settings.isEnabled ? 'translate-x-7' : 'translate-x-1'
@@ -304,7 +307,7 @@ export default function SlackSettingsPage() {
               disabled={isSaving}
               className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
             >
-              {isSaving ? '저장 중...' : '설정 저장'}
+              {isSaving ? t('saving') : t('saveSettings')}
             </button>
           </div>
         </div>

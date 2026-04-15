@@ -74,6 +74,8 @@ async function handleSummary(reelCd: string) {
               ISSUE_QTY, ISSUE_STATUS, MODEL_NAME, ISSUE_TYPE, ENTER_DATE, ENTER_BY
          FROM IM_ITEM_ISSUE
         WHERE MATERIAL_MFS = :lotNo
+          AND ISSUE_DEFICIT = '3'
+          AND LOT_DIVIDE_SEQUENCE IS NULL
         ORDER BY ISSUE_DATE DESC`,
       { lotNo },
     ),

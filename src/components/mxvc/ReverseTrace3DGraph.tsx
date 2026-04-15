@@ -10,14 +10,14 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Spinner from '@/components/ui/Spinner';
 import type { GraphData, GraphNode, CategoryId } from './reverseTraceGraphBuilder';
 
 const Inner = dynamic(() => import('./ReverseTrace3DGraphInner'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-[#1a1a2e] text-white text-sm">
-      <span className="w-6 h-6 border-2 border-gray-600 border-t-blue-400 rounded-full animate-spin mr-2" />
-      3D 그래프 로딩 중...
+      <Spinner size="md" label="3D 그래프 로딩 중..." labelClassName="text-white" />
     </div>
   ),
 });

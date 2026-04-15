@@ -23,6 +23,7 @@ import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import DashboardSidebar, { PRESETS } from "@/components/ctq/DashboardSidebar";
 import DashboardCharts from "@/components/ctq/DashboardCharts";
 import DisplayFooter from "@/components/display/DisplayFooter";
+import Spinner from "@/components/ui/Spinner";
 import type { DashboardSettings } from "@/types/ctq/quality-dashboard";
 import { DEFAULT_SETTINGS } from "@/types/ctq/quality-dashboard";
 
@@ -147,9 +148,8 @@ export default function U1QualityDashboardPage() {
             </div>
           )}
           {loading && !data && (
-            <div className="flex-1 flex flex-col items-center justify-center text-gray-500 gap-3">
-              <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
-              {t("common.dataLoading")}
+            <div className="flex-1 flex items-center justify-center">
+              <Spinner size="lg" vertical label={t("common.dataLoading")} />
             </div>
           )}
           {data && (

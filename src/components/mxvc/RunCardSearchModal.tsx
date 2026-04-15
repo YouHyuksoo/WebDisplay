@@ -9,6 +9,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+import Spinner from '@/components/ui/Spinner';
 
 interface RunCard {
   RUN_NO: string;
@@ -141,9 +142,8 @@ export default function RunCardSearchModal({ isOpen, onClose, onSelect }: Props)
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={8} className="py-8 text-center text-gray-400">
-                  <span className="inline-block w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin mr-2 align-middle" />
-                  조회 중...
+                <tr><td colSpan={8} className="py-8 text-center">
+                  <Spinner size="sm" label="조회 중..." />
                 </td></tr>
               )}
               {!loading && filtered.length === 0 && (

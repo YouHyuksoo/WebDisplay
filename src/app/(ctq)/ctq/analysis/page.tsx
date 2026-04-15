@@ -12,6 +12,7 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import AnalysisSummaryCards from "@/components/ctq/AnalysisSummaryCards";
 import AnalysisDetailReport from "@/components/ctq/AnalysisDetailReport";
+import Spinner from "@/components/ui/Spinner";
 import { useAnalysis } from "@/hooks/ctq/useAnalysis";
 
 const SCREEN_ID = "ctq-analysis";
@@ -86,10 +87,7 @@ export default function AnalysisPage() {
       <main className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
         <div className="max-w-[1920px] mx-auto w-full">
           {loading && !data && (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
-              <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
-              {t("common.dataLoading")}
-            </div>
+            <Spinner fullscreen size="lg" vertical label={t("common.dataLoading")} />
           )}
 
           {data && (

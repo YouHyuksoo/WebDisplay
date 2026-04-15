@@ -22,6 +22,7 @@ import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import EquipmentTable from "@/components/ctq/EquipmentTable";
 import EquipmentWeeklyChart from "@/components/ctq/EquipmentWeeklyChart";
 import EquipmentPieChart from "@/components/ctq/EquipmentPieChart";
+import Spinner from "@/components/ui/Spinner";
 
 const SCREEN_ID = "ctq-equipment";
 
@@ -80,9 +81,8 @@ export default function EquipmentPage() {
           </div>
         )}
         {loading && !data && (
-          <div className="flex flex-col items-center justify-center flex-1 text-gray-500 gap-3">
-            <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
-            {t("common.dataLoading")}
+          <div className="flex-1 flex items-center justify-center">
+            <Spinner size="lg" vertical label={t("common.dataLoading")} />
           </div>
         )}
         {data && (

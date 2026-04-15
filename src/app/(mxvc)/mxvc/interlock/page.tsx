@@ -17,6 +17,7 @@ import DisplayFooter from "@/components/display/DisplayFooter";
 import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useInterlock } from "@/hooks/mxvc/useInterlock";
 import InterlockCardGrid from "@/components/mxvc/InterlockCardGrid";
+import Spinner from "@/components/ui/Spinner";
 import type { WorkstageCard } from "@/types/mxvc/interlock";
 
 const SCREEN_ID = "mxvc-interlock";
@@ -155,9 +156,8 @@ export default function InterlockPage() {
       {/* 카드 그리드 영역 */}
       <div className="flex-1 min-h-0 overflow-auto px-4 py-4">
         {loading && !data && (
-          <div className="flex items-center justify-center h-64 text-gray-500 gap-2">
-            <span className="w-5 h-5 border-2 border-gray-300 dark:border-gray-600 border-t-blue-400 rounded-full animate-spin" />
-            {t("loading")}
+          <div className="flex items-center justify-center h-64">
+            <Spinner size="md" label={t("loading")} />
           </div>
         )}
         {data && <InterlockCardGrid cards={filteredCards} />}

@@ -14,6 +14,7 @@ import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import OpenShortLineCard from "@/components/ctq/OpenShortLineCard";
+import Spinner from "@/components/ui/Spinner";
 import type { OpenShortResponse } from "@/types/ctq/open-short";
 
 const SCREEN_ID = "ctq-open-short";
@@ -101,10 +102,7 @@ export default function OpenShortPage() {
             </div>
           )}
           {loading && !data && (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
-              <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
-              {t("common.dataLoading")}
-            </div>
+            <Spinner fullscreen size="lg" vertical label={t("common.dataLoading")} />
           )}
           {data && data.lines.length === 0 && (
             <div className="flex items-center justify-center h-64 text-gray-500">

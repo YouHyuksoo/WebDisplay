@@ -8,12 +8,14 @@
  * - 모드별 onSubmit은 부모로 위임 (API 호출/상태관리는 부모 책임)
  */
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ComponentType } from 'react';
+import { Zap, Package, Tag, Wrench, FileSpreadsheet, ScanLine, X, type LucideProps } from 'lucide-react';
 import ModeImmediate from './modes/ModeImmediate';
 import ModeIssue    from './modes/ModeIssue';
 import ModeRun      from './modes/ModeRun';
 import ModeFeeder   from './modes/ModeFeeder';
 import ModeExcel    from './modes/ModeExcel';
+import ModeRefId    from './modes/ModeRefId';
 import {
   MODE_LABELS,
   type TraceMode,
@@ -21,6 +23,7 @@ import {
   type RunModeInput,
   type FeederModeInput,
   type ExcelCandidate,
+  type RefIdModeInput,
 } from '@/types/mxvc/reverse-trace-wizard';
 
 interface Props {
@@ -33,20 +36,24 @@ interface Props {
   onRunSubmit:          (input: RunModeInput) => void;
   onFeederSubmit:       (input: FeederModeInput) => void;
   onExcelSubmit:        (candidates: ExcelCandidate[]) => void;
+  onRefIdSubmit:        (input: RefIdModeInput) => void;
 }
 
-const MODE_CARDS: { mode: TraceMode; emoji: string; desc: string }[] = [
-  { mode: 'immediate', emoji: '⚡', desc: '릴번호를 바로 입력' },
-  { mode: 'issue',     emoji: '📦', desc: '기간 + 품목으로 출고된 릴 찾기' },
-  { mode: 'run',       emoji: '🏷️', desc: '런번호(RUN_NO)로 찾기' },
-  { mode: 'feeder',    emoji: '🔧', desc: '특정일 피더에 걸린 릴 찾기' },
-  { mode: 'excel',     emoji: '📄', desc: '엑셀(1열) 릴번호 일괄 업로드' },
+type IconType = ComponentType<LucideProps>;
+
+const MODE_CARDS: { mode: TraceMode; Icon: IconType; desc: string }[] = [
+  { mode: 'immediate', Icon: Zap,              desc: '릴번호를 바로 입력' },
+  { mode: 'issue',     Icon: Package,          desc: '기간 + 품목으로 출고된 릴 찾기' },
+  { mode: 'run',       Icon: Tag,              desc: '런번호(RUN_NO)로 찾기' },
+  { mode: 'feeder',    Icon: Wrench,           desc: '특정일 피더에 걸린 릴 찾기' },
+  { mode: 'excel',     Icon: FileSpreadsheet,  desc: '엑셀(1열) 릴번호 일괄 업로드' },
+  { mode: 'refid',     Icon: ScanLine,         desc: 'ReferenceID + 날짜로 마운터 장착 릴 찾기' },
 ];
 
 export default function TraceWizardModal({
   isOpen, initialMode, loading,
   onClose,
-  onImmediateSubmit, onIssueSubmit, onRunSubmit, onFeederSubmit, onExcelSubmit,
+  onImmediateSubmit, onIssueSubmit, onRunSubmit, onFeederSubmit, onExcelSubmit, onRefIdSubmit,
 }: Props) {
   const [step, setStep] = useState<'pick' | 'input'>(initialMode ? 'input' : 'pick');
   const [mode, setMode] = useState<TraceMode | null>(initialMode ?? null);
@@ -79,23 +86,36 @@ export default function TraceWizardModal({
           <h3 className="text-sm font-semibold text-zinc-100">
             역추적 {step === 'pick' ? '— 모드 선택' : mode ? `— ${MODE_LABELS[mode]}` : ''}
           </h3>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-200 text-lg leading-none">✕</button>
+          <button
+            onClick={onClose}
+            aria-label="닫기"
+            className="text-zinc-400 hover:text-zinc-200 leading-none"
+          >
+            <X size={18} strokeWidth={2} />
+          </button>
         </header>
 
         <div className="p-5">
           {step === 'pick' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {MODE_CARDS.map((c) => (
-                <button
-                  key={c.mode}
-                  onClick={() => handlePickMode(c.mode)}
-                  className="flex flex-col items-start gap-1 rounded-lg border border-zinc-700 bg-zinc-800/60 p-4 text-left transition-colors hover:border-blue-500 hover:bg-blue-900/20"
-                >
-                  <span className="text-2xl">{c.emoji}</span>
-                  <span className="text-sm font-semibold text-zinc-100">{MODE_LABELS[c.mode]}</span>
-                  <span className="text-xs text-zinc-400">{c.desc}</span>
-                </button>
-              ))}
+              {MODE_CARDS.map((c) => {
+                const Icon = c.Icon;
+                return (
+                  <button
+                    key={c.mode}
+                    onClick={() => handlePickMode(c.mode)}
+                    className="group flex flex-col items-start gap-2 rounded-lg border border-zinc-700 bg-zinc-800/60 p-4 text-left transition-colors hover:border-blue-500 hover:bg-blue-900/20"
+                  >
+                    <Icon
+                      size={20}
+                      strokeWidth={1.75}
+                      className="text-zinc-400 group-hover:text-blue-400 transition-colors"
+                    />
+                    <span className="text-sm font-semibold text-zinc-100">{MODE_LABELS[c.mode]}</span>
+                    <span className="text-xs text-zinc-400">{c.desc}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
 
@@ -113,6 +133,9 @@ export default function TraceWizardModal({
           )}
           {step === 'input' && mode === 'excel' && (
             <ModeExcel onSubmit={onExcelSubmit} onBack={handleBack} />
+          )}
+          {step === 'input' && mode === 'refid' && (
+            <ModeRefId onSubmit={onRefIdSubmit} onBack={handleBack} loading={loading} />
           )}
         </div>
       </div>

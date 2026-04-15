@@ -9,6 +9,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import ReactECharts from 'echarts-for-react';
 import type { PostProcessFpyRow } from '@/types/mxvc/post-process';
 import { POST_PROCESS_TABLES, POST_PROCESS_TABLE_LABELS } from '@/lib/queries/post-process';
@@ -35,6 +36,7 @@ function buildBarData(fpyChart: Record<string, PostProcessFpyRow[]>) {
 }
 
 export default function PostProcessFpyChart({ fpyChart, height = 260 }: Props) {
+  const t = useTranslations('mxvc.postProcess');
   const data   = buildBarData(fpyChart);
   const hasData = data.some((d) => d.total > 0);
 
@@ -42,13 +44,13 @@ export default function PostProcessFpyChart({ fpyChart, height = 260 }: Props) {
     return (
       <div className="px-6 pb-4 shrink-0">
         <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
-          검사공정 직행율 현황
+          {t('fpyStatusTitle')}
         </h3>
         <div
           className="flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-400 dark:text-gray-500"
           style={{ height }}
         >
-          데이터 없음
+          {t('noData')}
         </div>
       </div>
     );
@@ -79,7 +81,7 @@ export default function PostProcessFpyChart({ fpyChart, height = 260 }: Props) {
       textStyle: { color: '#e5e7eb', fontSize: 12 },
       formatter: (params: { name: string; value: number | null }[]) => {
         const p = params[0];
-        return `<b style="color:#9ca3af">${p.name}</b><br/>직행율: <b>${p.value != null ? p.value.toFixed(2) + '%' : '-'}</b>`;
+        return `<b style="color:#9ca3af">${p.name}</b><br/>${t('fpyLabel')}: <b>${p.value != null ? p.value.toFixed(2) + '%' : '-'}</b>`;
       },
     },
     markLine: {
@@ -132,9 +134,9 @@ export default function PostProcessFpyChart({ fpyChart, height = 260 }: Props) {
   return (
     <div className="px-6 pb-4 shrink-0">
       <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
-        검사공정 직행율 현황
+        {t('fpyStatusTitle')}
         <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">
-          조회 기간 합계 기준
+          {t('timeRangeSumHint')}
         </span>
       </h3>
       <ReactECharts

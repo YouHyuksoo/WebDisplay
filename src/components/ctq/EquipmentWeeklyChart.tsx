@@ -22,6 +22,7 @@ import {
   Legend,
 } from "recharts";
 import { useTranslations } from "next-intl";
+import Spinner from "@/components/ui/Spinner";
 import type { EquipmentWeeklyPoint, EquipmentWeeklyResponse } from "@/types/ctq/equipment";
 
 const PROCESS_COLORS: Record<string, string> = {
@@ -71,9 +72,8 @@ export default function EquipmentWeeklyChart({ selectedLines }: Props) {
 
   if (loading && data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500 text-sm">
-        <span className="w-5 h-5 border-2 border-gray-700 border-t-blue-400 rounded-full animate-spin mr-2" />
-        {t("common.dataLoading")}
+      <div className="flex items-center justify-center h-full">
+        <Spinner size="md" label={t("common.dataLoading")} />
       </div>
     );
   }

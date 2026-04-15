@@ -66,13 +66,37 @@ function hasNg(row: FoolproofRow): boolean {
 
 interface FoolproofCardProps {
   row: FoolproofRow;
+  /** 3열 모드 — 폰트/패딩 축소 */
+  compact?: boolean;
 }
 
-export default function FoolproofCard({ row }: FoolproofCardProps) {
+export default function FoolproofCard({ row, compact = false }: FoolproofCardProps) {
   const tCheck = useTranslations('checkItem');
   const lineName = String(row.LINE_NAME ?? row.LINE_CODE ?? '-');
   const ng = hasNg(row);
-  const noRun = !row.RUNNING_RUN_NO; // Run No 없음 = 비가동 상태
+  const noRun = !row.RUNNING_RUN_NO;
+
+  const sz = compact ? {
+    headerPx: 'px-3 py-1',
+    lineText: 'text-xl',
+    dateText: 'text-sm',
+    rowPx: 'px-2 py-0.5 gap-1',
+    labelW: 'w-20',
+    labelText: 'text-sm',
+    valueText: 'text-sm',
+    badgePx: 'px-3 py-0.5 text-sm',
+    statusBadge: 'px-2 py-0.5 text-sm',
+  } : {
+    headerPx: 'px-3 py-1 md:px-4 md:py-2',
+    lineText: 'text-lg md:text-xl',
+    dateText: 'text-base',
+    rowPx: 'px-2 py-0.5 gap-1 md:gap-2 md:px-3 md:py-1',
+    labelW: 'w-20 md:w-28',
+    labelText: 'text-xs md:text-sm',
+    valueText: 'text-xs md:text-sm',
+    badgePx: 'px-4 py-1 text-base',
+    statusBadge: 'px-1.5 py-0.5 text-xs md:px-2.5 md:text-sm',
+  };
 
   return (
     <div
@@ -82,7 +106,7 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
     >
       {/* 카드 헤더 — 라인명 + 상태변경일시 */}
       <div
-        className={`flex items-center justify-between px-3 py-1 md:px-4 md:py-2 ${
+        className={`flex items-center justify-between ${sz.headerPx} ${
           noRun
             ? 'bg-zinc-600 text-zinc-300'
             : ng
@@ -90,9 +114,9 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
             : 'bg-emerald-700 text-white'
         }`}
       >
-        <span className="text-lg font-black md:text-xl">{lineName}</span>
+        <span className={`font-black ${sz.lineText}`}>{lineName}</span>
         {row.RUNNING_RUN_DATE && (
-          <span className="text-base font-semibold opacity-90">
+          <span className={`font-semibold opacity-90 ${sz.dateText}`}>
             {row.RUNNING_RUN_DATE}
           </span>
         )}
@@ -111,31 +135,31 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
           return (
             <div
               key={itemKey}
-              className={`flex items-center gap-1 px-2 py-0.5 md:gap-2 md:px-3 md:py-1 ${
+              className={`flex items-center ${sz.rowPx} ${
                 idx % 2 === 0 ? 'bg-zinc-900 dark:bg-zinc-900' : 'bg-zinc-800/50 dark:bg-zinc-800/50'
               }`}
             >
               {/* 항목명 */}
-              <span className="w-20 shrink-0 truncate text-xs font-bold text-white md:w-28 md:text-sm">
+              <span className={`shrink-0 truncate font-bold text-white ${sz.labelW} ${sz.labelText}`}>
                 {tCheck(item.labelKey)}
               </span>
 
               {isValueOnly ? (
                 <>
-                  <span className="min-w-0 flex-1 truncate text-xs font-semibold text-cyan-300 md:text-sm">
+                  <span className={`min-w-0 flex-1 truncate font-semibold text-cyan-300 ${sz.valueText}`}>
                     {plainVal || '-'}
                     {itemKey === 'RUNNING_RUN_NO' && row.RUNNING_LOT_PLAN_QTY != null && (
-                      <span className="ml-2 text-zinc-400">LOT: {row.RUNNING_LOT_PLAN_QTY}</span>
+                      <span className="ml-1 text-zinc-400">LOT: {row.RUNNING_LOT_PLAN_QTY}</span>
                     )}
                     {'subKey' in item && row[(item as { subKey: string }).subKey] ? (
-                      <span className="ml-2 text-xs text-zinc-400">[{String(row[(item as { subKey: string }).subKey])}]</span>
+                      <span className="ml-1 text-xs text-zinc-400">[{String(row[(item as { subKey: string }).subKey])}]</span>
                     ) : null}
                     {'subKey2' in item && row[(item as { subKey2: string }).subKey2] ? (
                       <span className="ml-1 text-xs text-zinc-500">{String(row[(item as { subKey2: string }).subKey2])}</span>
                     ) : null}
                   </span>
                   {'badgeKey' in item && row[(item as { badgeKey: string }).badgeKey] && (
-                    <span className={`ml-auto shrink-0 rounded-lg px-4 py-1 text-base font-black ${
+                    <span className={`ml-auto shrink-0 rounded-lg font-black ${sz.badgePx} ${
                       String(row[(item as { badgeKey: string }).badgeKey]) === 'OK'
                         ? 'bg-emerald-600 text-white'
                         : 'bg-amber-500 text-black'
@@ -144,7 +168,7 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
                     </span>
                   )}
                   {'badgeKey2' in item && row[(item as { badgeKey2: string }).badgeKey2] && (
-                    <span className="shrink-0 rounded-lg bg-zinc-700 px-4 py-1 text-base font-black text-zinc-200">
+                    <span className={`shrink-0 rounded-lg bg-zinc-700 font-black text-zinc-200 ${sz.badgePx}`}>
                       {String(row[(item as { badgeKey2: string }).badgeKey2])}
                     </span>
                   )}
@@ -152,18 +176,18 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
               ) : isActive ? (
                 <>
                   {/* 상태 뱃지 */}
-                  <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-black md:px-2.5 md:text-sm ${getCheckBadgeClass(status)}`}>
+                  <span className={`shrink-0 rounded font-black ${sz.statusBadge} ${getCheckBadgeClass(status)}`}>
                     {status}
                   </span>
                   {/* LOT NO 또는 값/날짜 표시 */}
                   {'lotKeys' in item ? (
                     <>
-                      <span className="min-w-0 flex-1 truncate text-sm text-zinc-300">
+                      <span className={`min-w-0 flex-1 truncate text-zinc-300 ${sz.valueText}`}>
                         {(item as { lotKeys: readonly string[] }).lotKeys
                           .map((lk) => String(row[lk] ?? '')).filter(Boolean).join(' / ')}
                       </span>
                       {'rateKeys' in item && (
-                        <span className="ml-auto shrink-0 text-sm font-bold text-yellow-300">
+                        <span className={`ml-auto shrink-0 font-bold text-yellow-300 ${sz.valueText}`}>
                           {(item as unknown as { rateKeys: string[] }).rateKeys
                             .map((rk) => row[rk] != null ? `${Number(row[rk]).toFixed(1)}%` : '').filter(Boolean).join('/')}
                         </span>
@@ -171,13 +195,13 @@ export default function FoolproofCard({ row }: FoolproofCardProps) {
                     </>
                   ) : dateVal ? (
                     <>
-                      <span className={`min-w-0 truncate text-sm ${
+                      <span className={`min-w-0 truncate ${sz.valueText} ${
                         status === 'NG' ? 'font-bold text-red-400' : 'text-zinc-300'
                       }`}>
                         {dateVal}
                       </span>
                       {'rateKeys' in item && (
-                        <span className="ml-auto shrink-0 text-sm font-bold text-yellow-300">
+                        <span className={`ml-auto shrink-0 font-bold text-yellow-300 ${sz.valueText}`}>
                           {(item as unknown as { rateKeys: string[] }).rateKeys
                             .map((rk) => row[rk] != null ? `${Number(row[rk]).toFixed(1)}%` : '').filter(Boolean).join('/')}
                         </span>

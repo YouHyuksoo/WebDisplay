@@ -4,8 +4,7 @@
  *
  * 초보자 가이드:
  * - 모드별 추가 컬럼 표시 (issue: 출고일/품목, run: 품목/출고일, feeder: 설치일시, excel: 행번호)
- * - 행 클릭으로 선택 → 하이라이트만 (조회는 [조회] 버튼 클릭 필요)
- * - [조회] 버튼: selectedReelCd가 있을 때만 활성
+ * - 행 클릭으로 선택 → 하이라이트만 (조회는 상단 네비게이션의 [조회] 버튼 클릭 필요)
  */
 'use client';
 import type { TraceMode, ReelCandidate } from '@/types/mxvc/reverse-trace-wizard';
@@ -13,13 +12,12 @@ import type { TraceMode, ReelCandidate } from '@/types/mxvc/reverse-trace-wizard
 interface Props {
   mode:           TraceMode;
   candidates:     ReelCandidate[];
-  selectedReelCd: string;
+  selectedIdx:    number;
   tracedReelCd:   string;
-  onSelect:       (reelCd: string) => void;
-  onTrace:        () => void;
+  onSelect:       (idx: number) => void;
 }
 
-export default function ReelListSidebar({ mode, candidates, selectedReelCd, tracedReelCd, onSelect, onTrace }: Props) {
+export default function ReelListSidebar({ mode, candidates, selectedIdx, tracedReelCd, onSelect }: Props) {
   return (
     <aside className="flex flex-col h-full w-full border-r border-zinc-800 bg-zinc-950">
       <header className="flex-shrink-0 px-3 py-2 border-b border-zinc-800">
@@ -34,13 +32,13 @@ export default function ReelListSidebar({ mode, candidates, selectedReelCd, trac
           <div className="p-6 text-center text-xs text-zinc-500">조회 결과 없음</div>
         ) : (
           <ul className="divide-y divide-zinc-800">
-            {candidates.map((c) => {
-              const isSelected = c.reelCd === selectedReelCd;
+            {candidates.map((c, idx) => {
+              const isSelected = idx === selectedIdx;
               const isTraced   = c.reelCd === tracedReelCd;
               return (
                 <li
-                  key={c.reelCd}
-                  onClick={() => onSelect(c.reelCd)}
+                  key={`${c.reelCd}-${idx}`}
+                  onClick={() => onSelect(idx)}
                   className={`px-3 py-2 text-xs cursor-pointer transition-colors ${
                     isSelected
                       ? 'bg-blue-900/40 border-l-2 border-blue-400'
@@ -57,13 +55,18 @@ export default function ReelListSidebar({ mode, candidates, selectedReelCd, trac
                       {c.issueDate.slice(0, 10)} · {'itemCode' in c ? c.itemCode : ''} · {c.issueQty.toLocaleString()}ea
                     </div>
                   )}
-                  {'installDt' in c && (
+                  {'slotNo' in c && (
                     <div className="mt-0.5 text-[10px] text-zinc-400">
-                      {c.partNo} · 설치 {c.installDt.slice(0, 16)}
+                      슬롯 {c.slotNo} · {c.eqpNm} · {c.startDt.slice(0, 16)}
                     </div>
                   )}
                   {'rowIndex' in c && (
                     <div className="mt-0.5 text-[10px] text-zinc-500">엑셀 {c.rowIndex}행</div>
+                  )}
+                  {'referenceId' in c && (
+                    <div className="mt-0.5 text-[10px] text-zinc-400">
+                      {c.referenceId} · {c.eqpNm} · {c.startDt.slice(0, 16)}
+                    </div>
                   )}
                 </li>
               );
@@ -72,15 +75,6 @@ export default function ReelListSidebar({ mode, candidates, selectedReelCd, trac
         )}
       </div>
 
-      <footer className="flex-shrink-0 border-t border-zinc-800 p-2">
-        <button
-          onClick={onTrace}
-          disabled={!selectedReelCd}
-          className="w-full rounded bg-blue-600 py-1.5 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-40"
-        >
-          {selectedReelCd ? `[${selectedReelCd.slice(0, 24)}${selectedReelCd.length > 24 ? '…' : ''}] 조회` : '릴을 선택하세요'}
-        </button>
-      </footer>
     </aside>
   );
 }

@@ -48,7 +48,7 @@ export default function U1FpyLineCard({ line, dateRange }: U1FpyLineCardProps) {
         <span className={`px-2 py-0.5 rounded text-sm font-bold ${
           line.overallGrade === "A" ? "bg-red-600 text-white" : "bg-green-700 text-white"
         }`}>
-          {line.overallGrade === "A" ? t("grade.lineStop") : "OK"}
+          {line.overallGrade === "A" ? t("grade.lineStop") : t("grade.ok")}
         </span>
       </div>
 

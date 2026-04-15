@@ -8,12 +8,15 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import ReactECharts from 'echarts-for-react';
 import type { PostProcessEolStepDefect } from '@/types/mxvc/post-process';
 
 interface Props {
   eolStepDefects: PostProcessEolStepDefect[];
-  height?: number;
+  height?:        number;
+  days?:          number;
+  onDaysChange?:  (days: number) => void;
 }
 
 const PIE_COLORS = [
@@ -24,7 +27,7 @@ const PIE_COLORS = [
 
 const MAX_SLICES = 11; // 상위 10개 + 기타
 
-function buildPieData(rows: PostProcessEolStepDefect[]) {
+function buildPieData(rows: PostProcessEolStepDefect[], otherLabel: string) {
   const sorted = [...rows].sort((a, b) => b.failCount - a.failCount);
   if (sorted.length <= MAX_SLICES) {
     return sorted.map((r) => ({ name: r.nameDetail, value: r.failCount }));
@@ -33,12 +36,13 @@ function buildPieData(rows: PostProcessEolStepDefect[]) {
   const rest = sorted.slice(MAX_SLICES - 1).reduce((s, r) => s + r.failCount, 0);
   return [
     ...top.map((r) => ({ name: r.nameDetail, value: r.failCount })),
-    { name: '기타', value: rest },
+    { name: otherLabel, value: rest },
   ];
 }
 
-export default function PostProcessEolDefectPie({ eolStepDefects, height = 260 }: Props) {
-  const data    = buildPieData(eolStepDefects);
+export default function PostProcessEolDefectPie({ eolStepDefects, height = 260, days = 3, onDaysChange }: Props) {
+  const t = useTranslations('mxvc.postProcess');
+  const data    = buildPieData(eolStepDefects, t('otherLabel'));
   const total   = eolStepDefects.reduce((s, r) => s + r.failCount, 0);
   const hasData = total > 0;
 
@@ -50,7 +54,7 @@ export default function PostProcessEolDefectPie({ eolStepDefects, height = 260 }
       borderColor: '#374151',
       borderWidth: 1,
       textStyle: { color: '#e5e7eb', fontSize: 12 },
-      formatter: '{b}<br/>불량: <b>{c}건</b> ({d}%)',
+      formatter: `{b}<br/>${t('defectLabel')}: <b>{c}${t('countUnit')}</b> ({d}%)`,
     },
     legend: {
       orient: 'vertical',
@@ -98,7 +102,7 @@ export default function PostProcessEolDefectPie({ eolStepDefects, height = 260 }
       left: '35.5%',
       top: 'center',
       style: {
-        text: `${total}\n건`,
+        text: `${total}\n${t('pieCenterUnit')}`,
         textAlign: 'center',
         fill: '#e5e7eb',
         fontSize: 18,
@@ -113,22 +117,35 @@ export default function PostProcessEolDefectPie({ eolStepDefects, height = 260 }
 
   return (
     <div className="flex flex-col shrink-0" style={{ width: '38%', minWidth: 260 }}>
-      <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1 px-4">
-        EOL 스텝별 불량 분포
-        <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">최근 3일</span>
+      <div className="px-4 mb-1 flex items-center gap-2 flex-wrap">
+        <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 shrink-0">
+          {t('eolDefectTitle')}
+        </h3>
         {hasData && (
-          <span className="ml-2 font-normal text-gray-400 dark:text-gray-500 text-xs">
-            총 {total}건
-          </span>
+          <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">{t('totalLabel', { count: total })}</span>
         )}
-      </h3>
+        <div className="ml-auto flex items-center gap-2 shrink-0">
+          <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{t('recentLabel')}</span>
+          <input
+            type="range"
+            min={1}
+            max={15}
+            step={1}
+            value={days}
+            onChange={(e) => onDaysChange?.(Number(e.target.value))}
+            className="w-20 h-1.5 accent-blue-500 cursor-pointer"
+            title={`${days}${t('daysUnit')}`}
+          />
+          <span className="text-xs font-semibold text-blue-400 w-8 text-right">{days}{t('daysUnit')}</span>
+        </div>
+      </div>
 
       {!hasData ? (
         <div
           className="mx-4 flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-400 dark:text-gray-500"
           style={{ height }}
         >
-          불량 없음
+          {t('noDefect')}
         </div>
       ) : (
         <ReactECharts option={option} style={{ height, width: '100%' }} notMerge lazyUpdate />

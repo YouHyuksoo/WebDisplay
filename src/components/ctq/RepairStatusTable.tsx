@@ -99,12 +99,23 @@ export default function RepairStatusTable({ rows }: Props) {
                 </span>
               </td>
               <td className="px-2 py-0.5 text-center border border-gray-800 whitespace-nowrap">
-                <span className={row.repairResultName === "-" ? "text-gray-500" : "text-green-400 font-bold"}>
+                <span className={
+                  row.repairResultName === "수리완료" ? "text-green-400 font-bold"
+                  : row.repairResultName === "대기"     ? "text-yellow-400 font-bold"
+                  : row.repairResultName === "불합격"   ? "text-red-400 font-bold"
+                  : "text-gray-500"
+                }>
                   {row.repairResultName}
                 </span>
               </td>
-              <td className="px-2 py-0.5 text-center border border-gray-800 text-gray-300 whitespace-nowrap">
-                {row.receiptName}
+              <td className="px-2 py-0.5 text-center border border-gray-800 whitespace-nowrap">
+                <span className={
+                  row.receiptName === "1입고" ? "text-cyan-400 font-bold"
+                  : row.receiptName === "2반품" ? "text-orange-400 font-bold"
+                  : "text-gray-400"
+                }>
+                  {row.receiptName}
+                </span>
               </td>
               <td className="px-2 py-0.5 text-center border border-gray-800 text-gray-300">
                 {row.locationCode}

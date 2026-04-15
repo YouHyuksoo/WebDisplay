@@ -24,6 +24,9 @@ const NG_KEYS = [
   'MASK_CHECK', 'SQUEEZE_CHECK', 'SOLDER_CHECK', 'MASTER_CHECK_AOI',
 ];
 
+const COLS_KEY = 'mxvc-foolproof-cols';
+type ColMode = 2 | 3;
+
 interface FoolproofStatusProps {
   screenId: string;
 }
@@ -36,17 +39,31 @@ export default function FoolproofStatus({
   const [selectedLines, setSelectedLines] = useState(() => getSelectedLines(screenId));
   const [currentPage, setCurrentPage] = useState(0);
 
-  /* 모바일(< 480px) = 1개, 태블릿(< 768px) = 2개, 데스크톱 = 4개 */
-  const [cardsPerPage, setCardsPerPage] = useState(4);
+  /* 열 수 선택 (2열 / 3열) — localStorage 저장 */
+  const [colMode, setColMode] = useState<ColMode>(2);
+  useEffect(() => {
+    const saved = localStorage.getItem(COLS_KEY);
+    if (saved === '2' || saved === '3') setColMode(Number(saved) as ColMode);
+  }, []);
+  const handleColMode = (c: ColMode) => {
+    setColMode(c);
+    localStorage.setItem(COLS_KEY, String(c));
+    setCurrentPage(0);
+  };
+
+  /* 모바일(< 480px) = 1개, 태블릿(< 768px) = 2개, 데스크톱 = 열수×2 */
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   useEffect(() => {
     const update = () => {
-      const w = window.innerWidth;
-      setCardsPerPage(w < 480 ? 1 : w < 768 ? 2 : 4);
+      setIsMobile(window.innerWidth < 480);
+      setIsTablet(window.innerWidth < 768);
     };
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
+  const cardsPerPage = isMobile ? 1 : isTablet ? 2 : colMode * 2;
 
   const { data, error, isLoading } = useSWR(
     buildDisplayApiUrl(screenId, { orgId: DEFAULT_ORG_ID, lines: encodeURIComponent(selectedLines) }),
@@ -92,8 +109,26 @@ export default function FoolproofStatus({
     [rows],
   );
 
+  const colToggle = (
+    <div className="flex items-center gap-1 rounded-lg border border-zinc-600 bg-zinc-800 p-0.5">
+      {([2, 3] as ColMode[]).map((c) => (
+        <button
+          key={c}
+          onClick={() => handleColMode(c)}
+          className={`rounded px-3 py-1 text-sm font-bold transition-colors ${
+            colMode === c
+              ? 'bg-cyan-500 text-zinc-950'
+              : 'text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          {c}열
+        </button>
+      ))}
+    </div>
+  );
+
   return (
-    <DisplayLayout screenId={screenId}>
+    <DisplayLayout screenId={screenId} extraHeaderContent={colToggle}>
       <div className="flex h-full flex-col overflow-hidden">
         {ngCount > 0 && <NgAlertBanner message={t('foolproofNgWarning', { count: ngCount })} showIcon={false} compact />}
 
@@ -117,10 +152,12 @@ export default function FoolproofStatus({
                 ? 'grid-cols-1 grid-rows-1'
                 : cardsPerPage === 2
                 ? 'grid-cols-1 grid-rows-2'
+                : cardsPerPage === 6
+                ? 'grid-cols-3 grid-rows-2'
                 : 'grid-cols-2 grid-rows-2'
             }`}>
               {pageRows.map((row, idx) => (
-                <FoolproofCard key={row.LINE_CODE ?? idx} row={row} />
+                <FoolproofCard key={row.LINE_CODE ?? idx} row={row} compact={colMode === 3} />
               ))}
             </div>
           )}

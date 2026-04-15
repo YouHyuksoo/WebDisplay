@@ -386,7 +386,7 @@
       "url": "/mxvc/interlock",
       "color": "#f59e0b",
       "icon": "svg:interlock",
-      "layer": 8
+      "layer": -1
     },
     {
       "id": "mex-inspect-result",
@@ -394,7 +394,7 @@
       "url": "/mxvc/inspect-result",
       "color": "#8b5cf6",
       "icon": "svg:error-log",
-      "layer": 8
+      "layer": -1
     },
     {
       "id": "mex-traceability",
@@ -450,6 +450,14 @@
       "url": "/mxvc/post-process",
       "color": "#10b981",
       "icon": "svg:chart-bar",
+      "layer": 8
+    },
+    {
+      "id": "menu-mxvc-repair-status",
+      "title": "수리현황",
+      "url": "/mxvc/repair-status",
+      "color": "#f59e0b",
+      "icon": "svg:wrench",
       "layer": 8
     }
   ]

@@ -12,6 +12,8 @@
 
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 interface TeamsWebhookSectionProps {
   webhookUrl: string;
   channelName: string;
@@ -34,20 +36,22 @@ export default function TeamsWebhookSection({
   onToggle,
   onTest,
 }: TeamsWebhookSectionProps) {
+  const t = useTranslations('ctq.pages.slackSettings');
+
   return (
     <div className="bg-gray-900 rounded-xl p-5 border border-gray-700 space-y-4">
       {/* 헤더: 타이틀 + ON/OFF 토글 */}
       <div className="flex items-center justify-between">
         <h3 className="text-gray-200 font-semibold flex items-center gap-2">
           <span className="text-purple-400">🔷</span>
-          Microsoft Teams 웹훅 설정
+          {t('teamsWebhookSettings')}
         </h3>
         <button
           onClick={onToggle}
           className={`relative w-12 h-6 rounded-full overflow-hidden transition-colors focus:outline-none ${
             isEnabled ? 'bg-purple-600' : 'bg-gray-600'
           }`}
-          aria-label="Teams 알림 ON/OFF"
+          aria-label={t('teamsAlertOnOff')}
           type="button"
         >
           <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${
@@ -59,24 +63,24 @@ export default function TeamsWebhookSection({
       {/* 웹훅 URL */}
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1.5">
-          Teams 웹훅 URL <span className="text-red-400">*</span>
+          {t('teamsWebhookUrl')} <span className="text-red-400">*</span>
         </label>
         <input
           type="url"
           value={webhookUrl}
           onChange={(e) => onChange('teamsWebhookUrl', e.target.value)}
-          placeholder="https://your-org.webhook.office.com/... 또는 https://...powerplatform.com/..."
+          placeholder={t('teamsWebhookUrlPlaceholder')}
           className="w-full px-4 py-2.5 rounded-lg bg-gray-800 border border-gray-600 text-gray-200 placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none font-mono text-sm"
         />
         <p className="mt-1.5 text-xs text-gray-500">
-          Teams Incoming Webhook URL 또는 Power Automate HTTP 트리거 URL 모두 지원합니다.
+          {t('teamsWebhookUrlDesc')}
         </p>
       </div>
 
       {/* 채널명 */}
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1.5">
-          채널명 <span className="text-gray-500">(선택)</span>
+          {t('channelName')} <span className="text-gray-500">{t('optional')}</span>
         </label>
         <input
           type="text"
@@ -86,7 +90,7 @@ export default function TeamsWebhookSection({
           className="w-full px-4 py-2.5 rounded-lg bg-gray-800 border border-gray-600 text-gray-200 placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
         />
         <p className="mt-1.5 text-xs text-gray-500">
-          표시용 채널명입니다. 실제 전송 채널은 웹훅 설정에서 결정됩니다.
+          {t('channelNameDesc')}
         </p>
       </div>
 
@@ -97,7 +101,7 @@ export default function TeamsWebhookSection({
         className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed text-gray-200 text-sm font-medium rounded-lg transition-colors border border-gray-600"
       >
         <span>{isTesting ? '⏳' : '📨'}</span>
-        {isTesting ? '전송 중...' : 'Teams 테스트 메시지 전송'}
+        {isTesting ? t('sending') : t('testMessageSend')}
       </button>
     </div>
   );

@@ -9,6 +9,7 @@
  * - 재검 건수: 동일 바코드 FILE_NAME 2회 이상
  * - 수리대기/완료: IP_PRODUCT_WORK_QC.RECEIPT_DEFICIT ('1'=대기, '2'=완료)
  */
+import { useTranslations } from 'next-intl';
 import type { PostProcessKpi } from '@/types/mxvc/post-process';
 
 interface Props {
@@ -42,11 +43,13 @@ function KpiCard({ label, value, sub, valueClass = '' }: CardProps) {
 }
 
 export default function PostProcessKpiCards({ kpi, ictTotal, eolTotal }: Props) {
+  const t = useTranslations('mxvc.postProcess');
+
   return (
     <div className="grid grid-cols-3 gap-4 flex-1 min-w-0">
       {/* 생산 계획 — 라인별 모델명/RUN_NO 표시 */}
       <div className="flex flex-col justify-between rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
-        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">생산 계획</span>
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('planQty')}</span>
         <span className="text-3xl font-bold tabular-nums text-gray-800 dark:text-gray-100">
           {kpi.planQty.toLocaleString()}
         </span>
@@ -60,32 +63,32 @@ export default function PostProcessKpiCards({ kpi, ictTotal, eolTotal }: Props) 
             </div>
           ))}
           {kpi.planLines.length === 0 && (
-            <span className="text-xs text-gray-400 dark:text-gray-500">진행 중인 RUN 없음</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">{t('noActiveRun')}</span>
           )}
         </div>
       </div>
       <KpiCard
-        label="ICT 투입실적"
+        label={t('ictTotal')}
         value={ictTotal.toLocaleString()}
-        sub="당일 08:00 ~ 현재 (IS_LAST=Y)"
+        sub={t('timeRangeHintIsLast')}
         valueClass="text-blue-600 dark:text-blue-400"
       />
       <KpiCard
-        label="EOL 검사실적"
+        label={t('eolTotal')}
         value={eolTotal.toLocaleString()}
-        sub="당일 08:00 ~ 현재 (IS_LAST=Y)"
+        sub={t('timeRangeHintIsLast')}
         valueClass="text-violet-600 dark:text-violet-400"
       />
       <KpiCard
-        label="불량율"
+        label={t('defectRate')}
         value={`${kpi.defectRate.toFixed(2)}%`}
-        sub="ICT / EOL / COATING 1·2 / DOWNLOAD"
+        sub={t('defectRateSub')}
         valueClass={badCls(kpi.defectRate)}
       />
       <KpiCard
-        label="재검 건수"
-        value={`${kpi.retestCount.toLocaleString()}건`}
-        sub="동일 바코드 FILE_NAME 2회 이상"
+        label={t('retestCount')}
+        value={`${kpi.retestCount.toLocaleString()}${t('countUnit')}`}
+        sub={t('retestCountSub')}
         valueClass={kpi.retestCount === 0
           ? 'text-emerald-500 dark:text-emerald-400'
           : kpi.retestCount <= 5
@@ -93,9 +96,9 @@ export default function PostProcessKpiCards({ kpi, ictTotal, eolTotal }: Props) 
           : 'text-red-500 dark:text-red-400'}
       />
       <KpiCard
-        label="수리 현황"
-        value={`대기 ${kpi.repairWaiting}건`}
-        sub={`완료 ${kpi.repairDone}건`}
+        label={t('repairStatus')}
+        value={t('waiting', { count: kpi.repairWaiting })}
+        sub={t('done', { count: kpi.repairDone })}
         valueClass={kpi.repairWaiting > 0
           ? 'text-orange-500 dark:text-orange-400'
           : 'text-emerald-500 dark:text-emerald-400'}

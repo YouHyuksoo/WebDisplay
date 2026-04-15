@@ -6,6 +6,7 @@
  * - 각 카드: 모델명 + 매거진번호 + CURRENT_QTY
  * - 그룹 소계 + 전체 합계 표시
  */
+import { useTranslations } from 'next-intl';
 import type { PostProcessMagazineRow } from '@/types/mxvc/post-process';
 
 interface Props {
@@ -13,16 +14,16 @@ interface Props {
 }
 
 /** 입고 후 경과시간 문자열 반환 */
-function elapsedLabel(isoStr: string): string {
+function elapsedLabel(isoStr: string, t: any): string {
   if (!isoStr) return '';
   const diffMs  = Date.now() - new Date(isoStr).getTime();
   if (diffMs < 0) return '';
   const totalMin = Math.floor(diffMs / 60000);
-  if (totalMin < 1)   return '방금';
-  if (totalMin < 60)  return `${totalMin}분 경과`;
+  if (totalMin < 1)   return t('elapsedJustNow');
+  if (totalMin < 60)  return t('elapsedMinutes', { min: totalMin });
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
-  return m > 0 ? `${h}h ${m}m 경과` : `${h}h 경과`;
+  return m > 0 ? t('elapsedHoursMinutes', { h, m }) : t('elapsedHours', { h });
 }
 
 function groupByModel(rows: PostProcessMagazineRow[]) {
@@ -35,6 +36,7 @@ function groupByModel(rows: PostProcessMagazineRow[]) {
 }
 
 export default function PostProcessMagazinePanel({ magazine }: Props) {
+  const t = useTranslations('mxvc.postProcess');
   const active  = magazine.filter((r) => r.currentQty > 0);
   const groups  = groupByModel(active);
   const total   = active.reduce((s, r) => s + r.currentQty, 0);
@@ -45,12 +47,12 @@ export default function PostProcessMagazinePanel({ magazine }: Props) {
       {/* 헤더 */}
       <div className="shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-          매거진 대기재공
+          {t('magazineWip')}
         </h3>
         {!isEmpty && (
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-            전체 <span className="font-bold text-blue-600 dark:text-blue-400">{total.toLocaleString()}</span>개
-            &nbsp;·&nbsp; {active.length}개 매거진
+            {t('totalCount', { count: total.toLocaleString() })}
+            &nbsp;·&nbsp; {t('magazineCount', { count: active.length })}
           </p>
         )}
       </div>
@@ -59,7 +61,7 @@ export default function PostProcessMagazinePanel({ magazine }: Props) {
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
         {isEmpty ? (
           <div className="flex items-center justify-center h-24 text-sm text-gray-400 dark:text-gray-500">
-            현재 재공 없음
+            {t('noWip')}
           </div>
         ) : (
           [...groups.entries()].map(([model, rows]) => {
@@ -75,7 +77,7 @@ export default function PostProcessMagazinePanel({ magazine }: Props) {
                     {model}
                   </span>
                   <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">
-                    소계 {groupTotal.toLocaleString()}
+                    {t('subTotal', { count: groupTotal.toLocaleString() })}
                   </span>
                 </div>
 
@@ -96,15 +98,15 @@ export default function PostProcessMagazinePanel({ magazine }: Props) {
                           {r.workstageCode}
                           <span className="mx-1 opacity-40">·</span>
                           {r.lastModifyTime}
-                          {elapsedLabel(r.lastModifyDate) && (
+                          {elapsedLabel(r.lastModifyDate, t) && (
                             <span className="ml-1 text-orange-500 dark:text-orange-400 font-medium">
-                              ({elapsedLabel(r.lastModifyDate)})
+                              ({elapsedLabel(r.lastModifyDate, t)})
                             </span>
                           )}
                         </span>
                         <span className="text-sm font-bold tabular-nums text-gray-800 dark:text-gray-100 ml-1 shrink-0">
                           {r.currentQty.toLocaleString()}
-                          <span className="text-xs font-normal text-gray-400 ml-0.5">개</span>
+                          <span className="text-xs font-normal text-gray-400 ml-0.5">{t('unit')}</span>
                         </span>
                       </div>
                     </div>
@@ -120,10 +122,10 @@ export default function PostProcessMagazinePanel({ magazine }: Props) {
       {!isEmpty && (
         <div className="shrink-0 px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">전체 합계</span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('totalSum')}</span>
             <span className="text-base font-bold text-gray-800 dark:text-gray-100 tabular-nums">
               {total.toLocaleString()}
-              <span className="text-xs font-normal text-gray-400 ml-1">개</span>
+              <span className="text-xs font-normal text-gray-400 ml-1">{t('unit')}</span>
             </span>
           </div>
         </div>

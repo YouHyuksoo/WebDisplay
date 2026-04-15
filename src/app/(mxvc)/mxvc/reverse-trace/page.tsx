@@ -12,6 +12,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import TraceStartScreen from '@/components/mxvc/reverse-trace/TraceStartScreen';
@@ -27,19 +28,23 @@ import {
   type RunModeInput,
   type FeederModeInput,
   type ExcelCandidate,
+  type RefIdModeInput,
   type CandidatesResponse,
 } from '@/types/mxvc/reverse-trace-wizard';
 
 const SCREEN_ID = 'mxvc-reverse-trace';
 
 export default function ReverseTracePage() {
+  const t = useTranslations('mxvc.reverseTrace');
   const [isWizardOpen, setWizardOpen] = useState(false);
   const [mode, setMode]               = useState<TraceMode | null>(null);
   const [candidates, setCandidates]   = useState<ReelCandidate[]>([]);
-  const [selectedReelCd, setSelected] = useState('');
+  const [selectedIdx, setSelectedIdx] = useState(-1);
   const [tracedReelCd, setTraced]     = useState('');
   const [wizardLoading, setWizLoading] = useState(false);
   const [wizardError, setWizError]     = useState('');
+
+  const selectedReelCd = selectedIdx >= 0 ? candidates[selectedIdx]?.reelCd ?? '' : '';
 
   const fetchCandidates = useCallback(async (url: string): Promise<ReelCandidate[]> => {
     setWizLoading(true); setWizError('');
@@ -62,7 +67,7 @@ export default function ReverseTracePage() {
   const handleImmediate = useCallback((reelCd: string) => {
     setMode('immediate');
     setCandidates([]);
-    setSelected(reelCd);
+    setSelectedIdx(-1);
     setTraced(reelCd);
     setWizardOpen(false);
   }, []);
@@ -70,24 +75,30 @@ export default function ReverseTracePage() {
   const handleIssue = useCallback(async (input: IssueModeInput) => {
     const p = new URLSearchParams({ mode: 'issue', ...input });
     const list = await fetchCandidates(`/api/mxvc/reverse-trace/candidates?${p}`);
-    setMode('issue'); setCandidates(list); setSelected(''); setTraced(''); setWizardOpen(false);
+    setMode('issue'); setCandidates(list); setSelectedIdx(-1); setTraced(''); setWizardOpen(false);
   }, [fetchCandidates]);
 
   const handleRun = useCallback(async (input: RunModeInput) => {
     const p = new URLSearchParams({ mode: 'run', ...input });
     const list = await fetchCandidates(`/api/mxvc/reverse-trace/candidates?${p}`);
-    setMode('run'); setCandidates(list); setSelected(''); setTraced(''); setWizardOpen(false);
+    setMode('run'); setCandidates(list); setSelectedIdx(-1); setTraced(''); setWizardOpen(false);
   }, [fetchCandidates]);
 
   const handleFeeder = useCallback(async (input: FeederModeInput) => {
     const p = new URLSearchParams({ mode: 'feeder', ...input });
     const list = await fetchCandidates(`/api/mxvc/reverse-trace/candidates?${p}`);
-    setMode('feeder'); setCandidates(list); setSelected(''); setTraced(''); setWizardOpen(false);
+    setMode('feeder'); setCandidates(list); setSelectedIdx(-1); setTraced(''); setWizardOpen(false);
   }, [fetchCandidates]);
 
   const handleExcel = useCallback((list: ExcelCandidate[]) => {
-    setMode('excel'); setCandidates(list); setSelected(''); setTraced(''); setWizardOpen(false);
+    setMode('excel'); setCandidates(list); setSelectedIdx(-1); setTraced(''); setWizardOpen(false);
   }, []);
+
+  const handleRefId = useCallback(async (input: RefIdModeInput) => {
+    const p = new URLSearchParams({ mode: 'refid', ...input });
+    const list = await fetchCandidates(`/api/mxvc/reverse-trace/candidates?${p}`);
+    setMode('refid'); setCandidates(list); setSelectedIdx(-1); setTraced(''); setWizardOpen(false);
+  }, [fetchCandidates]);
 
   const handleTrace = useCallback(() => {
     if (!selectedReelCd) return;
@@ -99,27 +110,36 @@ export default function ReverseTracePage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
-      <DisplayHeader title="멕시코전장 역추적(자재→PCB)" screenId={SCREEN_ID} />
+      <DisplayHeader title={t('pageTitle')} screenId={SCREEN_ID} />
 
       {/* 상단 모드 표시 + 추적 시작 */}
       <div className="shrink-0 flex items-center gap-3 px-5 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         {mode ? (
           <span className="text-xs text-gray-500 dark:text-zinc-400">
-            현재 모드: <span className="font-semibold text-gray-800 dark:text-zinc-200">{MODE_LABELS[mode]}</span>
-            {tracedReelCd && <> · 추적 중: <code className="text-emerald-500 font-mono">{tracedReelCd}</code></>}
+            {t('currentMode')} <span className="font-semibold text-gray-800 dark:text-zinc-200">{MODE_LABELS[mode]}</span>
+            {tracedReelCd && <> · {t('tracing')} <code className="text-emerald-500 font-mono">{tracedReelCd}</code></>}
           </span>
         ) : (
-          <span className="text-xs text-gray-500 dark:text-zinc-400">추적 모드를 선택하세요</span>
+          <span className="text-xs text-gray-500 dark:text-zinc-400">{t('selectModePrompt')}</span>
         )}
         <div className="ml-auto flex items-center gap-2">
           {wizardError && (
             <span className="text-xs text-red-500">{wizardError}</span>
           )}
+          {showSidebar && (
+            <button
+              onClick={handleTrace}
+              disabled={!selectedReelCd}
+              className="px-3 py-1.5 rounded bg-emerald-600 text-white text-xs hover:bg-emerald-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {selectedReelCd ? t('queryLotTrace') : t('selectReel')}
+            </button>
+          )}
           <button
             onClick={() => setWizardOpen(true)}
             className="px-3 py-1.5 rounded bg-blue-600 text-white text-xs hover:bg-blue-500 transition-colors"
           >
-            {mode ? '추적 시작 (모드 변경)' : '추적 시작'}
+            {mode ? t('startTraceChange') : t('startTrace')}
           </button>
         </div>
       </div>
@@ -134,10 +154,9 @@ export default function ReverseTracePage() {
             <ReelListSidebar
               mode={mode!}
               candidates={candidates}
-              selectedReelCd={selectedReelCd}
+              selectedIdx={selectedIdx}
               tracedReelCd={tracedReelCd}
-              onSelect={setSelected}
-              onTrace={handleTrace}
+              onSelect={setSelectedIdx}
             />
           </div>
         )}
@@ -147,7 +166,7 @@ export default function ReverseTracePage() {
               <TraceResultPanel reelCd={tracedReelCd} />
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-gray-500 dark:text-zinc-500">
-                좌측에서 릴을 선택하고 <span className="mx-1 font-semibold text-gray-700 dark:text-zinc-300">[조회]</span> 버튼을 누르세요.
+                {t('selectReelHintPrefix')} <span className="mx-1 font-semibold text-gray-700 dark:text-zinc-300">{t('selectReelHintQuery')}</span> {t('selectReelHintSuffix')}
               </div>
             )}
           </div>
@@ -156,7 +175,7 @@ export default function ReverseTracePage() {
 
       {wizardLoading && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <Spinner size="lg" vertical label="릴 후보 조회 중..." labelClassName="text-white" />
+          <Spinner size="lg" vertical label={t('loadingCandidates')} labelClassName="text-white" />
         </div>
       )}
 
@@ -169,6 +188,7 @@ export default function ReverseTracePage() {
         onRunSubmit={handleRun}
         onFeederSubmit={handleFeeder}
         onExcelSubmit={handleExcel}
+        onRefIdSubmit={handleRefId}
       />
 
       <DisplayFooter />

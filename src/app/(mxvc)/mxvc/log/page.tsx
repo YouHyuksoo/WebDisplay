@@ -46,7 +46,7 @@ export default function MexicoLogPage() {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden bg-zinc-950 text-white">
       <DisplayHeader title="멕시코전장 로그조회" screenId={SCREEN_ID} />
 
       {/* 본문: 사이드바 + 그리드 */}

@@ -20,6 +20,7 @@ import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import U1FpyLineCard from "@/components/u1/U1FpyLineCard";
+import Spinner from "@/components/ui/Spinner";
 import type { U1FpyResponse } from "@/types/u1/fpy";
 
 const SCREEN_ID = "u1-fpy";
@@ -112,10 +113,7 @@ export default function U1FpyPage() {
           </div>
         )}
         {loading && !data && (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
-            <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
-            {t("common.dataLoading")}
-          </div>
+          <Spinner fullscreen size="lg" vertical label={t("common.dataLoading")} />
         )}
         {data && data.lines.length === 0 && (
           <div className="flex items-center justify-center h-64 text-gray-500">

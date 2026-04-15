@@ -16,7 +16,7 @@
   .shortcut-url { font-size: 8px; }
   #section-title { font-size: 24px; letter-spacing: 4px; }
   #section-subtitle { font-size: 10px; }
-  .section-cards { gap: 12px; max-width: 400px; }
+  .section-cards { gap: 12px; max-width: min(400px, calc(100vw - 120px)); }
 
   #util-icons {
     top: 15px;

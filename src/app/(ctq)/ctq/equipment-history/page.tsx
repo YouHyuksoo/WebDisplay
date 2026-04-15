@@ -14,6 +14,7 @@ import { useSelectedLines } from "@/hooks/ctq/useSelectedLines";
 import { useEquipmentHistory } from "@/hooks/ctq/useEquipmentHistory";
 import { useServerTime } from "@/hooks/useServerTime";
 import EquipmentHistoryTable from "@/components/ctq/EquipmentHistoryTable";
+import Spinner from "@/components/ui/Spinner";
 
 const SCREEN_ID = "ctq-equip-hist";
 
@@ -91,10 +92,7 @@ export default function EquipmentHistoryPage() {
           </div>
         )}
         {loading && !data && (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
-            <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
-            {t("common.dataLoading")}
-          </div>
+          <Spinner fullscreen size="lg" vertical label={t("common.dataLoading")} />
         )}
         {data && data.rows.length === 0 && !loading && (
           <div className="flex items-center justify-center" style={{ minHeight: "calc(100vh - 200px)" }}>

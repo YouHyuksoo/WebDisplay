@@ -80,6 +80,8 @@ export async function GET(req: NextRequest) {
   try {
     // 라인 필터 — lines=% (전체) 또는 lines=01,02 (LINE_CODE 콤마 구분)
     const linesParam = req.nextUrl.searchParams.get('lines') ?? '%';
+    // EOL 불량 분포 기간 (1~15일, 기본 3일)
+    const eolDays = Math.min(15, Math.max(1, parseInt(req.nextUrl.searchParams.get('eolDays') ?? '3', 10) || 3));
     const lineArr = linesParam === '%' ? [] : linesParam.split(',').filter(Boolean);
     const { clause: lineClause, binds: lineBinds } = buildLineFilter(lineArr);
 
@@ -107,8 +109,8 @@ export async function GET(req: NextRequest) {
       ...POST_PROCESS_TABLES.map((k) => fetchTableStats(k, timeWhere, timeBind)),
     ]);
 
-    // EOL 스텝별 불량은 최근 3일 기준 (당일 포함 TRUNC(SYSDATE)-2 ~ SYSDATE)
-    const eolWhere3Days = `LOG_TIMESTAMP >= TRUNC(SYSDATE) - 2 AND LOG_TIMESTAMP <= SYSDATE`;
+    // EOL 스텝별 불량 — eolDays일 기준 (당일 포함, TRUNC(SYSDATE)-(eolDays-1) ~ SYSDATE)
+    const eolWhere3Days = `LOG_TIMESTAMP >= TRUNC(SYSDATE) - ${eolDays - 1} AND LOG_TIMESTAMP <= SYSDATE`;
 
     // ─── 2차 병렬: FPY 시간대별 + EOL 스텝별 불량 분포 ───
     const [fpyArr, eolDefectRows] = await Promise.all([

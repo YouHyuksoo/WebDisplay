@@ -156,6 +156,8 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
   const theme = useChartTheme();
   const serverToday = useServerTime();
 
+  const [models, setModels] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState('');
   const [items, setItems] = useState<MeasItem[]>([]);
   const [selectedItem, setSelectedItem] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -173,29 +175,37 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
     }
   }, [serverToday, dateFrom]);
 
-  /* 측정항목 목록 로드 */
+  /* 모델 목록 로드 (최초 1회) */
   useEffect(() => {
-    fetcher(apiBase).then((res: { items: MeasItem[] }) => {
-      setItems(res.items ?? []);
-      if (res.items?.length > 0) {
-        setSelectedItem(res.items[0].id);
-      }
+    fetcher(`${apiBase}?mode=models`).then((res: { models: string[] }) => {
+      setModels(res.models ?? []);
     });
   }, [apiBase]);
+
+  /* 측정항목 목록 로드 — 모델 변경 시 재로드 */
+  useEffect(() => {
+    const url = selectedModel ? `${apiBase}?model=${encodeURIComponent(selectedModel)}` : apiBase;
+    fetcher(url).then((res: { items: MeasItem[] }) => {
+      setItems(res.items ?? []);
+      setSelectedItem(res.items?.[0]?.id ?? '');
+      setData(null);
+    });
+  }, [apiBase, selectedModel]);
 
   /* SPC 데이터 조회 */
   const handleSearch = useCallback(async () => {
     if (!selectedItem) return;
     setLoading(true);
     try {
+      const modelParam = selectedModel ? `&model=${encodeURIComponent(selectedModel)}` : '';
       const res = await fetcher(
-        `${apiBase}?name=${selectedItem}&dateFrom=${dateFrom}&dateTo=${dateTo}`
+        `${apiBase}?name=${selectedItem}&dateFrom=${dateFrom}&dateTo=${dateTo}${modelParam}`
       ) as SpcData;
       setData(res);
     } finally {
       setLoading(false);
     }
-  }, [apiBase, selectedItem, dateFrom, dateTo]);
+  }, [apiBase, selectedItem, selectedModel, dateFrom, dateTo]);
 
   /* 항목 선택 후 자동 조회 */
   useEffect(() => {
@@ -221,8 +231,9 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
     setRawOpen(true);
     setRawLoading(true);
     try {
+      const modelParam = selectedModel ? `&model=${encodeURIComponent(selectedModel)}` : '';
       const res = await fetcher(
-        `${apiBase}?mode=raw&name=${encodeURIComponent(selectedItem)}&dateFrom=${dateFrom}&dateTo=${dateTo}`
+        `${apiBase}?mode=raw&name=${encodeURIComponent(selectedItem)}&dateFrom=${dateFrom}&dateTo=${dateTo}${modelParam}`
       ) as { rows: Record<string, unknown>[] };
       setRawRows(res.rows ?? []);
     } finally {
@@ -255,6 +266,15 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
               <span className={`text-sm ${theme.textMuted}`}>~</span>
               <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={`${inputCls} w-36`} />
             </div>
+          </div>
+          <div>
+            <div className={labelCls}>모델</div>
+            <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className={`${inputCls} w-48`}>
+              <option value="">전체</option>
+              {models.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
           </div>
           <div>
             <div className={labelCls}>측정항목</div>

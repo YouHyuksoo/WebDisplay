@@ -13,6 +13,7 @@ import useDisplayTiming from "@/hooks/useDisplayTiming";
 import { useIndicator } from "@/hooks/ctq/useIndicator";
 import CriteriaTooltip from "@/components/ctq/CriteriaTooltip";
 import IndicatorTable from "@/components/ctq/IndicatorTable";
+import Spinner from "@/components/ui/Spinner";
 import type {
   IndicatorComparisonMode,
   IndicatorProcessKey,
@@ -89,7 +90,7 @@ export default function IndicatorPage() {
           <div className="flex items-center gap-4">
             <CriteriaTooltip pageKey="indicator" widthClass="w-[440px]" />
             <div className="flex items-center gap-1 rounded-lg border border-gray-700 bg-gray-900/80 p-1">
-              <span className="px-2 text-xs text-gray-500 whitespace-nowrap">비교 기준</span>
+              <span className="px-2 text-xs text-gray-500 whitespace-nowrap">{t("pages.indicator.compareLabel")}</span>
               <button
                 onClick={() => setComparisonMode("last-vs-current")}
                 className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
@@ -98,7 +99,7 @@ export default function IndicatorPage() {
                     : "text-gray-400 hover:text-white hover:bg-gray-800"
                 }`}
               >
-                전월 / 당월
+                {t("pages.indicator.compareLastCurrent")}
               </button>
               <button
                 onClick={() => setComparisonMode("before-vs-last")}
@@ -108,7 +109,7 @@ export default function IndicatorPage() {
                     : "text-gray-400 hover:text-white hover:bg-gray-800"
                 }`}
               >
-                전전월 / 전월
+                {t("pages.indicator.compareBeforeLast")}
               </button>
             </div>
             {data && data.models.length > 0 && (
@@ -152,10 +153,7 @@ export default function IndicatorPage() {
               className="px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 text-sm text-gray-300 hover:text-white transition-colors disabled:opacity-50"
             >
               {loading ? (
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 border-2 border-gray-500 border-t-white rounded-full animate-spin" />
-                  {t("common.dataLoading")}
-                </span>
+                <Spinner size="sm" label={t("common.dataLoading")} labelClassName="text-white" className="gap-1.5" />
               ) : (
                 t("pages.indicator.refreshBtn")
               )}
@@ -173,7 +171,7 @@ export default function IndicatorPage() {
                     ? "bg-blue-600 text-white"
                     : "bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white"
                 }`}
-                title="지표 설정"
+                title={t("pages.indicator.settingsTooltip")}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -199,8 +197,8 @@ export default function IndicatorPage() {
                 <div className="absolute right-0 top-full mt-2 w-80 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 p-4 space-y-4">
                   {/* 공정별 PPM 한도 */}
                   <div>
-                    <div className="text-sm font-medium text-gray-200 mb-0.5">공정별 PPM 한도</div>
-                    <p className="text-xs text-gray-500 mb-2">이 PPM 이상인 공정만 지표 Logic 적용</p>
+                    <div className="text-sm font-medium text-gray-200 mb-0.5">{t("pages.indicator.processPpmLimit")}</div>
+                    <p className="text-xs text-gray-500 mb-2">{t("pages.indicator.processPpmDesc")}</p>
                     <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
                       {(["ICT", "HIPOT", "FT", "BURNIN", "ATE"] as IndicatorProcessKey[]).map((key) => (
                         <div key={key} className="flex items-center gap-1.5">
@@ -221,8 +219,8 @@ export default function IndicatorPage() {
 
                   {/* 전월 최소 생산수량 */}
                   <div>
-                    <div className="text-sm font-medium text-gray-200 mb-0.5">전월 최소 생산수량</div>
-                    <p className="text-xs text-gray-500 mb-2">이 수량 미만 모델은 지표 Logic에서 제외</p>
+                    <div className="text-sm font-medium text-gray-200 mb-0.5">{t("pages.indicator.minPrevVolume")}</div>
+                    <p className="text-xs text-gray-500 mb-2">{t("pages.indicator.minPrevVolumeDesc")}</p>
                     <input
                       type="number"
                       min={1}
@@ -241,7 +239,7 @@ export default function IndicatorPage() {
                       }}
                       className="flex-1 px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-xs text-gray-300"
                     >
-                      초기화
+                      {t("pages.indicator.resetBtn")}
                     </button>
                     <button
                       onClick={() => {
@@ -272,10 +270,7 @@ export default function IndicatorPage() {
           </div>
         )}
         {loading && !data && (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
-            <span className="w-8 h-8 border-4 border-gray-700 border-t-blue-400 rounded-full animate-spin" />
-            {t("common.dataLoading")}
-          </div>
+          <Spinner fullscreen size="lg" vertical label={t("common.dataLoading")} />
         )}
         {data && data.models.length === 0 && (
           <div className="flex items-center justify-center h-64 text-gray-500">

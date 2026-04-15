@@ -12,6 +12,7 @@
 
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { SlackSettings } from '@/app/(u1)/u1/slack-settings/page';
 
 interface SlackToggleSectionProps {
@@ -24,36 +25,36 @@ const NOTIFY_ITEMS = [
   {
     field: 'notifyPassRateDrop' as keyof SlackSettings,
     emoji: '📉',
-    label: '합격률 급락 알림',
-    desc: '합격률이 임계값(90%) 미만일 때',
+    labelKey: 'passRateDrop',
+    descKey: 'passRateDropDesc',
     color: 'text-red-400',
   },
   {
     field: 'notifyNgSpike' as keyof SlackSettings,
     emoji: '⚡',
-    label: 'NG 급증 알림',
-    desc: 'NG 건수가 급격히 증가할 때',
+    labelKey: 'ngSpike',
+    descKey: 'ngSpikeDesc',
     color: 'text-yellow-400',
   },
   {
     field: 'notifyLineStop' as keyof SlackSettings,
     emoji: '🛑',
-    label: '라인 정지 알림',
-    desc: '생산 라인 정지 발생 시',
+    labelKey: 'lineStop',
+    descKey: 'lineStopDesc',
     color: 'text-red-500',
   },
   {
     field: 'notifyEquipmentDown' as keyof SlackSettings,
     emoji: '🔧',
-    label: '설비 이상 알림',
-    desc: '설비 장시간(60분 이상) 정지 시',
+    labelKey: 'equipmentDown',
+    descKey: 'equipmentDownDesc',
     color: 'text-purple-400',
   },
   {
     field: 'notifyDailyReport' as keyof SlackSettings,
     emoji: '📋',
-    label: '일일 요약 리포트',
-    desc: '매일 지정 시간에 생산 요약 발송',
+    labelKey: 'dailyReport',
+    descKey: 'dailyReportDesc',
     color: 'text-green-400',
   },
 ];
@@ -62,14 +63,16 @@ const NOTIFY_ITEMS = [
  * 알림 조건 토글 목록 섹션
  */
 export default function SlackToggleSection({ settings, onToggle }: SlackToggleSectionProps) {
+  const t = useTranslations('ctq.pages.slackSettings');
+
   return (
     <div className="bg-gray-900 rounded-xl p-5 border border-gray-700 space-y-2">
       <h3 className="text-gray-200 font-semibold flex items-center gap-2 mb-3">
         <span className="text-blue-400">🔔</span>
-        알림 조건
+        {t('notificationConditions')}
       </h3>
       <p className="text-gray-500 text-sm -mt-1 mb-3">
-        어떤 이벤트가 발생했을 때 Slack 알림을 받을지 선택하세요
+        {t('notificationConditionsDesc')}
       </p>
 
       {NOTIFY_ITEMS.map((item) => (
@@ -80,8 +83,8 @@ export default function SlackToggleSection({ settings, onToggle }: SlackToggleSe
           <div className="flex items-center gap-3">
             <span className={`text-lg ${item.color}`}>{item.emoji}</span>
             <div>
-              <p className="text-gray-200 text-sm font-medium">{item.label}</p>
-              <p className="text-gray-500 text-xs mt-0.5">{item.desc}</p>
+              <p className="text-gray-200 text-sm font-medium">{t(item.labelKey)}</p>
+              <p className="text-gray-500 text-xs mt-0.5">{t(item.descKey)}</p>
             </div>
           </div>
           <button
@@ -89,7 +92,7 @@ export default function SlackToggleSection({ settings, onToggle }: SlackToggleSe
             className={`relative w-10 h-5 rounded-full transition-colors focus:outline-none flex-shrink-0 ${
               settings[item.field] ? 'bg-blue-600' : 'bg-gray-600'
             }`}
-            aria-label={item.label}
+            aria-label={t(item.labelKey)}
             type="button"
           >
             <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${

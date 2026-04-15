@@ -11,6 +11,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
+import Spinner from "@/components/ui/Spinner";
 
 interface Card {
   id: string;
@@ -29,6 +31,7 @@ interface Category {
 }
 
 export default function CardManagerPage() {
+  const t = useTranslations("settingsCards");
   const [cards, setCards] = useState<Card[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,14 +78,14 @@ export default function CardManagerPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ categories, cards }),
       });
-      if (!res.ok) throw new Error("저장 실패");
+      if (!res.ok) throw new Error(t("saveFailed"));
       setDirty(false);
-      setToast("저장 완료");
+      setToast(t("saveSuccess"));
       localStorage.removeItem("mes-display-cards-cache");
       localStorage.removeItem("mes-display-categories");
       setTimeout(() => setToast(""), 2000);
     } catch (e) {
-      setToast(`오류: ${e}`);
+      setToast(t("errorPrefix", { error: String(e) }));
       setTimeout(() => setToast(""), 3000);
     } finally {
       setSaving(false);
@@ -108,7 +111,7 @@ export default function CardManagerPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-950 flex items-center justify-center">
-        <span className="w-8 h-8 border-4 border-gray-300 dark:border-gray-700 border-t-blue-500 rounded-full animate-spin" />
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -119,27 +122,27 @@ export default function CardManagerPage() {
       <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold">카드 관리</h1>
+            <h1 className="text-lg font-bold">{t("title")}</h1>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-              {cards.length}개 카드 · {categories.length}개 카테고리
+              {t("summary", { cards: cards.length, categories: categories.length })}
             </p>
           </div>
           <div className="flex items-center gap-3">
             {dirty && (
-              <span className="text-xs text-amber-500 font-medium">변경사항 있음</span>
+              <span className="text-xs text-amber-500 font-medium">{t("dirty")}</span>
             )}
             <button
               onClick={saveCards}
               disabled={!dirty || saving}
               className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold disabled:opacity-40 transition-colors"
             >
-              {saving ? "저장 중..." : "저장"}
+              {saving ? t("saving") : t("save")}
             </button>
             <a
               href="/"
               className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              돌아가기
+              {t("back")}
             </a>
           </div>
         </div>
@@ -165,22 +168,22 @@ export default function CardManagerPage() {
                   <span className="text-lg">{category.icon}</span>
                   <span className="font-bold text-sm">{category.name}</span>
                   <span className="text-xs text-gray-400 dark:text-gray-500">
-                    ({category.subtitle}) · {catCards.length}개
+                    {t("categorySubtitle", { subtitle: category.subtitle, count: catCards.length })}
                   </span>
                 </div>
                 <button
                   onClick={() => removeCategory(category.id)}
                   className="px-2 py-1 rounded text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                  title="카테고리 제거 (카드는 미분류로 이동)"
+                  title={t("removeCategoryTitle")}
                 >
-                  카테고리 제거
+                  {t("removeCategory")}
                 </button>
               </div>
             </div>
 
             {catCards.length === 0 ? (
               <div className="px-4 py-6 text-center text-xs text-gray-400 dark:text-gray-600">
-                카드 없음
+                {t("emptyCategory")}
               </div>
             ) : (
               <div className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -201,12 +204,12 @@ export default function CardManagerPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-amber-300 dark:border-amber-700 overflow-hidden">
           <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
             <span className="font-bold text-sm text-amber-600 dark:text-amber-400">
-              📦 미분류 · {unassigned.length}개
+              📦 {t("unassignedTitle", { count: unassigned.length })}
             </span>
           </div>
           {unassigned.length === 0 ? (
             <div className="px-4 py-6 text-center text-xs text-gray-400 dark:text-gray-600">
-              제거된 카드가 여기에 표시됩니다
+              {t("unassignedEmpty")}
             </div>
           ) : (
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -238,6 +241,7 @@ function CardRow({
   onChangeLayer: (id: string, layer: number) => void;
   onRemove: (id: string) => void;
 }) {
+  const t = useTranslations("settingsCards");
   return (
     <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
       <div
@@ -255,7 +259,7 @@ function CardRow({
         onChange={(e) => onChangeLayer(card.id, Number(e.target.value))}
         className="shrink-0 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs text-gray-700 dark:text-gray-300"
       >
-        <option value={-1}>📦 미분류</option>
+        <option value={-1}>{t("selectUnassigned")}</option>
         {categories.map((cat) => (
           <option key={cat.id} value={cat.id}>
             {cat.icon} {cat.name}
@@ -266,9 +270,9 @@ function CardRow({
         <button
           onClick={() => onRemove(card.id)}
           className="shrink-0 px-2 py-1 rounded text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-          title="미분류로 이동"
+          title={t("removeCardTitle")}
         >
-          제거
+          {t("removeCard")}
         </button>
       )}
     </div>

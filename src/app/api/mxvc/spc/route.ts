@@ -28,8 +28,11 @@ export async function GET(req: NextRequest) {
   const mode = sp.get('mode');
 
   try {
+    if (mode === 'models') {
+      return await handleModels();
+    }
     if (!name) {
-      return await handleItems();
+      return await handleItems(sp.get('model') ?? '');
     }
     if (mode === 'raw') {
       return await handleRawData(sp, name);
@@ -44,24 +47,41 @@ export async function GET(req: NextRequest) {
   }
 }
 
+/** 모델 목록: LOG_EOL에서 DISTINCT MODEL 값 반환 */
+async function handleModels() {
+  const sql = `
+    SELECT DISTINCT MODEL
+      FROM LOG_EOL
+     WHERE NAME LIKE 'TURN%'
+       AND VOLT_V = '13.5'
+       AND MEAS_2 IS NOT NULL AND MEAS_2 != '-'
+       AND MODEL IS NOT NULL
+     ORDER BY MODEL`;
+
+  const rows = await executeQuery<{ MODEL: string }>(sql);
+  return NextResponse.json({ models: rows.map((r) => r.MODEL) });
+}
+
 /** 측정항목 목록: NAME LIKE 'TURN%' AND VOLT_V = 13.5 인 고유값 */
-async function handleItems() {
+async function handleItems(model: string) {
+  const binds: Record<string, string> = {};
+  let modelClause = '';
+  if (model) {
+    binds.model = model;
+    modelClause = `AND MODEL = :model`;
+  }
+
   const sql = `
     SELECT DISTINCT NAME
       FROM LOG_EOL
      WHERE NAME LIKE 'TURN%'
        AND VOLT_V = '13.5'
        AND MEAS_2 IS NOT NULL AND MEAS_2 != '-'
+       ${modelClause}
      ORDER BY NAME`;
 
-  const rows = await executeQuery<{ NAME: string }>(sql);
-
-  const items = rows.map((r) => ({
-    id: r.NAME,
-    name: r.NAME,
-  }));
-
-  return NextResponse.json({ items });
+  const rows = await executeQuery<{ NAME: string }>(sql, binds);
+  return NextResponse.json({ items: rows.map((r) => ({ id: r.NAME, name: r.NAME })) });
 }
 
 /** SPC 데이터 조회: X̄-R Chart + Cp/Cpk */
@@ -69,6 +89,7 @@ async function handleSpcData(sp: URLSearchParams, name: string) {
   const dateFrom = sp.get('dateFrom') ?? '';
   const dateTo = sp.get('dateTo') ?? '';
   const lineCode = sp.get('lineCode') ?? '';
+  const model = sp.get('model') ?? '';
 
   /* 스펙 그룹 조회: 같은 NAME에 스펙이 다른 그룹이 존재할 수 있음 */
   const specSql = `
@@ -115,6 +136,10 @@ async function handleSpcData(sp: URLSearchParams, name: string) {
   if (lineCode) {
     binds.lineCode = lineCode;
     where += ` AND LINE_CODE = :lineCode`;
+  }
+  if (model) {
+    binds.model = model;
+    where += ` AND MODEL = :model`;
   }
 
   const dataSql = `
@@ -258,6 +283,7 @@ async function handleRawData(sp: URLSearchParams, name: string) {
   const dateFrom = sp.get('dateFrom') ?? '';
   const dateTo = sp.get('dateTo') ?? '';
   const lineCode = sp.get('lineCode') ?? '';
+  const model = sp.get('model') ?? '';
 
   /* 스펙 그룹 조회 (SPC와 동일 로직) */
   const specSql = `
@@ -292,6 +318,10 @@ async function handleRawData(sp: URLSearchParams, name: string) {
   if (lineCode) {
     binds.lineCode = lineCode;
     where += ` AND LINE_CODE = :lineCode`;
+  }
+  if (model) {
+    binds.model = model;
+    where += ` AND MODEL = :model`;
   }
 
   const sql = `

@@ -11,6 +11,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import ReverseTrace3DGraph from '@/components/mxvc/ReverseTrace3DGraph';
 import ReverseTracePanelSplitter from '@/components/mxvc/ReverseTracePanelSplitter';
@@ -646,12 +647,16 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           )}
 
           {/* ═══ 5. 사용된 PCB 목록 ═══ */}
-          {boards.length > 0 && (
-            <section>
-              <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-2">
-                사용된 PCB ({boards.length}건)
-                <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">HW_VW_LTS</span>
-              </h3>
+          <section>
+            <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-2">
+              사용된 PCB ({boards.length}건)
+              <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">HW_VW_LTS</span>
+            </h3>
+            {boards.length === 0 ? (
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-6 text-center text-xs text-gray-400 dark:text-gray-500">
+                데이터 없음
+              </div>
+            ) : (
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-blue-50 dark:bg-blue-900/20 text-gray-600 dark:text-gray-300">
@@ -700,7 +705,6 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
                                 {detailLoading ? (
                                   <div className="flex items-center gap-2 py-3 text-xs text-gray-400">
                                     <Spinner size="sm" label="장착 상세 조회 중..." className="gap-2" />
-
                                   </div>
                                 ) : details.length > 0 ? (
                                   <table className="w-full text-xs">
@@ -743,8 +747,8 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
                   </tbody>
                 </table>
               </div>
-            </section>
-          )}
+            )}
+          </section>
         </div>
 
         {/* 분할 바 (최대화 시 숨김) */}
@@ -761,10 +765,10 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           >
             <button
               onClick={() => setMaximized((v) => !v)}
-              className="absolute top-2 left-2 z-20 px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
+              className="absolute top-2 left-2 z-20 p-1.5 rounded bg-blue-600/70 text-white hover:bg-blue-500 transition-colors"
               title={maximized ? '원래 크기 (ESC)' : '최대화'}
             >
-              {maximized ? '축소' : '확대'}
+              {maximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
             </button>
             <ReverseTrace3DGraph
               data={graphData}
