@@ -109,6 +109,14 @@ export async function resetPool(): Promise<void> {
       .then((pool) => pool.close(0))
       .catch(() => { /* 이전 풀 정리 실패 무시 */ });
   }
+  // AI reader 풀도 함께 리셋 (DB 프로필 변경 시 재생성 유도)
+  const oldAi = aiReaderPool;
+  aiReaderPool = null;
+  if (oldAi) {
+    oldAi
+      .then((pool) => pool.close(0))
+      .catch(() => { /* 이전 AI reader 풀 정리 실패 무시 */ });
+  }
 }
 
 /**
@@ -216,6 +224,109 @@ export async function executeDml(
   try {
     const result = await conn.execute(sql, binds, { autoCommit: true });
     return result;
+  } finally {
+    await conn.close();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// AI 챗 전용 read-only 풀 (WD_AI_READER 계정)
+// ---------------------------------------------------------------------------
+
+let aiReaderPool: Promise<oracledb.Pool> | null = null;
+
+/**
+ * AI 챗에서 LLM이 생성한 SQL을 실행할 때 사용하는 read-only 풀.
+ *
+ * 초보자 가이드:
+ * - 메인 풀(getPool)과 완전히 분리되어 있어 권한 격리가 보장된다
+ * - 풀은 첫 호출 시점에 lazy 생성, 이후 재사용
+ * - config/database.json에 'aiReader' 프로필이 없으면 명확한 에러로 거부
+ *
+ * @throws {Error} aiReader 프로필이 database.json에 없을 때
+ */
+export function getAiReaderPool(): Promise<oracledb.Pool> {
+  if (aiReaderPool) return aiReaderPool;
+
+  const fileData = loadFileConfig();
+  const cfg = fileData?.profiles.find((p) => p.name === 'aiReader');
+  if (!cfg) {
+    throw new Error(
+      'config/database.json에 aiReader 프로필이 없습니다. ' +
+      'WD_AI_READER 계정으로 접속하는 프로필을 추가하세요. ' +
+      '(migrations/002_ai_reader_user.sql 참고)',
+    );
+  }
+
+  aiReaderPool = oracledb.createPool({
+    user: cfg.username,
+    password: cfg.password,
+    connectString: buildConnectString(cfg),
+    poolMin: 1,
+    poolMax: 4,
+    poolIncrement: 1,
+    connectTimeout: 10,
+    queueTimeout: 30000,
+    poolAlias: 'ai_reader',
+  });
+  return aiReaderPool;
+}
+
+/**
+ * AI reader 풀로 SELECT 쿼리 실행. 결과 행을 객체 배열로 반환.
+ * autoCommit 없음 — 어차피 WD_AI_READER에 SELECT 권한만 있어 DML은 권한 오류로 실패.
+ *
+ * @template T 결과 행 타입
+ * @param sql - 실행할 SELECT/WITH 쿼리
+ * @param binds - 바인드 변수 (사용자 입력 안전 주입)
+ */
+export async function executeAiReadQuery<T = Record<string, unknown>>(
+  sql: string,
+  binds: oracledb.BindParameters = {},
+): Promise<T[]> {
+  const pool = await getAiReaderPool();
+  const conn = await pool.getConnection();
+  try {
+    const result = await conn.execute(sql, binds, {
+      outFormat: oracledb.OUT_FORMAT_OBJECT,
+    });
+    return (result.rows as T[]) ?? [];
+  } finally {
+    await conn.close();
+  }
+}
+
+/**
+ * EXPLAIN PLAN을 실행해 cost/cardinality를 추정한다.
+ *
+ * 초보자 가이드:
+ * - sql-guard에서 위험 쿼리 사전 감지용으로 사용
+ * - STATEMENT_ID로 격리하여 다른 EXPLAIN PLAN과 충돌 방지
+ * - PLAN_TABLE 미사용 row를 수동 삭제 (public synonym 경유)
+ *
+ * @returns {cost, cardinality} — 실패 시 throw
+ */
+export async function explainPlan(sql: string): Promise<{ cost: number; cardinality: number }> {
+  const pool = await getAiReaderPool();
+  const conn = await pool.getConnection();
+  try {
+    const planId = `wd_ai_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    await conn.execute(`EXPLAIN PLAN SET STATEMENT_ID = :sid FOR ${sql}`, { sid: planId });
+    const result = await conn.execute(
+      `SELECT COST, CARDINALITY FROM PLAN_TABLE WHERE STATEMENT_ID = :sid AND ID = 0`,
+      { sid: planId },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT },
+    );
+    await conn.execute(
+      `DELETE FROM PLAN_TABLE WHERE STATEMENT_ID = :sid`,
+      { sid: planId },
+      { autoCommit: true },
+    );
+    const row = (result.rows as { COST: number; CARDINALITY: number }[])[0];
+    return {
+      cost: Number(row?.COST) || 0,
+      cardinality: Number(row?.CARDINALITY) || 0,
+    };
   } finally {
     await conn.close();
   }
