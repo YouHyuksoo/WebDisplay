@@ -51,12 +51,12 @@ export default function TraceWizardModal({
   const [step, setStep] = useState<'pick' | 'input'>(initialMode ? 'input' : 'pick');
   const [mode, setMode] = useState<TraceMode | null>(initialMode ?? null);
 
-  /* 오픈 전환 시 상태 초기화 */
+  /* 오픈 전환 시 상태 초기화 — isOpen false→true 에지에서만 리셋 */
   useEffect(() => {
-    if (isOpen) {
-      setStep(initialMode ? 'input' : 'pick');
-      setMode(initialMode ?? null);
-    }
+    if (!isOpen) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStep(initialMode ? 'input' : 'pick');
+    setMode(initialMode ?? null);
   }, [isOpen, initialMode]);
 
   /* ESC로 닫기 */
