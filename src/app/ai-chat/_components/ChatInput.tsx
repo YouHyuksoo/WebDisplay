@@ -12,7 +12,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect, memo } from 'react';
-import { Send, Mic, MicOff, Lightbulb, Paperclip, X, BarChart3, Table2, FileText, Sparkles } from 'lucide-react';
+import { Send, Mic, MicOff, Lightbulb, Paperclip, X, BarChart3, Table2, FileText, Sparkles, Code2, Globe, Type } from 'lucide-react';
 import { postSse } from '../_lib/sse-client';
 import PersonaPicker from './PersonaPicker';
 import ModelPicker from './ModelPicker';
@@ -127,7 +127,7 @@ const ChatInput = memo(function ChatInput({
   const [busy, setBusy] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [outputFormat, setOutputFormat] = useState<'auto' | 'table' | 'chart' | 'detail'>('auto');
+  const [outputFormat, setOutputFormat] = useState<'auto' | 'table' | 'chart' | 'detail' | 'markdown' | 'html' | 'text'>('auto');
 
   // 음성 인식
   const [isListening, setIsListening] = useState(false);
@@ -211,8 +211,16 @@ const ChatInput = memo(function ChatInput({
         if (sid) onSessionAutoCreate(sid);
       }
 
-      const formatHint = outputFormat !== 'auto'
-        ? `\n\n[출력형식: ${outputFormat === 'table' ? '마크다운 표 위주로' : outputFormat === 'chart' ? '차트 시각화 포함해서' : '상세 분석 텍스트로'}]`
+      const FORMAT_HINTS: Record<string, string> = {
+        table: '마크다운 표 위주로 정리해서',
+        chart: '차트 시각화를 반드시 포함해서',
+        detail: '상세 분석 텍스트로 길게',
+        markdown: '마크다운 형식으로 (제목, 볼드, 리스트, 코드블록 활용)',
+        html: 'HTML 태그로 구조화하여 (table, ul, strong 등)',
+        text: '서식 없이 순수 텍스트로만 간결하게',
+      };
+      const formatHint = outputFormat !== 'auto' && FORMAT_HINTS[outputFormat]
+        ? `\n\n[출력형식: ${FORMAT_HINTS[outputFormat]}]`
         : '';
       await postSse('/api/ai-chat/stream', {
         sessionId: sid, prompt: text + formatHint, providerId, modelId, personaId,
@@ -340,6 +348,9 @@ const ChatInput = memo(function ChatInput({
             { key: 'table', icon: Table2, label: '표' },
             { key: 'chart', icon: BarChart3, label: '차트' },
             { key: 'detail', icon: FileText, label: '상세' },
+            { key: 'markdown', icon: Code2, label: 'MD' },
+            { key: 'html', icon: Globe, label: 'HTML' },
+            { key: 'text', icon: Type, label: 'TEXT' },
           ] as const).map(({ key, icon: Icon, label }) => (
             <button
               key={key}
