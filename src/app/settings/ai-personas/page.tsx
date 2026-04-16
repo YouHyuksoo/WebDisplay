@@ -5,7 +5,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Edit2, Trash2, Star } from 'lucide-react';
+import { Plus, Edit2, Trash2, Star, Check, X } from 'lucide-react';
 import PersonaForm from './_components/PersonaForm';
 import type { Persona } from '@/lib/ai/persona-store';
 
@@ -39,9 +39,11 @@ export default function AiPersonasPage() {
     refresh();
   };
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
-    if (!confirm('이 페르소나를 삭제할까요?')) return;
     await fetch(`/api/ai-chat/personas/${id}`, { method: 'DELETE' });
+    setConfirmDeleteId(null);
     refresh();
   };
 
@@ -77,10 +79,17 @@ export default function AiPersonasPage() {
                   <button onClick={() => setEditing(p)} className="rounded p-2 text-zinc-400 hover:bg-zinc-800">
                     <Edit2 className="size-4" />
                   </button>
-                  <button onClick={() => handleDelete(p.personaId)} className="rounded p-2 text-red-400 hover:bg-zinc-800">
+                  <button onClick={() => setConfirmDeleteId(p.personaId)} className="rounded p-2 text-red-400 hover:bg-zinc-800">
                     <Trash2 className="size-4" />
                   </button>
                 </div>
+                {confirmDeleteId === p.personaId && (
+                  <div className="mt-2 flex items-center gap-2 rounded bg-red-50 px-3 py-1 dark:bg-red-950/30">
+                    <span className="flex-1 text-xs text-red-600 dark:text-red-400">삭제할까요?</span>
+                    <button onClick={() => handleDelete(p.personaId)} className="rounded p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/50"><Check className="size-3" /></button>
+                    <button onClick={() => setConfirmDeleteId(null)} className="rounded p-1 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"><X className="size-3" /></button>
+                  </div>
+                )}
               </div>
             )}
           </div>

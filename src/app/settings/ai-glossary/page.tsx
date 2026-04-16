@@ -5,7 +5,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';
 import TermForm from './_components/TermForm';
 import type { GlossaryTerm } from '@/lib/ai/context/glossary-store';
 
@@ -39,9 +39,11 @@ export default function AiGlossaryPage() {
     refresh();
   };
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
-    if (!confirm('이 용어를 삭제할까요?')) return;
     await fetch(`/api/ai-chat/glossary/${id}`, { method: 'DELETE' });
+    setConfirmDeleteId(null);
     refresh();
   };
 
@@ -85,9 +87,16 @@ export default function AiGlossaryPage() {
                   <button onClick={() => setEditing(t)} className="rounded p-1 text-zinc-400 hover:bg-zinc-800">
                     <Edit2 className="size-4" />
                   </button>
-                  <button onClick={() => handleDelete(t.termId)} className="rounded p-1 text-red-400 hover:bg-zinc-800">
+                  <button onClick={() => setConfirmDeleteId(t.termId)} className="rounded p-1 text-red-400 hover:bg-zinc-800">
                     <Trash2 className="size-4" />
                   </button>
+                  {confirmDeleteId === t.termId && (
+                    <span className="ml-2 inline-flex items-center gap-1 rounded bg-red-50 px-2 py-0.5 dark:bg-red-950/30">
+                      <span className="text-[10px] text-red-600 dark:text-red-400">삭제?</span>
+                      <button onClick={() => handleDelete(t.termId)} className="rounded p-0.5 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/50"><Check className="size-3" /></button>
+                      <button onClick={() => setConfirmDeleteId(null)} className="rounded p-0.5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"><X className="size-3" /></button>
+                    </span>
+                  )}
                 </td>
               </tr>
             )
