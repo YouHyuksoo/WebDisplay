@@ -259,7 +259,8 @@ export async function explainPlan(sql: string): Promise<{ cost: number; cardinal
   const conn = await pool.getConnection();
   try {
     const planId = `wd_ai_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    await conn.execute(`EXPLAIN PLAN SET STATEMENT_ID = :sid FOR ${sql}`, { sid: planId });
+    // STATEMENT_ID는 Oracle이 문자열 리터럴만 허용 (바인드 변수 불가 → ORA-01780)
+    await conn.execute(`EXPLAIN PLAN SET STATEMENT_ID = '${planId}' FOR ${sql}`, {});
     const result = await conn.execute(
       `SELECT COST, CARDINALITY FROM PLAN_TABLE WHERE STATEMENT_ID = :sid AND ID = 0`,
       { sid: planId },
