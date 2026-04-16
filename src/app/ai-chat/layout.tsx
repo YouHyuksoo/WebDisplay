@@ -1,11 +1,30 @@
 /**
  * @file src/app/ai-chat/layout.tsx
- * @description AI 챗 페이지 다크 테마 레이아웃.
+ * @description AI 챗 페이지 독립 레이아웃 — html/body + ThemeProvider + LocaleProvider.
+ *
+ * 초보자 가이드:
+ * - Next.js App Router에서 route group 밖 경로는 자체 root layout 필요
+ * - (display)/(menu) 등과 같은 패턴으로 Providers를 감싸야 다국어·테마 동작
  */
-export default function AiChatLayout({ children }: { children: React.ReactNode }) {
+import type { Metadata } from 'next';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { LocaleProvider } from '@/components/providers/LocaleProvider';
+import '../globals.css';
+
+export const metadata: Metadata = {
+  title: 'SOLUM MES - AI 어시스턴트',
+};
+
+export default function AiChatLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="flex h-screen w-screen flex-col bg-zinc-950 text-zinc-100">
-      {children}
-    </div>
+    <html lang="ko" suppressHydrationWarning>
+      <body className="h-screen overflow-hidden bg-zinc-950 text-zinc-100 antialiased">
+        <ThemeProvider>
+          <LocaleProvider>
+            {children}
+          </LocaleProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
