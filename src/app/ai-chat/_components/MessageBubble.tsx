@@ -1,9 +1,11 @@
 /**
  * @file src/app/ai-chat/_components/MessageBubble.tsx
- * @description 역할별 메시지 버블 — user(우측), assistant(좌측), sql(코드블록), sql_result(테이블/차트)
+ * @description 역할별 메시지 버블 — user(우측), assistant(좌측 마크다운 렌더), sql, sql_result.
  */
 'use client';
 
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { ChatMessageRow } from '@/lib/ai/chat-store';
 import ResultTable from './ResultTable';
 import ResultChart from './ResultChart';
@@ -40,7 +42,7 @@ export default function MessageBubble({ message }: Props) {
   if (message.role === 'sql') {
     return (
       <div className="px-4 py-2">
-        <div className="rounded-md bg-zinc-900 p-3 font-mono text-xs text-zinc-300">
+        <div className="rounded-md bg-zinc-100 p-3 font-mono text-xs text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
           <div className="mb-1 text-zinc-500">
             ✓ SQL {message.execMs ? `(${message.execMs}ms)` : ''}
           </div>
@@ -61,12 +63,14 @@ export default function MessageBubble({ message }: Props) {
     );
   }
 
-  // assistant
+  // assistant — 마크다운 렌더링
   const chartSpec = message.content ? extractChartSpec(message.content) : null;
   return (
     <div className="flex justify-start px-4 py-2">
-      <div className="max-w-2xl whitespace-pre-wrap rounded-2xl bg-zinc-800 px-4 py-2 text-zinc-100">
-        {message.content || '...'}
+      <div className="prose prose-sm prose-zinc max-w-3xl dark:prose-invert rounded-2xl bg-zinc-100 px-5 py-3 dark:bg-zinc-800">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {message.content || '...'}
+        </ReactMarkdown>
         {chartSpec && <ResultChart spec={chartSpec} rows={[]} />}
       </div>
     </div>
