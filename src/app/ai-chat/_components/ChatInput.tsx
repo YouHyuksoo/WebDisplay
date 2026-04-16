@@ -250,8 +250,8 @@ const ChatInput = memo(function ChatInput({
         </div>
       )}
 
-      {/* 입력 영역 */}
-      <div className="flex items-end gap-2">
+      {/* 입력 영역 — 모든 요소 h-10 통일, items-center 정렬 */}
+      <div className="flex items-center gap-1.5">
         {/* 파일 첨부 */}
         <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => {
           const f = e.target.files?.[0];
@@ -261,10 +261,10 @@ const ChatInput = memo(function ChatInput({
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={busy}
-          className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 disabled:opacity-50"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 disabled:opacity-50"
           title="파일 첨부 (.xlsx, .xls, .csv)"
         >
-          <Paperclip className="size-5" />
+          <Paperclip className="size-4" />
         </button>
 
         {/* 음성 입력 */}
@@ -273,17 +273,17 @@ const ChatInput = memo(function ChatInput({
             <button
               onClick={toggleListening}
               disabled={busy}
-              className={`rounded-lg p-2 disabled:opacity-50 ${
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg disabled:opacity-50 ${
                 isListening
                   ? 'bg-rose-500 text-white hover:bg-rose-600'
                   : 'text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'
               }`}
               title={isListening ? '음성 인식 중지' : '음성으로 입력'}
             >
-              {isListening ? <Mic className="size-5" /> : <MicOff className="size-5" />}
+              {isListening ? <Mic className="size-4" /> : <MicOff className="size-4" />}
             </button>
             {isListening && (
-              <span className="absolute -right-1 -top-1 size-3 animate-pulse rounded-full bg-rose-500" />
+              <span className="absolute -right-0.5 -top-0.5 size-2.5 animate-pulse rounded-full bg-rose-500" />
             )}
           </div>
         )}
@@ -292,14 +292,14 @@ const ChatInput = memo(function ChatInput({
         <div className="relative">
           <button
             onClick={() => setShowExamples(!showExamples)}
-            className={`rounded-lg p-2 ${
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
               showExamples
                 ? 'bg-cyan-600/20 text-cyan-400'
                 : 'text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'
             }`}
             title="예시 질문"
           >
-            <Lightbulb className="size-5" />
+            <Lightbulb className="size-4" />
           </button>
 
           {showExamples && (
@@ -334,7 +334,7 @@ const ChatInput = memo(function ChatInput({
         </div>
 
         {/* 출력형식 선택 */}
-        <div className="flex rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden">
+        <div className="flex h-10 shrink-0 overflow-hidden rounded-lg border border-zinc-300 dark:border-zinc-700">
           {([
             { key: 'auto', icon: Sparkles, label: '자동' },
             { key: 'table', icon: Table2, label: '표' },
@@ -344,7 +344,7 @@ const ChatInput = memo(function ChatInput({
             <button
               key={key}
               onClick={() => setOutputFormat(key)}
-              className={`flex items-center gap-1 px-2 py-1.5 text-[10px] transition-colors ${
+              className={`flex h-full items-center gap-1 px-2 text-[10px] transition-colors ${
                 outputFormat === key
                   ? 'bg-cyan-600 text-white'
                   : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
@@ -377,12 +377,12 @@ const ChatInput = memo(function ChatInput({
                   ? '파일과 함께 보낼 메시지를 입력하세요...'
                   : '질문을 입력하세요... (Shift+Enter 줄바꿈)'
             }
-            className={`w-full resize-none rounded-xl border px-4 py-3 pr-12 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 dark:text-white ${
+            className={`h-10 w-full resize-none rounded-lg border px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 dark:text-white ${
               isListening
                 ? 'border-rose-500 bg-rose-50 focus:ring-rose-500/50 dark:bg-rose-950/20'
                 : 'border-zinc-300 bg-white focus:ring-cyan-500/50 dark:border-zinc-700 dark:bg-zinc-800'
             }`}
-            style={{ minHeight: '48px', maxHeight: '120px' }}
+            style={{ maxHeight: '120px' }}
             disabled={busy}
           />
           {/* 중간 인식 결과 */}
@@ -397,7 +397,7 @@ const ChatInput = memo(function ChatInput({
         <button
           onClick={handleSend}
           disabled={busy || !text.trim()}
-          className="flex items-center gap-1 rounded-xl bg-cyan-600 px-4 py-3 text-sm font-medium text-white hover:bg-cyan-500 disabled:opacity-50"
+          className="flex h-10 shrink-0 items-center gap-1 rounded-lg bg-cyan-600 px-4 text-sm font-medium text-white hover:bg-cyan-500 disabled:opacity-50"
         >
           {busy ? (
             <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
