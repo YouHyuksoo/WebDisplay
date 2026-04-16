@@ -148,6 +148,31 @@ export interface ChatMessage {
 const CHATS_DIR = path.join(process.cwd(), 'data', 'ai-chats');
 const INDEX_PATH = path.join(CHATS_DIR, 'index.json');
 
+async function writeFileAtomicUtf8(targetPath: string, content: string): Promise<void> {
+  const tempPath = `${targetPath}.tmp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  await fs.writeFile(tempPath, content, 'utf-8');
+
+  const maxAttempts = 5;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await fs.rename(tempPath, targetPath);
+      return;
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      const retryable = code === 'EPERM' || code === 'EACCES' || code === 'EBUSY';
+
+      if (!retryable || attempt === maxAttempts) {
+        // Fallback: overwrite target directly, then remove temp.
+        await fs.writeFile(targetPath, content, 'utf-8');
+        try { await fs.unlink(tempPath); } catch { /* noop */ }
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, attempt * 20));
+    }
+  }
+}
+
 export interface SessionIndex {
   sessionId: string;
   title: string;
@@ -166,7 +191,21 @@ async function ensureChatsDir() {
 export async function loadSessionIndex(): Promise<SessionIndex[]> {
   try {
     const raw = await fs.readFile(INDEX_PATH, 'utf-8');
-    return JSON.parse(raw) as SessionIndex[];
+    try {
+      return JSON.parse(raw) as SessionIndex[];
+    } catch {
+      // Best-effort recovery for partially written files.
+      const start = raw.indexOf('[');
+      const end = raw.lastIndexOf(']');
+      if (start >= 0 && end > start) {
+        try {
+          return JSON.parse(raw.slice(start, end + 1)) as SessionIndex[];
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    }
   } catch {
     return [];
   }
@@ -174,7 +213,7 @@ export async function loadSessionIndex(): Promise<SessionIndex[]> {
 
 async function saveSessionIndex(index: SessionIndex[]): Promise<void> {
   await ensureChatsDir();
-  await fs.writeFile(INDEX_PATH, JSON.stringify(index, null, 2), 'utf-8');
+  await writeFileAtomicUtf8(INDEX_PATH, JSON.stringify(index, null, 2));
 }
 
 export async function loadChatSession(sessionId: string): Promise<ChatSession | null> {
@@ -188,10 +227,9 @@ export async function loadChatSession(sessionId: string): Promise<ChatSession | 
 
 export async function saveChatSession(session: ChatSession): Promise<void> {
   await ensureChatsDir();
-  await fs.writeFile(
+  await writeFileAtomicUtf8(
     path.join(CHATS_DIR, `${session.sessionId}.json`),
     JSON.stringify(session, null, 2),
-    'utf-8',
   );
   // index 갱신
   const index = await loadSessionIndex();
@@ -215,4 +253,19 @@ export async function deleteChatSession(sessionId: string): Promise<void> {
   try { await fs.unlink(path.join(CHATS_DIR, `${sessionId}.json`)); } catch { /* 무시 */ }
   const index = await loadSessionIndex();
   await saveSessionIndex(index.filter((s) => s.sessionId !== sessionId));
+}
+
+/**
+ * 여러 세션을 원자적(atomic)으로 삭제.
+ * - 파일 삭제는 각자 독립이므로 Promise.allSettled로 병렬
+ * - 인덱스 갱신은 단일 read-modify-write로 수행해 lost-update 레이스를 차단
+ */
+export async function deleteChatSessions(sessionIds: string[]): Promise<void> {
+  if (sessionIds.length === 0) return;
+  const targetSet = new Set(sessionIds);
+  await Promise.allSettled(
+    sessionIds.map((id) => fs.unlink(path.join(CHATS_DIR, `${id}.json`))),
+  );
+  const index = await loadSessionIndex();
+  await saveSessionIndex(index.filter((s) => !targetSet.has(s.sessionId)));
 }

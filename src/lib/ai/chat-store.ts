@@ -10,6 +10,7 @@
 
 import {
   loadSessionIndex, loadChatSession, saveChatSession, deleteChatSession as deleteFile,
+  deleteChatSessions as deleteFilesBulk,
   type SessionIndex, type ChatSession, type ChatMessage,
 } from '@/lib/ai-config';
 import { randomUUID } from 'crypto';
@@ -56,6 +57,11 @@ export async function listSessions(limit = 50): Promise<SessionMeta[]> {
 
 export async function deleteSession(sessionId: string): Promise<void> {
   await deleteFile(sessionId);
+}
+
+/** 여러 세션 원자적 삭제 (인덱스 single-write로 lost-update 방지) */
+export async function deleteSessions(sessionIds: string[]): Promise<void> {
+  await deleteFilesBulk(sessionIds);
 }
 
 export async function renameSession(sessionId: string, title: string): Promise<void> {

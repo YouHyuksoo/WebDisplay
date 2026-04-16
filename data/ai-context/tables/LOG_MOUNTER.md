@@ -1,0 +1,52 @@
+---
+name: LOG_MOUNTER
+site: default
+description: LOG_MOUNTER 테이블
+related_tables: []
+---
+
+## 주요 컬럼
+| 컬럼 | 타입 | 설명 |
+|---|---|---|
+| LOG_ID | NUMBER | 자동 채번 PK |
+| EQUIPMENT_ID | VARCHAR2(50) | 설비 ID |
+| LOG_TIMESTAMP | TIMESTAMP(6) | 로그 타임스탬프 |
+| VERSION | VARCHAR2(500) | data.VERSION |
+| BOARD_SN | VARCHAR2(500) | data.BOARD_SN |
+| ARRAY_NO | VARCHAR2(500) | data.ARRAY_NO |
+| ARRAY_SN | VARCHAR2(500) | data.ARRAY_SN |
+| ORDERNAME | VARCHAR2(500) | data.ORDERNAME |
+| MACHINE_CODE | VARCHAR2(100) | data.MACHINE_CODE |
+| PCB_FILE_NAME | VARCHAR2(500) | data.PCB_FILE_NAME |
+| OPERATOR | VARCHAR2(500) | data.OPERATOR |
+| START_TIME | VARCHAR2(100) | data.START_TIME |
+| END_TIME | VARCHAR2(100) | data.END_TIME |
+| WORKZONE | VARCHAR2(500) | data.WORKZONE |
+| STEP | VARCHAR2(500) | data.STEP |
+| REF | VARCHAR2(500) | data.REF |
+| PART_NAME | VARCHAR2(500) | data.PART_NAME |
+| REELID | VARCHAR2(500) | data.REELID |
+| FEEDERID | VARCHAR2(500) | data.FEEDERID |
+| SLOT_NO | VARCHAR2(500) | data.SLOT_NO |
+| ARRAY | VARCHAR2(500) | data.ARRAY |
+| BLOCK | VARCHAR2(500) | data.BLOCK |
+| VCODE | VARCHAR2(500) | data.VCODE |
+| VPART | VARCHAR2(500) | data.VPART |
+| VNAME | VARCHAR2(500) | data.VNAME |
+| LOT_CODE | VARCHAR2(100) | data.LOT_CODE |
+| DUMP | VARCHAR2(500) | data.DUMP |
+| LOG_ROWS | VARCHAR2(500) | data.ROWS |
+| IS_LAST | VARCHAR2(1) | 최종 데이터 여부 (Y/N) |
+| IS_SAMPLE | VARCHAR2(1) | 샘플 데이터 여부 (Y/N) |
+| CREATED_AT | TIMESTAMP(6) | 레코드 생성 시각 |
+| LINE_CODE | VARCHAR2(50) |  |
+| FILE_NAME | VARCHAR2(500) |  |
+| ACTUAL_DATE | DATE |  |
+| SHIFT_CODE | VARCHAR2(2) |  |
+| ZONE_CODE | VARCHAR2(2) |  |
+
+## 자주 쓰는 JOIN
+
+
+## 예제 쿼리
+

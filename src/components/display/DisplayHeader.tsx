@@ -25,9 +25,11 @@ interface DisplayHeaderProps {
   renderSettingsModal?: (props: { isOpen: boolean; onClose: () => void; screenId: string }) => React.ReactNode;
   /** 헤더 우측 아이콘 영역 앞에 삽입할 추가 콘텐츠 */
   extraHeaderContent?: React.ReactNode;
+  /** "새로고침/스크롤 주기" 배지 숨김 여부 (기본: false) */
+  hideTimingBadge?: boolean;
 }
 
-export default function DisplayHeader({ title, screenId, renderSettingsModal, extraHeaderContent }: DisplayHeaderProps) {
+export default function DisplayHeader({ title, screenId, renderSettingsModal, extraHeaderContent, hideTimingBadge = false }: DisplayHeaderProps) {
   const t = useTranslations('display');
   const router = useRouter();
   const locale = useLocale();
@@ -67,11 +69,13 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal, ex
       
       <div className="flex items-center gap-3 text-sm text-zinc-400">
         {/* 인터벌 정보 */}
-        <div className="hidden lg:flex items-center gap-3 mr-2 px-3 py-1 bg-zinc-800/50 rounded-full border border-zinc-700/50">
-          <span>{t('refreshInterval', { seconds: timing.refreshSeconds })}</span>
-          <span className="w-px h-3 bg-zinc-700" />
-          <span>{t('scrollInterval', { seconds: timing.scrollSeconds })}</span>
-        </div>
+        {!hideTimingBadge && (
+          <div className="hidden lg:flex items-center gap-3 mr-2 px-3 py-1 bg-zinc-800/50 rounded-full border border-zinc-700/50">
+            <span>{t('refreshInterval', { seconds: timing.refreshSeconds })}</span>
+            <span className="w-px h-3 bg-zinc-700" />
+            <span>{t('scrollInterval', { seconds: timing.scrollSeconds })}</span>
+          </div>
+        )}
 
         {/* 현재 시각 */}
         <span className="font-mono text-white bg-zinc-800 px-3 py-1 rounded-md border border-zinc-700">

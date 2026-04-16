@@ -15,9 +15,15 @@ import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import TraceabilityMaster from '@/components/mxvc/TraceabilityMaster';
 import TraceabilityTimeline from '@/components/mxvc/TraceabilityTimeline';
-import RunCardSearchModal from '@/components/mxvc/RunCardSearchModal';
+import BarcodeSearchWizard from '@/components/mxvc/traceability/BarcodeSearchWizard';
 import Spinner from '@/components/ui/Spinner';
 import type { TraceabilityResponse } from '@/types/mxvc/traceability';
+import type {
+  BarcodeSearchMode,
+  BarcodeSingleModeInput,
+  BarcodeRepairModeInput,
+  BarcodeDateRangeModeInput,
+} from '@/types/mxvc/traceability-wizard';
 
 /** 섹션 라벨 키 목록 (sources 네임스페이스와 매칭) */
 const KNOWN_SOURCE_KEYS = new Set([
@@ -49,8 +55,7 @@ export default function TraceabilityPage() {
     return source.replace(/^LOG_/i, '').replace(/^IP_PRODUCT_/i, '');
   }, [t]);
 
-  /* RUN_NO & 바코드 목록 */
-  const [runNo, setRunNo] = useState('');
+  /* 바코드 목록 */
   const [barcodes, setBarcodes] = useState<BarcodeItem[]>([]);
   const [listLoading, setListLoading] = useState(false);
 
@@ -66,8 +71,13 @@ export default function TraceabilityPage() {
 
   /* 사이드바 찾기 */
   const [search, setSearch] = useState('');
-  /* RUN NO 조회 모달 */
-  const [showRunCardModal, setShowRunCardModal] = useState(false);
+
+  /* 바코드 조회 위자드 */
+  const [isWizardOpen, setWizardOpen] = useState(true);
+  const [currentSearch, setCurrentSearch] = useState<{
+    mode: BarcodeSearchMode;
+    summary: string;
+  } | null>(null);
 
   /* 추적 대상 테이블 체크박스 */
   const [availableTables, setAvailableTables] = useState<string[]>([]);
@@ -75,7 +85,7 @@ export default function TraceabilityPage() {
 
   /* 페이지 로드 시 테이블 목록 조회 */
   useEffect(() => {
-    fetch('/api/mxvc/traceability?mode=tables')
+    fetch('/api/mxvc/traceability?mode=tables', { cache: 'no-store' })
       .then((res) => res.json())
       .then((json: { tables: string[] }) => {
         const tbls = json.tables ?? [];
@@ -96,26 +106,77 @@ export default function TraceabilityPage() {
 
   const allChecked = availableTables.length > 0 && selectedTables.size === availableTables.length;
 
-  /** RUN_NO로 바코드 목록 조회 */
-  const handleRunNoSearch = useCallback(async () => {
-    const trimmed = runNo.trim();
-    if (!trimmed) return;
+  /** 바코드 목록 조회 (공통) — 위자드에서 입력받은 조건으로 신규 API 호출 */
+  const fetchBarcodes = useCallback(async (url: string, summary: { mode: BarcodeSearchMode; text: string }) => {
     setListLoading(true);
     setBarcodes([]);
     setSelectedBarcode('');
     setData(null);
     setError('');
     try {
-      const res = await fetch(`/api/mxvc/traceability/barcodes?runNo=${encodeURIComponent(trimmed)}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const res = await fetch(url);
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error ?? `HTTP ${res.status}`);
+      }
       const json = await res.json();
       setBarcodes(json.barcodes ?? []);
+      setCurrentSearch({ mode: summary.mode, summary: summary.text });
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setListLoading(false);
     }
-  }, [runNo]);
+  }, []);
+
+  /** 단일값 모드 제출 */
+  const handleSingleSubmit = useCallback((input: BarcodeSingleModeInput) => {
+    setWizardOpen(false);
+    const p = new URLSearchParams({ mode: input.mode, value: input.value });
+    fetchBarcodes(
+      `/api/mxvc/traceability/barcodes?${p}`,
+      { mode: input.mode, text: t(`wizard.summary.${input.mode}`, { value: input.value }) },
+    );
+  }, [fetchBarcodes, t]);
+
+  /** 수리이력 모드 제출 */
+  const handleRepairSubmit = useCallback((input: BarcodeRepairModeInput) => {
+    setWizardOpen(false);
+    const p = new URLSearchParams({
+      mode: 'repair',
+      dateFrom: input.dateFrom,
+      dateTo: input.dateTo,
+      itemCode: input.itemCode,
+    });
+    fetchBarcodes(
+      `/api/mxvc/traceability/barcodes?${p}`,
+      {
+        mode: 'repair',
+        text: t('wizard.summary.repair', {
+          dateFrom: input.dateFrom,
+          dateTo: input.dateTo,
+          itemCode: input.itemCode,
+        }),
+      },
+    );
+  }, [fetchBarcodes, t]);
+
+  /** SPI/AOI 설비 로그 기준 제출 */
+  const handleDateRangeSubmit = useCallback((input: BarcodeDateRangeModeInput) => {
+    setWizardOpen(false);
+    const p = new URLSearchParams({
+      mode: input.mode,
+      dateFrom: input.dateFrom,
+      dateTo: input.dateTo,
+    });
+    fetchBarcodes(
+      `/api/mxvc/traceability/barcodes?${p}`,
+      {
+        mode: input.mode,
+        text: t(`wizard.summary.${input.mode}`, { dateFrom: input.dateFrom, dateTo: input.dateTo }),
+      },
+    );
+  }, [fetchBarcodes, t]);
 
   /** 바코드로 추적성 조회 */
   const fetchTraceability = useCallback(async (barcode: string) => {
@@ -296,36 +357,21 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
     <div className="h-screen flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-white overflow-hidden">
       <DisplayHeader title={t('pageTitle')} screenId={SCREEN_ID} />
 
-      {/* 상단 바: RUN_NO 입력 + 옵션 */}
+      {/* 상단 바: 조회 모드 + 옵션 */}
       <div className="shrink-0 flex items-center gap-3 px-5 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/80">
-        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-          <span className="font-semibold shrink-0">{t('runNo')}</span>
-          <input
-            type="text"
-            value={runNo}
-            onChange={(e) => setRunNo(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleRunNoSearch()}
-            placeholder={t('runNoPlaceholder')}
-            className="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600
-                       bg-white dark:bg-gray-800 text-sm w-48 placeholder:text-gray-400"
-          />
-        </label>
         <button
-          onClick={() => setShowRunCardModal(true)}
-          className="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600
-                     bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300
-                     hover:bg-gray-100 dark:hover:bg-gray-700 text-sm transition-colors"
+          onClick={() => setWizardOpen(true)}
+          className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
         >
-          {t('searchRunCard')}
+          {currentSearch ? t('wizard.changeMode') : t('wizard.openBtn')}
         </button>
-        <button
-          onClick={handleRunNoSearch}
-          disabled={listLoading}
-          className="px-4 py-1.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold
-                     disabled:opacity-50 transition-colors"
-        >
-          {t('queryBarcode')}
-        </button>
+        {currentSearch && (
+          <span className="text-xs text-gray-600 dark:text-gray-300 truncate max-w-[480px]">
+            <span className="font-semibold text-gray-800 dark:text-gray-100">{t(`wizard.modes.${currentSearch.mode}.label`)}</span>
+            <span className="mx-1 text-gray-400">·</span>
+            <span className="font-mono text-gray-500 dark:text-gray-400">{currentSearch.summary}</span>
+          </span>
+        )}
 
         <button
           onClick={() => selectedBarcode && fetchTraceability(selectedBarcode)}
@@ -451,8 +497,8 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
               </div>
             )}
             {!listLoading && barcodes.length === 0 && (
-              <div className="flex items-center justify-center py-8 text-xs text-gray-400 dark:text-gray-500">
-                {t('enterRunNo')}
+              <div className="flex items-center justify-center py-8 px-3 text-xs text-gray-400 dark:text-gray-500 text-center">
+                {currentSearch ? t('wizard.noBarcodes') : t('wizard.openHint')}
               </div>
             )}
             {filteredBarcodes.map((b) => (
@@ -472,45 +518,9 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
             ))}
           </div>
 
-          {/* 추적 대상 테이블 체크박스 */}
-          {availableTables.length > 0 && (
-            <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 flex flex-col max-h-[40%]">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/60">
-                <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('traceTargets', { selected: selectedTables.size, total: availableTables.length })}
-                </span>
-                <label className="flex items-center gap-1 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={allChecked}
-                    onChange={() =>
-                      setSelectedTables(allChecked ? new Set() : new Set(availableTables))
-                    }
-                    className="w-3 h-3 accent-blue-500"
-                  />
-                  <span className="text-[10px] text-gray-600 dark:text-gray-400">{t('selectAllLabel')}</span>
-                </label>
-              </div>
-              <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
-                {availableTables.map((tbl) => (
-                  <label key={tbl} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60 px-1 py-0.5 rounded">
-                    <input
-                      type="checkbox"
-                      checked={selectedTables.has(tbl)}
-                      onChange={() => toggleTable(tbl)}
-                      className="w-3.5 h-3.5 accent-blue-500"
-                    />
-                    <span className="text-[11px] font-mono text-gray-700 dark:text-gray-300 truncate">
-                      {sectionLabel(tbl)}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
         </aside>
 
-        {/* 우측: 추적성 결과 */}
+        {/* 중앙: 추적성 결과 */}
         <div className="flex-1 flex flex-col min-w-0 overflow-auto">
           {loading ? (
             <div className="flex-1 flex items-center justify-center">
@@ -526,32 +536,62 @@ ${masterHtml}${runCardHtml}${modelHtml}${sectionsHtml}
               <TraceabilityTimeline events={data.timeline} queriedTables={data.queriedTables} viewMode={viewMode} />
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-              {barcodes.length > 0 ? t('selectBarcode') : t('selectRunNo')}
+            <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500 text-center px-6">
+              {barcodes.length > 0
+                ? t('selectBarcode')
+                : currentSearch ? t('wizard.noBarcodes') : t('wizard.openHint')}
             </div>
           )}
         </div>
+
+        {/* 우측 사이드바: 추적 대상 테이블 체크박스 */}
+        {availableTables.length > 0 && (
+          <aside className="w-60 shrink-0 border-l border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50 dark:bg-gray-900">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/60">
+              <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                {t('traceTargets', { selected: selectedTables.size, total: availableTables.length })}
+              </span>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={allChecked}
+                  onChange={() =>
+                    setSelectedTables(allChecked ? new Set() : new Set(availableTables))
+                  }
+                  className="w-3 h-3 accent-blue-500"
+                />
+                <span className="text-[10px] text-gray-600 dark:text-gray-400">{t('selectAllLabel')}</span>
+              </label>
+            </div>
+            <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1 min-h-0">
+              {availableTables.map((tbl) => (
+                <label key={tbl} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60 px-1 py-0.5 rounded">
+                  <input
+                    type="checkbox"
+                    checked={selectedTables.has(tbl)}
+                    onChange={() => toggleTable(tbl)}
+                    className="w-3.5 h-3.5 accent-blue-500"
+                  />
+                  <span className="text-[11px] font-mono text-gray-700 dark:text-gray-300 truncate">
+                    {sectionLabel(tbl)}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </aside>
+        )}
       </div>
 
       <DisplayFooter />
 
-      {/* RUN NO 조회 모달 */}
-      <RunCardSearchModal
-        isOpen={showRunCardModal}
-        onClose={() => setShowRunCardModal(false)}
-        onSelect={(selectedRunNo) => {
-          setRunNo(selectedRunNo);
-          /* 선택 후 자동 바코드 목록 조회 */
-          setBarcodes([]);
-          setSelectedBarcode('');
-          setData(null);
-          setListLoading(true);
-          fetch(`/api/mxvc/traceability/barcodes?runNo=${encodeURIComponent(selectedRunNo)}`)
-            .then((res) => res.json())
-            .then((json) => setBarcodes(json.barcodes ?? []))
-            .catch(() => {})
-            .finally(() => setListLoading(false));
-        }}
+      {/* 바코드 조회 위자드 */}
+      <BarcodeSearchWizard
+        isOpen={isWizardOpen}
+        loading={listLoading}
+        onClose={() => setWizardOpen(false)}
+        onSingleSubmit={handleSingleSubmit}
+        onRepairSubmit={handleRepairSubmit}
+        onDateRangeSubmit={handleDateRangeSubmit}
       />
     </div>
   );

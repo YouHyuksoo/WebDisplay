@@ -154,7 +154,7 @@
       "url": "/display/31",
       "color": "#10b981",
       "icon": "svg:solder",
-      "layer": 1
+      "layer": 8
     },
     {
       "id": "menu-37",
@@ -442,7 +442,7 @@
       "url": "/mxvc/p-chart",
       "color": "#f43f5e",
       "icon": "svg:chart",
-      "layer": 8
+      "layer": -1
     },
     {
       "id": "menu-mxvc-post-process",
@@ -458,6 +458,14 @@
       "url": "/mxvc/repair-status",
       "color": "#f59e0b",
       "icon": "svg:wrench",
+      "layer": 8
+    },
+    {
+      "id": "menu-mxvc-process-history",
+      "title": "공정통과이력",
+      "url": "/mxvc/process-history",
+      "color": "#14b8a6",
+      "icon": "svg:error-log",
       "layer": 8
     }
   ]

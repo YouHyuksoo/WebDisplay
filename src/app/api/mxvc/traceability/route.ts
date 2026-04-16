@@ -64,12 +64,13 @@ function sanitizeRow(row: Record<string, unknown>): Record<string, unknown> {
   return safe;
 }
 
-/** 해당 테이블에서 바코드 컬럼과 날짜 컬럼 목록을 USER_TAB_COLUMNS로 조회 */
+/** 해당 테이블에서 바코드 컬럼과 날짜 컬럼 목록을 ALL_TAB_COLUMNS로 조회 */
 async function getTableMeta(
   tableName: string,
 ): Promise<{ barcodeCols: string[]; dateCols: string[] }> {
+  /* ALL_TAB_COLUMNS: 현재 사용자가 접근 가능한 모든 테이블 (synonym 포함) */
   const rows = await executeQuery<{ COLUMN_NAME: string; DATA_TYPE: string }>(
-    `SELECT COLUMN_NAME, DATA_TYPE FROM USER_TAB_COLUMNS WHERE TABLE_NAME = :tname`,
+    `SELECT COLUMN_NAME, DATA_TYPE FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = :tname`,
     { tname: tableName.toUpperCase() },
   );
   const colNames = rows.map((r) => r.COLUMN_NAME.toUpperCase());
@@ -86,24 +87,24 @@ async function getTableMeta(
 async function findLogTablesWithBarcode(): Promise<
   { tableName: string; barcodeCols: string[]; dateCols: string[] }[]
 > {
-  /* USER_TAB_COLUMNS에서 LOG_ 테이블 중 바코드 컬럼이 하나라도 있는 테이블 목록 */
+  /* ALL_TAB_COLUMNS에서 LOG_ 테이블 중 바코드 컬럼이 하나라도 있는 테이블 목록 (synonym 접근 포함) */
   const placeholders = BARCODE_COLUMNS.map((_, i) => `:col${i}`).join(', ');
   const binds = Object.fromEntries(BARCODE_COLUMNS.map((c, i) => [`col${i}`, c]));
 
   const rows = await executeQuery<{ TABLE_NAME: string }>(
     `SELECT DISTINCT C.TABLE_NAME
-       FROM USER_TAB_COLUMNS C
-       JOIN USER_TABLES T ON C.TABLE_NAME = T.TABLE_NAME
+       FROM ALL_TAB_COLUMNS C
       WHERE C.TABLE_NAME LIKE 'LOG\\_%' ESCAPE '\\'
         AND C.COLUMN_NAME IN (${placeholders})
       ORDER BY C.TABLE_NAME`,
     binds,
   );
 
-  /* 제외 목록 필터 후 각 테이블 메타 병렬 조회 */
+  /* 제외 목록 필터 + _V 뷰(원본 테이블과 중복) 제외 후 각 테이블 메타 병렬 조회 */
   const candidates = rows
     .map((r) => r.TABLE_NAME)
-    .filter((t) => !EXCLUDED_TABLES.has(t));
+    .filter((t) => !EXCLUDED_TABLES.has(t))
+    .filter((t) => !t.endsWith('_V'));
 
   const metas = await Promise.all(
     candidates.map(async (t) => {

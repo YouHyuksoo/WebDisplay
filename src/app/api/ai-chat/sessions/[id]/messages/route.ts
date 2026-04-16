@@ -11,7 +11,10 @@ export async function GET(_req: Request, ctx: Ctx) {
   try {
     const { id } = await ctx.params;
     const messages = await loadMessages(id);
-    return NextResponse.json({ messages });
+    return NextResponse.json(
+      { messages },
+      { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } },
+    );
   } catch (e) {
     console.error('[ai-chat/messages GET]', e);
     return NextResponse.json({ error: 'failed' }, { status: 500 });

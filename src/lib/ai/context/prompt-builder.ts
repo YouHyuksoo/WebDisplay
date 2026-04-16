@@ -1,11 +1,6 @@
-/**
+﻿/**
  * @file src/lib/ai/context/prompt-builder.ts
- * @description Stage(sql_generation/analysis)별 시스템 프롬프트를 3계층 조립.
- *
- * 초보자 가이드:
- * - 매 LLM 호출마다 호출 → 글로서리 변경 즉시 반영
- * - Stage 1(SQL): 도메인 + 규칙 + 스키마 + 컨텍스트
- * - Stage 2(Analysis): 페르소나 prepend + 분석 정체성
+ * @description Builds stage-specific system prompts for SQL generation and analysis.
  */
 
 import {
@@ -24,43 +19,54 @@ export interface BuildPromptOpts {
   currentContext: { today: string; serverShift: 'A' | 'B'; userTz: string };
   customSqlPrompt?: string;
   customAnalysisPrompt?: string;
+  selectedContextDocs?: string;
+  selectedSite?: string;
 }
 
 export async function buildSystemPrompt(opts: BuildPromptOpts): Promise<string> {
   const sections: string[] = [];
 
-  // 1. 코어 정체성 (커스텀 우선, 없으면 기본)
+  // 1) Core identity
   if (opts.stage === 'sql_generation') {
     sections.push(opts.customSqlPrompt || CORE_SQL_IDENTITY_PROMPT);
   } else {
     sections.push(opts.customAnalysisPrompt || CORE_ANALYSIS_IDENTITY_PROMPT);
   }
 
-  // 2. 도메인 용어사전 (코드 상수 — 항상)
+  // 2) Domain glossary
   sections.push('# 도메인 용어\n' + CORE_GLOSSARY);
 
-  // 3. 동적 용어 (DB AI_GLOSSARY_TERM)
+  // 3) Dynamic glossary from DB
   const dynamicTerms = await listTerms({ topN: 30 });
   const formatted = formatTermsForPrompt(dynamicTerms);
   if (formatted) sections.push('# 추가 용어\n' + formatted);
 
-  // 4. SQL 규칙 (Stage 1만)
+  // 4) SQL rules for SQL generation only
   if (opts.stage === 'sql_generation') {
     sections.push('# SQL 규칙\n' + SQL_RULES);
   }
 
-  // 5. 화이트리스트 스키마 (Stage 1만)
+  // 5) Schema/context section for SQL generation only
   if (opts.stage === 'sql_generation') {
-    sections.push('# 사용 가능한 테이블\n' + buildSchemaSection(opts.selectedTables));
+    if (opts.selectedContextDocs) {
+      sections.push('# 관련 테이블/도메인 상세\n' + opts.selectedContextDocs);
+    } else {
+      sections.push('# 사용 가능한 테이블\n' + buildSchemaSection(opts.selectedTables));
+    }
   }
 
-  // 6. 현재 컨텍스트
+  // 6) Selected site info (only when non-default)
+  if (opts.stage === 'sql_generation' && opts.selectedSite && opts.selectedSite !== 'default') {
+    sections.push(`# DB 사이트\n현재 쿼리 대상 사이트: ${opts.selectedSite}`);
+  }
+
+  // 7) Current runtime context
   sections.push(
     `# 현재 시점\n- 작업일: ${opts.currentContext.today}\n` +
       `- 현재 시프트: ${opts.currentContext.serverShift}\n- 시간대: ${opts.currentContext.userTz}`,
   );
 
-  // 7. 페르소나 (Stage 2만, 맨 앞에 prepend)
+  // 8) Persona prompt should be prepended for analysis stage
   if (opts.stage === 'analysis' && opts.personaPrompt) {
     sections.unshift(opts.personaPrompt);
   }

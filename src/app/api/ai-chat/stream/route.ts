@@ -1,22 +1,17 @@
-/**
- * @file route.ts
- * @description POST /api/ai-chat/stream — SSE 스트리밍 채팅.
- *
- * 흐름:
- * 1. user 메시지 저장
- * 2. SQL 생성 단계: prompt-builder → provider.chatStream
- * 3. 응답에서 SQL 추출 → guardSql → confirmation 필요 시 SSE event
- * 4. 안전하면 즉시 실행 → SQL/SQL_RESULT 메시지 저장
- * 5. 결과 분석 단계: provider.chatStream(stage=analysis)
- * 6. assistant 메시지 저장 → done 이벤트
+﻿/**
+ * @file src/app/api/ai-chat/stream/route.ts
+ * @description SSE chat endpoint for AI chat flow.
  */
+
 import { loadMessages, appendMessage, updateSessionMeta } from '@/lib/ai/chat-store';
 import { getProviderForRuntime } from '@/lib/ai/provider-store';
 import { getPersona, getDefaultPersona } from '@/lib/ai/persona-store';
 import { buildSystemPrompt } from '@/lib/ai/context/prompt-builder';
 import { guardSql, extractSqlFromResponse } from '@/lib/ai/sql-guard';
-import { executeAiReadQuery } from '@/lib/db';
+import { executeAiReadQuery, executeQueryByProfile } from '@/lib/db';
 import { getProvider } from '@/lib/ai/router';
+import { selectContext } from '@/lib/ai/context/context-selector';
+import { loadSelectedContext } from '@/lib/ai/context/context-loader';
 import type { ProviderId, ChatMessage } from '@/lib/ai/providers/types';
 
 export const runtime = 'nodejs';
@@ -35,7 +30,7 @@ function sseEvent(event: string, data: unknown): string {
 }
 
 function getServerShift(): 'A' | 'B' {
-  // 베트남 로컬 = UTC+7. 08~20 = A, 그 외 = B
+  // Vietnam local (UTC+7): 08:00~20:00 => A, otherwise B.
   const utcHours = new Date().getUTCHours();
   const ictHours = (utcHours + 7) % 24;
   return ictHours >= 8 && ictHours < 20 ? 'A' : 'B';
@@ -49,42 +44,74 @@ export async function POST(request: Request) {
     async start(controller) {
       const enc = new TextEncoder();
       let closed = false;
+
       const send = (event: string, data: unknown) => {
         if (closed) return;
-        try { controller.enqueue(enc.encode(sseEvent(event, data))); } catch { /* 무시 */ }
+        try {
+          controller.enqueue(enc.encode(sseEvent(event, data)));
+        } catch {
+          // ignore enqueue failure after close
+        }
       };
-      const close = () => {
+
+      const closeStream = () => {
         if (closed) return;
         closed = true;
-        try { close(); } catch { /* 무시 */ }
+        try {
+          controller.close();
+        } catch {
+          // ignore double close
+        }
       };
 
       try {
-        // 1. user 메시지 저장
+        // 1) Save user message.
         await appendMessage({ sessionId, role: 'user', content: prompt });
         send('user_saved', { ok: true });
 
-        // 2. 프로바이더/페르소나 로드
+        // 2) Load provider/persona runtime settings.
         const providerCfg = await getProviderForRuntime(providerId);
         if (!providerCfg || !providerCfg.apiKey) {
-          send('error', { message: 'API 키가 등록되지 않았습니다. 설정 → AI 모델에서 등록하세요.' });
+          send('error', { message: 'API 키가 없습니다. 설정 > AI 공급자에서 키를 입력하세요.' });
           send('done', { ok: false });
-          close();
+          closeStream();
           return;
         }
+
         const persona = personaId ? await getPersona(personaId) : await getDefaultPersona();
         const provider = getProvider(providerId);
         const model = modelId || providerCfg.defaultModelId || provider.listModels()[0];
 
-        // 세션 메타 갱신
-        await updateSessionMeta(sessionId, { providerId, modelId: model, personaId: persona?.personaId });
+        await updateSessionMeta(sessionId, {
+          providerId,
+          modelId: model,
+          personaId: persona?.personaId,
+        });
 
-        // 3. SQL 생성 단계
+        // 2.5) Stage 0: context selection
+        send('stage', { stage: 'context_selection' });
+        const selection = await selectContext(prompt, providerId, model);
+        const normalizedPrompt = prompt.toLowerCase();
+        if (normalizedPrompt.includes('베트남') || normalizedPrompt.includes('smvnpdb')) {
+          selection.site = '베트남VD외부';
+        } else if (normalizedPrompt.includes('멕시코vd') || normalizedPrompt.includes('smmexpdb')) {
+          selection.site = '멕시코VD외부';
+        }
+        const contextDocs = loadSelectedContext(selection.tables, selection.domains);
+        send('context_selected', {
+          tables: selection.tables,
+          domains: selection.domains,
+          site: selection.site,
+        });
+
+        // 3) SQL generation stage.
         const today = new Date().toISOString().slice(0, 10);
         const sqlSystemPrompt = await buildSystemPrompt({
           stage: 'sql_generation',
           currentContext: { today, serverShift: getServerShift(), userTz: 'ICT' },
           customSqlPrompt: providerCfg.sqlSystemPrompt || undefined,
+          selectedContextDocs: contextDocs || undefined,
+          selectedSite: selection.site,
         });
 
         const history = await loadMessages(sessionId);
@@ -111,78 +138,94 @@ export async function POST(request: Request) {
           } else if (chunk.type === 'error') {
             send('error', { message: chunk.error });
             send('done', { ok: false });
-            close();
+            closeStream();
             return;
           }
         }
 
-        // 4. SQL 추출 + 가드
+        // 4) Extract + guard SQL.
         const rawSql = extractSqlFromResponse(sqlResponseText);
         if (!rawSql) {
           await appendMessage({ sessionId, role: 'assistant', content: sqlResponseText });
           send('done', { ok: true, hasNoSql: true });
-          close();
+          closeStream();
           return;
         }
 
         const guard = await guardSql(rawSql);
         if (!guard.safe) {
-          const errMsg = `SQL 차단됨: ${guard.reason}`;
+          const errMsg = `SQL 안전성 검사 실패: ${guard.reason}`;
           await appendMessage({ sessionId, role: 'sql', sqlText: rawSql, content: errMsg });
           send('error', { message: errMsg });
           send('done', { ok: false });
-          close();
+          closeStream();
           return;
         }
 
         if (guard.needsConfirmation) {
           const sqlMsgId = await appendMessage({
-            sessionId, role: 'sql', sqlText: guard.rewritten,
-            content: `대기 중 — ${guard.reason}`,
+            sessionId,
+            role: 'sql',
+            sqlText: guard.rewritten,
+            content: `사용자 확인 필요 - ${guard.reason}`,
           });
+
           send('confirm_required', {
+            sessionId,
             messageId: sqlMsgId,
             sql: guard.rewritten,
             estimatedCost: guard.estimatedCost,
             estimatedRows: guard.estimatedRows,
             reason: guard.reason,
           });
+
           send('done', { ok: true, awaitingConfirm: true });
-          close();
+          closeStream();
           return;
         }
 
-        // 5. 안전 → 즉시 실행
+        // 5) Execute SQL (site-aware).
         const t0 = Date.now();
         let resultRows: Record<string, unknown>[] = [];
         let execError: string | null = null;
+
         try {
-          resultRows = await executeAiReadQuery(guard.rewritten);
+          if (selection.site === 'default') {
+            resultRows = await executeAiReadQuery(guard.rewritten);
+          } else {
+            resultRows = await executeQueryByProfile(selection.site, guard.rewritten);
+          }
         } catch (e) {
           execError = e instanceof Error ? e.message : String(e);
         }
+
         const execMs = Date.now() - t0;
 
         await appendMessage({
-          sessionId, role: 'sql', sqlText: guard.rewritten,
-          content: execError ? `실패: ${execError}` : `✓ ${resultRows.length}행 (${execMs}ms)`,
+          sessionId,
+          role: 'sql',
+          sqlText: guard.rewritten,
+          content: execError ? `실행 오류: ${execError}` : `조회 ${resultRows.length}건 (${execMs}ms)`,
           execMs,
         });
 
         if (execError) {
-          send('error', { message: `SQL 실행 실패: ${execError}` });
+          send('error', { message: `SQL 실행 오류: ${execError}` });
           send('done', { ok: false });
-          close();
+          closeStream();
           return;
         }
 
         const resultJson = JSON.stringify(resultRows.slice(0, 100));
-        await appendMessage({
-          sessionId, role: 'sql_result', resultJson,
+        await appendMessage({ sessionId, role: 'sql_result', resultJson });
+        send('sql_executed', {
+          rowCount: resultRows.length,
+          execMs,
+          rows: resultRows.slice(0, 100),
+          site: selection.site,
         });
-        send('sql_executed', { rowCount: resultRows.length, execMs, rows: resultRows.slice(0, 100) });
 
-        // 6. 결과 분석 단계
+        // 6) Analysis stage.
         const analysisSystemPrompt = await buildSystemPrompt({
           stage: 'analysis',
           personaPrompt: persona?.systemPrompt,
@@ -190,10 +233,16 @@ export async function POST(request: Request) {
           customAnalysisPrompt: providerCfg.analysisPrompt || undefined,
         });
 
-        const analysisUserMsg = `사용자 질문: ${prompt}\n\n실행한 SQL:\n\`\`\`sql\n${guard.rewritten}\n\`\`\`\n\n결과 (${resultRows.length}행 중 상위 100):\n\`\`\`json\n${resultJson}\n\`\`\`\n\n위 결과를 분석해주세요.`;
+        const analysisUserMsg =
+          `사용자 질문: ${prompt}\n\n` +
+          `실행된 SQL:\n\`\`\`sql\n${guard.rewritten}\n\`\`\`\n\n` +
+          `조회 결과 (${resultRows.length}건, 최대 100건):\n\`\`\`json\n${resultJson}\n\`\`\`\n\n` +
+          '결과를 표/차트/요약으로 설명하세요.';
 
         send('stage', { stage: 'analysis' });
         let analysisText = '';
+        let assistantSaved = false;
+
         const analysisStream = provider.chatStream(
           {
             model,
@@ -203,6 +252,7 @@ export async function POST(request: Request) {
           },
           providerCfg.apiKey,
         );
+
         for await (const chunk of analysisStream) {
           if (chunk.type === 'token' && chunk.delta) {
             analysisText += chunk.delta;
@@ -211,19 +261,27 @@ export async function POST(request: Request) {
             send('error', { message: chunk.error });
           } else if (chunk.type === 'done') {
             await appendMessage({
-              sessionId, role: 'assistant', content: analysisText,
-              tokensIn: chunk.tokensIn, tokensOut: chunk.tokensOut,
+              sessionId,
+              role: 'assistant',
+              content: analysisText,
+              tokensIn: chunk.tokensIn,
+              tokensOut: chunk.tokensOut,
             });
+            assistantSaved = true;
           }
         }
 
+        if (!assistantSaved && analysisText.trim().length > 0) {
+          await appendMessage({ sessionId, role: 'assistant', content: analysisText });
+        }
+
         send('done', { ok: true });
-        close();
+        closeStream();
       } catch (e) {
         console.error('[ai-chat/stream]', e);
         send('error', { message: e instanceof Error ? e.message : String(e) });
         send('done', { ok: false });
-        close();
+        closeStream();
       }
     },
   });
@@ -232,7 +290,7 @@ export async function POST(request: Request) {
     headers: {
       'Content-Type': 'text/event-stream; charset=utf-8',
       'Cache-Control': 'no-cache, no-transform',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
     },
   });
 }

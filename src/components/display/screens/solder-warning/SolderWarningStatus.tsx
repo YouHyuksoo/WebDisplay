@@ -53,7 +53,7 @@ export default function SolderWarningStatus({
     <DisplayLayout screenId={screenId} renderSettingsModal={renderSettingsModal}>
       <div className="flex h-full flex-col overflow-hidden">
         {ngCount > 0 && <NgAlertBanner message={t('solderNgWarning', { count: ngCount })} />}
-        <div className="min-h-0 flex-1 overflow-hidden p-2">
+        <div className="min-h-0 flex-1 overflow-hidden p-2 pb-0">
           <SolderWarningGrid
             rows={data?.warningList ?? []}
             isLoading={isLoading}
@@ -61,6 +61,47 @@ export default function SolderWarningStatus({
             scrollSeconds={timing.scrollSeconds}
             thresholds={thresholds}
           />
+        </div>
+        {/* 경고 조건 범례 바 */}
+        <div className="shrink-0 border-t border-zinc-700 bg-zinc-900 px-4 py-1.5">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs font-medium">
+            <span className="text-zinc-500">{t('warningConditions')}</span>
+            <div className="flex items-center gap-4">
+              <span className="text-zinc-400">{t('solderGap3Label')}</span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-red-600" />
+                <span className="text-red-400">&gt; {thresholds.gap3Danger}</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-amber-500" />
+                <span className="text-amber-400">&gt; {thresholds.gap3Warning}</span>
+              </span>
+            </div>
+            <span className="hidden h-3 w-px bg-zinc-700 sm:block" />
+            <div className="flex items-center gap-4">
+              <span className="text-zinc-400">{t('solderUnfreezingLabel')}</span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-red-600" />
+                <span className="text-red-400">&gt; {thresholds.unfreezingDanger}</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-amber-500" />
+                <span className="text-amber-400">&gt; {thresholds.unfreezingWarning}</span>
+              </span>
+            </div>
+            <span className="hidden h-3 w-px bg-zinc-700 sm:block" />
+            <div className="flex items-center gap-4">
+              <span className="text-zinc-400">{t('solderValidLabel')}</span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-red-600" />
+                <span className="text-red-400">&le; {thresholds.validExpired}{t('solderValidDays')}</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-amber-500" />
+                <span className="text-amber-400">&le; {thresholds.validWarning}{t('solderValidDays')}</span>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </DisplayLayout>

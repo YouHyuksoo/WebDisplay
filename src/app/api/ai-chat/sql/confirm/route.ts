@@ -1,12 +1,13 @@
 /**
- * @file route.ts
- * @description POST /api/ai-chat/sql/confirm — 사용자가 위험 쿼리 ▶ 클릭 시 호출.
- *   기존 sql 메시지 ID를 받아 SQL을 실행하고 결과+분석을 추가 메시지로 저장.
- *   응답은 비스트리밍 JSON (스트리밍 흐름은 /stream과 분리).
+ * @file src/app/api/ai-chat/sql/confirm/route.ts
+ * @description POST /api/ai-chat/sql/confirm
+ *   Confirmation-required SQL을 사용자가 승인하면 실행 후 sql_result/assistant 메시지를 저장한다.
  */
+
 import { NextResponse } from 'next/server';
-import { executeQuery, executeAiReadQuery } from '@/lib/db';
-import { appendMessage } from '@/lib/ai/chat-store';
+import { executeAiReadQuery } from '@/lib/db';
+import { appendMessage, loadMessages } from '@/lib/ai/chat-store';
+import { loadChatSession } from '@/lib/ai-config';
 import { getProviderForRuntime } from '@/lib/ai/provider-store';
 import { getPersona, getDefaultPersona } from '@/lib/ai/persona-store';
 import { buildSystemPrompt } from '@/lib/ai/context/prompt-builder';
@@ -15,15 +16,9 @@ import type { ProviderId } from '@/lib/ai/providers/types';
 
 export const runtime = 'nodejs';
 
-interface SqlMsgRow {
-  SESSION_ID: string;
-  SQL_TEXT: string | null;
-}
-
-interface SessionRow {
-  PROVIDER_ID: string | null;
-  MODEL_ID: string | null;
-  PERSONA_ID: string | null;
+interface RequestBody {
+  sessionId?: string;
+  messageId?: string;
 }
 
 function getServerShift(): 'A' | 'B' {
@@ -34,34 +29,40 @@ function getServerShift(): 'A' | 'B' {
 
 export async function POST(request: Request) {
   try {
-    const { messageId } = await request.json();
-    if (!messageId) return NextResponse.json({ error: 'messageId required' }, { status: 400 });
+    const { sessionId, messageId } = (await request.json().catch(() => ({}))) as RequestBody;
+    if (!sessionId || !messageId) {
+      return NextResponse.json({ error: 'sessionId and messageId are required' }, { status: 400 });
+    }
 
-    // 1. SQL 메시지 조회
-    const sqlRows = await executeQuery<SqlMsgRow>(
-      `SELECT SESSION_ID, SQL_TEXT FROM AI_CHAT_MESSAGE WHERE MESSAGE_ID = :id`,
-      { id: messageId },
-    );
-    if (sqlRows.length === 0 || !sqlRows[0].SQL_TEXT) {
+    const session = await loadChatSession(sessionId);
+    if (!session) {
+      return NextResponse.json({ error: 'session not found' }, { status: 404 });
+    }
+
+    const sqlMsg = session.messages.find((m) => m.messageId === messageId && m.role === 'sql');
+    if (!sqlMsg?.sqlText) {
       return NextResponse.json({ error: 'SQL message not found' }, { status: 404 });
     }
-    const { SESSION_ID: sessionId, SQL_TEXT: sql } = sqlRows[0];
 
-    // 2. 세션 메타로 프로바이더/모델/페르소나 식별
-    const sesRows = await executeQuery<SessionRow>(
-      `SELECT PROVIDER_ID, MODEL_ID, PERSONA_ID FROM AI_CHAT_SESSION WHERE SESSION_ID = :sid`,
-      { sid: sessionId },
-    );
-    if (sesRows.length === 0) return NextResponse.json({ error: 'session not found' }, { status: 404 });
-    const ses = sesRows[0];
-    if (!ses.PROVIDER_ID) return NextResponse.json({ error: 'session has no provider' }, { status: 400 });
+    if (!session.providerId) {
+      return NextResponse.json({ error: 'provider not configured in session' }, { status: 400 });
+    }
 
-    // 3. SQL 실행
+    const providerCfg = await getProviderForRuntime(session.providerId as ProviderId);
+    if (!providerCfg?.apiKey) {
+      return NextResponse.json({ error: 'provider apiKey missing' }, { status: 400 });
+    }
+
+    const provider = getProvider(session.providerId as ProviderId);
+    const model = session.modelId || providerCfg.defaultModelId || provider.listModels()[0];
+
+    // 1) SQL 실행
+    const sqlToExecute = sqlMsg.sqlText.trim().replace(/;\s*$/, '');
     const t0 = Date.now();
     let resultRows: Record<string, unknown>[] = [];
     let execError: string | null = null;
     try {
-      resultRows = await executeAiReadQuery(sql);
+      resultRows = await executeAiReadQuery(sqlToExecute);
     } catch (e) {
       execError = e instanceof Error ? e.message : String(e);
     }
@@ -69,43 +70,79 @@ export async function POST(request: Request) {
 
     if (execError) {
       await appendMessage({
-        sessionId, role: 'sql_result',
-        content: `실행 실패: ${execError}`, execMs,
+        sessionId,
+        role: 'sql_result',
+        content: `실행 실패: ${execError}`,
+        execMs,
       });
-      return NextResponse.json({ error: execError }, { status: 500 });
+      await appendMessage({
+        sessionId,
+        role: 'assistant',
+        content: `요청하신 SQL 실행 중 오류가 발생했습니다.\n\n- 오류: ${execError}\n- SQL을 수정하거나 질문을 조금 더 구체적으로 다시 요청해주세요.`,
+      });
+      return NextResponse.json({ success: false, error: execError, execMs });
     }
 
     const resultJson = JSON.stringify(resultRows.slice(0, 100));
-    await appendMessage({ sessionId, role: 'sql_result', resultJson, execMs });
+    await appendMessage({
+      sessionId,
+      role: 'sql_result',
+      resultJson,
+      execMs,
+    });
 
-    // 4. 분석 단계 (비스트리밍)
-    const providerCfg = await getProviderForRuntime(ses.PROVIDER_ID as ProviderId);
-    if (!providerCfg?.apiKey) return NextResponse.json({ error: 'provider not configured' }, { status: 400 });
-    const persona = ses.PERSONA_ID ? await getPersona(ses.PERSONA_ID) : await getDefaultPersona();
-    const provider = getProvider(ses.PROVIDER_ID as ProviderId);
-
+    // 2) 분석 단계
+    const persona = session.personaId ? await getPersona(session.personaId) : await getDefaultPersona();
     const today = new Date().toISOString().slice(0, 10);
     const analysisPrompt = await buildSystemPrompt({
       stage: 'analysis',
       personaPrompt: persona?.systemPrompt,
       currentContext: { today, serverShift: getServerShift(), userTz: 'ICT' },
+      customAnalysisPrompt: providerCfg.analysisPrompt || undefined,
     });
+
+    const history = await loadMessages(sessionId);
+    const lastUser = [...history].reverse().find((m) => m.role === 'user')?.content || '';
+
+    const analysisUserMsg =
+      `사용자 질문: ${lastUser}\n\n` +
+      `실행한 SQL:\n\`\`\`sql\n${sqlMsg.sqlText}\n\`\`\`\n\n` +
+      `결과 (${resultRows.length}행 중 상위 100):\n\`\`\`json\n${resultJson}\n\`\`\`\n\n` +
+      '위 결과를 분석해주세요.';
 
     let analysisText = '';
-    let inT = 0, outT = 0;
-    for await (const chunk of provider.chatStream({
-      model: ses.MODEL_ID || provider.listModels()[0],
-      messages: [{ role: 'user', content: `실행 결과:\n${resultJson}\n\n분석해주세요.` }],
-      systemPrompt: analysisPrompt,
-    }, providerCfg.apiKey)) {
-      if (chunk.type === 'token' && chunk.delta) analysisText += chunk.delta;
-      if (chunk.type === 'done') { inT = chunk.tokensIn || 0; outT = chunk.tokensOut || 0; }
+    let inTokens = 0;
+    let outTokens = 0;
+    let assistantSaved = false;
+
+    for await (const chunk of provider.chatStream(
+      {
+        model,
+        messages: [{ role: 'user', content: analysisUserMsg }],
+        systemPrompt: analysisPrompt,
+        temperature: 0.5,
+      },
+      providerCfg.apiKey,
+    )) {
+      if (chunk.type === 'token' && chunk.delta) {
+        analysisText += chunk.delta;
+      } else if (chunk.type === 'done') {
+        inTokens = chunk.tokensIn ?? 0;
+        outTokens = chunk.tokensOut ?? 0;
+        await appendMessage({
+          sessionId,
+          role: 'assistant',
+          content: analysisText,
+          tokensIn: inTokens,
+          tokensOut: outTokens,
+        });
+        assistantSaved = true;
+      }
     }
 
-    await appendMessage({
-      sessionId, role: 'assistant', content: analysisText,
-      tokensIn: inT, tokensOut: outT,
-    });
+    if (!assistantSaved && analysisText.trim().length > 0) {
+      await appendMessage({ sessionId, role: 'assistant', content: analysisText });
+    }
 
     return NextResponse.json({
       success: true,
@@ -113,6 +150,8 @@ export async function POST(request: Request) {
       rows: resultRows.slice(0, 100),
       analysis: analysisText,
       execMs,
+      tokensIn: inTokens,
+      tokensOut: outTokens,
     });
   } catch (e) {
     console.error('[ai-chat/sql/confirm]', e);

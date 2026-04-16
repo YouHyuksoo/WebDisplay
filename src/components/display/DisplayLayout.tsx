@@ -22,6 +22,8 @@ interface DisplayLayoutProps {
   renderSettingsModal?: (props: { isOpen: boolean; onClose: () => void; screenId: string }) => React.ReactNode;
   /** 헤더 우측 아이콘 영역 앞에 삽입할 추가 콘텐츠 */
   extraHeaderContent?: React.ReactNode;
+  /** "새로고침/스크롤 주기" 배지 숨김 여부 (기본: false) */
+  hideTimingBadge?: boolean;
   children: React.ReactNode;
 }
 
@@ -31,6 +33,7 @@ export default function DisplayLayout({
   message,
   renderSettingsModal,
   extraHeaderContent,
+  hideTimingBadge,
   children,
 }: DisplayLayoutProps) {
   const router = useRouter();
@@ -49,7 +52,7 @@ export default function DisplayLayout({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-white dark:bg-zinc-950">
-      <DisplayHeader title={resolvedTitle} screenId={screenId} renderSettingsModal={renderSettingsModal} extraHeaderContent={extraHeaderContent} />
+      <DisplayHeader title={resolvedTitle} screenId={screenId} renderSettingsModal={renderSettingsModal} extraHeaderContent={extraHeaderContent} hideTimingBadge={hideTimingBadge} />
       <main className="min-h-0 flex-1 overflow-hidden">
         {children}
       </main>

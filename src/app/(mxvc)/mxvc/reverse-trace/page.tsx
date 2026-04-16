@@ -15,7 +15,6 @@ import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
-import TraceStartScreen from '@/components/mxvc/reverse-trace/TraceStartScreen';
 import TraceWizardModal from '@/components/mxvc/reverse-trace/TraceWizardModal';
 import ReelListSidebar from '@/components/mxvc/reverse-trace/ReelListSidebar';
 import TraceResultPanel from '@/components/mxvc/reverse-trace/TraceResultPanel';
@@ -36,7 +35,7 @@ const SCREEN_ID = 'mxvc-reverse-trace';
 
 export default function ReverseTracePage() {
   const t = useTranslations('mxvc.reverseTrace');
-  const [isWizardOpen, setWizardOpen] = useState(false);
+  const [isWizardOpen, setWizardOpen] = useState(true);
   const [mode, setMode]               = useState<TraceMode | null>(null);
   const [candidates, setCandidates]   = useState<ReelCandidate[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(-1);
@@ -146,9 +145,6 @@ export default function ReverseTracePage() {
 
       {/* 본문 */}
       <main className="flex-1 min-h-0 flex overflow-hidden">
-        {!hasResult && (
-          <TraceStartScreen onStart={() => setWizardOpen(true)} />
-        )}
         {hasResult && showSidebar && (
           <div className="w-64 md:w-72 flex-shrink-0">
             <ReelListSidebar

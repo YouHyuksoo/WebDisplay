@@ -12,10 +12,8 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect, memo } from 'react';
-import { Send, Mic, MicOff, Lightbulb, Paperclip, X, BarChart3, Table2, FileText, Sparkles, Code2, Globe, Type } from 'lucide-react';
+import { Send, Mic, MicOff, Lightbulb, Paperclip, X, BarChart3, Table2, FileText, Sparkles, Code2, Globe, Type, ChevronDown, Zap, Minus, BookOpen, List, ListOrdered, Wand2 } from 'lucide-react';
 import { postSse } from '../_lib/sse-client';
-import PersonaPicker from './PersonaPicker';
-import ModelPicker from './ModelPicker';
 import type { ProviderId } from '@/lib/ai/providers/types';
 
 /* ------------------------------------------------------------------ */
@@ -62,6 +60,40 @@ const EXAMPLE_GROUPS = [
 ];
 
 /* ------------------------------------------------------------------ */
+/*  출력형식 옵션                                                       */
+/* ------------------------------------------------------------------ */
+
+const FORMAT_OPTIONS = [
+  { key: 'auto', icon: Sparkles, label: '자동' },
+  { key: 'table', icon: Table2, label: '표' },
+  { key: 'chart', icon: BarChart3, label: '차트' },
+  { key: 'detail', icon: FileText, label: '상세' },
+  { key: 'markdown', icon: Code2, label: 'MD' },
+  { key: 'html', icon: Globe, label: 'HTML' },
+  { key: 'text', icon: Type, label: 'TEXT' },
+] as const;
+
+type OutputFormat = typeof FORMAT_OPTIONS[number]['key'];
+
+/* ------------------------------------------------------------------ */
+/*  응답 스타일 옵션 — 답변 길이/깊이 프리셋                             */
+/* ------------------------------------------------------------------ */
+
+const RESPONSE_STYLE_OPTIONS = [
+  { key: 'auto', icon: Wand2, label: '자동' },
+  { key: 'brief', icon: Zap, label: '간결' },
+  { key: 'normal', icon: Minus, label: '보통' },
+  { key: 'detailed', icon: BookOpen, label: '상세' },
+  { key: 'summary', icon: List, label: '요약' },
+  { key: 'steps', icon: ListOrdered, label: '단계별' },
+] as const;
+
+type ResponseStyle = typeof RESPONSE_STYLE_OPTIONS[number]['key'];
+
+const LS_KEY_FORMAT = 'ai-chat-output-format';
+const LS_KEY_STYLE = 'ai-chat-response-style';
+
+/* ------------------------------------------------------------------ */
 /*  Speech Recognition 타입                                             */
 /* ------------------------------------------------------------------ */
 
@@ -102,13 +134,19 @@ interface Props {
   providerId: ProviderId;
   modelId: string;
   personaId: string;
-  onProviderChange: (id: ProviderId) => void;
-  onModelChange: (id: string) => void;
-  onPersonaChange: (id: string) => void;
   onStreamStart: () => void;
-  onStreamEnd: () => void;
+  onStreamEnd: (sessionId?: string) => void;
   onSessionAutoCreate: (sessionId: string) => void;
   onStreamToken?: (delta: string, stage: string) => void;
+  onConfirmRequired?: (payload: {
+    sessionId: string;
+    messageId: string;
+    sql: string;
+    estimatedCost?: number;
+    estimatedRows?: number;
+    reason?: string;
+  }) => void;
+  onContextSelected?: (payload: { tables: string[]; domains: string[]; site: string }) => void;
   suggestedInput?: string;
   onSuggestedInputHandled?: () => void;
 }
@@ -119,15 +157,39 @@ interface Props {
 
 const ChatInput = memo(function ChatInput({
   sessionId, providerId, modelId, personaId,
-  onProviderChange, onModelChange, onPersonaChange,
   onStreamStart, onStreamEnd, onSessionAutoCreate,
-  onStreamToken, suggestedInput, onSuggestedInputHandled,
+  onStreamToken, onConfirmRequired, onContextSelected, suggestedInput, onSuggestedInputHandled,
 }: Props) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [outputFormat, setOutputFormat] = useState<'auto' | 'table' | 'chart' | 'detail' | 'markdown' | 'html' | 'text'>('auto');
+  const [outputFormat, setOutputFormat] = useState<OutputFormat>('auto');
+  const [showFormatMenu, setShowFormatMenu] = useState(false);
+  const [responseStyle, setResponseStyle] = useState<ResponseStyle>('auto');
+  const [showStyleMenu, setShowStyleMenu] = useState(false);
+
+  // localStorage에서 사용자 선호 복원 (마운트 1회)
+  useEffect(() => {
+    try {
+      const savedFormat = localStorage.getItem(LS_KEY_FORMAT);
+      if (savedFormat && FORMAT_OPTIONS.some((o) => o.key === savedFormat)) {
+        setOutputFormat(savedFormat as OutputFormat);
+      }
+      const savedStyle = localStorage.getItem(LS_KEY_STYLE);
+      if (savedStyle && RESPONSE_STYLE_OPTIONS.some((o) => o.key === savedStyle)) {
+        setResponseStyle(savedStyle as ResponseStyle);
+      }
+    } catch { /* SSR·차단 환경 무시 */ }
+  }, []);
+
+  // 변경 시 저장
+  useEffect(() => {
+    try { localStorage.setItem(LS_KEY_FORMAT, outputFormat); } catch { /* ignore */ }
+  }, [outputFormat]);
+  useEffect(() => {
+    try { localStorage.setItem(LS_KEY_STYLE, responseStyle); } catch { /* ignore */ }
+  }, [responseStyle]);
 
   // 음성 인식
   const [isListening, setIsListening] = useState(false);
@@ -197,9 +259,9 @@ const ChatInput = memo(function ChatInput({
     if (!text.trim() || busy) return;
     setBusy(true);
     onStreamStart();
+    let sid = sessionId;
 
     try {
-      let sid = sessionId;
       if (!sid) {
         const res = await fetch('/api/ai-chat/sessions', {
           method: 'POST',
@@ -219,18 +281,62 @@ const ChatInput = memo(function ChatInput({
         html: 'HTML 태그로 구조화하여 (table, ul, strong 등)',
         text: '서식 없이 순수 텍스트로만 간결하게',
       };
+      const STYLE_HINTS: Record<string, string> = {
+        brief: '핵심만 1~3문장으로 간결하게. 불필요한 배경 설명은 생략.',
+        normal: '적절한 분량으로 균형있게.',
+        detailed: '근거·수치·분석 과정을 포함해 상세히. 판단 근거도 설명.',
+        summary: '핵심을 bullet point 3~5개로. 서론·결론 생략.',
+        steps: '단계 1, 2, 3… 순서로 번호를 매겨 절차적으로.',
+      };
       const formatHint = outputFormat !== 'auto' && FORMAT_HINTS[outputFormat]
         ? `\n\n[출력형식: ${FORMAT_HINTS[outputFormat]}]`
         : '';
+      const styleHint = responseStyle !== 'auto' && STYLE_HINTS[responseStyle]
+        ? `\n[응답스타일: ${STYLE_HINTS[responseStyle]}]`
+        : '';
       await postSse('/api/ai-chat/stream', {
-        sessionId: sid, prompt: text + formatHint, providerId, modelId, personaId,
+        sessionId: sid, prompt: text + formatHint + styleHint, providerId, modelId, personaId,
       }, (ev) => {
+        if (ev.event === 'stage') {
+          const d = ev.data as { stage?: string };
+          onStreamToken?.('', d.stage || '');
+          return;
+        }
         if (ev.event === 'token') {
           const d = ev.data as { delta?: string; stage?: string };
-          if (d?.delta) onStreamToken?.(d.delta, d.stage || '');
+          if (!d?.stage) return;
+          // Show only analysis tokens in the live bubble.
+          if (d.stage === 'analysis' && d.delta) onStreamToken?.(d.delta, d.stage);
+          else onStreamToken?.('', d.stage);
         } else if (ev.event === 'error') {
           const d = ev.data as { message?: string };
           console.error('[AI Chat]', d?.message);
+        } else if (ev.event === 'confirm_required') {
+          const d = ev.data as {
+            sessionId?: string;
+            messageId?: string;
+            sql?: string;
+            estimatedCost?: number;
+            estimatedRows?: number;
+            reason?: string;
+          };
+          if (d.sessionId && d.messageId && d.sql) {
+            onConfirmRequired?.({
+              sessionId: d.sessionId,
+              messageId: d.messageId,
+              sql: d.sql,
+              estimatedCost: d.estimatedCost,
+              estimatedRows: d.estimatedRows,
+              reason: d.reason,
+            });
+          }
+        } else if (ev.event === 'context_selected') {
+          const d = ev.data as { tables?: string[]; domains?: string[]; site?: string };
+          onContextSelected?.({
+            tables: Array.isArray(d.tables) ? d.tables : [],
+            domains: Array.isArray(d.domains) ? d.domains : [],
+            site: typeof d.site === 'string' ? d.site : 'default',
+          });
         }
       });
 
@@ -240,9 +346,9 @@ const ChatInput = memo(function ChatInput({
       console.error(e);
     } finally {
       setBusy(false);
-      onStreamEnd();
+      onStreamEnd(sid || undefined);
     }
-  }, [text, busy, sessionId, providerId, modelId, personaId, onStreamStart, onStreamEnd, onSessionAutoCreate]);
+  }, [text, busy, sessionId, providerId, modelId, personaId, onStreamStart, onStreamEnd, onSessionAutoCreate, outputFormat, responseStyle, onStreamToken, onConfirmRequired, onContextSelected]);
 
   return (
     <div className="border-t border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900">
@@ -341,31 +447,133 @@ const ChatInput = memo(function ChatInput({
           )}
         </div>
 
-        {/* 출력형식 선택 */}
-        <div className="flex h-9 shrink-0 overflow-hidden rounded-lg border border-zinc-300 dark:border-zinc-700">
-          {([
-            { key: 'auto', icon: Sparkles, label: '자동' },
-            { key: 'table', icon: Table2, label: '표' },
-            { key: 'chart', icon: BarChart3, label: '차트' },
-            { key: 'detail', icon: FileText, label: '상세' },
-            { key: 'markdown', icon: Code2, label: 'MD' },
-            { key: 'html', icon: Globe, label: 'HTML' },
-            { key: 'text', icon: Type, label: 'TEXT' },
-          ] as const).map(({ key, icon: Icon, label }) => (
-            <button
-              key={key}
-              onClick={() => setOutputFormat(key)}
-              className={`flex h-full items-center gap-1 px-2 text-[10px] transition-colors ${
-                outputFormat === key
-                  ? 'bg-cyan-600 text-white'
-                  : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
-              }`}
-              title={label}
-            >
-              <Icon className="size-3.5" />
-              <span className="hidden sm:inline">{label}</span>
-            </button>
-          ))}
+        {/* 출력형식 드롭다운 */}
+        <div className="relative">
+          {(() => {
+            const current = FORMAT_OPTIONS.find((o) => o.key === outputFormat) ?? FORMAT_OPTIONS[0];
+            const CurrentIcon = current.icon;
+            return (
+              <button
+                type="button"
+                onClick={() => setShowFormatMenu((v) => !v)}
+                className={`flex h-9 shrink-0 items-center gap-1 rounded-lg border px-2 text-xs transition-colors ${
+                  showFormatMenu
+                    ? 'border-cyan-500 bg-cyan-600 text-white'
+                    : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                }`}
+                title={`출력형식: ${current.label}`}
+                aria-haspopup="listbox"
+                aria-expanded={showFormatMenu}
+              >
+                <CurrentIcon className="size-3.5" />
+                <span className="hidden sm:inline">{current.label}</span>
+                <ChevronDown className={`size-3 transition-transform ${showFormatMenu ? 'rotate-180' : ''}`} />
+              </button>
+            );
+          })()}
+
+          {showFormatMenu && (
+            <>
+              {/* 외부 클릭 감지용 오버레이 */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowFormatMenu(false)}
+                aria-hidden="true"
+              />
+              <ul
+                role="listbox"
+                className="absolute bottom-full left-0 z-50 mb-2 w-36 overflow-hidden rounded-lg border border-zinc-300 bg-white py-1 shadow-xl dark:border-zinc-700 dark:bg-zinc-800"
+              >
+                {FORMAT_OPTIONS.map(({ key, icon: Icon, label }) => {
+                  const selected = outputFormat === key;
+                  return (
+                    <li key={key} role="option" aria-selected={selected}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOutputFormat(key);
+                          setShowFormatMenu(false);
+                        }}
+                        className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors ${
+                          selected
+                            ? 'bg-cyan-600/10 text-cyan-600 dark:text-cyan-400'
+                            : 'text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                        }`}
+                      >
+                        <Icon className="size-3.5" />
+                        <span className="flex-1">{label}</span>
+                        {selected && <span className="text-cyan-600 dark:text-cyan-400">✓</span>}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+        </div>
+
+        {/* 응답스타일 드롭다운 — 답변 길이/깊이 프리셋 */}
+        <div className="relative">
+          {(() => {
+            const current = RESPONSE_STYLE_OPTIONS.find((o) => o.key === responseStyle) ?? RESPONSE_STYLE_OPTIONS[0];
+            const CurrentIcon = current.icon;
+            return (
+              <button
+                type="button"
+                onClick={() => setShowStyleMenu((v) => !v)}
+                className={`flex h-9 shrink-0 items-center gap-1 rounded-lg border px-2 text-xs transition-colors ${
+                  showStyleMenu
+                    ? 'border-violet-500 bg-violet-600 text-white'
+                    : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                }`}
+                title={`응답스타일: ${current.label}`}
+                aria-haspopup="listbox"
+                aria-expanded={showStyleMenu}
+              >
+                <CurrentIcon className="size-3.5" />
+                <span className="hidden sm:inline">{current.label}</span>
+                <ChevronDown className={`size-3 transition-transform ${showStyleMenu ? 'rotate-180' : ''}`} />
+              </button>
+            );
+          })()}
+
+          {showStyleMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowStyleMenu(false)}
+                aria-hidden="true"
+              />
+              <ul
+                role="listbox"
+                className="absolute bottom-full left-0 z-50 mb-2 w-36 overflow-hidden rounded-lg border border-zinc-300 bg-white py-1 shadow-xl dark:border-zinc-700 dark:bg-zinc-800"
+              >
+                {RESPONSE_STYLE_OPTIONS.map(({ key, icon: Icon, label }) => {
+                  const selected = responseStyle === key;
+                  return (
+                    <li key={key} role="option" aria-selected={selected}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setResponseStyle(key);
+                          setShowStyleMenu(false);
+                        }}
+                        className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors ${
+                          selected
+                            ? 'bg-violet-600/10 text-violet-600 dark:text-violet-400'
+                            : 'text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                        }`}
+                      >
+                        <Icon className="size-3.5" />
+                        <span className="flex-1">{label}</span>
+                        {selected && <span className="text-violet-600 dark:text-violet-400">✓</span>}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
         </div>
 
         {/* 텍스트 입력 */}

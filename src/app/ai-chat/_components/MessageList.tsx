@@ -1,17 +1,13 @@
-/**
- * @file src/app/ai-chat/_components/MessageList.tsx
- * @description 메시지 스크롤 영역. 빈 화면 시 MES 도메인 카테고리별 예시 질문 표시.
- *   WebDisplay 실제 화면(투입/포장/SMD/SPI/AOI/CTQ/설비/추적)을 분석해 예시 구성.
- */
-'use client';
+﻿'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { BarChart3, ShieldCheck, Cpu, Link2, TrendingUp, Thermometer } from 'lucide-react';
 import type { ChatMessageRow } from '@/lib/ai/chat-store';
 import MessageBubble from './MessageBubble';
 import SqlPreviewCard from './SqlPreviewCard';
 
 interface PendingConfirm {
+  sessionId: string;
   messageId: string;
   sql: string;
   estimatedCost?: number;
@@ -24,115 +20,152 @@ interface Props {
   isStreaming: boolean;
   streamingText?: string;
   streamingStage?: string;
+  pendingConfirm: PendingConfirm | null;
   onConfirm: () => void;
+  onDismissPendingConfirm: () => void;
   onSuggestionClick?: (text: string) => void;
+  selectedContext?: { tables: string[]; domains: string[]; site: string } | null;
 }
-
-/* ------------------------------------------------------------------ */
-/*  MES 도메인 카테고리별 예시 질문 — WebDisplay 화면 기반              */
-/* ------------------------------------------------------------------ */
 
 const SUGGESTION_CATEGORIES = [
   {
-    title: '생산 현황',
+    title: '생산',
     icon: BarChart3,
     color: 'text-cyan-400',
     bgColor: 'bg-cyan-500/10',
     borderColor: 'border-cyan-500/20',
     questions: [
-      '오늘 SMPS 라인별 시프트별 생산수량 합계',
-      '어제 대비 오늘 포장(W220) 실적 비교',
-      '이번 주 SMD 라인 일별 생산 추이 차트',
-      'P51 라인 시간대별 목표 대비 실적',
+      '오늘 라인별 생산 실적 요약',
+      '어제 대비 오늘 조립 공정 실적 비교',
+      '최근 7일 생산 추이 차트로 보여줘',
+      '라인별 UPH 순위 알려줘',
     ],
   },
   {
-    title: '품질 분석',
+    title: '품질',
     icon: ShieldCheck,
     color: 'text-emerald-400',
     bgColor: 'bg-emerald-500/10',
     borderColor: 'border-emerald-500/20',
     questions: [
-      '오늘 AOI 검사 라인별 불량률 순위',
-      '이번 달 CTQ A등급 이상점 발생 라인 톱 5',
-      'SPI 검사 결과 최근 7일 추이',
-      'EOL 검사 불량 유형별 파레토 차트',
+      '오늘 불량 상위 라인 알려줘',
+      '최근 7일 FPY 추이 분석해줘',
+      'AOI/ICT 불량 유형 비중 보여줘',
+      '이상치 있는 라인 찾아줘',
     ],
   },
   {
-    title: 'KPI / FPY',
+    title: 'KPI',
     icon: TrendingUp,
     color: 'text-amber-400',
     bgColor: 'bg-amber-500/10',
     borderColor: 'border-amber-500/20',
     questions: [
-      '라인별 UPH 달성률 순위 (오늘)',
-      '이번 주 FPY 워스트 5 라인',
-      '일간 생산 계획 달성률 차트',
-      '라인별 작업자 수 대비 생산량 비교',
+      '목표 대비 실적 달성률 알려줘',
+      '라인별 생산성 순위 보여줘',
+      '재작업률 높은 라인 알려줘',
+      '주간 KPI 변화 요약해줘',
     ],
   },
   {
-    title: '설비 / 자재',
+    title: '설비',
     icon: Cpu,
     color: 'text-violet-400',
     bgColor: 'bg-violet-500/10',
     borderColor: 'border-violet-500/20',
     questions: [
-      '현재 MSL 경고 발생 자재 목록',
-      '오늘 설비 알람 최근 20건',
-      '솔더 투입 이력 (오늘 전체 라인)',
-      '마운터 에러 빈도 톱 10',
+      '오늘 설비 알람 빈도 Top 10',
+      '현재 MSL 경고 자재 목록',
+      '설비 이상 로그 최근 20건',
+      '라인별 설비 가동률 비교',
     ],
   },
   {
-    title: '환경 / 안전',
+    title: '환경',
     icon: Thermometer,
     color: 'text-rose-400',
     bgColor: 'bg-rose-500/10',
     borderColor: 'border-rose-500/20',
     questions: [
-      '현재 온습도 기준 초과 구역',
-      '납땜 경고 현황',
-      'Foolproof 체크 실패 라인',
-      '코팅 비전 검사 불량률',
+      '온습도 기준 초과 구역 알려줘',
+      '작업장 환경 경고 현황 요약',
+      '최근 환경 이상 이벤트 추이',
+      '환경값 급변 구간 찾아줘',
     ],
   },
   {
-    title: '추적 / 이력',
+    title: '추적',
     icon: Link2,
     color: 'text-blue-400',
     bgColor: 'bg-blue-500/10',
     borderColor: 'border-blue-500/20',
     questions: [
-      '런카드별 투입/포장 수량 비교',
-      '매거진 재고 현황 (라인별)',
-      '팩 시리얼 최근 출하 이력',
-      '자재 수불 내역 (오늘)',
+      '특정 바코드 공정 이력 조회',
+      '입고/출고 수량 비교',
+      '리페어 이력 최근 내역',
+      '자재 사용 이력 보여줘',
     ],
   },
 ];
 
-/* ------------------------------------------------------------------ */
-/*  컴포넌트                                                           */
-/* ------------------------------------------------------------------ */
+function parseRows(json: string | null): Record<string, unknown>[] {
+  if (!json) return [];
+  try {
+    const parsed = JSON.parse(json) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((v): v is Record<string, unknown> => !!v && typeof v === 'object');
+  } catch {
+    return [];
+  }
+}
 
-export default function MessageList({ messages, isStreaming, streamingText, streamingStage, onConfirm, onSuggestionClick }: Props) {
+export default function MessageList({
+  messages,
+  isStreaming,
+  streamingText,
+  streamingStage,
+  pendingConfirm,
+  onConfirm,
+  onDismissPendingConfirm,
+  onSuggestionClick,
+  selectedContext,
+}: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [pendingConfirm] = useState<PendingConfirm | null>(null);
 
   const scrollTrigger = streamingText?.length ?? 0;
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages, isStreaming, scrollTrigger]);
 
-  if (messages.length === 0) {
+  const renderedMessages = useMemo(() => {
+    const items: Array<{ msg: ChatMessageRow; resultRows?: Record<string, unknown>[] }> = [];
+    let latestRows: Record<string, unknown>[] = [];
+
+    for (const msg of messages) {
+      if (msg.role === 'sql_result') {
+        latestRows = parseRows(msg.resultJson);
+        items.push({ msg });
+        continue;
+      }
+
+      if (msg.role === 'assistant') {
+        items.push({ msg, resultRows: latestRows });
+        continue;
+      }
+
+      items.push({ msg });
+    }
+
+    return items;
+  }, [messages]);
+
+  if (messages.length === 0 && !isStreaming) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-6 overflow-y-auto p-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-200">MES AI 어시스턴트</h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            생산·품질·설비·추적 데이터를 자연어로 질의하세요
+            생산, 품질, 설비, 추적 데이터를 자연어로 조회하세요.
           </p>
         </div>
 
@@ -160,22 +193,26 @@ export default function MessageList({ messages, isStreaming, streamingText, stre
             );
           })}
         </div>
-
-        <p className="text-xs text-zinc-400">예시를 클릭하면 입력창에 자동으로 채워집니다</p>
       </div>
     );
   }
 
   return (
     <div ref={scrollRef} className="flex-1 overflow-y-auto">
-      {messages.map((m) => <MessageBubble key={m.messageId} message={m} />)}
-      {/* 스트리밍 중 실시간 표시 */}
+      {renderedMessages.map(({ msg, resultRows }) => (
+        <MessageBubble key={msg.messageId} message={msg} resultRows={resultRows} />
+      ))}
+
       {isStreaming && streamingText && (
         <div className="px-4 py-2">
           <div className="flex items-start gap-2">
             {streamingStage && (
               <span className="mt-1 shrink-0 rounded-full bg-cyan-600/20 px-2 py-0.5 text-[10px] font-medium text-cyan-400">
-                {streamingStage === 'sql_generation' ? 'SQL 생성' : '분석'}
+                {streamingStage === 'context_selection'
+                  ? '컨텍스트 선택'
+                  : streamingStage === 'sql_generation'
+                    ? 'SQL 생성'
+                    : '분석'}
               </span>
             )}
             <div className="max-w-2xl whitespace-pre-wrap rounded-2xl bg-zinc-100 px-4 py-2 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
@@ -185,6 +222,17 @@ export default function MessageList({ messages, isStreaming, streamingText, stre
           </div>
         </div>
       )}
+
+      {isStreaming && selectedContext && (
+        <div className="px-4 py-1">
+          <div className="max-w-3xl rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-300">
+            <div>선택 site: {selectedContext.site}</div>
+            <div>tables: {selectedContext.tables.join(', ') || '-'}</div>
+            <div>domains: {selectedContext.domains.join(', ') || '-'}</div>
+          </div>
+        </div>
+      )}
+
       {isStreaming && !streamingText && (
         <div className="px-4 py-2">
           <div className="flex items-center gap-2 text-sm text-zinc-400">
@@ -193,14 +241,17 @@ export default function MessageList({ messages, isStreaming, streamingText, stre
           </div>
         </div>
       )}
+
       {pendingConfirm && (
         <SqlPreviewCard
+          sessionId={pendingConfirm.sessionId}
           messageId={pendingConfirm.messageId}
           sql={pendingConfirm.sql}
           estimatedCost={pendingConfirm.estimatedCost}
           estimatedRows={pendingConfirm.estimatedRows}
           reason={pendingConfirm.reason}
           onResolved={onConfirm}
+          onCancel={onDismissPendingConfirm}
         />
       )}
     </div>

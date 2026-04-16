@@ -36,7 +36,8 @@ SELECT w.LOT_NO,
        w.VALID_DATE,
        w.MIX_TIME,
        w.AFTR_UNFREEZING_TIME,
-       w.VALID_DATE_CHECK
+       w.VALID_DATE_CHECK,
+       w.VISCOSITY_DATE
   FROM (
     SELECT ITEM_BARCODE                                                                              AS LOT_NO,
            ITEM_CODE,
@@ -44,6 +45,7 @@ SELECT w.LOT_NO,
            UNFREEZING_END_DATE,
            F_GET_TIME_TERM_HMI(NVL(ISSUE_DATE, SYSDATE), NVL(UNFREEZING_END_DATE, SYSDATE))         AS GAP1,
            SUBSTR(VISCOSITY_FILE_NAME, 1, 10)                                                        AS VISCOSITY_FILE_NAME,
+           VISCOSITY_START_DATE                                                                       AS VISCOSITY_DATE,
            NVL(NVL(VISCOSITY_START_DATE, FIRST_LINE_INPUT_DATE), INPUT_DATE)                         AS INPUT_DATE,
            F_GET_TIME_TERM_HMI(NVL(NVL(FIRST_LINE_INPUT_DATE, INPUT_DATE), SYSDATE), SYSDATE)       AS GAP2,
            F_GET_TIME_TERM_HMI(
@@ -71,7 +73,9 @@ SELECT w.LOT_NO,
  WHERE (LENGTH(w.GAP3) = 5 AND w.GAP3 > '10:00')
     OR w.AFTR_UNFREEZING_TIME > '22:00'
     OR w.VALID_DATE_CHECK <= 2
- ORDER BY w.LOT_NO
+ ORDER BY CASE WHEN F_GET_SOLDER_INPUT_LIST(w.LOT_NO) IS NULL THEN 1 ELSE 0 END,
+          LINE_CODE,
+          w.LOT_NO
  FETCH FIRST 500 ROWS ONLY
 `;
 }

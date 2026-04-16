@@ -5,7 +5,7 @@
  */
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import DisplayLayout from '@/components/display/DisplayLayout';
 import SessionSidebar from './SessionSidebar';
 import MessageList from './MessageList';
@@ -14,6 +14,21 @@ import PersonaPicker from './PersonaPicker';
 import ModelPicker from './ModelPicker';
 import type { ChatMessageRow } from '@/lib/ai/chat-store';
 import type { ProviderId } from '@/lib/ai/providers/types';
+
+interface PendingConfirm {
+  sessionId: string;
+  messageId: string;
+  sql: string;
+  estimatedCost?: number;
+  estimatedRows?: number;
+  reason?: string;
+}
+
+interface SelectedContext {
+  tables: string[];
+  domains: string[];
+  site: string;
+}
 
 const PROVIDER_COLORS: Record<string, string> = {
   claude: 'bg-orange-500/20 text-orange-400',
@@ -32,10 +47,12 @@ export default function ChatLayout() {
   const [suggestedInput, setSuggestedInput] = useState('');
   const [streamingText, setStreamingText] = useState('');
   const [streamingStage, setStreamingStage] = useState('');
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
+  const [selectedContext, setSelectedContext] = useState<SelectedContext | null>(null);
 
   useEffect(() => {
-    if (!currentSessionId) { setMessages([]); return; }
-    fetch(`/api/ai-chat/sessions/${currentSessionId}/messages`)
+    if (!currentSessionId) return;
+    fetch(`/api/ai-chat/sessions/${currentSessionId}/messages`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => setMessages(d.messages || []))
       .catch(() => setMessages([]));
@@ -51,16 +68,13 @@ export default function ChatLayout() {
     setCurrentSessionId(data.sessionId);
   }, [providerId, modelId, personaId]);
 
-  const sessionIdRef = useRef(currentSessionId);
-  sessionIdRef.current = currentSessionId;
-
   const refreshMessages = useCallback(async (overrideId?: string) => {
-    const sid = overrideId || sessionIdRef.current;
+    const sid = overrideId || currentSessionId;
     if (!sid) return;
-    const r = await fetch(`/api/ai-chat/sessions/${sid}/messages`);
+    const r = await fetch(`/api/ai-chat/sessions/${sid}/messages`, { cache: 'no-store' });
     const d = await r.json();
     setMessages(d.messages || []);
-  }, []);
+  }, [currentSessionId]);
 
   const headerContent = (
     <div className="flex items-center gap-2">
@@ -83,7 +97,7 @@ export default function ChatLayout() {
   );
 
   return (
-    <DisplayLayout title="AI 어시스턴트" extraHeaderContent={headerContent}>
+    <DisplayLayout title="AI 어시스턴트" extraHeaderContent={headerContent} hideTimingBadge>
       <div className="flex h-full">
         <SessionSidebar
           currentSessionId={currentSessionId}
@@ -92,24 +106,29 @@ export default function ChatLayout() {
         />
         <div className="flex min-w-0 flex-1 flex-col">
           <MessageList
-            messages={messages}
+            messages={currentSessionId ? messages : []}
             isStreaming={isStreaming}
             streamingText={streamingText}
             streamingStage={streamingStage}
-            onConfirm={refreshMessages}
+            pendingConfirm={pendingConfirm}
+            onConfirm={async () => { setPendingConfirm(null); await refreshMessages(); }}
+            onDismissPendingConfirm={() => setPendingConfirm(null)}
             onSuggestionClick={setSuggestedInput}
+            selectedContext={selectedContext}
           />
           <ChatInput
             sessionId={currentSessionId}
             providerId={providerId}
             modelId={modelId}
             personaId={personaId}
-            onProviderChange={setProviderId}
-            onModelChange={setModelId}
-            onPersonaChange={setPersonaId}
-            onStreamStart={() => { setIsStreaming(true); setStreamingText(''); setStreamingStage(''); }}
-            onStreamEnd={async () => { await refreshMessages(); setIsStreaming(false); setStreamingText(''); setStreamingStage(''); }}
-            onStreamToken={(delta, stage) => { setStreamingText((prev) => prev + delta); setStreamingStage(stage); }}
+            onStreamStart={() => { setIsStreaming(true); setStreamingText(''); setStreamingStage(''); setPendingConfirm(null); setSelectedContext(null); }}
+            onStreamEnd={async (sid?: string) => { await refreshMessages(sid); setIsStreaming(false); setStreamingText(''); setStreamingStage(''); }}
+            onStreamToken={(delta, stage) => {
+              if (stage) setStreamingStage(stage);
+              if (delta) setStreamingText((prev) => prev + delta);
+            }}
+            onConfirmRequired={(payload) => setPendingConfirm(payload)}
+            onContextSelected={(ctx) => setSelectedContext(ctx)}
             onSessionAutoCreate={(sid) => setCurrentSessionId(sid)}
             suggestedInput={suggestedInput}
             onSuggestedInputHandled={() => setSuggestedInput('')}

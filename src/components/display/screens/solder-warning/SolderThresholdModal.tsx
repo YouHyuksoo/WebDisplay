@@ -9,9 +9,10 @@
 import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import Modal from '@/components/ui/Modal';
-import { DEFAULT_SOLDER_THRESHOLDS } from '@/types/option';
-import type { SolderThresholdConfig } from '@/types/option';
+import { DEFAULT_SOLDER_THRESHOLDS, DEFAULT_TIMING_CONFIG } from '@/types/option';
+import type { SolderThresholdConfig, DisplayTimingConfig } from '@/types/option';
 import { saveSolderThresholds } from '@/hooks/useSolderThresholds';
+import { loadTiming, saveTiming } from '@/hooks/useDisplayTiming';
 
 interface SolderThresholdModalProps {
   isOpen: boolean;
@@ -100,6 +101,7 @@ function SectionHeader({ title, description }: { title: string; description?: st
 /** Solder Paste 임계값 설정 모달 */
 export default function SolderThresholdModal({ isOpen, onClose }: SolderThresholdModalProps) {
   const t = useTranslations('solderTable');
+  const tDisplay = useTranslations('display');
   const tCommon = useTranslations('common');
   const [config, setConfig] = useState<SolderThresholdConfig>(() => {
     try {
@@ -108,6 +110,7 @@ export default function SolderThresholdModal({ isOpen, onClose }: SolderThreshol
     } catch { /* 무시 */ }
     return { ...DEFAULT_SOLDER_THRESHOLDS };
   });
+  const [timing, setTiming] = useState<DisplayTimingConfig>(() => loadTiming());
 
   const update = useCallback(<K extends keyof SolderThresholdConfig>(key: K, val: SolderThresholdConfig[K]) => {
     setConfig((prev) => ({ ...prev, [key]: val }));
@@ -115,6 +118,7 @@ export default function SolderThresholdModal({ isOpen, onClose }: SolderThreshol
 
   const handleReset = useCallback(() => {
     setConfig({ ...DEFAULT_SOLDER_THRESHOLDS });
+    setTiming({ ...DEFAULT_TIMING_CONFIG });
   }, []);
 
   const handleSave = useCallback(() => {
@@ -127,8 +131,9 @@ export default function SolderThresholdModal({ isOpen, onClose }: SolderThreshol
       return;
     }
     saveSolderThresholds(config);
+    saveTiming(timing);
     onClose();
-  }, [config, onClose, t]);
+  }, [config, timing, onClose, t]);
 
   return (
     <Modal
@@ -164,6 +169,51 @@ export default function SolderThresholdModal({ isOpen, onClose }: SolderThreshol
       }
     >
       <div className="flex flex-col gap-6">
+        {/* 화면 타이밍 설정 */}
+        <section>
+          <SectionHeader title={tDisplay('timingSection')} description={tDisplay('timingDesc')} />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-300">
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
+                {tDisplay('refreshLabel')}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={5}
+                  max={300}
+                  value={timing.refreshSeconds}
+                  onChange={(e) => setTiming((prev) => ({ ...prev, refreshSeconds: Math.max(5, Math.min(300, Number(e.target.value) || 30)) }))}
+                  className="w-full rounded-md border border-blue-500 bg-zinc-800 px-3 py-2 text-center font-mono text-base
+                    text-white outline-none transition focus:ring-2 focus:ring-blue-500/30"
+                />
+                <span className="shrink-0 text-sm text-zinc-400">{tCommon('seconds')}</span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-300">
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-cyan-500" />
+                {tDisplay('scrollLabel')}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={3}
+                  max={60}
+                  value={timing.scrollSeconds}
+                  onChange={(e) => setTiming((prev) => ({ ...prev, scrollSeconds: Math.max(3, Math.min(60, Number(e.target.value) || 5)) }))}
+                  className="w-full rounded-md border border-cyan-500 bg-zinc-800 px-3 py-2 text-center font-mono text-base
+                    text-white outline-none transition focus:ring-2 focus:ring-cyan-500/30"
+                />
+                <span className="shrink-0 text-sm text-zinc-400">{tCommon('seconds')}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <hr className="border-zinc-700" />
+
         {/* 개봉후경과 (GAP3) */}
         <section>
           <SectionHeader title={`${t('gap3Section')} (GAP3)`} description="HH:MM" />

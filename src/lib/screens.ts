@@ -55,4 +55,5 @@ export const SCREENS: Record<string, ScreenConfig> = {
   'mxvc-production-kpi': { id: 'mxvc-production-kpi', title: 'Line Production KPI (MXVC)', titleKo: '라인별생산현황(멕시코전장)', titleEs: 'KPI de producción por línea (MXVC)', titleVi: 'KPI sản xuất theo Line (MXVC)', window: '', group: 'mxvc', lineFilter: true },
   'mxvc-post-process': { id: 'mxvc-post-process', title: 'Post-Process Production Status (MXVC)', titleKo: '후공정생산현황(멕시코전장)', titleEs: 'Estado de Producción Post-Proceso (MXVC)', window: '', group: 'mxvc', lineFilter: true },
   'mxvc-repair-status': { id: 'mxvc-repair-status', title: 'Repair Status (MXVC)', titleKo: '수리현황(멕시코전장)', titleEs: 'Estado de Reparación (MXVC)', titleVi: 'Tình trạng sửa chữa (MXVC)', window: '', group: 'mxvc', lineFilter: false },
+  'mxvc-process-history': { id: 'mxvc-process-history', title: 'Process Pass History (MXVC)', titleKo: '공정통과이력(멕시코전장)', titleEs: 'Historial de Paso de Proceso (MXVC)', titleVi: 'Lịch sử đi qua công đoạn (MXVC)', window: '', group: 'mxvc', lineFilter: false },
 };

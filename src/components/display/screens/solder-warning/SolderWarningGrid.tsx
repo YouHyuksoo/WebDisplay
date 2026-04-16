@@ -39,6 +39,7 @@ export interface SolderWarningRow {
   VALID_DATE?: string;
   VALID_DATE_CHECK?: number;
   VISCOSITY_FILE_NAME?: string;
+  VISCOSITY_DATE?: string;
   [key: string]: unknown;
 }
 
@@ -62,12 +63,13 @@ const HEADER_KEYS = [
   { key: 'MIX_TIME', labelKey: 'stirTime' as const, align: 'center' as const },
   { key: 'AFTR', labelKey: 'unfreezingTime' as const, align: 'center' as const },
   { key: 'INPUT', labelKey: 'inputDate' as const, align: 'center' as const },
+  { key: 'VISCOSITY', labelKey: 'viscosityDate' as const, align: 'center' as const },
   { key: 'GAP3', labelKey: 'gap3' as const, align: 'center' as const },
   { key: 'VALID', labelKey: 'validDate' as const, align: 'center' as const },
 ] as const;
 
 /** 초기 컬럼 폭 (px) */
-const INITIAL_WIDTHS = [120, 130, 140, 130, 110, 110, 130, 170, 110, 190];
+const INITIAL_WIDTHS = [120, 130, 140, 130, 110, 110, 130, 150, 150, 110, 190];
 
 /** 날짜를 MM/DD HH:mm 포맷으로 변환 */
 function formatDate(val?: string): string {
@@ -96,7 +98,7 @@ function formatValidDate(val?: string): string {
 export default function SolderWarningGrid({ rows, isLoading, error, scrollSeconds = 5, thresholds }: SolderWarningGridProps) {
   const t = useTranslations('solderTable');
   const tDisplay = useTranslations('display');
-  const { widths, handleMouseDown } = useGridResizer('grid-widths-solder-warning', INITIAL_WIDTHS);
+  const { widths, handleMouseDown } = useGridResizer('grid-widths-solder-warning-v2', INITIAL_WIDTHS);
   const { bodyRef, startIndex, endIndex, page, totalPages } = useGridPaging({ totalRows: rows.length, scrollSeconds });
 
   const pageRows = rows.slice(startIndex, endIndex);
@@ -177,10 +179,13 @@ export default function SolderWarningGrid({ rows, isLoading, error, scrollSecond
                 <div className="shrink-0 px-2 py-2 text-center text-lg font-bold text-zinc-300" style={{ width: widths[7] }}>
                   {formatDate(row.INPUT_DATE)}
                 </div>
-                <div className={`shrink-0 px-2 py-2 text-center text-lg font-black ${gap3Style || 'text-zinc-300'}`} style={{ width: widths[8] }}>
+                <div className="shrink-0 px-2 py-2 text-center text-lg font-bold text-zinc-300" style={{ width: widths[8] }}>
+                  {formatDate(row.VISCOSITY_DATE)}
+                </div>
+                <div className={`shrink-0 px-2 py-2 text-center text-lg font-black ${gap3Style || 'text-zinc-300'}`} style={{ width: widths[9] }}>
                   {row.GAP3 ?? '-'}
                 </div>
-                <div className={`shrink-0 px-2 py-2 text-center text-lg font-black ${validStyle || 'text-zinc-300'}`} style={{ width: widths[9] }}>
+                <div className={`shrink-0 px-2 py-2 text-center text-lg font-black ${validStyle || 'text-zinc-300'}`} style={{ width: widths[10] }}>
                   {formatValidDate(row.VALID_DATE)}
                   {validCheck <= (thresholds?.validWarning ?? 2) && (
                     <span className="ml-2 text-base">
