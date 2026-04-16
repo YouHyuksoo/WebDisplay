@@ -122,8 +122,8 @@ export default function MessageList({ messages, isStreaming, streamingText, stre
   const [pendingConfirm] = useState<PendingConfirm | null>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, isStreaming]);
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+  }, [messages, isStreaming, streamingText]);
 
   if (messages.length === 0) {
     return (
