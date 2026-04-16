@@ -25,6 +25,10 @@ interface Props {
   onDismissPendingConfirm: () => void;
   onSuggestionClick?: (text: string) => void;
   selectedContext?: { tables: string[]; domains: string[]; site: string } | null;
+  /** 피드백 저장에 필요한 세션·모델 정보 */
+  sessionId?: string;
+  providerId?: string;
+  modelId?: string;
 }
 
 const SUGGESTION_CATEGORIES = [
@@ -35,10 +39,10 @@ const SUGGESTION_CATEGORIES = [
     bgColor: 'bg-cyan-500/10',
     borderColor: 'border-cyan-500/20',
     questions: [
-      '오늘 라인별 생산 실적 요약',
-      '어제 대비 오늘 조립 공정 실적 비교',
-      '최근 7일 생산 추이 차트로 보여줘',
-      '라인별 UPH 순위 알려줘',
+      '어제 라인별 생산 수량과 목표 대비 달성률',
+      '오늘 시프트(A/B)별 SMT 투입 수량 비교',
+      '최근 7일 모델별 Run Card 완료 수 추이',
+      '이번 주 라인별 UPH 순위 Top 10',
     ],
   },
   {
@@ -48,10 +52,10 @@ const SUGGESTION_CATEGORIES = [
     bgColor: 'bg-emerald-500/10',
     borderColor: 'border-emerald-500/20',
     questions: [
-      '오늘 불량 상위 라인 알려줘',
-      '최근 7일 FPY 추이 분석해줘',
-      'AOI/ICT 불량 유형 비중 보여줘',
-      '이상치 있는 라인 찾아줘',
+      '오늘 AOI 공정 불량률 상위 5개 라인',
+      '최근 7일 ICT FPY 라인별 추이',
+      '어제 MAOI 불량 유형 Top 10 코드',
+      '최근 24시간 EOL 불합격 시리얼 목록',
     ],
   },
   {
@@ -61,10 +65,10 @@ const SUGGESTION_CATEGORIES = [
     bgColor: 'bg-amber-500/10',
     borderColor: 'border-amber-500/20',
     questions: [
-      '목표 대비 실적 달성률 알려줘',
-      '라인별 생산성 순위 보여줘',
-      '재작업률 높은 라인 알려줘',
-      '주간 KPI 변화 요약해줘',
+      '이번 달 라인별 목표 대비 실적 달성률',
+      '최근 4주 주간 FPY 변화 요약',
+      '오늘 재작업률 높은 라인 Top 5',
+      '최근 7일 라인별 일일 가동률 추이',
     ],
   },
   {
@@ -74,10 +78,10 @@ const SUGGESTION_CATEGORIES = [
     bgColor: 'bg-violet-500/10',
     borderColor: 'border-violet-500/20',
     questions: [
-      '오늘 설비 알람 빈도 Top 10',
-      '현재 MSL 경고 자재 목록',
-      '설비 이상 로그 최근 20건',
-      '라인별 설비 가동률 비교',
+      '오늘 LOG_ALARM 발생 Top 10 설비',
+      '최근 24시간 마운터 에러 로그 20건',
+      '어제 리플로우 온도 기준 이탈 구간',
+      '이번 주 라인별 설비 가동률 비교',
     ],
   },
   {
@@ -87,10 +91,10 @@ const SUGGESTION_CATEGORIES = [
     bgColor: 'bg-rose-500/10',
     borderColor: 'border-rose-500/20',
     questions: [
-      '온습도 기준 초과 구역 알려줘',
-      '작업장 환경 경고 현황 요약',
-      '최근 환경 이상 이벤트 추이',
-      '환경값 급변 구간 찾아줘',
+      '최근 24시간 리플로우 존별 온도 이상 구간',
+      '지금 MSL 노출시간 초과 자재 목록',
+      '최근 7일 솔더 보관소 온도·습도 추이',
+      '오늘 습도 기준 초과 작업장 현황',
     ],
   },
   {
@@ -100,10 +104,10 @@ const SUGGESTION_CATEGORIES = [
     bgColor: 'bg-blue-500/10',
     borderColor: 'border-blue-500/20',
     questions: [
-      '특정 바코드 공정 이력 조회',
-      '입고/출고 수량 비교',
-      '리페어 이력 최근 내역',
-      '자재 사용 이력 보여줘',
+      '오늘 EOL 불량 시리얼의 이전 공정 통과 기록',
+      '이번 주 출하 로트에 투입된 솔더 롯 번호',
+      '어제 재작업 3회 이상 발생한 시리얼 목록',
+      '최근 24시간 리플로우 통과 후 AOI 불량 시리얼',
     ],
   },
 ];
@@ -129,6 +133,9 @@ export default function MessageList({
   onDismissPendingConfirm,
   onSuggestionClick,
   selectedContext,
+  sessionId,
+  providerId,
+  modelId,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -138,10 +145,17 @@ export default function MessageList({
   }, [messages, isStreaming, scrollTrigger]);
 
   const renderedMessages = useMemo(() => {
-    const items: Array<{ msg: ChatMessageRow; resultRows?: Record<string, unknown>[] }> = [];
+    const items: Array<{ msg: ChatMessageRow; resultRows?: Record<string, unknown>[]; userQuery?: string }> = [];
     let latestRows: Record<string, unknown>[] = [];
+    let lastUserContent = '';
 
     for (const msg of messages) {
+      if (msg.role === 'user') {
+        lastUserContent = msg.content || '';
+        items.push({ msg });
+        continue;
+      }
+
       if (msg.role === 'sql_result') {
         latestRows = parseRows(msg.resultJson);
         items.push({ msg });
@@ -149,7 +163,7 @@ export default function MessageList({
       }
 
       if (msg.role === 'assistant') {
-        items.push({ msg, resultRows: latestRows });
+        items.push({ msg, resultRows: latestRows, userQuery: lastUserContent });
         continue;
       }
 
@@ -199,8 +213,16 @@ export default function MessageList({
 
   return (
     <div ref={scrollRef} className="flex-1 overflow-y-auto">
-      {renderedMessages.map(({ msg, resultRows }) => (
-        <MessageBubble key={msg.messageId} message={msg} resultRows={resultRows} />
+      {renderedMessages.map(({ msg, resultRows, userQuery }) => (
+        <MessageBubble
+          key={msg.messageId}
+          message={msg}
+          resultRows={resultRows}
+          sessionId={sessionId}
+          providerId={providerId}
+          modelId={modelId}
+          userQuery={userQuery}
+        />
       ))}
 
       {isStreaming && streamingText && (

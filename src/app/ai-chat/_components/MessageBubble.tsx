@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ThumbsUp, ThumbsDown, Copy, Check, ChevronDown, ChevronRight } from 'lucide-react';
@@ -8,9 +8,21 @@ import type { ChatMessageRow } from '@/lib/ai/chat-store';
 import ResultTable from './ResultTable';
 import ResultChart from './ResultChart';
 
+/**
+ * @description MessageBubble에 전달하는 props
+ *   피드백(좋아요/싫어요)을 DB에 영속 저장하기 위해
+ *   sessionId, providerId, modelId, userQuery, perf 정보를 추가로 받는다.
+ */
 interface Props {
   message: ChatMessageRow;
   resultRows?: Record<string, unknown>[];
+  sessionId?: string;
+  providerId?: string;
+  modelId?: string;
+  /** 직전 user 메시지의 content (피드백 저장 시 함께 기록) */
+  userQuery?: string;
+  /** 성능 지표 (피드백 저장 시 함께 기록) */
+  perf?: { totalMs?: number; sqlGenMs?: number; sqlExecMs?: number; analysisMs?: number };
 }
 
 interface ChartSpec {
@@ -107,12 +119,92 @@ function parseChartSpec(text: string): ParsedChart {
   return { spec, inlineRows, cleanedText };
 }
 
-export default function MessageBubble({ message, resultRows = [] }: Props) {
+export default function MessageBubble({
+  message,
+  resultRows = [],
+  sessionId,
+  providerId,
+  modelId,
+  userQuery,
+  perf,
+}: Props) {
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
+  const [feedbackId, setFeedbackId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [sqlOpen, setSqlOpen] = useState(false);
 
   const parsed = useMemo(() => parseChartSpec(message.content || ''), [message.content]);
+
+  /**
+   * @description 좋아요/싫어요 피드백을 DB에 저장·삭제·전환 처리
+   *   - 같은 버튼 재클릭 → DELETE (토글 해제)
+   *   - 다른 버튼 클릭 → 기존 DELETE 후 새로 POST
+   *   - 새로 클릭 → POST
+   */
+  const handleFeedback = useCallback(
+    async (type: 'up' | 'down') => {
+      // 같은 버튼 재클릭 → 토글 해제 (DELETE)
+      if (feedback === type) {
+        if (feedbackId) {
+          try {
+            await fetch('/api/ai-chat/feedback', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ feedbackIds: [feedbackId] }),
+            });
+          } catch {
+            // 삭제 실패해도 UI는 해제
+          }
+        }
+        setFeedback(null);
+        setFeedbackId(null);
+        return;
+      }
+
+      // 다른 버튼 클릭 → 기존 삭제 후 새로 POST
+      if (feedbackId) {
+        try {
+          await fetch('/api/ai-chat/feedback', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ feedbackIds: [feedbackId] }),
+          });
+        } catch {
+          // 삭제 실패해도 계속 진행
+        }
+      }
+
+      // POST 새 피드백
+      const rating = type === 'up' ? 'POSITIVE' : 'NEGATIVE';
+      try {
+        const res = await fetch('/api/ai-chat/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messageId: message.messageId,
+            sessionId: sessionId ?? '',
+            rating,
+            userQuery: userQuery ?? null,
+            llmResponse: message.content ?? null,
+            sqlQuery: message.sqlText ?? null,
+            providerId: providerId ?? null,
+            modelId: modelId ?? null,
+            totalMs: perf?.totalMs ?? null,
+            sqlGenMs: perf?.sqlGenMs ?? null,
+            sqlExecMs: perf?.sqlExecMs ?? null,
+            analysisMs: perf?.analysisMs ?? null,
+          }),
+        });
+        const data = await res.json();
+        setFeedbackId(data.feedbackId ?? null);
+      } catch {
+        // POST 실패해도 UI는 반영
+      }
+
+      setFeedback(type);
+    },
+    [feedback, feedbackId, message.messageId, message.content, message.sqlText, sessionId, providerId, modelId, userQuery, perf],
+  );
   const chartRows = parsed.inlineRows.length > 0 ? parsed.inlineRows : resultRows;
 
   if (message.role === 'system') return null;
@@ -174,14 +266,14 @@ export default function MessageBubble({ message, resultRows = [] }: Props) {
 
         <div className="mt-1 flex items-center gap-1 px-2">
           <button
-            onClick={() => setFeedback((prev) => (prev === 'up' ? null : 'up'))}
+            onClick={() => handleFeedback('up')}
             className={`rounded p-1 transition-colors ${feedback === 'up' ? 'text-cyan-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
             title="도움이 됐어요"
           >
             <ThumbsUp className="size-3.5" />
           </button>
           <button
-            onClick={() => setFeedback((prev) => (prev === 'down' ? null : 'down'))}
+            onClick={() => handleFeedback('down')}
             className={`rounded p-1 transition-colors ${feedback === 'down' ? 'text-rose-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
             title="도움이 안됐어요"
           >

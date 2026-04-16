@@ -71,9 +71,17 @@ export default function MxvcFpyPage() {
 
   useEffect(() => {
     fetchData();
-    const id = setInterval(fetchData, timing.refreshSeconds * 1000);
+    const id = setInterval(() => {
+      /* 자동 갱신 시 종료일시를 현재 시간으로 갱신 */
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const today = now.toISOString().slice(0, 10);
+      setSettings((prev) => ({ ...prev, dateTo: `${today}T${hh}:${mm}` }));
+      fetchData();
+    }, timing.refreshSeconds * 1000);
     return () => clearInterval(id);
-  }, [fetchData, timing.refreshSeconds]);
+  }, [fetchData, timing.refreshSeconds, setSettings]);
 
   const set = (patch: Partial<MxvcFpySettings>) =>
     setSettings({ ...settings, ...patch });

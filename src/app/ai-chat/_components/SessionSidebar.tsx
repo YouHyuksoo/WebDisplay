@@ -11,7 +11,8 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Plus, MessageSquareText, Trash2, Check, X, ListChecks, Square, CheckSquare } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, MessageSquareText, Trash2, Check, X, ListChecks, Square, CheckSquare, BarChart3 } from 'lucide-react';
 import type { SessionMeta } from '@/lib/ai/chat-store';
 
 interface Props {
@@ -187,6 +188,17 @@ export default function SessionSidebar({ currentSessionId, onSelect, onNew }: Pr
           );
         })}
       </nav>
+
+      {/* 분석 페이지 링크 */}
+      <div className="border-t border-zinc-200 px-3 py-2 dark:border-zinc-800">
+        <Link
+          href="/ai-chat/analytics"
+          className="flex items-center gap-2 px-3 py-2 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 rounded-md transition-colors"
+        >
+          <BarChart3 className="size-4" />
+          <span>대화 분석</span>
+        </Link>
+      </div>
 
       {/* 하단 일괄 삭제 액션 바 — 선택 모드 + 1개 이상 선택 시 */}
       {selectMode && selectedIds.size > 0 && (

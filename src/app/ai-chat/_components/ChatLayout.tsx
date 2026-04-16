@@ -115,6 +115,9 @@ export default function ChatLayout() {
             onDismissPendingConfirm={() => setPendingConfirm(null)}
             onSuggestionClick={setSuggestedInput}
             selectedContext={selectedContext}
+            sessionId={currentSessionId ?? undefined}
+            providerId={providerId}
+            modelId={modelId}
           />
           <ChatInput
             sessionId={currentSessionId}

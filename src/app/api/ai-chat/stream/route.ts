@@ -60,6 +60,7 @@ function getServerShift(): 'A' | 'B' {
 export async function POST(request: Request) {
   const body = (await request.json()) as RequestBody;
   const { sessionId, prompt, providerId, modelId, personaId, outputFormat, responseStyle } = body;
+  const requestStart = Date.now();
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -151,6 +152,7 @@ export async function POST(request: Request) {
           providerCfg.apiKey,
         );
 
+        const sqlGenStart = Date.now();
         send('stage', { stage: 'sql_generation' });
         for await (const chunk of sqlStream) {
           if (chunk.type === 'token' && chunk.delta) {
@@ -163,11 +165,12 @@ export async function POST(request: Request) {
             return;
           }
         }
+        const sqlGenMs = Date.now() - sqlGenStart;
 
         // 4) Extract + guard SQL.
         const rawSql = extractSqlFromResponse(sqlResponseText);
         if (!rawSql) {
-          await appendMessage({ sessionId, role: 'assistant', content: sqlResponseText });
+          await appendMessage({ sessionId, role: 'assistant', content: sqlResponseText, sqlGenMs });
           send('done', { ok: true, hasNoSql: true });
           closeStream();
           return;
@@ -206,7 +209,7 @@ export async function POST(request: Request) {
         }
 
         // 5) Execute SQL (site-aware).
-        const t0 = Date.now();
+        const sqlExecStart = Date.now();
         let resultRows: Record<string, unknown>[] = [];
         let execError: string | null = null;
 
@@ -220,14 +223,16 @@ export async function POST(request: Request) {
           execError = e instanceof Error ? e.message : String(e);
         }
 
-        const execMs = Date.now() - t0;
+        const sqlExecMs = Date.now() - sqlExecStart;
 
         await appendMessage({
           sessionId,
           role: 'sql',
           sqlText: guard.rewritten,
-          content: execError ? `실행 오류: ${execError}` : `조회 ${resultRows.length}건 (${execMs}ms)`,
-          execMs,
+          content: execError ? `실행 오류: ${execError}` : `조회 ${resultRows.length}건 (${sqlExecMs}ms)`,
+          execMs: sqlExecMs,
+          sqlGenMs,
+          sqlExecMs,
         });
 
         if (execError) {
@@ -241,7 +246,7 @@ export async function POST(request: Request) {
         await appendMessage({ sessionId, role: 'sql_result', resultJson });
         send('sql_executed', {
           rowCount: resultRows.length,
-          execMs,
+          execMs: sqlExecMs,
           rows: resultRows.slice(0, 100),
           site: selection.site,
         });
@@ -274,6 +279,7 @@ export async function POST(request: Request) {
           `조회 결과 (${resultRows.length}건, 최대 100건):\n\`\`\`json\n${resultJson}\n\`\`\`\n\n` +
           defaultCue;
 
+        const analysisStart = Date.now();
         send('stage', { stage: 'analysis' });
         let analysisText = '';
         let assistantSaved = false;
@@ -295,22 +301,27 @@ export async function POST(request: Request) {
           } else if (chunk.type === 'error') {
             send('error', { message: chunk.error });
           } else if (chunk.type === 'done') {
+            const analysisMs = Date.now() - analysisStart;
             await appendMessage({
               sessionId,
               role: 'assistant',
               content: analysisText,
               tokensIn: chunk.tokensIn,
               tokensOut: chunk.tokensOut,
+              sqlGenMs,
+              analysisMs,
             });
             assistantSaved = true;
           }
         }
 
+        const analysisMs = assistantSaved ? undefined : (Date.now() - analysisStart);
         if (!assistantSaved && analysisText.trim().length > 0) {
-          await appendMessage({ sessionId, role: 'assistant', content: analysisText });
+          await appendMessage({ sessionId, role: 'assistant', content: analysisText, sqlGenMs, analysisMs });
         }
 
-        send('done', { ok: true });
+        const totalMs = Date.now() - requestStart;
+        send('done', { ok: true, perf: { totalMs, sqlGenMs, sqlExecMs, analysisMs } });
         closeStream();
       } catch (e) {
         console.error('[ai-chat/stream]', e);

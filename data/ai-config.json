@@ -11,7 +11,7 @@
     {
       "providerId": "gemini",
       "enabled": false,
-      "apiKey": null,
+      "apiKey": "AIzaSyDYHw-LBE4KX8dbe0pGGSAnFBZMrgEP62g",
       "defaultModelId": "gemini-2.0-flash",
       "sqlSystemPrompt": null,
       "analysisPrompt": null
