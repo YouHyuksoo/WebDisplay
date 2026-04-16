@@ -34,6 +34,7 @@ import {
   CircleHelp,
   Bell,
 } from "lucide-react";
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 /**
@@ -158,6 +159,9 @@ export default function MenuControls() {
         <button className="floating-btn" id="settings-btn" data-tooltip={t('systemSettings')}>
           <Settings size={22} />
         </button>
+        <Link className="floating-btn" href="/ai-chat" aria-label={t('aiChat')} data-tooltip={t('aiChat')}>
+          <Sparkles className="size-5" />
+        </Link>
         <a className="floating-btn" href="/help" data-tooltip={t('help')}>
           <CircleHelp size={22} />
         </a>
