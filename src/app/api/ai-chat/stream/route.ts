@@ -48,8 +48,16 @@ export async function POST(request: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       const enc = new TextEncoder();
-      const send = (event: string, data: unknown) =>
-        controller.enqueue(enc.encode(sseEvent(event, data)));
+      let closed = false;
+      const send = (event: string, data: unknown) => {
+        if (closed) return;
+        try { controller.enqueue(enc.encode(sseEvent(event, data))); } catch { /* 무시 */ }
+      };
+      const close = () => {
+        if (closed) return;
+        closed = true;
+        try { close(); } catch { /* 무시 */ }
+      };
 
       try {
         // 1. user 메시지 저장
@@ -61,7 +69,7 @@ export async function POST(request: Request) {
         if (!providerCfg || !providerCfg.apiKey) {
           send('error', { message: 'API 키가 등록되지 않았습니다. 설정 → AI 모델에서 등록하세요.' });
           send('done', { ok: false });
-          controller.close();
+          close();
           return;
         }
         const persona = personaId ? await getPersona(personaId) : await getDefaultPersona();
@@ -103,7 +111,7 @@ export async function POST(request: Request) {
           } else if (chunk.type === 'error') {
             send('error', { message: chunk.error });
             send('done', { ok: false });
-            controller.close();
+            close();
             return;
           }
         }
@@ -113,7 +121,7 @@ export async function POST(request: Request) {
         if (!rawSql) {
           await appendMessage({ sessionId, role: 'assistant', content: sqlResponseText });
           send('done', { ok: true, hasNoSql: true });
-          controller.close();
+          close();
           return;
         }
 
@@ -123,7 +131,7 @@ export async function POST(request: Request) {
           await appendMessage({ sessionId, role: 'sql', sqlText: rawSql, content: errMsg });
           send('error', { message: errMsg });
           send('done', { ok: false });
-          controller.close();
+          close();
           return;
         }
 
@@ -140,7 +148,7 @@ export async function POST(request: Request) {
             reason: guard.reason,
           });
           send('done', { ok: true, awaitingConfirm: true });
-          controller.close();
+          close();
           return;
         }
 
@@ -164,7 +172,7 @@ export async function POST(request: Request) {
         if (execError) {
           send('error', { message: `SQL 실행 실패: ${execError}` });
           send('done', { ok: false });
-          controller.close();
+          close();
           return;
         }
 
@@ -210,12 +218,12 @@ export async function POST(request: Request) {
         }
 
         send('done', { ok: true });
-        controller.close();
+        close();
       } catch (e) {
         console.error('[ai-chat/stream]', e);
         send('error', { message: e instanceof Error ? e.message : String(e) });
         send('done', { ok: false });
-        controller.close();
+        close();
       }
     },
   });
