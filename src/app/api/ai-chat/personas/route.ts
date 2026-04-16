@@ -10,8 +10,9 @@ export async function GET() {
     const personas = await listPersonas(false);
     return NextResponse.json({ personas });
   } catch (e) {
-    console.error('[personas GET]', e);
-    return NextResponse.json({ error: 'failed' }, { status: 500 });
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('[personas GET]', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 

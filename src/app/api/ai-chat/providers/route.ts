@@ -11,8 +11,9 @@ export async function GET() {
     const providers = await listProviders();
     return NextResponse.json({ providers });
   } catch (e) {
-    console.error('[providers GET]', e);
-    return NextResponse.json({ error: 'failed' }, { status: 500 });
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('[providers GET]', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
