@@ -1,23 +1,31 @@
 /**
  * @file DisplayOption.tsx
- * @description 옵션 설정 화면 (Screen 18) 메인 컨테이너. 2탭 UI.
- * 초보자 가이드: DisplayLayout으로 감싸고, 페이지 순환 / DB 설정 탭을 전환한다.
+ * @description 옵션 설정 화면 (Screen 18) 메인 컨테이너. 6탭 UI.
+ * 초보자 가이드: DisplayLayout으로 감싸고, 기존 3탭 + AI 설정 3탭을 전환한다.
  */
 'use client';
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
 import DisplayLayout from '../../DisplayLayout';
 import PageRollingPanel from './PageRollingPanel';
 import DatabasePanel from './DatabasePanel';
 import AutoLaunchPanel from './AutoLaunchPanel';
 
-type Tab = 'rolling' | 'database' | 'autolaunch';
+const AiModelsPanel = dynamic(() => import('@/app/settings/ai-models/page'), { ssr: false });
+const AiPersonasPanel = dynamic(() => import('@/app/settings/ai-personas/page'), { ssr: false });
+const AiGlossaryPanel = dynamic(() => import('@/app/settings/ai-glossary/page'), { ssr: false });
 
-const TAB_KEYS: { key: Tab; labelKey: 'pageRolling' | 'dbSettings' | 'autoLaunch' }[] = [
+type Tab = 'rolling' | 'database' | 'autolaunch' | 'aiModels' | 'aiPersonas' | 'aiGlossary';
+
+const TAB_KEYS: { key: Tab; labelKey: string }[] = [
   { key: 'rolling', labelKey: 'pageRolling' },
   { key: 'database', labelKey: 'dbSettings' },
   { key: 'autolaunch', labelKey: 'autoLaunch' },
+  { key: 'aiModels', labelKey: 'aiModels' },
+  { key: 'aiPersonas', labelKey: 'aiPersonas' },
+  { key: 'aiGlossary', labelKey: 'aiGlossary' },
 ];
 
 interface DisplayOptionProps {
@@ -53,6 +61,9 @@ export default function DisplayOption({ screenId }: DisplayOptionProps) {
           {activeTab === 'rolling' && <PageRollingPanel />}
           {activeTab === 'database' && <DatabasePanel />}
           {activeTab === 'autolaunch' && <AutoLaunchPanel />}
+          {activeTab === 'aiModels' && <div className="p-4"><AiModelsPanel /></div>}
+          {activeTab === 'aiPersonas' && <div className="p-4"><AiPersonasPanel /></div>}
+          {activeTab === 'aiGlossary' && <div className="p-4"><AiGlossaryPanel /></div>}
         </div>
       </div>
     </DisplayLayout>
