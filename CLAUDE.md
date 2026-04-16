@@ -133,3 +133,19 @@ python scripts/pb_analyzer.py --parse-window --source <file.srw>
 python scripts/pb_analyzer.py --parse-datawindow --source <file.srd>
 python scripts/pb_analyzer.py --parse-all --source-dir "SOLUM MES_DISP/" --output ./analysis/
 ```
+
+## AI 챗 (메뉴 진입: 우하단 ✨ 아이콘)
+
+- 라우트: `/ai-chat` (SCREENS 레지스트리 미등록 — 라인 필터·시프트 무관)
+- 설정: `/settings/ai-models`(키 등록), `/settings/ai-personas`(어조), `/settings/ai-glossary`(용어)
+- DB 사용자 분리: AI 챗은 별도 read-only 계정 `WD_AI_READER` 풀 사용 (`getAiReaderPool()`)
+- API 키는 `AI_PROVIDER_SETTING.API_KEY_ENC`에 base64 저장 (운영 DB 백업에 포함되니 주의)
+- 새 도메인 용어/약어는 `/settings/ai-glossary`에서 추가 → 즉시 LLM 시스템 프롬프트 반영
+- 화이트리스트 테이블 추가 절차:
+  1. `WD_AI_READER`에 `GRANT SELECT ON <메인계정>.<TABLE_NAME> TO WD_AI_READER` 실행 (DBA)
+  2. `scripts/extract-schema-context.mjs`의 WHITELIST 배열에 추가
+  3. `npm run extract-schema` → `src/lib/ai/schema-context.ts` 자동 갱신 → 커밋
+- 멕시코 LOG_* 테이블은 SVEHICLEPDB 사이트라 이 어시스턴트로 조회 불가
+- SQL 안전: SELECT/WITH만 허용, ROWNUM ≤ 1000 자동 주입, EXPLAIN PLAN cost ≥ 1M 또는 rows ≥ 10K 시 사용자 확인
+- 마이그레이션 002의 WD_AI_READER 비밀번호는 `<REPLACE_BEFORE_RUN>` placeholder. 실제 비밀번호는 `config/database.json`(gitignore)의 aiReader 프로필에 저장. 배포 시 사이트별로 비밀번호 별도 생성 + 양쪽 동기화 필요.
+- 다중 사이트 배포: 메인 DB 프로필이 사이트별로 다르면(activeProfile 변경) 각 사이트마다 migrations/001+002 실행 + WD_AI_READER 생성 + aiReader 프로필 추가 필요.
