@@ -388,7 +388,7 @@ const ChatInput = memo(function ChatInput({
                   ? '파일과 함께 보낼 메시지를 입력하세요...'
                   : '질문을 입력하세요... (Shift+Enter 줄바꿈)'
             }
-            className={`h-10 w-full resize-none rounded-lg border px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 dark:text-white ${
+            className={`h-10 w-full resize-none rounded-lg border px-3 text-sm leading-10 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 dark:text-white ${
               isListening
                 ? 'border-rose-500 bg-rose-50 focus:ring-rose-500/50 dark:bg-rose-950/20'
                 : 'border-zinc-300 bg-white focus:ring-cyan-500/50 dark:border-zinc-700 dark:bg-zinc-800'
