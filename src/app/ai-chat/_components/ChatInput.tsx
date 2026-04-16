@@ -108,6 +108,8 @@ interface Props {
   onStreamStart: () => void;
   onStreamEnd: () => void;
   onSessionAutoCreate: (sessionId: string) => void;
+  suggestedInput?: string;
+  onSuggestedInputHandled?: () => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -118,6 +120,7 @@ const ChatInput = memo(function ChatInput({
   sessionId, providerId, modelId, personaId,
   onProviderChange, onModelChange, onPersonaChange,
   onStreamStart, onStreamEnd, onSessionAutoCreate,
+  suggestedInput, onSuggestedInputHandled,
 }: Props) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -162,6 +165,15 @@ const ChatInput = memo(function ChatInput({
 
     return () => { recognition.abort(); };
   }, []);
+
+  // 외부 제안 입력 처리
+  useEffect(() => {
+    if (suggestedInput) {
+      setText(suggestedInput);
+      onSuggestedInputHandled?.();
+      inputRef.current?.focus();
+    }
+  }, [suggestedInput, onSuggestedInputHandled]);
 
   const toggleListening = useCallback(async () => {
     if (!recognitionRef.current) return;

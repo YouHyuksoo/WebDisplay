@@ -24,6 +24,7 @@ export default function ChatLayout() {
   const [modelId, setModelId] = useState<string>('');
   const [personaId, setPersonaId] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [suggestedInput, setSuggestedInput] = useState('');
 
   useEffect(() => {
     if (!currentSessionId) {
@@ -66,6 +67,7 @@ export default function ChatLayout() {
             messages={messages}
             isStreaming={isStreaming}
             onConfirm={refreshMessages}
+            onSuggestionClick={setSuggestedInput}
           />
           <ChatInput
             sessionId={currentSessionId}
@@ -78,6 +80,8 @@ export default function ChatLayout() {
             onStreamStart={() => setIsStreaming(true)}
             onStreamEnd={() => { setIsStreaming(false); refreshMessages(); }}
             onSessionAutoCreate={(sid) => setCurrentSessionId(sid)}
+            suggestedInput={suggestedInput}
+            onSuggestedInputHandled={() => setSuggestedInput('')}
           />
         </div>
       </div>
