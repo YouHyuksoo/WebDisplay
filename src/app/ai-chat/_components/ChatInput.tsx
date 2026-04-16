@@ -12,7 +12,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect, memo } from 'react';
-import { Send, Mic, MicOff, Lightbulb, Paperclip, X } from 'lucide-react';
+import { Send, Mic, MicOff, Lightbulb, Paperclip, X, BarChart3, Table2, FileText, Sparkles } from 'lucide-react';
 import { postSse } from '../_lib/sse-client';
 import PersonaPicker from './PersonaPicker';
 import ModelPicker from './ModelPicker';
@@ -127,6 +127,7 @@ const ChatInput = memo(function ChatInput({
   const [busy, setBusy] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [outputFormat, setOutputFormat] = useState<'auto' | 'table' | 'chart' | 'detail'>('auto');
 
   // 음성 인식
   const [isListening, setIsListening] = useState(false);
@@ -210,8 +211,11 @@ const ChatInput = memo(function ChatInput({
         if (sid) onSessionAutoCreate(sid);
       }
 
+      const formatHint = outputFormat !== 'auto'
+        ? `\n\n[출력형식: ${outputFormat === 'table' ? '마크다운 표 위주로' : outputFormat === 'chart' ? '차트 시각화 포함해서' : '상세 분석 텍스트로'}]`
+        : '';
       await postSse('/api/ai-chat/stream', {
-        sessionId: sid, prompt: text, providerId, modelId, personaId,
+        sessionId: sid, prompt: text + formatHint, providerId, modelId, personaId,
       }, (ev) => {
         if (ev.event === 'token') {
           const d = ev.data as { delta?: string; stage?: string };
@@ -327,6 +331,30 @@ const ChatInput = memo(function ChatInput({
               </div>
             </div>
           )}
+        </div>
+
+        {/* 출력형식 선택 */}
+        <div className="flex rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden">
+          {([
+            { key: 'auto', icon: Sparkles, label: '자동' },
+            { key: 'table', icon: Table2, label: '표' },
+            { key: 'chart', icon: BarChart3, label: '차트' },
+            { key: 'detail', icon: FileText, label: '상세' },
+          ] as const).map(({ key, icon: Icon, label }) => (
+            <button
+              key={key}
+              onClick={() => setOutputFormat(key)}
+              className={`flex items-center gap-1 px-2 py-1.5 text-[10px] transition-colors ${
+                outputFormat === key
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
+              }`}
+              title={label}
+            >
+              <Icon className="size-3.5" />
+              <span className="hidden sm:inline">{label}</span>
+            </button>
+          ))}
         </div>
 
         {/* 텍스트 입력 */}
