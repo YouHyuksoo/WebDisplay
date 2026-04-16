@@ -27,7 +27,8 @@ export default function ModelPicker({ providerId, modelId, onProviderChange, onM
 
   useEffect(() => {
     fetch('/api/ai-chat/providers').then((r) => r.json()).then((d) => {
-      const list = (d.providers as ProviderSettingPublic[])
+      const raw = Array.isArray(d?.providers) ? d.providers : [];
+      const list = (raw as ProviderSettingPublic[])
         .filter((p) => p.enabled && p.hasApiKey)
         .map((p) => p.providerId);
       setEnabled(list);

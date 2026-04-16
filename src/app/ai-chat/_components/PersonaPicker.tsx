@@ -19,13 +19,15 @@ export default function PersonaPicker({ value, onChange }: Props) {
     fetch('/api/ai-chat/personas')
       .then((r) => r.json())
       .then((d) => {
-        const list = (d.personas as Persona[]).filter((p) => p.isActive);
+        const raw = Array.isArray(d?.personas) ? d.personas : [];
+        const list = (raw as Persona[]).filter((p) => p.isActive);
         setPersonas(list);
         if (!value && list.length > 0) {
           const def = list.find((p) => p.isDefault) || list[0];
           onChange(def.personaId);
         }
-      });
+      })
+      .catch(() => { /* API 에러 시 빈 목록 유지 */ });
   }, [value, onChange]);
 
   return (
