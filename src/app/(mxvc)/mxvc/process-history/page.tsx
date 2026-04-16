@@ -15,12 +15,16 @@ import * as XLSX from 'xlsx';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import ProcessHistoryGrid, { type Workstage } from '@/components/mxvc/ProcessHistoryGrid';
+import ProcessHistoryList, { type ListRow } from '@/components/mxvc/ProcessHistoryList';
 import Spinner from '@/components/ui/Spinner';
 import { useServerTime } from '@/hooks/useServerTime';
 
+type ViewMode = 'pivot' | 'list';
+
 const SCREEN_ID = 'mxvc-process-history';
 
-interface ApiResponse {
+interface PivotResponse {
+  mode: 'pivot';
   workstages: Workstage[];
   rows: Record<string, unknown>[];
   totalRaw: number;
@@ -28,11 +32,37 @@ interface ApiResponse {
   error?: string;
 }
 
+interface QcRow {
+  SERIAL_NO: string;
+  WORKSTAGE_CODE: string | null;
+  MACHINE_CODE: string | null;
+  QC_RESULT: string | null;
+  QC_DATE: string | null;
+  BAD_REASON_CODE: string | null;
+  BAD_POSITION: string | null;
+  LOCATION_CODE: string | null;
+  REPAIR_RESULT_CODE: string | null;
+  REPAIR_DATE: string | null;
+  FILE_NAME: string | null;
+}
+
+interface ListResponse {
+  mode: 'list';
+  workstages: Workstage[];
+  rows: ListRow[];
+  qcRows: QcRow[];
+  totalRaw: number;
+  error?: string;
+}
+
+type ApiResponse = PivotResponse | ListResponse;
+
 export default function ProcessHistoryPage() {
   const serverToday = useServerTime();
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo,   setDateTo]   = useState('');
   const [isLast,   setIsLast]   = useState<'Y' | 'N' | 'all'>('Y');
+  const [viewMode,  setViewMode] = useState<ViewMode>('pivot');
   const [resultFilter, setResultFilter] = useState<'all' | 'ok' | 'ng'>('all');
   const [pid,      setPid]      = useState('');
   const [loading,  setLoading]  = useState(false);
@@ -48,11 +78,15 @@ export default function ProcessHistoryPage() {
 
   const handleSearch = useCallback(async () => {
     if (!dateFrom || !dateTo) return;
+    if (viewMode === 'list' && !pid.trim()) {
+      setError('노멀 뷰에서는 PID를 입력해야 합니다');
+      return;
+    }
     setLoading(true);
     setError('');
     setData(null);
     try {
-      const p = new URLSearchParams({ dateFrom, dateTo, isLast });
+      const p = new URLSearchParams({ dateFrom, dateTo, isLast, mode: viewMode });
       const trimmed = pid.trim();
       if (trimmed) p.set('pid', trimmed);
       const res = await fetch(`/api/mxvc/process-history?${p}`, { cache: 'no-store' });
@@ -64,7 +98,7 @@ export default function ProcessHistoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateFrom, dateTo, isLast, pid]);
+  }, [dateFrom, dateTo, isLast, pid, viewMode]);
 
   const inputClass = 'rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 [color-scheme:dark]';
 
@@ -75,8 +109,9 @@ export default function ProcessHistoryPage() {
    * - ng: 해당 PID에 하나라도 PASS가 아닌 결과가 있는 경우
    */
   const PASS_VALUES = useMemo(() => new Set(['OK', 'PASS', 'GOOD', 'Y']), []);
-  const filteredRows = useMemo(() => {
-    if (!data) return [];
+  /** pivot 모드 전용: 결과 필터 적용된 행 */
+  const pivotRows = useMemo((): Record<string, unknown>[] => {
+    if (!data || data.mode !== 'pivot') return [];
     if (resultFilter === 'all') return data.rows;
     return data.rows.filter((row) => {
       const results = Object.entries(row)
@@ -93,7 +128,53 @@ export default function ProcessHistoryPage() {
    * 공정 그룹 헤더는 XLSX 병합 셀로 표현해 그리드와 동일한 계층 구조.
    */
   const handleExcelExport = useCallback(() => {
-    if (!data || filteredRows.length === 0) return;
+    if (!data || data.rows.length === 0) return;
+
+    /* ── list 모드 엑셀 ── */
+    if (data.mode === 'list') {
+      const header = ['공정코드', '공정명', 'PID', '모델명', '머신', '결과', 'IS_LAST', '검사일시'];
+      const dataRows = (data.rows as ListRow[]).map((r) => [
+        r.WORKSTAGE_CODE ?? '',
+        r.WORKSTAGE_NAME ?? '',
+        r.PID ?? '',
+        r.MODEL_NAME ?? '',
+        r.MACHINE_CODE ?? '',
+        r.INSPECT_RESULT ?? '',
+        r.IS_LAST ?? '',
+        r.INSPECT_DATE ?? '',
+      ]);
+      const sheet = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
+      sheet['!cols'] = [
+        { wch: 10 }, { wch: 16 }, { wch: 24 }, { wch: 16 },
+        { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 20 },
+      ];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, sheet, '공정통과이력');
+
+      /* QC 시트 */
+      const qcRows = (data as ListResponse).qcRows ?? [];
+      if (qcRows.length > 0) {
+        const qcHeader = ['SERIAL_NO', '공정', '머신', '결과', '검사일시', '불량코드', '불량위치', '위치', '수리결과', '수리일시', '파일명'];
+        const qcData = qcRows.map((r: QcRow) => [
+          r.SERIAL_NO ?? '', r.WORKSTAGE_CODE ?? '', r.MACHINE_CODE ?? '',
+          r.QC_RESULT ?? '', r.QC_DATE ?? '', r.BAD_REASON_CODE ?? '',
+          r.BAD_POSITION ?? '', r.LOCATION_CODE ?? '', r.REPAIR_RESULT_CODE ?? '',
+          r.REPAIR_DATE ?? '', r.FILE_NAME ?? '',
+        ]);
+        const qcSheet = XLSX.utils.aoa_to_sheet([qcHeader, ...qcData]);
+        qcSheet['!cols'] = [
+          { wch: 24 }, { wch: 8 }, { wch: 12 }, { wch: 6 }, { wch: 20 },
+          { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 20 }, { wch: 40 },
+        ];
+        XLSX.utils.book_append_sheet(wb, qcSheet, 'QC검사');
+      }
+
+      XLSX.writeFile(wb, `공정통과이력_노멀_${dateFrom}_${dateTo}.xlsx`);
+      return;
+    }
+
+    /* ── pivot 모드 엑셀 ── */
+    if (pivotRows.length === 0) return;
     const ws = data.workstages;
 
     /* Row 0: 공정 그룹 헤더 (PID/모델명은 빈칸, 공정은 3칸 병합 예정) */
@@ -107,7 +188,7 @@ export default function ProcessHistoryPage() {
     }
 
     /* 데이터 행 */
-    const dataRows = filteredRows.map((r) => {
+    const dataRows = pivotRows.map((r) => {
       const out: (string | number | null)[] = [
         (r.PID as string) ?? '',
         (r.MODEL_NAME as string) ?? '',
@@ -146,7 +227,7 @@ export default function ProcessHistoryPage() {
     XLSX.utils.book_append_sheet(wb, sheet, '공정통과이력');
     const fileName = `공정통과이력_${dateFrom}_${dateTo}.xlsx`;
     XLSX.writeFile(wb, fileName);
-  }, [data, filteredRows, dateFrom, dateTo]);
+  }, [data, pivotRows, dateFrom, dateTo]);
 
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-white overflow-hidden">
@@ -206,6 +287,28 @@ export default function ProcessHistoryPage() {
         </div>
 
         <div className="flex items-center gap-1">
+          <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">뷰</span>
+          <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-xs">
+            {([
+              { v: 'pivot' as ViewMode, label: '피벗' },
+              { v: 'list' as ViewMode,  label: '노멀' },
+            ]).map((opt, i) => (
+              <button
+                key={opt.v}
+                onClick={() => { setViewMode(opt.v); setData(null); }}
+                className={`px-2.5 py-1 transition-colors ${
+                  viewMode === opt.v
+                    ? 'bg-blue-500 text-white font-semibold'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                } ${i > 0 ? 'border-l border-gray-300 dark:border-gray-600' : ''}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {viewMode === 'pivot' && <div className="flex items-center gap-1">
           <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">결과</span>
           <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-xs">
             {([
@@ -228,7 +331,7 @@ export default function ProcessHistoryPage() {
               </button>
             ))}
           </div>
-        </div>
+        </div>}
 
         <button
           onClick={handleSearch}
@@ -240,7 +343,7 @@ export default function ProcessHistoryPage() {
 
         <button
           onClick={handleExcelExport}
-          disabled={!data || filteredRows.length === 0}
+          disabled={!data || data.rows.length === 0}
           title="Excel(xlsx) 파일로 저장"
           className="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
@@ -249,7 +352,10 @@ export default function ProcessHistoryPage() {
 
         {data && (
           <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
-            표시 {filteredRows.length}건 / PID {data.totalPids} · RAW {data.totalRaw}
+            {data.mode === 'pivot'
+              ? <>표시 {pivotRows.length}건 / PID {(data as PivotResponse).totalPids} · RAW {data.totalRaw}</>
+              : <>RAW {data.totalRaw}건</>
+            }
             {data.totalRaw >= 10000 && <span className="ml-1 text-amber-500">(최대 10000건 제한)</span>}
           </span>
         )}
@@ -261,15 +367,23 @@ export default function ProcessHistoryPage() {
         </div>
       )}
 
-      {/* 그리드 */}
+      {/* 그리드 / 리스트 */}
       <div className="flex-1 min-h-0 flex flex-col p-3">
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
             <Spinner size="lg" vertical label="공정통과이력 조회 중..." />
           </div>
         ) : data ? (
-          filteredRows.length > 0 ? (
-            <ProcessHistoryGrid rows={filteredRows} workstages={data.workstages} />
+          data.mode === 'list' ? (
+            data.rows.length > 0 || data.qcRows.length > 0 ? (
+              <ProcessHistoryList rows={data.rows as ListRow[]} workstages={data.workstages} qcRows={data.qcRows as QcRow[]} />
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+                해당 조건에 데이터가 없습니다
+              </div>
+            )
+          ) : pivotRows.length > 0 ? (
+            <ProcessHistoryGrid rows={pivotRows} workstages={data.workstages} />
           ) : (
             <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
               {data.rows.length === 0 ? '해당 조건에 데이터가 없습니다' : '결과 필터 조건에 해당하는 행이 없습니다'}
@@ -277,7 +391,7 @@ export default function ProcessHistoryPage() {
           )
         ) : (
           <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-            날짜를 선택하고 조회 버튼을 누르세요
+            {viewMode === 'list' ? 'PID를 입력하고 조회 버튼을 누르세요' : '날짜를 선택하고 조회 버튼을 누르세요'}
           </div>
         )}
       </div>

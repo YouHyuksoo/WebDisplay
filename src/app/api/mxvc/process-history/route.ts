@@ -21,6 +21,7 @@ interface RawRow {
   MACHINE_CODE: string | null;
   INSPECT_RESULT: string | null;
   INSPECT_DATE: string | null;
+  IS_LAST: string | null;
 }
 
 interface PivotRow {
@@ -35,6 +36,7 @@ export async function GET(req: NextRequest) {
   const dateTo   = sp.get('dateTo')?.trim()   ?? '';
   const isLast   = sp.get('isLast')?.trim()   ?? 'Y';
   const pid      = sp.get('pid')?.trim()      ?? '';
+  const mode     = sp.get('mode')?.trim()     ?? 'pivot';
 
   if (!dateFrom || !dateTo) {
     return NextResponse.json({ error: 'dateFrom, dateTo 필수' }, { status: 400 });
@@ -63,7 +65,8 @@ export async function GET(req: NextRequest) {
               NVL(F_GET_WORKSTAGE_NAME(t.WORKSTAGE_CODE), t.WORKSTAGE_CODE) AS WORKSTAGE_NAME,
               t.MACHINE_CODE,
               t.INSPECT_RESULT,
-              t.INSPECT_DATE
+              t.INSPECT_DATE,
+              t.IS_LAST
          FROM IQ_MACHINE_INSPECT_RESULT t
         WHERE t.INSPECT_DATE BETWEEN :dateFrom || ' 00:00:00'
                                  AND :dateTo   || ' 23:59:59'
@@ -75,7 +78,62 @@ export async function GET(req: NextRequest) {
       binds,
     );
 
-    /* 서버 측 피벗 */
+    /* ── list 모드: raw 데이터를 공정별 그룹으로 반환 + QC 데이터 ── */
+    if (mode === 'list') {
+      const wsMap = new Map<string, string>();
+      for (const r of rows) {
+        if (r.WORKSTAGE_CODE && !wsMap.has(r.WORKSTAGE_CODE)) {
+          wsMap.set(r.WORKSTAGE_CODE, r.WORKSTAGE_NAME ?? r.WORKSTAGE_CODE);
+        }
+      }
+      const workstages = Array.from(wsMap.entries())
+        .map(([code, name]) => ({ code, name }))
+        .sort((a, b) => a.code.localeCompare(b.code));
+
+      /* PID 목록으로 IP_PRODUCT_WORK_QC 조회 */
+      const pids = [...new Set(rows.map((r) => r.PID))];
+      let qcRows: Record<string, unknown>[] = [];
+      if (pids.length > 0 && pid) {
+        const qcBinds: Record<string, string> = { pidLike: `%${pid}%` };
+        qcRows = await executeQuery<Record<string, unknown>>(
+          `SELECT SERIAL_NO,
+                  WORKSTAGE_CODE,
+                  MACHINE_CODE,
+                  QC_RESULT,
+                  TO_CHAR(QC_DATE, 'YYYY/MM/DD HH24:MI:SS') AS QC_DATE,
+                  BAD_REASON_CODE,
+                  BAD_POSITION,
+                  LOCATION_CODE,
+                  REPAIR_RESULT_CODE,
+                  TO_CHAR(REPAIR_DATE, 'YYYY/MM/DD HH24:MI:SS') AS REPAIR_DATE,
+                  FILE_NAME
+             FROM IP_PRODUCT_WORK_QC
+            WHERE UPPER(SERIAL_NO) LIKE UPPER(:pidLike)
+            ORDER BY SERIAL_NO, QC_DATE
+            FETCH FIRST 5000 ROWS ONLY`,
+          qcBinds,
+        );
+      }
+
+      return NextResponse.json({
+        mode: 'list',
+        workstages,
+        rows: rows.map((r) => ({
+          PID: r.PID,
+          MODEL_NAME: r.MODEL_NAME,
+          WORKSTAGE_CODE: r.WORKSTAGE_CODE,
+          WORKSTAGE_NAME: r.WORKSTAGE_NAME,
+          MACHINE_CODE: r.MACHINE_CODE,
+          INSPECT_RESULT: r.INSPECT_RESULT,
+          INSPECT_DATE: r.INSPECT_DATE,
+          IS_LAST: r.IS_LAST,
+        })),
+        qcRows,
+        totalRaw: rows.length,
+      });
+    }
+
+    /* ── pivot 모드 (기본) ── */
     const workstageMap = new Map<string, string>(); // code → name
     const pidMap = new Map<string, PivotRow>();
 
@@ -104,6 +162,7 @@ export async function GET(req: NextRequest) {
       .sort((a, b) => a.code.localeCompare(b.code));
 
     return NextResponse.json({
+      mode: 'pivot',
       workstages,
       rows: Array.from(pidMap.values()),
       totalRaw: rows.length,
