@@ -5,7 +5,7 @@
  */
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import DisplayLayout from '@/components/display/DisplayLayout';
 import SessionSidebar from './SessionSidebar';
 import MessageList from './MessageList';
@@ -51,12 +51,16 @@ export default function ChatLayout() {
     setCurrentSessionId(data.sessionId);
   }, [providerId, modelId, personaId]);
 
-  const refreshMessages = useCallback(async () => {
-    if (!currentSessionId) return;
-    const r = await fetch(`/api/ai-chat/sessions/${currentSessionId}/messages`);
+  const sessionIdRef = useRef(currentSessionId);
+  sessionIdRef.current = currentSessionId;
+
+  const refreshMessages = useCallback(async (overrideId?: string) => {
+    const sid = overrideId || sessionIdRef.current;
+    if (!sid) return;
+    const r = await fetch(`/api/ai-chat/sessions/${sid}/messages`);
     const d = await r.json();
     setMessages(d.messages || []);
-  }, [currentSessionId]);
+  }, []);
 
   const headerContent = (
     <div className="flex items-center gap-2">
@@ -104,7 +108,7 @@ export default function ChatLayout() {
             onModelChange={setModelId}
             onPersonaChange={setPersonaId}
             onStreamStart={() => { setIsStreaming(true); setStreamingText(''); setStreamingStage(''); }}
-            onStreamEnd={() => { setIsStreaming(false); setStreamingText(''); setStreamingStage(''); refreshMessages(); }}
+            onStreamEnd={async () => { await refreshMessages(); setIsStreaming(false); setStreamingText(''); setStreamingStage(''); }}
             onStreamToken={(delta, stage) => { setStreamingText((prev) => prev + delta); setStreamingStage(stage); }}
             onSessionAutoCreate={(sid) => setCurrentSessionId(sid)}
             suggestedInput={suggestedInput}
