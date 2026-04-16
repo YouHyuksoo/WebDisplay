@@ -24,16 +24,16 @@
   transform: translate(-50%, -50%);
   transform-style: preserve-3d;
   display: flex;
-  gap: 20px;
+  gap: 14px;
   justify-content: center;
   align-items: flex-start;
   align-content: flex-start;
   flex-wrap: wrap;
   width: 800px;
   max-width: 90vw;
-  max-height: calc(100vh - 280px);
+  max-height: calc(100vh - 220px);
   overflow: hidden;
-  padding: 20px;
+  padding: 16px;
   pointer-events: none;
   box-sizing: border-box;
   will-change: transform, opacity;
@@ -119,19 +119,19 @@
   --card-color: var(--accent);
   position: relative;
   width: 150px;
-  height: 150px;
+  height: 110px;
   background: rgba(15, 15, 25, 0.18); /* 더 묵직한 어두운 톤 + 투명도 상향 */
   backdrop-filter: blur(30px); /* 블러 강도 상향으로 배경 분리감 개선 */
   -webkit-backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 12px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 4px;
   color: var(--text-primary);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* 그림자 강화 */
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
@@ -262,13 +262,13 @@ body[data-lite-mode="on"] .section-cards {
 
 .shortcut-icon {
   position: relative;
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 22px;
   color: white;
   font-weight: bold;
   background: transparent !important;
@@ -276,8 +276,8 @@ body[data-lite-mode="on"] .section-cards {
 
 .shortcut-icon img,
 .shortcut-icon svg {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
 }
 
@@ -285,6 +285,7 @@ body[data-lite-mode="on"] .section-cards {
   font-size: 13px;
   font-weight: 600;
   text-align: center;
+  line-height: 1.2;
 }
 
 .shortcut-url {

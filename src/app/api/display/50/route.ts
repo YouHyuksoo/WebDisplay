@@ -39,6 +39,65 @@ export async function GET(request: Request) {
     }
   }
 
+  /* ── 호출저장이력 (IQ_MACHINE_INSPECT_RESULT) ── */
+  if (searchParams.get('mode') === 'inspect') {
+    const fromDate = (searchParams.get('fromDate') ?? '').replace(/-/g, '/');
+    const toDate   = (searchParams.get('toDate')   ?? '').replace(/-/g, '/');
+    const keyword  = searchParams.get('keyword')  ?? '';
+    const lineCode = searchParams.get('lineCode') ?? '';
+    const page     = Math.max(1, Number(searchParams.get('page') ?? '1'));
+    const pageSize = Math.min(200, Math.max(10, Number(searchParams.get('pageSize') ?? '50')));
+    const sortCol  = searchParams.get('sortCol')  ?? 'INSPECT_DATE';
+    const sortDir  = (searchParams.get('sortDir') ?? 'DESC').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+    let whereExtra = '';
+    const binds: Record<string, string | number> = { fromDate, toDate };
+    if (keyword) {
+      whereExtra += ` AND (UPPER(t.PID) LIKE UPPER(:kw) OR UPPER(t.MACHINE_CODE) LIKE UPPER(:kw))`;
+      binds.kw = `%${keyword}%`;
+    }
+    if (lineCode) {
+      whereExtra += ` AND t.LINE_CODE = :lineCode`;
+      binds.lineCode = lineCode;
+    }
+
+    const allowedCols = new Set(['INSPECT_DATE','PID','LINE_CODE','WORKSTAGE_CODE','MACHINE_CODE','INSPECT_RESULT','IS_LAST']);
+    const safeCol = allowedCols.has(sortCol) ? sortCol : 'INSPECT_DATE';
+
+    try {
+      const [countRes, rows] = await Promise.all([
+        executeQuery<{ CNT: number }>(
+          `SELECT COUNT(*) AS CNT FROM IQ_MACHINE_INSPECT_RESULT t
+           WHERE t.INSPECT_DATE BETWEEN :fromDate || ' 00:00:00' AND :toDate || ' 23:59:59'
+             AND t.PID IS NOT NULL ${whereExtra}`,
+          binds,
+        ),
+        executeQuery<Record<string, unknown>>(
+          `SELECT t.PID, t.LINE_CODE, t.WORKSTAGE_CODE,
+                  NVL(F_GET_WORKSTAGE_NAME(t.WORKSTAGE_CODE), t.WORKSTAGE_CODE) AS WORKSTAGE_NAME,
+                  t.MACHINE_CODE, t.INSPECT_RESULT, t.INSPECT_DATE, t.IS_LAST
+             FROM IQ_MACHINE_INSPECT_RESULT t
+            WHERE t.INSPECT_DATE BETWEEN :fromDate || ' 00:00:00' AND :toDate || ' 23:59:59'
+              AND t.PID IS NOT NULL ${whereExtra}
+            ORDER BY t.${safeCol} ${sortDir}
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`,
+          { ...binds, offset: (page - 1) * pageSize, limit: pageSize },
+        ),
+      ]);
+      const totalCount = countRes[0]?.CNT ?? 0;
+      return NextResponse.json({
+        rows,
+        totalCount,
+        page,
+        pageSize,
+        totalPages: Math.ceil(totalCount / pageSize),
+      });
+    } catch (error) {
+      console.error('[API /display/50] inspect error:', error);
+      return NextResponse.json({ error: String(error), rows: [], totalCount: 0 }, { status: 500 });
+    }
+  }
+
   /* 로그 검색 모드 */
   const today = new Date().toISOString().slice(0, 10);
   const fromDate = searchParams.get('fromDate') ?? today;

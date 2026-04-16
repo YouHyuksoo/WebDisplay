@@ -163,6 +163,14 @@ const SCREEN_SQL_BUILDERS: Record<string, () => ScreenSqlInfo> = {
     queries: [
       { label: '로그 목록', sql: sqlEquipmentLogList('/* AND keyword LIKE ... */') },
       { label: '로그 건수', sql: sqlEquipmentLogCount('/* AND keyword LIKE ... */') },
+      { label: '호출저장이력 (IQ_MACHINE_INSPECT_RESULT)', sql: `SELECT t.PID, t.LINE_CODE, t.WORKSTAGE_CODE,
+       NVL(F_GET_WORKSTAGE_NAME(t.WORKSTAGE_CODE), t.WORKSTAGE_CODE) AS WORKSTAGE_NAME,
+       t.MACHINE_CODE, t.INSPECT_RESULT, t.INSPECT_DATE, t.IS_LAST
+  FROM IQ_MACHINE_INSPECT_RESULT t
+ WHERE t.INSPECT_DATE BETWEEN :fromDate || ' 00:00:00' AND :toDate || ' 23:59:59'
+   AND t.PID IS NOT NULL
+ ORDER BY t.INSPECT_DATE DESC
+ OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY` },
     ],
   }),
 

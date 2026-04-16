@@ -273,29 +273,16 @@ const ChatInput = memo(function ChatInput({
         if (sid) onSessionAutoCreate(sid);
       }
 
-      const FORMAT_HINTS: Record<string, string> = {
-        table: '마크다운 표 위주로 정리해서',
-        chart: '차트 시각화를 반드시 포함해서',
-        detail: '상세 분석 텍스트로 길게',
-        markdown: '마크다운 형식으로 (제목, 볼드, 리스트, 코드블록 활용)',
-        html: 'HTML 태그로 구조화하여 (table, ul, strong 등)',
-        text: '서식 없이 순수 텍스트로만 간결하게',
-      };
-      const STYLE_HINTS: Record<string, string> = {
-        brief: '핵심만 1~3문장으로 간결하게. 불필요한 배경 설명은 생략.',
-        normal: '적절한 분량으로 균형있게.',
-        detailed: '근거·수치·분석 과정을 포함해 상세히. 판단 근거도 설명.',
-        summary: '핵심을 bullet point 3~5개로. 서론·결론 생략.',
-        steps: '단계 1, 2, 3… 순서로 번호를 매겨 절차적으로.',
-      };
-      const formatHint = outputFormat !== 'auto' && FORMAT_HINTS[outputFormat]
-        ? `\n\n[출력형식: ${FORMAT_HINTS[outputFormat]}]`
-        : '';
-      const styleHint = responseStyle !== 'auto' && STYLE_HINTS[responseStyle]
-        ? `\n[응답스타일: ${STYLE_HINTS[responseStyle]}]`
-        : '';
+      // 출력 형식 / 응답 스타일은 prompt에 섞지 않고 별도 필드로 전달.
+      // 서버에서 stage별로 적절히 주입 (SQL 생성 때는 제외, 분석 때만 systemPrompt에 주입)
       await postSse('/api/ai-chat/stream', {
-        sessionId: sid, prompt: text + formatHint + styleHint, providerId, modelId, personaId,
+        sessionId: sid,
+        prompt: text,
+        providerId,
+        modelId,
+        personaId,
+        outputFormat,
+        responseStyle,
       }, (ev) => {
         if (ev.event === 'stage') {
           const d = ev.data as { stage?: string };

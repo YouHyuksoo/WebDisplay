@@ -13,9 +13,11 @@ interface SqlViewerModalProps {
   isOpen: boolean;
   onClose: () => void;
   screenId: string;
+  /** 외부에서 지정한 초기 탭 인덱스 */
+  initialTab?: number;
 }
 
-export default function SqlViewerModal({ isOpen, onClose, screenId }: SqlViewerModalProps) {
+export default function SqlViewerModal({ isOpen, onClose, screenId, initialTab }: SqlViewerModalProps) {
   const t = useTranslations('common');
   const [queries, setQueries] = useState<SqlEntry[]>([]);
   const [title, setTitle] = useState('');
@@ -50,6 +52,11 @@ export default function SqlViewerModal({ isOpen, onClose, screenId }: SqlViewerM
   useEffect(() => {
     if (isOpen) loadSql();
   }, [isOpen, loadSql]);
+
+  /* 외부 initialTab 변경 시 반영 */
+  useEffect(() => {
+    if (initialTab != null && initialTab >= 0) setActiveTab(initialTab);
+  }, [initialTab]);
 
   // ESC 닫기
   useEffect(() => {

@@ -491,7 +491,9 @@
     "returnShort": "응답",
     "reqFull": "요청 데이터 (REQ)",
     "returnFull": "응답 데이터 (RETURN)",
-    "filterAll": "전체"
+    "filterAll": "전체",
+    "tabLog": "호출이력",
+    "tabInspect": "호출저장이력"
   },
   "help": {
     "title": "도움말",

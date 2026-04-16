@@ -491,7 +491,9 @@
     "returnShort": "Respuesta",
     "reqFull": "Datos de solicitud (REQ)",
     "returnFull": "Datos de respuesta (RETURN)",
-    "filterAll": "Todos"
+    "filterAll": "Todos",
+    "tabLog": "Historial de llamadas",
+    "tabInspect": "Resultado de inspección"
   },
   "help": {
     "title": "Ayuda",

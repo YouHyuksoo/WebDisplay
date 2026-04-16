@@ -23,7 +23,28 @@ interface RequestBody {
   providerId: ProviderId;
   modelId?: string;
   personaId?: string;
+  /** 출력 형식 프리셋 (table/chart/detail/markdown/html/text). 분석 단계에서만 적용 */
+  outputFormat?: string;
+  /** 응답 스타일 프리셋 (brief/normal/detailed/summary/steps). 분석 단계에서만 적용 */
+  responseStyle?: string;
 }
+
+// 서버에서 LLM에 주입할 hint 문구 — 클라이언트와 분리 관리
+const FORMAT_HINTS: Record<string, string> = {
+  table: '마크다운 표 위주로 정리',
+  chart: '차트 시각화(JSON) 포함',
+  detail: '상세 분석 텍스트로 서술',
+  markdown: '마크다운 형식 (제목·볼드·리스트·코드블록)',
+  html: 'HTML 태그로 구조화 (table·ul·strong 등)',
+  text: '서식 없는 순수 텍스트',
+};
+const STYLE_HINTS: Record<string, string> = {
+  brief: '핵심만 1~3문장으로 간결하게. 불필요한 배경 설명·서론 생략.',
+  normal: '적절한 분량으로 균형있게.',
+  detailed: '근거·수치·분석 과정을 포함해 상세히. 판단 근거도 설명.',
+  summary: '핵심을 bullet point 3~5개로. 서론·결론 생략.',
+  steps: '단계 1, 2, 3… 순서로 번호를 매겨 절차적으로.',
+};
 
 function sseEvent(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -38,7 +59,7 @@ function getServerShift(): 'A' | 'B' {
 
 export async function POST(request: Request) {
   const body = (await request.json()) as RequestBody;
-  const { sessionId, prompt, providerId, modelId, personaId } = body;
+  const { sessionId, prompt, providerId, modelId, personaId, outputFormat, responseStyle } = body;
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -226,18 +247,32 @@ export async function POST(request: Request) {
         });
 
         // 6) Analysis stage.
-        const analysisSystemPrompt = await buildSystemPrompt({
+        const baseAnalysisSystemPrompt = await buildSystemPrompt({
           stage: 'analysis',
           personaPrompt: persona?.systemPrompt,
           currentContext: { today, serverShift: getServerShift(), userTz: 'ICT' },
           customAnalysisPrompt: providerCfg.analysisPrompt || undefined,
         });
 
+        // 사용자 선택한 출력 형식 / 응답 스타일을 system prompt 말미에 강하게 주입.
+        // "반드시" "예외 없이" 키워드로 LLM이 덮어쓰지 못하게 강조.
+        const formatDirective = outputFormat && outputFormat !== 'auto' && FORMAT_HINTS[outputFormat]
+          ? `\n\n[출력 형식 강제 지시]\n반드시 다음 형식을 따르세요: ${FORMAT_HINTS[outputFormat]}. 예외 없음.`
+          : '';
+        const styleDirective = responseStyle && responseStyle !== 'auto' && STYLE_HINTS[responseStyle]
+          ? `\n\n[응답 스타일 강제 지시]\n반드시 다음 스타일로 답하세요: ${STYLE_HINTS[responseStyle]} 이 지시는 다른 어떤 기본 지침보다 우선합니다.`
+          : '';
+        const analysisSystemPrompt = baseAnalysisSystemPrompt + formatDirective + styleDirective;
+
+        // 분석 유저 메시지 — 기본 지시문은 스타일이 auto일 때만, 아닐 땐 사용자 선택 존중
+        const defaultCue = (outputFormat && outputFormat !== 'auto') || (responseStyle && responseStyle !== 'auto')
+          ? '위 지시된 형식/스타일로 결과를 설명하세요.'
+          : '결과를 표/차트/요약으로 설명하세요.';
         const analysisUserMsg =
           `사용자 질문: ${prompt}\n\n` +
           `실행된 SQL:\n\`\`\`sql\n${guard.rewritten}\n\`\`\`\n\n` +
           `조회 결과 (${resultRows.length}건, 최대 100건):\n\`\`\`json\n${resultJson}\n\`\`\`\n\n` +
-          '결과를 표/차트/요약으로 설명하세요.';
+          defaultCue;
 
         send('stage', { stage: 'analysis' });
         let analysisText = '';

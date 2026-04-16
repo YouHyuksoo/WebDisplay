@@ -219,7 +219,7 @@ function ProcessView({ events }: { events: TimelineEvent[] }) {
 
 /** 한 소스 테이블의 그리드 섹션 (접기/펼치기 지원) */
 function SectionGrid({ group }: { group: Group }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(group.events.length >= 10);
   const badge = BADGE[group.type];
   const label = badge.text || displayName(group.source);
 

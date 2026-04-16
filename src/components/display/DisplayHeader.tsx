@@ -27,9 +27,11 @@ interface DisplayHeaderProps {
   extraHeaderContent?: React.ReactNode;
   /** "새로고침/스크롤 주기" 배지 숨김 여부 (기본: false) */
   hideTimingBadge?: boolean;
+  /** SQL Viewer 초기 탭 인덱스 */
+  sqlTabIndex?: number;
 }
 
-export default function DisplayHeader({ title, screenId, renderSettingsModal, extraHeaderContent, hideTimingBadge = false }: DisplayHeaderProps) {
+export default function DisplayHeader({ title, screenId, renderSettingsModal, extraHeaderContent, hideTimingBadge = false, sqlTabIndex }: DisplayHeaderProps) {
   const t = useTranslations('display');
   const router = useRouter();
   const locale = useLocale();
@@ -162,6 +164,7 @@ export default function DisplayHeader({ title, screenId, renderSettingsModal, ex
                 isOpen={isSqlOpen}
                 onClose={() => setIsSqlOpen(false)}
                 screenId={screenId}
+                initialTab={sqlTabIndex}
               />
             </>
           )}

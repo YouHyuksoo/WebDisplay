@@ -24,6 +24,8 @@ interface DisplayLayoutProps {
   extraHeaderContent?: React.ReactNode;
   /** "새로고침/스크롤 주기" 배지 숨김 여부 (기본: false) */
   hideTimingBadge?: boolean;
+  /** SQL Viewer 초기 탭 인덱스 */
+  sqlTabIndex?: number;
   children: React.ReactNode;
 }
 
@@ -34,6 +36,7 @@ export default function DisplayLayout({
   renderSettingsModal,
   extraHeaderContent,
   hideTimingBadge,
+  sqlTabIndex,
   children,
 }: DisplayLayoutProps) {
   const router = useRouter();
@@ -52,7 +55,7 @@ export default function DisplayLayout({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-white dark:bg-zinc-950">
-      <DisplayHeader title={resolvedTitle} screenId={screenId} renderSettingsModal={renderSettingsModal} extraHeaderContent={extraHeaderContent} hideTimingBadge={hideTimingBadge} />
+      <DisplayHeader title={resolvedTitle} screenId={screenId} renderSettingsModal={renderSettingsModal} extraHeaderContent={extraHeaderContent} hideTimingBadge={hideTimingBadge} sqlTabIndex={sqlTabIndex} />
       <main className="min-h-0 flex-1 overflow-hidden">
         {children}
       </main>

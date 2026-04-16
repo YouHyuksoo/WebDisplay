@@ -491,7 +491,9 @@
     "returnShort": "Phản hồi",
     "reqFull": "Dữ liệu yêu cầu (REQ)",
     "returnFull": "Dữ liệu phản hồi (RETURN)",
-    "filterAll": "Tất cả"
+    "filterAll": "Tất cả",
+    "tabLog": "Lịch sử gọi",
+    "tabInspect": "Kết quả kiểm tra"
   },
   "help": {
     "title": "Trợ giúp",

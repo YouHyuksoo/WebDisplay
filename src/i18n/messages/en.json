@@ -491,7 +491,9 @@
     "returnShort": "Response",
     "reqFull": "Request Data (REQ)",
     "returnFull": "Response Data (RETURN)",
-    "filterAll": "All"
+    "filterAll": "All",
+    "tabLog": "Call Log",
+    "tabInspect": "Inspect Result"
   },
   "help": {
     "title": "Help",

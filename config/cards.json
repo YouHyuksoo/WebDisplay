@@ -394,7 +394,7 @@
       "url": "/mxvc/inspect-result",
       "color": "#8b5cf6",
       "icon": "svg:error-log",
-      "layer": -1
+      "layer": 8
     },
     {
       "id": "mex-traceability",

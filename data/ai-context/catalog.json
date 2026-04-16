@@ -25,22 +25,6 @@
       ]
     },
     {
-      "name": "IMCN_JIG_INPUT_HIST",
-      "site": "default",
-      "summary": "IMCN_JIG_INPUT_HIST 테이블",
-      "tags": [
-        "기계"
-      ]
-    },
-    {
-      "name": "IMCN_MACHINE",
-      "site": "default",
-      "summary": "PB SQL 사용 기준 추정 테이블 | PB화면: w_mat_baking_dehumi_scan_query, w_mat_baking_scan_query, w_mat_dehumi_scan_query, w_mat_vacuum_scan_query, w_mcn_machine_pm_master | DW: d_mat_material_baking_dehumi_query_lst, d_mat_material_dehumi_query_lst, d_mcn_inspect_machine_control_lst, d_mcn_machine_4_pm_lst, d_mcn_machine_4_repair_request_lst",
-      "tags": [
-        "기계"
-      ]
-    },
-    {
       "name": "IM_ITEM_BAKING_MASTER",
       "site": "default",
       "summary": "PB SQL 사용 기준 추정 테이블 | PB화면: w_mat_baking_dehumi_scan_query, w_mat_baking_scan_query, w_mat_baking_dehumi_scan_master, w_mat_baking_scan_master, w_mat_dehumi_scan_query | DW: d_mat_material_baking_dehumi_query_lst, d_mat_material_baking_dehumi_scan_lst, d_mat_material_baking_scan_lst, d_mat_material_dehumi_query_lst",
@@ -93,6 +77,22 @@
       ]
     },
     {
+      "name": "IMCN_JIG_INPUT_HIST",
+      "site": "default",
+      "summary": "IMCN_JIG_INPUT_HIST 테이블",
+      "tags": [
+        "기계"
+      ]
+    },
+    {
+      "name": "IMCN_MACHINE",
+      "site": "default",
+      "summary": "PB SQL 사용 기준 추정 테이블 | PB화면: w_mat_baking_dehumi_scan_query, w_mat_baking_scan_query, w_mat_dehumi_scan_query, w_mat_vacuum_scan_query, w_mcn_machine_pm_master | DW: d_mat_material_baking_dehumi_query_lst, d_mat_material_dehumi_query_lst, d_mcn_inspect_machine_control_lst, d_mcn_machine_4_pm_lst, d_mcn_machine_4_repair_request_lst",
+      "tags": [
+        "기계"
+      ]
+    },
+    {
       "name": "IP_LINE_DAILY_OPERATION_HIST",
       "site": "default",
       "summary": "IP_LINE_DAILY_OPERATION_HIST 테이블",
@@ -105,7 +105,9 @@
       "site": "default",
       "summary": "라인 마스터. 라인코드/라인명/구분/상태/현재모델/UPH 등 라인 기본정보",
       "tags": [
-        "생산", "라인", "마스터"
+        "생산",
+        "라인",
+        "마스터"
       ]
     },
     {
@@ -113,7 +115,10 @@
       "site": "default",
       "summary": "라인별 시프트별 생산 목표(계획 수량)",
       "tags": [
-        "생산", "목표", "계획", "KPI"
+        "생산",
+        "목표",
+        "계획",
+        "KPI"
       ]
     },
     {
@@ -161,15 +166,10 @@
       "site": "default",
       "summary": "RUN(로트) 카드. RUN_NO별 모델명/품목/라인/수량 등 로트 단위 생산 정보",
       "tags": [
-        "생산", "로트", "RUN", "모델"
-      ]
-    },
-    {
-      "name": "IP_PRODUCT_WORKSTAGE_IO",
-      "site": "default",
-      "summary": "공정별 입출고 실적. 투입(W310)/포장(W220)/SMD(W110)/PBA(W210) 공정 통과 기록",
-      "tags": [
-        "생산", "실적", "IO", "공정", "포장", "투입"
+        "생산",
+        "로트",
+        "RUN",
+        "모델"
       ]
     },
     {
@@ -177,7 +177,24 @@
       "site": "default",
       "summary": "품질검사(QC) 결과. 불량유형/수리결과/폐기/반품 등 공정 품질 이벤트",
       "tags": [
-        "생산", "품질", "불량", "수리", "QC"
+        "생산",
+        "품질",
+        "불량",
+        "수리",
+        "QC"
+      ]
+    },
+    {
+      "name": "IP_PRODUCT_WORKSTAGE_IO",
+      "site": "default",
+      "summary": "공정별 입출고 실적. 투입(W310)/포장(W220)/SMD(W110)/PBA(W210) 공정 통과 기록",
+      "tags": [
+        "생산",
+        "실적",
+        "IO",
+        "공정",
+        "포장",
+        "투입"
       ]
     },
     {
@@ -210,7 +227,41 @@
       "site": "default",
       "summary": "AOI(자동광학검사) 로그. 설비별 검사결과(OK/NG), 바코드(SERIAL_NO) 기록",
       "tags": [
-        "로그", "검사", "AOI", "광학", "FPY"
+        "로그",
+        "검사",
+        "AOI",
+        "광학",
+        "FPY"
+      ]
+    },
+    {
+      "name": "LOG_COATING1",
+      "site": "default",
+      "summary": "LOG_COATING1 테이블",
+      "tags": [
+        "로그",
+        "검사",
+        "코팅"
+      ]
+    },
+    {
+      "name": "LOG_COATING2",
+      "site": "default",
+      "summary": "LOG_COATING2 테이블",
+      "tags": [
+        "로그",
+        "검사",
+        "코팅"
+      ]
+    },
+    {
+      "name": "LOG_COATINGREVIEW",
+      "site": "default",
+      "summary": "LOG_COATINGREVIEW 테이블",
+      "tags": [
+        "로그",
+        "검사",
+        "코팅"
       ]
     },
     {
@@ -236,7 +287,11 @@
       "site": "default",
       "summary": "EOL(End-Of-Line) 최종검사 로그. 완제품 기능검사 결과 + 측정값",
       "tags": [
-        "로그", "검사", "EOL", "최종검사", "FPY"
+        "로그",
+        "검사",
+        "EOL",
+        "최종검사",
+        "FPY"
       ]
     },
     {
@@ -249,11 +304,25 @@
       ]
     },
     {
+      "name": "LOG_FCT",
+      "site": "default",
+      "summary": "LOG_FCT 테이블",
+      "tags": [
+        "로그",
+        "검사",
+        "품질"
+      ]
+    },
+    {
       "name": "LOG_ICT",
       "site": "default",
       "summary": "ICT(In-Circuit Test) 전기검사 로그. 회로 단선/단락/저항값 검사 결과",
       "tags": [
-        "로그", "검사", "ICT", "전기", "FPY"
+        "로그",
+        "검사",
+        "ICT",
+        "전기",
+        "FPY"
       ]
     },
     {
@@ -263,6 +332,35 @@
       "tags": [
         "로그",
         "검사"
+      ]
+    },
+    {
+      "name": "LOG_LOWCURRENT",
+      "site": "default",
+      "summary": "LOG_LOWCURRENT 테이블",
+      "tags": [
+        "로그",
+        "검사"
+      ]
+    },
+    {
+      "name": "LOG_MAOI",
+      "site": "default",
+      "summary": "LOG_MAOI 테이블",
+      "tags": [
+        "로그",
+        "검사",
+        "품질"
+      ]
+    },
+    {
+      "name": "LOG_MARKING",
+      "site": "default",
+      "summary": "LOG_MARKING 테이블",
+      "tags": [
+        "로그",
+        "검사",
+        "마킹"
       ]
     },
     {
@@ -284,11 +382,37 @@
       ]
     },
     {
+      "name": "LOG_REFLOW_01",
+      "site": "default",
+      "summary": "LOG_REFLOW_01 테이블",
+      "tags": [
+        "로그",
+        "검사",
+        "리플로우",
+        "온도"
+      ]
+    },
+    {
+      "name": "LOG_REFLOW_02",
+      "site": "default",
+      "summary": "LOG_REFLOW_02 테이블",
+      "tags": [
+        "로그",
+        "검사",
+        "리플로우",
+        "온도"
+      ]
+    },
+    {
       "name": "LOG_SPI",
       "site": "default",
       "summary": "SPI(Solder Paste Inspection) 솔더 페이스트 검사 로그",
       "tags": [
-        "로그", "검사", "SPI", "솔더", "납땜"
+        "로그",
+        "검사",
+        "SPI",
+        "솔더",
+        "납땜"
       ]
     },
     {
@@ -302,13 +426,79 @@
     }
   ],
   "domains": [
-    { "name": "traceability", "summary": "바코드(PID) 기반 제품 추적성 분석 — 공정 타임라인, 자재 이력", "tags": ["추적", "바코드", "이력", "PID", "타임라인"] },
-    { "name": "process-history", "summary": "공정통과이력 — PID별 각 공정 통과 여부 피벗", "tags": ["공정", "이력", "검사", "PID", "피벗"] },
-    { "name": "fpy", "summary": "First Pass Yield 1차 양품률 분석", "tags": ["FPY", "양품률", "품질", "수율"] },
-    { "name": "production-kpi", "summary": "생산 KPI — 목표 대비 실적, 달성률", "tags": ["생산", "KPI", "목표", "실적", "달성률"] },
-    { "name": "spc", "summary": "SPC 관리도 — 통계적 공정 관리", "tags": ["SPC", "관리도", "통계", "공정관리"] },
-    { "name": "repair-status", "summary": "수리 현황 — 불량 유형별 수리 진행 상태", "tags": ["수리", "불량", "리페어"] },
-    { "name": "inspect-result", "summary": "검사 결과 — AOI/ICT/EOL 등 공정별 검사 결과 조회", "tags": ["검사", "AOI", "ICT", "EOL", "결과"] }
+    {
+      "name": "traceability",
+      "summary": "바코드(PID) 기반 제품 추적성 분석 — 공정 타임라인, 자재 이력",
+      "tags": [
+        "추적",
+        "바코드",
+        "이력",
+        "PID",
+        "타임라인"
+      ]
+    },
+    {
+      "name": "process-history",
+      "summary": "공정통과이력 — PID별 각 공정 통과 여부 피벗",
+      "tags": [
+        "공정",
+        "이력",
+        "검사",
+        "PID",
+        "피벗"
+      ]
+    },
+    {
+      "name": "fpy",
+      "summary": "First Pass Yield 1차 양품률 분석",
+      "tags": [
+        "FPY",
+        "양품률",
+        "품질",
+        "수율"
+      ]
+    },
+    {
+      "name": "production-kpi",
+      "summary": "생산 KPI — 목표 대비 실적, 달성률",
+      "tags": [
+        "생산",
+        "KPI",
+        "목표",
+        "실적",
+        "달성률"
+      ]
+    },
+    {
+      "name": "spc",
+      "summary": "SPC 관리도 — 통계적 공정 관리",
+      "tags": [
+        "SPC",
+        "관리도",
+        "통계",
+        "공정관리"
+      ]
+    },
+    {
+      "name": "repair-status",
+      "summary": "수리 현황 — 불량 유형별 수리 진행 상태",
+      "tags": [
+        "수리",
+        "불량",
+        "리페어"
+      ]
+    },
+    {
+      "name": "inspect-result",
+      "summary": "검사 결과 — AOI/ICT/EOL 등 공정별 검사 결과 조회",
+      "tags": [
+        "검사",
+        "AOI",
+        "ICT",
+        "EOL",
+        "결과"
+      ]
+    }
   ],
   "sites": [
     {
