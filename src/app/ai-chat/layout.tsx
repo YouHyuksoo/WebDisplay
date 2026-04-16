@@ -9,7 +9,10 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { LocaleProvider } from '@/components/providers/LocaleProvider';
+import { TooltipProvider } from '@/components/providers/TooltipProvider';
+import { FooterProvider } from '@/components/providers/FooterProvider';
 import '../globals.css';
+import '../(display)/display-theme.css';
 
 export const metadata: Metadata = {
   title: 'SOLUM MES - AI 어시스턴트',
@@ -18,10 +21,14 @@ export const metadata: Metadata = {
 export default function AiChatLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className="h-screen overflow-hidden bg-zinc-950 text-zinc-100 antialiased">
+      <body className="h-screen overflow-hidden bg-background text-foreground antialiased dark:bg-background-dark dark:text-white">
         <ThemeProvider>
           <LocaleProvider>
-            {children}
+            <TooltipProvider>
+              <FooterProvider>
+                {children}
+              </FooterProvider>
+            </TooltipProvider>
           </LocaleProvider>
         </ThemeProvider>
       </body>

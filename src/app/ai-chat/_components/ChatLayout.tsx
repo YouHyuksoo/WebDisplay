@@ -1,6 +1,7 @@
 /**
  * @file src/app/ai-chat/_components/ChatLayout.tsx
  * @description 좌측 세션 사이드바 + 우측 본문(MessageList + ChatInput) 레이아웃.
+ *   표준 DisplayLayout(언어·테마·시각·뒤로가기)을 공유.
  *
  * 초보자 가이드:
  * - currentSessionId 상태로 사이드바 ↔ 본문 동기화
@@ -9,8 +10,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Settings } from 'lucide-react';
+import DisplayLayout from '@/components/display/DisplayLayout';
 import SessionSidebar from './SessionSidebar';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
@@ -25,7 +25,6 @@ export default function ChatLayout() {
   const [personaId, setPersonaId] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
 
-  // 세션 변경 시 메시지 로드
   useEffect(() => {
     if (!currentSessionId) {
       setMessages([]);
@@ -55,24 +54,8 @@ export default function ChatLayout() {
   }, [currentSessionId]);
 
   return (
-    <div className="flex h-full flex-col">
-      {/* 상단 네비게이션 바 */}
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-2">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200">
-            <ArrowLeft className="size-4" />
-            메인메뉴
-          </Link>
-          <span className="text-sm font-medium text-zinc-200">AI 어시스턴트</span>
-        </div>
-        <Link href="/settings/ai-models" className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200">
-          <Settings className="size-4" />
-          모델 설정
-        </Link>
-      </header>
-
-      {/* 본문: 사이드바 + 채팅 영역 */}
-      <div className="flex min-h-0 flex-1">
+    <DisplayLayout title="AI 어시스턴트">
+      <div className="flex h-full">
         <SessionSidebar
           currentSessionId={currentSessionId}
           onSelect={setCurrentSessionId}
@@ -80,24 +63,24 @@ export default function ChatLayout() {
         />
         <div className="flex min-w-0 flex-1 flex-col">
           <MessageList
-          messages={messages}
-          isStreaming={isStreaming}
-          onConfirm={refreshMessages}
-        />
-        <ChatInput
-          sessionId={currentSessionId}
-          providerId={providerId}
-          modelId={modelId}
-          personaId={personaId}
-          onProviderChange={setProviderId}
-          onModelChange={setModelId}
-          onPersonaChange={setPersonaId}
-          onStreamStart={() => setIsStreaming(true)}
-          onStreamEnd={() => { setIsStreaming(false); refreshMessages(); }}
-          onSessionAutoCreate={(sid) => setCurrentSessionId(sid)}
-        />
+            messages={messages}
+            isStreaming={isStreaming}
+            onConfirm={refreshMessages}
+          />
+          <ChatInput
+            sessionId={currentSessionId}
+            providerId={providerId}
+            modelId={modelId}
+            personaId={personaId}
+            onProviderChange={setProviderId}
+            onModelChange={setModelId}
+            onPersonaChange={setPersonaId}
+            onStreamStart={() => setIsStreaming(true)}
+            onStreamEnd={() => { setIsStreaming(false); refreshMessages(); }}
+            onSessionAutoCreate={(sid) => setCurrentSessionId(sid)}
+          />
         </div>
       </div>
-    </div>
+    </DisplayLayout>
   );
 }
