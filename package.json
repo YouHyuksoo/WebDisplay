@@ -14,6 +14,7 @@
     "@google/generative-ai": "^0.24.1",
     "@lottiefiles/dotlottie-wc": "^0.9.4",
     "@mistralai/mistralai": "^2.2.0",
+    "@tailwindcss/typography": "^0.5.19",
     "ag-grid-community": "^35.2.0",
     "ag-grid-react": "^35.2.0",
     "echarts": "^6.0.0",
