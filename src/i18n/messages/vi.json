@@ -17,7 +17,24 @@
   "menu": {
     "management": "Cài đặt quản lý",
     "monitoring": "Giám sát thời gian thực",
-    "quality": "Quản lý chất lượng"
+    "quality": "Quản lý chất lượng",
+    "aiChat": "Trợ lý AI"
+  },
+  "aiChat": {
+    "title": "Trợ lý AI",
+    "newSession": "Cuộc trò chuyện mới",
+    "placeholder": "Nhập câu hỏi…",
+    "send": "Gửi",
+    "loading": "Đang tạo phản hồi…",
+    "noKey": "Vui lòng đăng ký khóa API trong cài đặt mô hình AI trước",
+    "sqlConfirmTitle": "Thực thi truy vấn này?",
+    "execute": "Chạy",
+    "cancel": "Hủy"
+  },
+  "settingsAi": {
+    "models": "Mô hình AI",
+    "personas": "Vai trò AI",
+    "glossary": "Từ điển AI"
   },
   "display": {
     "refreshInterval": "Làm mới: {seconds}s",
@@ -1294,7 +1311,87 @@
       "sheetMaster": "Master",
       "sheetModelMaster": "ModelMaster",
       "fileNameBase": "TruyXuat",
-      "errorPrefix": "Lỗi"
+      "errorPrefix": "Lỗi",
+      "wizard": {
+        "title": "Tìm Mã Vạch",
+        "pickMode": "Chọn Chế độ",
+        "close": "Đóng",
+        "back": "Quay lại",
+        "query": "Truy vấn",
+        "querying": "Đang truy vấn...",
+        "dateFrom": "Từ",
+        "dateTo": "Đến",
+        "itemCode": "Mã Hàng (ITEM_CODE)",
+        "itemCodePlaceholder": "vd: 10-1234-567",
+        "itemCodeHint": "IP_PRODUCT_WORK_QC.ITEM_CODE",
+        "longRangeWarning": "⚠ Khoảng {days} ngày (>90). Có thể gây tải DB.",
+        "openBtn": "Chọn Chế độ",
+        "changeMode": "Đổi Chế độ",
+        "noBarcodes": "Không có mã vạch khớp",
+        "openHint": "Nhấn [Chọn Chế độ] ở trên để chọn chế độ",
+        "modes": {
+          "runNo": {
+            "label": "Theo RUN_NO",
+            "desc": "Mã vạch theo lệnh RUN_NO",
+            "fieldLabel": "Lệnh sản xuất (RUN_NO)",
+            "placeholder": "vd: RUN-20260414-01",
+            "hint": "IP_PRODUCT_2D_BARCODE.RUN_NO"
+          },
+          "magazine": {
+            "label": "Theo Magazine",
+            "desc": "Mã vạch theo MAGAZINE_NO",
+            "fieldLabel": "Số Magazine",
+            "placeholder": "vd: MAG-001",
+            "hint": "IP_PRODUCT_2D_BARCODE.MAGAZINE_NO"
+          },
+          "box": {
+            "label": "Theo Thùng",
+            "desc": "Mã vạch theo BOX_NO",
+            "fieldLabel": "Số Thùng",
+            "placeholder": "Nhập số thùng",
+            "hint": "IP_PRODUCT_2D_BARCODE.BOX_NO"
+          },
+          "pallet": {
+            "label": "Theo Pallet",
+            "desc": "Mã vạch theo PALLETE_NO",
+            "fieldLabel": "Số Pallet (PALLETE_NO)",
+            "placeholder": "Nhập số pallet",
+            "hint": "IP_PRODUCT_2D_BARCODE.PALLETE_NO"
+          },
+          "carrier": {
+            "label": "Theo Carrier",
+            "desc": "Mã vạch theo CARRIER_BARCODE",
+            "fieldLabel": "Mã Carrier",
+            "placeholder": "Nhập mã carrier",
+            "hint": "IP_PRODUCT_2D_BARCODE.CARRIER_BARCODE"
+          },
+          "repair": {
+            "label": "Theo Sửa chữa",
+            "desc": "Theo khoảng ngày + mã hàng"
+          },
+          "spi": {
+            "label": "Theo Thiết bị SPI",
+            "desc": "Trích mã được kiểm SPI trong khoảng",
+            "hint": "LOG_SPI.LOG_TIMESTAMP · MASTER_BARCODE → SERIAL_NO · tối đa 1000"
+          },
+          "aoi": {
+            "label": "Theo Thiết bị AOI",
+            "desc": "Trích mã được kiểm AOI trong khoảng",
+            "hint": "LOG_AOI.LOG_TIMESTAMP · SERIAL_NO trực tiếp · tối đa 1000"
+          }
+        },
+        "summary": {
+          "runNo": "RUN_NO: {value}",
+          "magazine": "MAGAZINE_NO: {value}",
+          "box": "BOX_NO: {value}",
+          "pallet": "PALLETE_NO: {value}",
+          "carrier": "CARRIER: {value}",
+          "repair": "{dateFrom} ~ {dateTo} · ITEM:{itemCode}",
+          "spi": "SPI · {dateFrom} ~ {dateTo}",
+          "aoi": "AOI · {dateFrom} ~ {dateTo}"
+        },
+        "longRangeEquipmentWarning": "⚠ Khoảng {days} ngày (>30). Có thể nhiều kết quả (tối đa 1000)."
+      }
     },
     "reverseTrace": {
       "pageTitle": "Truy ngược Mexico Automotive (Vật liệu → PCB)",

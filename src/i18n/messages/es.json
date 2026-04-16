@@ -17,7 +17,24 @@
   "menu": {
     "management": "Configuración de gestión",
     "monitoring": "Monitoreo en tiempo real",
-    "quality": "Control de calidad"
+    "quality": "Control de calidad",
+    "aiChat": "Asistente IA"
+  },
+  "aiChat": {
+    "title": "Asistente IA",
+    "newSession": "Nueva conversación",
+    "placeholder": "Escriba una pregunta…",
+    "send": "Enviar",
+    "loading": "Generando respuesta…",
+    "noKey": "Registre la clave API en Configuración de modelos IA",
+    "sqlConfirmTitle": "¿Ejecutar esta consulta?",
+    "execute": "Ejecutar",
+    "cancel": "Cancelar"
+  },
+  "settingsAi": {
+    "models": "Modelos IA",
+    "personas": "Personajes IA",
+    "glossary": "Glosario IA"
   },
   "display": {
     "refreshInterval": "Actualización: {seconds}s",
@@ -1297,7 +1314,87 @@
       "sheetMaster": "Maestro",
       "sheetModelMaster": "ModeloMaestro",
       "fileNameBase": "Trazabilidad",
-      "errorPrefix": "Error"
+      "errorPrefix": "Error",
+      "wizard": {
+        "title": "Búsqueda de Código",
+        "pickMode": "Elegir Modo",
+        "close": "Cerrar",
+        "back": "Atrás",
+        "query": "Consultar",
+        "querying": "Consultando...",
+        "dateFrom": "Desde",
+        "dateTo": "Hasta",
+        "itemCode": "Código de Ítem (ITEM_CODE)",
+        "itemCodePlaceholder": "ej: 10-1234-567",
+        "itemCodeHint": "IP_PRODUCT_WORK_QC.ITEM_CODE",
+        "longRangeWarning": "⚠ Rango de {days} días (>90). Puede causar carga en DB.",
+        "openBtn": "Elegir Modo",
+        "changeMode": "Cambiar Modo",
+        "noBarcodes": "Ningún código coincide",
+        "openHint": "Pulse [Elegir Modo] arriba para elegir un modo",
+        "modes": {
+          "runNo": {
+            "label": "Por RUN_NO",
+            "desc": "Códigos por orden de trabajo",
+            "fieldLabel": "Orden de Trabajo (RUN_NO)",
+            "placeholder": "ej: RUN-20260414-01",
+            "hint": "IP_PRODUCT_2D_BARCODE.RUN_NO"
+          },
+          "magazine": {
+            "label": "Por Magazine",
+            "desc": "Códigos por MAGAZINE_NO",
+            "fieldLabel": "No. Magazine",
+            "placeholder": "ej: MAG-001",
+            "hint": "IP_PRODUCT_2D_BARCODE.MAGAZINE_NO"
+          },
+          "box": {
+            "label": "Por Caja",
+            "desc": "Códigos por BOX_NO",
+            "fieldLabel": "No. Caja",
+            "placeholder": "No. de caja",
+            "hint": "IP_PRODUCT_2D_BARCODE.BOX_NO"
+          },
+          "pallet": {
+            "label": "Por Palet",
+            "desc": "Códigos por PALLETE_NO",
+            "fieldLabel": "No. Palet (PALLETE_NO)",
+            "placeholder": "No. de palet",
+            "hint": "IP_PRODUCT_2D_BARCODE.PALLETE_NO"
+          },
+          "carrier": {
+            "label": "Por Carrier",
+            "desc": "Códigos por CARRIER_BARCODE",
+            "fieldLabel": "Código Carrier",
+            "placeholder": "Código carrier",
+            "hint": "IP_PRODUCT_2D_BARCODE.CARRIER_BARCODE"
+          },
+          "repair": {
+            "label": "Por Reparación",
+            "desc": "Por rango de fechas + código"
+          },
+          "spi": {
+            "label": "Por Equipo SPI",
+            "desc": "Extraer códigos inspeccionados por SPI",
+            "hint": "LOG_SPI.LOG_TIMESTAMP · MASTER_BARCODE → SERIAL_NO · máx 1000"
+          },
+          "aoi": {
+            "label": "Por Equipo AOI",
+            "desc": "Extraer códigos inspeccionados por AOI",
+            "hint": "LOG_AOI.LOG_TIMESTAMP · SERIAL_NO directo · máx 1000"
+          }
+        },
+        "summary": {
+          "runNo": "RUN_NO: {value}",
+          "magazine": "MAGAZINE_NO: {value}",
+          "box": "BOX_NO: {value}",
+          "pallet": "PALLETE_NO: {value}",
+          "carrier": "CARRIER: {value}",
+          "repair": "{dateFrom} ~ {dateTo} · ITEM:{itemCode}",
+          "spi": "SPI · {dateFrom} ~ {dateTo}",
+          "aoi": "AOI · {dateFrom} ~ {dateTo}"
+        },
+        "longRangeEquipmentWarning": "⚠ Rango de {days} días (>30). Resultados grandes posibles (máx 1000)."
+      }
     },
     "reverseTrace": {
       "pageTitle": "Trazabilidad Inversa México (Material → PCB)",

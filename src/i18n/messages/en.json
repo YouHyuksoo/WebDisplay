@@ -17,7 +17,24 @@
   "menu": {
     "management": "Management Settings",
     "monitoring": "Real-time Monitoring",
-    "quality": "Quality Control"
+    "quality": "Quality Control",
+    "aiChat": "AI Assistant"
+  },
+  "aiChat": {
+    "title": "AI Assistant",
+    "newSession": "New Chat",
+    "placeholder": "Type a question…",
+    "send": "Send",
+    "loading": "Generating response…",
+    "noKey": "Please register API keys in AI Models settings first",
+    "sqlConfirmTitle": "Run this query?",
+    "execute": "Run",
+    "cancel": "Cancel"
+  },
+  "settingsAi": {
+    "models": "AI Models",
+    "personas": "AI Personas",
+    "glossary": "AI Glossary"
   },
   "display": {
     "refreshInterval": "Refresh: {seconds}s",
@@ -1299,7 +1316,87 @@
       "sheetMaster": "Master",
       "sheetModelMaster": "ModelMaster",
       "fileNameBase": "Traceability",
-      "errorPrefix": "Error"
+      "errorPrefix": "Error",
+      "wizard": {
+        "title": "Barcode Search",
+        "pickMode": "Pick Mode",
+        "close": "Close",
+        "back": "Back",
+        "query": "Query",
+        "querying": "Querying...",
+        "dateFrom": "From",
+        "dateTo": "To",
+        "itemCode": "Item Code (ITEM_CODE)",
+        "itemCodePlaceholder": "e.g. 10-1234-567",
+        "itemCodeHint": "Matches IP_PRODUCT_WORK_QC.ITEM_CODE",
+        "longRangeWarning": "⚠ Range is {days} days (>90). DB load may occur.",
+        "openBtn": "Pick Trace Mode",
+        "changeMode": "Change Mode",
+        "noBarcodes": "No barcodes match the criteria",
+        "openHint": "Click [Pick Trace Mode] above to choose a mode",
+        "modes": {
+          "runNo": {
+            "label": "By RUN_NO",
+            "desc": "Barcodes by work order RUN_NO",
+            "fieldLabel": "Work Order (RUN_NO)",
+            "placeholder": "e.g. RUN-20260414-01",
+            "hint": "Matches IP_PRODUCT_2D_BARCODE.RUN_NO"
+          },
+          "magazine": {
+            "label": "By Magazine",
+            "desc": "Barcodes by MAGAZINE_NO",
+            "fieldLabel": "Magazine No",
+            "placeholder": "e.g. MAG-001",
+            "hint": "Matches IP_PRODUCT_2D_BARCODE.MAGAZINE_NO"
+          },
+          "box": {
+            "label": "By Box",
+            "desc": "Barcodes by BOX_NO",
+            "fieldLabel": "Box No",
+            "placeholder": "Enter box no",
+            "hint": "Matches IP_PRODUCT_2D_BARCODE.BOX_NO"
+          },
+          "pallet": {
+            "label": "By Pallet",
+            "desc": "Barcodes by PALLETE_NO",
+            "fieldLabel": "Pallet No (PALLETE_NO)",
+            "placeholder": "Enter pallet no",
+            "hint": "Matches IP_PRODUCT_2D_BARCODE.PALLETE_NO"
+          },
+          "carrier": {
+            "label": "By Carrier",
+            "desc": "Barcodes by CARRIER_BARCODE",
+            "fieldLabel": "Carrier Barcode",
+            "placeholder": "Enter carrier barcode",
+            "hint": "Matches IP_PRODUCT_2D_BARCODE.CARRIER_BARCODE"
+          },
+          "repair": {
+            "label": "By Repair History",
+            "desc": "By date range + item code (repairs)"
+          },
+          "spi": {
+            "label": "By SPI Equipment",
+            "desc": "Extract barcodes inspected by SPI in range",
+            "hint": "LOG_SPI.LOG_TIMESTAMP · MASTER_BARCODE → SERIAL_NO · max 1000"
+          },
+          "aoi": {
+            "label": "By AOI Equipment",
+            "desc": "Extract barcodes inspected by AOI in range",
+            "hint": "LOG_AOI.LOG_TIMESTAMP · direct SERIAL_NO · max 1000"
+          }
+        },
+        "summary": {
+          "runNo": "RUN_NO: {value}",
+          "magazine": "MAGAZINE_NO: {value}",
+          "box": "BOX_NO: {value}",
+          "pallet": "PALLETE_NO: {value}",
+          "carrier": "CARRIER: {value}",
+          "repair": "{dateFrom} ~ {dateTo} · ITEM:{itemCode}",
+          "spi": "SPI · {dateFrom} ~ {dateTo}",
+          "aoi": "AOI · {dateFrom} ~ {dateTo}"
+        },
+        "longRangeEquipmentWarning": "⚠ Range is {days} days (>30). Results may be large (max 1000)."
+      }
     },
     "reverseTrace": {
       "pageTitle": "Mexico Automotive Reverse Trace (Material → PCB)",
