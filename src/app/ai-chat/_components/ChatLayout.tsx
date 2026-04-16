@@ -1,11 +1,7 @@
 /**
  * @file src/app/ai-chat/_components/ChatLayout.tsx
- * @description 좌측 세션 사이드바 + 우측 본문(MessageList + ChatInput) 레이아웃.
- *   표준 DisplayLayout(언어·테마·시각·뒤로가기)을 공유.
- *
- * 초보자 가이드:
- * - currentSessionId 상태로 사이드바 ↔ 본문 동기화
- * - 세션 변경 시 본문 메시지 다시 로드
+ * @description 좌측 세션 사이드바 + 우측 본문 레이아웃.
+ *   모델/페르소나 선택은 DisplayHeader extraHeaderContent로 배치 (wbsmaster 패턴).
  */
 'use client';
 
@@ -14,23 +10,29 @@ import DisplayLayout from '@/components/display/DisplayLayout';
 import SessionSidebar from './SessionSidebar';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
+import PersonaPicker from './PersonaPicker';
+import ModelPicker from './ModelPicker';
 import type { ChatMessageRow } from '@/lib/ai/chat-store';
 import type { ProviderId } from '@/lib/ai/providers/types';
+
+const PROVIDER_COLORS: Record<string, string> = {
+  claude: 'bg-orange-500/20 text-orange-400',
+  gemini: 'bg-blue-500/20 text-blue-400',
+  mistral: 'bg-amber-500/20 text-amber-400',
+  kimi: 'bg-cyan-500/20 text-cyan-400',
+};
 
 export default function ChatLayout() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessageRow[]>([]);
-  const [providerId, setProviderId] = useState<ProviderId>('claude');
+  const [providerId, setProviderId] = useState<ProviderId>('mistral');
   const [modelId, setModelId] = useState<string>('');
   const [personaId, setPersonaId] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [suggestedInput, setSuggestedInput] = useState('');
 
   useEffect(() => {
-    if (!currentSessionId) {
-      setMessages([]);
-      return;
-    }
+    if (!currentSessionId) { setMessages([]); return; }
     fetch(`/api/ai-chat/sessions/${currentSessionId}/messages`)
       .then((r) => r.json())
       .then((d) => setMessages(d.messages || []))
@@ -54,8 +56,28 @@ export default function ChatLayout() {
     setMessages(d.messages || []);
   }, [currentSessionId]);
 
+  const headerContent = (
+    <div className="flex items-center gap-2">
+      {/* 현재 모델 뱃지 */}
+      {modelId && (
+        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PROVIDER_COLORS[providerId] || 'bg-zinc-700 text-zinc-300'}`}>
+          {modelId.replace(/^(claude-|gemini-|mistral-|moonshot-|kimi-)/, '').replace(/-latest$/, '')}
+        </span>
+      )}
+      {/* 페르소나 선택 */}
+      <PersonaPicker value={personaId} onChange={setPersonaId} />
+      {/* 모델 선택 */}
+      <ModelPicker
+        providerId={providerId}
+        modelId={modelId}
+        onProviderChange={setProviderId}
+        onModelChange={setModelId}
+      />
+    </div>
+  );
+
   return (
-    <DisplayLayout title="AI 어시스턴트">
+    <DisplayLayout title="AI 어시스턴트" extraHeaderContent={headerContent}>
       <div className="flex h-full">
         <SessionSidebar
           currentSessionId={currentSessionId}

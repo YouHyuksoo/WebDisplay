@@ -225,12 +225,6 @@ const ChatInput = memo(function ChatInput({
 
   return (
     <div className="border-t border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900">
-      {/* 페르소나 / 모델 선택 */}
-      <div className="mb-2 flex items-center gap-2">
-        <PersonaPicker value={personaId} onChange={onPersonaChange} />
-        <ModelPicker providerId={providerId} modelId={modelId} onProviderChange={onProviderChange} onModelChange={onModelChange} />
-      </div>
-
       {/* 첨부 파일 미리보기 */}
       {selectedFile && (
         <div className="mb-2 flex items-center gap-2 rounded-lg border border-zinc-300 bg-zinc-100 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800">
