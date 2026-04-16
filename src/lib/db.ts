@@ -11,7 +11,7 @@ import path from 'path';
 import type { DatabaseConfig, DatabaseFileConfig } from '@/types/option';
 
 // CLOB/NCLOB 컬럼을 자동으로 문자열로 변환 (Lob 객체 반환 방지 → JSON 직렬화 에러 방지)
-oracledb.fetchAsString = [oracledb.CLOB, oracledb.NCLOB];
+oracledb.fetchAsString = [oracledb.CLOB];
 
 let poolPromise: Promise<oracledb.Pool> | null = null;
 

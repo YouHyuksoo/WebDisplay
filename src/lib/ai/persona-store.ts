@@ -1,10 +1,9 @@
 /**
  * @file src/lib/ai/persona-store.ts
- * @description AI_PERSONA 테이블 CRUD.
+ * @description AI 페르소나 CRUD — data/ai-config.json 기반.
  */
 
-import type oracledb from 'oracledb';
-import { executeQuery, executeDml } from '@/lib/db';
+import { getAiConfig, saveAiConfig } from '@/lib/ai-config';
 import { randomUUID } from 'crypto';
 
 export interface Persona {
@@ -20,90 +19,65 @@ export interface Persona {
   updatedAt:    string | null;
 }
 
-interface DbRow {
-  PERSONA_ID: string; NAME: string; DESCRIPTION: string | null; ICON: string | null;
-  SYSTEM_PROMPT: string; IS_DEFAULT: number; IS_ACTIVE: number; SORT_ORDER: number;
-  CREATED_AT: Date; UPDATED_AT: Date | null;
-}
-
-function rowToPersona(r: DbRow): Persona {
-  return {
-    personaId: r.PERSONA_ID, name: r.NAME, description: r.DESCRIPTION, icon: r.ICON,
-    systemPrompt: r.SYSTEM_PROMPT, isDefault: r.IS_DEFAULT === 1, isActive: r.IS_ACTIVE === 1,
-    sortOrder: r.SORT_ORDER,
-    createdAt: r.CREATED_AT.toISOString(),
-    updatedAt: r.UPDATED_AT?.toISOString() ?? null,
-  };
-}
-
 export async function listPersonas(activeOnly = true): Promise<Persona[]> {
-  const sql = `
-    SELECT PERSONA_ID,NAME,DESCRIPTION,ICON,SYSTEM_PROMPT,IS_DEFAULT,IS_ACTIVE,SORT_ORDER,CREATED_AT,UPDATED_AT
-      FROM AI_PERSONA
-     WHERE (:activeOnly = 0 OR IS_ACTIVE = 1)
-     ORDER BY SORT_ORDER, NAME`;
-  const rows = await executeQuery<DbRow>(sql, { activeOnly: activeOnly ? 1 : 0 });
-  return rows.map(rowToPersona);
+  const config = await getAiConfig();
+  const now = new Date().toISOString();
+  const list = config.personas.map((p) => ({
+    ...p,
+    createdAt: now,
+    updatedAt: null,
+  }));
+  return activeOnly ? list.filter((p) => p.isActive) : list;
 }
 
 export async function getPersona(personaId: string): Promise<Persona | null> {
-  const rows = await executeQuery<DbRow>(
-    `SELECT PERSONA_ID,NAME,DESCRIPTION,ICON,SYSTEM_PROMPT,IS_DEFAULT,IS_ACTIVE,SORT_ORDER,CREATED_AT,UPDATED_AT
-       FROM AI_PERSONA WHERE PERSONA_ID = :personaId`,
-    { personaId },
-  );
-  return rows.length > 0 ? rowToPersona(rows[0]) : null;
+  const config = await getAiConfig();
+  const p = config.personas.find((x) => x.personaId === personaId);
+  if (!p) return null;
+  return { ...p, createdAt: new Date().toISOString(), updatedAt: null };
 }
 
 export async function getDefaultPersona(): Promise<Persona | null> {
-  const rows = await executeQuery<DbRow>(
-    `SELECT PERSONA_ID,NAME,DESCRIPTION,ICON,SYSTEM_PROMPT,IS_DEFAULT,IS_ACTIVE,SORT_ORDER,CREATED_AT,UPDATED_AT
-       FROM AI_PERSONA WHERE IS_DEFAULT = 1 AND IS_ACTIVE = 1 AND ROWNUM = 1`,
-  );
-  return rows.length > 0 ? rowToPersona(rows[0]) : null;
+  const config = await getAiConfig();
+  const p = config.personas.find((x) => x.isDefault && x.isActive);
+  if (!p) return config.personas[0] ? { ...config.personas[0], createdAt: new Date().toISOString(), updatedAt: null } : null;
+  return { ...p, createdAt: new Date().toISOString(), updatedAt: null };
 }
 
 export async function createPersona(input: Omit<Persona, 'personaId' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  const config = await getAiConfig();
   const personaId = `p_${randomUUID().slice(0, 8)}`;
   if (input.isDefault) {
-    await executeDml('UPDATE AI_PERSONA SET IS_DEFAULT = 0', {});
+    config.personas.forEach((p) => { p.isDefault = false; });
   }
-  await executeDml(
-    `INSERT INTO AI_PERSONA (PERSONA_ID,NAME,DESCRIPTION,ICON,SYSTEM_PROMPT,IS_DEFAULT,IS_ACTIVE,SORT_ORDER,CREATED_AT)
-     VALUES (:personaId,:name,:description,:icon,:systemPrompt,:isDefault,:isActive,:sortOrder,SYSTIMESTAMP)`,
-    {
-      personaId,
-      name: input.name, description: input.description, icon: input.icon,
-      systemPrompt: input.systemPrompt,
-      isDefault: input.isDefault ? 1 : 0,
-      isActive:  input.isActive  ? 1 : 0,
-      sortOrder: input.sortOrder,
-    },
-  );
+  config.personas.push({
+    personaId, name: input.name, description: input.description, icon: input.icon,
+    systemPrompt: input.systemPrompt, isDefault: input.isDefault, isActive: input.isActive,
+    sortOrder: input.sortOrder,
+  });
+  await saveAiConfig(config);
   return personaId;
 }
 
 export async function updatePersona(personaId: string, input: Partial<Omit<Persona, 'personaId' | 'createdAt'>>): Promise<void> {
+  const config = await getAiConfig();
+  const p = config.personas.find((x) => x.personaId === personaId);
+  if (!p) return;
   if (input.isDefault === true) {
-    await executeDml('UPDATE AI_PERSONA SET IS_DEFAULT = 0', {});
+    config.personas.forEach((x) => { x.isDefault = false; });
   }
-  const fields: string[] = [];
-  const binds: Record<string, unknown> = { personaId };
-  if (input.name !== undefined)         { fields.push('NAME = :name'); binds.name = input.name; }
-  if (input.description !== undefined)  { fields.push('DESCRIPTION = :description'); binds.description = input.description; }
-  if (input.icon !== undefined)         { fields.push('ICON = :icon'); binds.icon = input.icon; }
-  if (input.systemPrompt !== undefined) { fields.push('SYSTEM_PROMPT = :systemPrompt'); binds.systemPrompt = input.systemPrompt; }
-  if (input.isDefault !== undefined)    { fields.push('IS_DEFAULT = :isDefault'); binds.isDefault = input.isDefault ? 1 : 0; }
-  if (input.isActive !== undefined)     { fields.push('IS_ACTIVE = :isActive'); binds.isActive = input.isActive ? 1 : 0; }
-  if (input.sortOrder !== undefined)    { fields.push('SORT_ORDER = :sortOrder'); binds.sortOrder = input.sortOrder; }
-  if (fields.length === 0) return;
-  fields.push('UPDATED_AT = SYSTIMESTAMP');
-  await executeDml(
-    `UPDATE AI_PERSONA SET ${fields.join(', ')} WHERE PERSONA_ID = :personaId`,
-    binds as oracledb.BindParameters,
-  );
+  if (input.name !== undefined) p.name = input.name;
+  if (input.description !== undefined) p.description = input.description;
+  if (input.icon !== undefined) p.icon = input.icon;
+  if (input.systemPrompt !== undefined) p.systemPrompt = input.systemPrompt;
+  if (input.isDefault !== undefined) p.isDefault = input.isDefault;
+  if (input.isActive !== undefined) p.isActive = input.isActive;
+  if (input.sortOrder !== undefined) p.sortOrder = input.sortOrder;
+  await saveAiConfig(config);
 }
 
 export async function deletePersona(personaId: string): Promise<void> {
-  await executeDml('DELETE FROM AI_PERSONA WHERE PERSONA_ID = :personaId', { personaId });
+  const config = await getAiConfig();
+  config.personas = config.personas.filter((x) => x.personaId !== personaId);
+  await saveAiConfig(config);
 }
