@@ -15,11 +15,16 @@ export async function postSse(
   onEvent: (ev: SseEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {
+  // LLM 응답은 오래 걸릴 수 있으므로 5분 타임아웃 (기본 fetch는 ~30초)
+  const controller = !signal ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 5 * 60 * 1000) : null;
+  const effectiveSignal = signal || controller?.signal;
+
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
     body: JSON.stringify(body),
-    signal,
+    signal: effectiveSignal,
   });
   if (!res.ok || !res.body) {
     throw new Error(`SSE ${res.status}`);
@@ -37,9 +42,13 @@ export async function postSse(
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    parser.feed(decoder.decode(value, { stream: true }));
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      parser.feed(decoder.decode(value, { stream: true }));
+    }
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
