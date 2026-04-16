@@ -108,6 +108,7 @@ interface Props {
   onStreamStart: () => void;
   onStreamEnd: () => void;
   onSessionAutoCreate: (sessionId: string) => void;
+  onStreamToken?: (delta: string, stage: string) => void;
   suggestedInput?: string;
   onSuggestedInputHandled?: () => void;
 }
@@ -120,7 +121,7 @@ const ChatInput = memo(function ChatInput({
   sessionId, providerId, modelId, personaId,
   onProviderChange, onModelChange, onPersonaChange,
   onStreamStart, onStreamEnd, onSessionAutoCreate,
-  suggestedInput, onSuggestedInputHandled,
+  onStreamToken, suggestedInput, onSuggestedInputHandled,
 }: Props) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -211,7 +212,15 @@ const ChatInput = memo(function ChatInput({
 
       await postSse('/api/ai-chat/stream', {
         sessionId: sid, prompt: text, providerId, modelId, personaId,
-      }, () => {});
+      }, (ev) => {
+        if (ev.event === 'token') {
+          const d = ev.data as { delta?: string; stage?: string };
+          if (d?.delta) onStreamToken?.(d.delta, d.stage || '');
+        } else if (ev.event === 'error') {
+          const d = ev.data as { message?: string };
+          console.error('[AI Chat]', d?.message);
+        }
+      });
 
       setText('');
       setSelectedFile(null);

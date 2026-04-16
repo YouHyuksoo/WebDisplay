@@ -30,6 +30,8 @@ export default function ChatLayout() {
   const [personaId, setPersonaId] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [suggestedInput, setSuggestedInput] = useState('');
+  const [streamingText, setStreamingText] = useState('');
+  const [streamingStage, setStreamingStage] = useState('');
 
   useEffect(() => {
     if (!currentSessionId) { setMessages([]); return; }
@@ -88,6 +90,8 @@ export default function ChatLayout() {
           <MessageList
             messages={messages}
             isStreaming={isStreaming}
+            streamingText={streamingText}
+            streamingStage={streamingStage}
             onConfirm={refreshMessages}
             onSuggestionClick={setSuggestedInput}
           />
@@ -99,8 +103,9 @@ export default function ChatLayout() {
             onProviderChange={setProviderId}
             onModelChange={setModelId}
             onPersonaChange={setPersonaId}
-            onStreamStart={() => setIsStreaming(true)}
-            onStreamEnd={() => { setIsStreaming(false); refreshMessages(); }}
+            onStreamStart={() => { setIsStreaming(true); setStreamingText(''); setStreamingStage(''); }}
+            onStreamEnd={() => { setIsStreaming(false); setStreamingText(''); setStreamingStage(''); refreshMessages(); }}
+            onStreamToken={(delta, stage) => { setStreamingText((prev) => prev + delta); setStreamingStage(stage); }}
             onSessionAutoCreate={(sid) => setCurrentSessionId(sid)}
             suggestedInput={suggestedInput}
             onSuggestedInputHandled={() => setSuggestedInput('')}

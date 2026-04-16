@@ -22,6 +22,8 @@ interface PendingConfirm {
 interface Props {
   messages: ChatMessageRow[];
   isStreaming: boolean;
+  streamingText?: string;
+  streamingStage?: string;
   onConfirm: () => void;
   onSuggestionClick?: (text: string) => void;
 }
@@ -115,7 +117,7 @@ const SUGGESTION_CATEGORIES = [
 /*  컴포넌트                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function MessageList({ messages, isStreaming, onConfirm, onSuggestionClick }: Props) {
+export default function MessageList({ messages, isStreaming, streamingText, streamingStage, onConfirm, onSuggestionClick }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [pendingConfirm] = useState<PendingConfirm | null>(null);
 
@@ -166,6 +168,30 @@ export default function MessageList({ messages, isStreaming, onConfirm, onSugges
   return (
     <div ref={scrollRef} className="flex-1 overflow-y-auto">
       {messages.map((m) => <MessageBubble key={m.messageId} message={m} />)}
+      {/* 스트리밍 중 실시간 표시 */}
+      {isStreaming && streamingText && (
+        <div className="px-4 py-2">
+          <div className="flex items-start gap-2">
+            {streamingStage && (
+              <span className="mt-1 shrink-0 rounded-full bg-cyan-600/20 px-2 py-0.5 text-[10px] font-medium text-cyan-400">
+                {streamingStage === 'sql_generation' ? 'SQL 생성' : '분석'}
+              </span>
+            )}
+            <div className="max-w-2xl whitespace-pre-wrap rounded-2xl bg-zinc-100 px-4 py-2 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
+              {streamingText}
+              <span className="ml-1 inline-block size-2 animate-pulse rounded-full bg-cyan-500" />
+            </div>
+          </div>
+        </div>
+      )}
+      {isStreaming && !streamingText && (
+        <div className="px-4 py-2">
+          <div className="flex items-center gap-2 text-sm text-zinc-400">
+            <span className="size-2 animate-pulse rounded-full bg-cyan-500" />
+            응답 생성 중...
+          </div>
+        </div>
+      )}
       {pendingConfirm && (
         <SqlPreviewCard
           messageId={pendingConfirm.messageId}
