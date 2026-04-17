@@ -1,21 +1,22 @@
 /**
  * @file src/lib/ai/context/context-loader.ts
- * @description AI 챗 컨텍스트 로더.
+ * @description AI 챗 컨텍스트 로더 (Phase 4 이후 신규 ai-tables 런타임 래퍼).
  *
  * 초보자 가이드:
- * - `loadCatalog()` / `catalogToPrompt()` 는 Phase 2부터 내부적으로
- *   `data/ai-context/tables.json` 을 읽어 기존 Catalog 형태로 변환한다.
- * - `loadTableDoc()` / `loadSelectedContext()` 는 Phase 4 레거시 정리 전까지
- *   기존 `data/ai-context/tables/*.md` 를 계속 읽는다.
- * - 외부 시그니처 호환: async 전환됐으므로 호출부는 `await` 필요.
+ * - `loadCatalog()` / `catalogToPrompt()` 는 `data/ai-context/tables.json`
+ *   (+ schema-cache.json / column-domains.json) 을 읽어 기존 Catalog 형태로 변환한다.
+ * - `loadSelectedContext()` 는 Phase 4 에서 레거시 MD 로더를 제거하고
+ *   `buildStage1Prompt(site, tables)` 로 완전히 치환됐다.
+ * - 외부 시그니처 호환: 모든 함수는 `async` 이며, 시그니처 유지 목적으로
+ *   여기에 얇은 래퍼만 둔다. 신규 코드는 가급적 `@/lib/ai-tables/merged-context`
+ *   를 직접 사용할 것.
  */
-import fs from 'fs';
-import path from 'path';
 import { loadTables } from '@/lib/ai-tables/store';
-import { buildStage0Prompt } from '@/lib/ai-tables/merged-context';
+import {
+  buildStage0Prompt,
+  buildStage1Prompt,
+} from '@/lib/ai-tables/merged-context';
 import type { SiteKey } from '@/lib/ai-tables/types';
-
-const CONTEXT_DIR = path.join(process.cwd(), 'data', 'ai-context');
 
 export interface CatalogTable {
   name: string;
@@ -42,15 +43,10 @@ export interface Catalog {
   sites: CatalogSite[];
 }
 
-export interface LoadedDoc {
-  meta: Record<string, unknown>;
-  content: string;
-}
-
 /**
  * 신규 `tables.json` 을 읽어 기존 `Catalog` 형태로 변환 반환.
  * enabled === false 인 테이블은 자동 제외 → 호출부에서 별도 필터 불필요.
- * domains 는 과도기적으로 빈 배열 (Phase 3 에서 column-domains.json 매핑 추가 예정).
+ * domains 는 과도기적으로 빈 배열 (column-domains 는 Stage 1 렌더에서 흡수됨).
  */
 export async function loadCatalog(): Promise<Catalog> {
   const tables = await loadTables();
@@ -99,82 +95,23 @@ export async function catalogToPrompt(
   return buildStage0Prompt(site);
 }
 
-function parseFrontmatter(raw: string): LoadedDoc {
-  if (!raw.startsWith('---\n')) {
-    return { meta: {}, content: raw.trim() };
-  }
-
-  const end = raw.indexOf('\n---\n', 4);
-  if (end < 0) {
-    return { meta: {}, content: raw.trim() };
-  }
-
-  const fm = raw.slice(4, end).trim();
-  const body = raw.slice(end + 5).trim();
-  const meta: Record<string, unknown> = {};
-
-  for (const line of fm.split(/\r?\n/)) {
-    const idx = line.indexOf(':');
-    if (idx < 0) continue;
-    const key = line.slice(0, idx).trim();
-    const valueRaw = line.slice(idx + 1).trim();
-
-    if (valueRaw.startsWith('[') && valueRaw.endsWith(']')) {
-      const inner = valueRaw.slice(1, -1).trim();
-      meta[key] = inner
-        ? inner
-            .split(',')
-            .map((v) => v.trim().replace(/^['"]|['"]$/g, ''))
-            .filter(Boolean)
-        : [];
-      continue;
-    }
-
-    if (valueRaw === 'true' || valueRaw === 'false') {
-      meta[key] = valueRaw === 'true';
-      continue;
-    }
-
-    meta[key] = valueRaw.replace(/^['"]|['"]$/g, '');
-  }
-
-  return { meta, content: body };
-}
-
 /**
- * tables/{table}.md 파일 1개 로드. Phase 4 레거시 정리 전까지 유지.
- * Phase 3 에서 예제/힌트를 tables.json 으로 이관하는 중간 단계에서 사용됨.
+ * 선택된 테이블들의 compact 컨텍스트 블록 반환.
+ * `/ai-chat` stream route 에서 Stage 1 SQL 생성 프롬프트 보강에 사용.
+ *
+ * Phase 4 이후: 내부적으로 `buildStage1Prompt` 를 호출. 레거시 tables/*.md
+ * 읽기는 삭제됨. `domains` 파라미터는 column-domains 가 Stage 1 렌더러
+ * (resolveColumn) 에서 자동 흡수되므로 무시된다 (호출부 호환을 위해 유지).
+ *
+ * @param tables 선택된 테이블명 배열
+ * @param _domains (deprecated) column-domains 는 자동 흡수됨 — 사용 안 함
+ * @param site 사이트 키. 미지정 시 'default'.
  */
-export function loadTableDoc(tableName: string): LoadedDoc | null {
-  const filePath = path.join(CONTEXT_DIR, 'tables', `${tableName}.md`);
-  if (!fs.existsSync(filePath)) return null;
-  return parseFrontmatter(fs.readFileSync(filePath, 'utf-8'));
-}
-
-/** domains/{domain}.md 파일 1개 로드. (Phase 4 에서 제거 예정) */
-export function loadDomainDoc(domainName: string): LoadedDoc | null {
-  const filePath = path.join(CONTEXT_DIR, 'domains', `${domainName}.md`);
-  if (!fs.existsSync(filePath)) return null;
-  return parseFrontmatter(fs.readFileSync(filePath, 'utf-8'));
-}
-
-/**
- * 선택된 테이블/도메인의 MD 본문을 합쳐 문자열로 반환.
- * `/ai-chat` stream route 에서 Stage 1 프롬프트 보강에 사용.
- * Phase 4 에서는 `buildStage1Prompt` 로 대체 예정.
- */
-export function loadSelectedContext(tables: string[], domains: string[]): string {
-  const parts: string[] = [];
-
-  for (const t of tables) {
-    const doc = loadTableDoc(t);
-    if (doc) parts.push(`## ${t}\n${doc.content}`);
-  }
-
-  for (const d of domains) {
-    const doc = loadDomainDoc(d);
-    if (doc) parts.push(`## 도메인: ${d}\n${doc.content}`);
-  }
-
-  return parts.join('\n\n');
+export async function loadSelectedContext(
+  tables: string[],
+  _domains: string[] = [],
+  site: SiteKey = 'default',
+): Promise<string> {
+  if (!tables.length) return '';
+  return buildStage1Prompt(site, tables);
 }

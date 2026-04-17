@@ -10,7 +10,41 @@ import {
 } from './domain-glossary';
 import { SQL_RULES } from './sql-rules';
 import { listTerms, formatTermsForPrompt } from './glossary-store';
-import { buildSchemaSection } from '@/lib/ai/schema-context';
+import { getSchema } from '@/lib/ai/schema-context';
+import type { SiteKey } from '@/lib/ai-tables/types';
+
+/**
+ * schema-cache.json 기반 fallback 섹션.
+ * Stage 0 선택이 실패하여 selectedContextDocs 가 비었을 때만 사용.
+ * SCHEMA const 제거(Phase 4) 이후 전용 진입점.
+ */
+async function buildSchemaFallbackSection(
+  site: SiteKey,
+  selectedTables?: string[],
+): Promise<string> {
+  const schema = await getSchema(site);
+  const names =
+    selectedTables && selectedTables.length > 0
+      ? selectedTables.filter((t) => schema[t])
+      : Object.keys(schema);
+
+  if (names.length === 0) {
+    return '_(화이트리스트 테이블이 아직 등록되지 않았습니다.)_';
+  }
+
+  return names
+    .map((tableName) => {
+      const spec = schema[tableName];
+      const cols = Object.entries(spec.columns)
+        .map(
+          ([name, c]) =>
+            `| ${name} | ${c.type} | ${c.nullable ? 'Y' : 'N'} | ${c.comment ?? ''} |`,
+        )
+        .join('\n');
+      return `## ${tableName}\n${spec.description}\n\n| 컬럼 | 타입 | NULL | 코멘트 |\n|---|---|---|---|\n${cols}`;
+    })
+    .join('\n\n');
+}
 
 export interface BuildPromptOpts {
   stage: 'sql_generation' | 'analysis';
@@ -51,7 +85,11 @@ export async function buildSystemPrompt(opts: BuildPromptOpts): Promise<string> 
     if (opts.selectedContextDocs) {
       sections.push('# 관련 테이블/도메인 상세\n' + opts.selectedContextDocs);
     } else {
-      sections.push('# 사용 가능한 테이블\n' + buildSchemaSection(opts.selectedTables));
+      const site = (opts.selectedSite ?? 'default') as SiteKey;
+      sections.push(
+        '# 사용 가능한 테이블\n' +
+          (await buildSchemaFallbackSection(site, opts.selectedTables)),
+      );
     }
   }
 

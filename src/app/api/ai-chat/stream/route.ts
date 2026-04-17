@@ -12,6 +12,7 @@ import { executeAiReadQuery, executeQueryByProfile } from '@/lib/db';
 import { getProvider } from '@/lib/ai/router';
 import { selectContext } from '@/lib/ai/context/context-selector';
 import { loadSelectedContext } from '@/lib/ai/context/context-loader';
+import type { SiteKey } from '@/lib/ai-tables/types';
 import type { ProviderId, ChatMessage } from '@/lib/ai/providers/types';
 
 export const runtime = 'nodejs';
@@ -119,7 +120,11 @@ export async function POST(request: Request) {
         } else if (normalizedPrompt.includes('멕시코vd') || normalizedPrompt.includes('smmexpdb')) {
           selection.site = '멕시코VD외부';
         }
-        const contextDocs = loadSelectedContext(selection.tables, selection.domains);
+        const contextDocs = await loadSelectedContext(
+          selection.tables,
+          selection.domains,
+          selection.site as SiteKey,
+        );
         send('context_selected', {
           tables: selection.tables,
           domains: selection.domains,

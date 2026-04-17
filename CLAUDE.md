@@ -141,7 +141,7 @@ python scripts/pb_analyzer.py --parse-all --source-dir "SOLUM MES_DISP/" --outpu
 - DB 접속: 메인 풀(`getPool()`) 그대로 사용. 별도 read-only 계정 없음 — 안전은 sql-guard.ts의 SELECT-only 정규식 + ROWNUM 자동 주입 + EXPLAIN PLAN 비용 가드 + executeQuery 무커밋(=DML 시도해도 자동 롤백) 3중 방어.
 - API 키는 `AI_PROVIDER_SETTING.API_KEY_ENC`에 base64 저장 (운영 DB 백업에 포함되니 주의)
 - 새 도메인 용어/약어는 `/settings/ai-glossary`에서 추가 → 즉시 LLM 시스템 프롬프트 반영
-- 스키마 컨텍스트 갱신: `scripts/extract-schema-context.mjs`의 WHITELIST 배열을 채우고 `npm run extract-schema` → `src/lib/ai/schema-context.ts` 자동 갱신 → 커밋. 빈 배열이면 USER_TABLES/USER_VIEWS 전수 추출도 가능 (필요 시 스크립트 수정).
+- 스키마 컨텍스트 갱신: `/settings/ai-tables` 페이지의 `↻ DB 동기화` 버튼 또는 `/api/ai-tables/sync` 호출로 `data/ai-context/schema-cache.json` 재생성. (Phase 4 이후 `scripts/extract-schema-context.mjs` 방식은 폐기됨.)
 - 멕시코 LOG_* 테이블 등 보조 DB 사이트 조회는 `executeQueryByProfile`을 별도로 써야 하며, 현재 AI 챗은 메인 풀만 사용.
 - SQL 안전: SELECT/WITH만 허용, ROWNUM ≤ 1000 자동 주입, EXPLAIN PLAN cost ≥ 1M 또는 rows ≥ 10K 시 사용자 확인
 - 다중 사이트 배포: 사이트마다 activeProfile이 다르면 각 사이트 DB에 `migrations/001_ai_chat_tables.sql` 1회 실행 필요 (테이블 5개 + 시드).
