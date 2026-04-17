@@ -136,7 +136,7 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [], ioRo
         <span className="text-xs text-gray-500 dark:text-gray-400">
           공정이력 <b>{sortedRows.length}</b>건
           {totalNg > 0 && <span className="ml-2 text-red-500 font-semibold">NG {totalNg}건</span>}
-          <span className="ml-2">· 수리이력 <b>{qcRows.length}</b> · 공정IO <b>{ioRows.length}</b></span>
+          <span className="ml-2">· 수리이력 <b>{qcRows.length}</b> · 공정통과이력 <b>{ioRows.length}</b></span>
         </span>
       </div>
 
@@ -294,7 +294,7 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [], ioRo
         {/* ── 공정 IO 섹션 (IP_PRODUCT_WORKSTAGE_IO) ── */}
         <div className={`rounded-lg border ${NEUTRAL_PALETTE.border} overflow-hidden`}>
           <div className={`px-4 py-2 text-sm font-bold text-gray-800 dark:text-gray-100 ${NEUTRAL_PALETTE.header}`}>
-            공정 IO <span className="ml-1 text-xs font-normal text-gray-500">({ioRows.length}건)</span>
+            공정통과이력 <span className="ml-1 text-xs font-normal text-gray-500">({ioRows.length}건)</span>
           </div>
 
           {ioRows.length === 0 ? (
