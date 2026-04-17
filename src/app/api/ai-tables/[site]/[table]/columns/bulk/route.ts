@@ -18,7 +18,7 @@ import {
 } from '@/lib/ai-tables/store';
 import type { SiteKey } from '@/lib/ai-tables/types';
 
-type Params = { params: Promise<{ site: SiteKey; table: string }> };
+type Params = { params: Promise<{ site: string; table: string }> };
 
 interface BulkBody {
   columns: string[];
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const tables = await loadTables();
-    const meta = tables.sites[site]?.tables[tableName];
+    const meta = tables.sites[site as SiteKey]?.tables[tableName];
     if (!meta) {
       return NextResponse.json({ error: 'not found' }, { status: 404 });
     }

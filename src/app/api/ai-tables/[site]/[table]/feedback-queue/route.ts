@@ -7,14 +7,14 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { loadTables } from '@/lib/ai-tables/store';
 import type { SiteKey } from '@/lib/ai-tables/types';
 
-type Params = { params: Promise<{ site: SiteKey; table: string }> };
+type Params = { params: Promise<{ site: string; table: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { site, table } = await params;
     const tableName = decodeURIComponent(table);
     const data = await loadTables();
-    const meta = data.sites[site]?.tables[tableName];
+    const meta = data.sites[site as SiteKey]?.tables[tableName];
     return NextResponse.json({ queue: meta?.feedbackQueue ?? [] });
   } catch (e) {
     return NextResponse.json(

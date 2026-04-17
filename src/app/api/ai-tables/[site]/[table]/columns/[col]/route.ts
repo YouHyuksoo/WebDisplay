@@ -13,7 +13,7 @@ import { loadTables, saveTables } from '@/lib/ai-tables/store';
 import type { SiteKey, ColumnOverride } from '@/lib/ai-tables/types';
 
 type Params = {
-  params: Promise<{ site: SiteKey; table: string; col: string }>;
+  params: Promise<{ site: string; table: string; col: string }>;
 };
 
 export async function PATCH(req: NextRequest, { params }: Params) {
@@ -24,7 +24,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const patch = (await req.json()) as Partial<ColumnOverride>;
 
     const tables = await loadTables();
-    const meta = tables.sites[site]?.tables[tableName];
+    const meta = tables.sites[site as SiteKey]?.tables[tableName];
     if (!meta) {
       return NextResponse.json({ error: 'not found' }, { status: 404 });
     }

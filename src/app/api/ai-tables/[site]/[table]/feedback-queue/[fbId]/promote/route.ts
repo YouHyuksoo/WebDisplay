@@ -11,7 +11,7 @@ import { promoteFeedback } from '@/lib/ai-tables/feedback-queue';
 import type { SiteKey, Example } from '@/lib/ai-tables/types';
 
 type Params = {
-  params: Promise<{ site: SiteKey; table: string; fbId: string }>;
+  params: Promise<{ site: string; table: string; fbId: string }>;
 };
 
 export async function POST(req: NextRequest, { params }: Params) {
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const { site, table, fbId } = await params;
     const body = (await req.json().catch(() => ({}))) as Partial<Example>;
     const result = await promoteFeedback(
-      site,
+      site as SiteKey,
       decodeURIComponent(table),
       fbId,
       body,

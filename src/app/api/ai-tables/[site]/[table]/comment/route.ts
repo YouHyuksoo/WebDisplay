@@ -12,7 +12,7 @@ import { executeCommentDdl } from '@/lib/ai-tables/ddl-executor';
 import { syncSingleTable } from '@/lib/ai-tables/schema-loader';
 import type { SiteKey } from '@/lib/ai-tables/types';
 
-type Params = { params: Promise<{ site: SiteKey; table: string }> };
+type Params = { params: Promise<{ site: string; table: string }> };
 
 export async function POST(req: NextRequest, { params }: Params) {
   try {
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       ddl,
     );
     // 주석만 바뀌었으므로 부분 재sync (해당 테이블만)
-    await syncSingleTable(site, tableName).catch(() => {});
+    await syncSingleTable(site as SiteKey, tableName).catch(() => {});
     return NextResponse.json({ ok: true, historyFile: result.historyFile });
   } catch (e) {
     return NextResponse.json(

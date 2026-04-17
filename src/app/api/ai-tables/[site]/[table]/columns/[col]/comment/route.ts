@@ -9,7 +9,7 @@ import { syncSingleTable } from '@/lib/ai-tables/schema-loader';
 import type { SiteKey } from '@/lib/ai-tables/types';
 
 type Params = {
-  params: Promise<{ site: SiteKey; table: string; col: string }>;
+  params: Promise<{ site: string; table: string; col: string }>;
 };
 
 export async function POST(req: NextRequest, { params }: Params) {
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       },
       ddl,
     );
-    await syncSingleTable(site, tableName).catch(() => {});
+    await syncSingleTable(site as SiteKey, tableName).catch(() => {});
     return NextResponse.json({ ok: true, historyFile: result.historyFile });
   } catch (e) {
     return NextResponse.json(

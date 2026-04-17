@@ -8,13 +8,13 @@ import { rejectFeedback } from '@/lib/ai-tables/feedback-queue';
 import type { SiteKey } from '@/lib/ai-tables/types';
 
 type Params = {
-  params: Promise<{ site: SiteKey; table: string; fbId: string }>;
+  params: Promise<{ site: string; table: string; fbId: string }>;
 };
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const { site, table, fbId } = await params;
-    await rejectFeedback(site, decodeURIComponent(table), fbId);
+    await rejectFeedback(site as SiteKey, decodeURIComponent(table), fbId);
     return NextResponse.json({ ok: true });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

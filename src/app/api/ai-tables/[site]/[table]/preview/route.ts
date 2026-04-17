@@ -12,13 +12,13 @@ import { buildStage1Prompt } from '@/lib/ai-tables/merged-context';
 import { estimateTokens } from '@/lib/ai-tables/tokenizer';
 import type { SiteKey } from '@/lib/ai-tables/types';
 
-type Params = { params: Promise<{ site: SiteKey; table: string }> };
+type Params = { params: Promise<{ site: string; table: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { site, table } = await params;
     const tableName = decodeURIComponent(table);
-    const compactBlock = await buildStage1Prompt(site, [tableName]);
+    const compactBlock = await buildStage1Prompt(site as SiteKey, [tableName]);
     return NextResponse.json({
       compactBlock,
       estimatedTokens: estimateTokens(compactBlock),

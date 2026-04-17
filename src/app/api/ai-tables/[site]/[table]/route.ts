@@ -14,7 +14,7 @@ import { getTableSchema } from '@/lib/ai-tables/schema-loader';
 import { resolveColumn } from '@/lib/ai-tables/domain-resolver';
 import type { SiteKey, TableMeta } from '@/lib/ai-tables/types';
 
-type Params = { params: Promise<{ site: SiteKey; table: string }> };
+type Params = { params: Promise<{ site: string; table: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
@@ -23,9 +23,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const [tables, domains, schema] = await Promise.all([
       loadTables(),
       loadDomains(),
-      getTableSchema(site, tableName),
+      getTableSchema(site as SiteKey, tableName),
     ]);
-    const meta = tables.sites[site]?.tables[tableName];
+    const meta = tables.sites[site as SiteKey]?.tables[tableName];
     if (!meta || !schema) {
       return NextResponse.json({ error: 'not found' }, { status: 404 });
     }
@@ -58,7 +58,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const tableName = decodeURIComponent(table);
     const patch = (await req.json()) as Partial<TableMeta>;
     const tables = await loadTables();
-    const meta = tables.sites[site]?.tables[tableName];
+    const meta = tables.sites[site as SiteKey]?.tables[tableName];
     if (!meta) {
       return NextResponse.json({ error: 'not found' }, { status: 404 });
     }
