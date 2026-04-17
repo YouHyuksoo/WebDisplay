@@ -8,12 +8,86 @@
  * 3. globals.css에서 @import로 로드됩니다
  */
 
+/* ===== depth-handle: 좁은 화면 전용 호버 핸들 (기본 숨김) ===== */
+#depth-handle {
+  display: none;
+}
+
+/* ===== 900px 이하: depth-indicator 슬라이드 숨김 + 호버 핸들 + 타이틀 축소 ===== */
+@media (max-width: 900px) {
+  /* 768px 블록 전에 중간 단계 타이틀 축소 (768px 기본값 48px → 여기서 34px → 768px에서 24px) */
+  #section-title {
+    font-size: 34px;
+    letter-spacing: 3px;
+  }
+  #section-subtitle {
+    font-size: 12px;
+    letter-spacing: 3px;
+  }
+
+  #depth-indicator {
+    /* right 속성으로 숨김. transform은 기본값(translateY) 유지
+       닫힘(복귀) 시 딜레이 0.15s - 핸들↔메뉴 이동 중 끊김 방지 */
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+    right: -260px;
+  }
+
+  /* 화면 가장자리에 남는 핸들 (미니멀 — 배경 거의 투명, 그림자 제거) */
+  #depth-handle {
+    display: flex;
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 48px;
+    background: rgba(10, 10, 15, 0.15);
+    border: 1px solid rgba(255, 215, 0, 0.18);
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 215, 0, 0.5);
+    font-size: 9px;
+    cursor: pointer;
+    z-index: 201;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, width 0.3s ease;
+  }
+
+  #depth-handle::before {
+    content: '◀';
+  }
+
+  /* 핸들 hover 또는 메뉴 영역 hover 시 슬라이드 인 (열림은 즉시) */
+  #depth-handle:hover ~ #depth-indicator,
+  #depth-indicator:hover {
+    transition-delay: 0s;
+    right: 25px;
+  }
+
+  /* 핸들 hover 상태 시각 피드백 - hover 시에만 선명해짐 */
+  #depth-handle:hover {
+    width: 18px;
+    background: rgba(255, 215, 0, 0.15);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* 열린 상태에서 핸들 아이콘 반전 */
+  #depth-handle:hover::before,
+  body:has(#depth-indicator:hover) #depth-handle::before {
+    content: '▶';
+  }
+}
+
 @media (max-width: 768px) {
-  .shortcut-card { width: 100px; height: 130px; padding: 12px; }
+  .shortcut-card { width: 100px; height: 105px; padding: 8px; border-radius: 14px; }
   .shortcut-icon { width: 36px; height: 36px; font-size: 16px; }
   .shortcut-icon img, .shortcut-icon svg { width: 28px; height: 28px; }
-  .shortcut-title { font-size: 11px; }
-  .shortcut-url { font-size: 8px; }
+  .shortcut-title { font-size: 10px; }
+  .shortcut-url { font-size: 7px; }
   #section-title { font-size: 24px; letter-spacing: 4px; }
   #section-subtitle { font-size: 10px; }
   .section-cards { gap: 12px; max-width: min(400px, calc(100vw - 120px)); }
@@ -77,10 +151,10 @@
 }
 
 @media (max-width: 480px) {
-  .shortcut-card { width: 80px; height: 105px; padding: 10px; border-radius: 14px; }
+  .shortcut-card { width: 80px; height: 85px; padding: 6px; border-radius: 12px; }
   .shortcut-icon { width: 30px; height: 30px; }
   .shortcut-icon img, .shortcut-icon svg { width: 24px; height: 24px; }
-  .shortcut-title { font-size: 10px; }
+  .shortcut-title { font-size: 9px; }
   .shortcut-url { display: none; }
   #section-title { font-size: 18px; letter-spacing: 2px; }
   #section-subtitle { font-size: 9px; letter-spacing: 1px; }
@@ -251,8 +325,14 @@
   }
 
   #depth-indicator {
-    right: 10px;
+    /* right 값은 900px 블록에서 관리 (숨김/hover). 여기선 gap만 축소 */
     gap: 6px;
+  }
+
+  /* 768px 이하에서는 hover 복귀 위치도 더 가까이 */
+  #depth-handle:hover ~ #depth-indicator,
+  #depth-indicator:hover {
+    right: 10px;
   }
 
   .bottom-buttons {

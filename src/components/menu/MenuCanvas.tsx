@@ -56,6 +56,9 @@ export default function MenuCanvas() {
         <div id="section-subtitle">Your most used sites</div>
       </div>
 
+      {/* 좁은 화면에서 나타나는 핸들 (호버 시 depth-indicator 슬라이드 인) */}
+      <div id="depth-handle" aria-hidden="true" />
+
       {/* 깊이 인디케이터 (섹션 도트) */}
       <div id="depth-indicator" />
 
