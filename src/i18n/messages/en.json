@@ -1395,7 +1395,7 @@
           "spi": {
             "label": "By SPI Equipment",
             "desc": "Extract barcodes inspected by SPI in range",
-            "hint": "LOG_SPI.LOG_TIMESTAMP · MASTER_BARCODE → SERIAL_NO · max 1000"
+            "hint": "LOG_SPI.LOG_TIMESTAMP · ARRAY_BARCODE → SERIAL_NO · max 1000"
           },
           "aoi": {
             "label": "By AOI Equipment",

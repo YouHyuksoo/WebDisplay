@@ -1393,7 +1393,7 @@
           "spi": {
             "label": "Por Equipo SPI",
             "desc": "Extraer códigos inspeccionados por SPI",
-            "hint": "LOG_SPI.LOG_TIMESTAMP · MASTER_BARCODE → SERIAL_NO · máx 1000"
+            "hint": "LOG_SPI.LOG_TIMESTAMP · ARRAY_BARCODE → SERIAL_NO · máx 1000"
           },
           "aoi": {
             "label": "Por Equipo AOI",

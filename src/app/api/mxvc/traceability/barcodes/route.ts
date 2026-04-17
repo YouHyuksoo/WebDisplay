@@ -98,23 +98,23 @@ async function querySingle(column: string, value: string) {
 
 /**
  * 설비 로그 기준 조회 — 해당 기간 바코드 직접 추출.
- * - SPI: LOG_SPI(LOG_TIMESTAMP, MASTER_BARCODE) + LOG_SPI_VD(INSPECTION_DATE 'YYYY-MM-DD', MASTER_BARCODE) UNION
+ * - SPI: LOG_SPI(LOG_TIMESTAMP, ARRAY_BARCODE) + LOG_SPI_VD(INSPECTION_DATE 'YYYY-MM-DD', ARRAY_BARCODE) UNION
  * - AOI: LOG_AOI(LOG_TIMESTAMP, SERIAL_NO)
  * 결과 1000건 제한.
  */
 async function queryEquipmentLog(mode: 'spi' | 'aoi', dateFrom: string, dateTo: string) {
   const sql = mode === 'spi'
     ? `SELECT SERIAL_NO, NULL AS PCB_ITEM FROM (
-         SELECT DISTINCT MASTER_BARCODE AS SERIAL_NO
+         SELECT DISTINCT ARRAY_BARCODE AS SERIAL_NO
            FROM LOG_SPI
           WHERE LOG_TIMESTAMP >= TO_DATE(:dateFrom, 'YYYY-MM-DD')
             AND LOG_TIMESTAMP <  TO_DATE(:dateTo,   'YYYY-MM-DD') + 1
-            AND MASTER_BARCODE IS NOT NULL
+            AND ARRAY_BARCODE IS NOT NULL
          UNION
-         SELECT DISTINCT MASTER_BARCODE AS SERIAL_NO
+         SELECT DISTINCT ARRAY_BARCODE AS SERIAL_NO
            FROM LOG_SPI_VD
           WHERE INSPECTION_DATE BETWEEN :dateFrom AND :dateTo
-            AND MASTER_BARCODE IS NOT NULL
+            AND ARRAY_BARCODE IS NOT NULL
        )
        ORDER BY SERIAL_NO ASC
        FETCH FIRST 1000 ROWS ONLY`

@@ -65,7 +65,7 @@ async function fetchLabelSerials(
 }
 
 /**
- * LOG_SPI + LOG_SPI_VD UNION — Top/Bot 시리얼(MASTER_BARCODE) 매칭.
+ * LOG_SPI + LOG_SPI_VD UNION — Top/Bot 시리얼(ARRAY_BARCODE) 매칭.
  * 실제 검사일자 사용: INSPECTION_DATE('YYYY-MM-DD') + INSPECTION_END_TIME('HH24:MI:SS').
  * 기간 필터는 날짜 부분(대시 형식) 문자열 비교. LOG_TIMESTAMP(DB 수신시각)는 쓰지 않음.
  */
@@ -106,8 +106,8 @@ async function fetchSpiRows(
             AND s.INSPECTION_DATE BETWEEN :dateFrom AND :dateTo
             ${isLastS}
          UNION ALL
-         SELECT v.MASTER_BARCODE                              AS PID,
-                F_GET_MODEL_NAME_BY_PID(v.MASTER_BARCODE)     AS MODEL_NAME,
+         SELECT v.ARRAY_BARCODE                              AS PID,
+                F_GET_MODEL_NAME_BY_PID(v.ARRAY_BARCODE)     AS MODEL_NAME,
                 b.RATING_LABEL                                AS RATING_LABEL,
                 b.PCB_ITEM                                    AS PCB_ITEM,
                 'SPI'                                          AS WORKSTAGE_CODE,
@@ -117,8 +117,8 @@ async function fetchSpiRows(
                 (v.INSPECTION_DATE || ' ' || NVL(v.INSPECTION_END_TIME, '')) AS INSPECT_DATE,
                 v.IS_LAST                                      AS IS_LAST
            FROM LOG_SPI_VD v
-           LEFT JOIN IP_PRODUCT_2D_BARCODE b ON b.SERIAL_NO = v.MASTER_BARCODE
-          WHERE v.MASTER_BARCODE IN (${names.join(',')})
+           LEFT JOIN IP_PRODUCT_2D_BARCODE b ON b.SERIAL_NO = v.ARRAY_BARCODE
+          WHERE v.ARRAY_BARCODE IN (${names.join(',')})
             AND v.INSPECTION_DATE BETWEEN :dateFrom AND :dateTo
             ${isLastV}
        )

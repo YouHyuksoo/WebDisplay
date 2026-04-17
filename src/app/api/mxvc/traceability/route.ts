@@ -299,9 +299,9 @@ async function queryMaterialPanasonic(
    *   - IB_SMT_CHECKHIST        : 파나소닉 SMT 피딩 체크 이력
    *   - IM_ITEM_RECEIPT_BARCODE : 자재 수입 바코드 (ITEM_BARCODE PK, SCAN_PARTNAME과 조인)
    *   - ID_ITEM                 : 아이템 마스터 (MSL 정보)
-   *   - LOG_SPI_VD              : SPI 검사 로그 (MASTER_BARCODE 기준, INSPECTION_DATE VARCHAR2 'YYYY-MM-DD')
+   *   - LOG_SPI_VD              : SPI 검사 로그 (ARRAY_BARCODE 기준, INSPECTION_DATE VARCHAR2 'YYYY-MM-DD')
    *
-   * inspect_date 기준: LOG_SPI_VD에서 해당 MASTER_BARCODE의 최초 검사 시각(MIN)
+   * inspect_date 기준: LOG_SPI_VD에서 해당 ARRAY_BARCODE의 최초 검사 시각(MIN)
    *   → SPI 검사 시점 이전 투입된 자재만 포함 (check_date <= inspect_date)
    *   → valid_date가 inspect_date 이후인 유효 자재만 포함
    *   → INSPECTION_DATE 형식 이상값(예: '-101') 제거 — REGEXP_LIKE로 'YYYY-MM-DD' 검증
@@ -333,7 +333,7 @@ async function queryMaterialPanasonic(
                               'YYYY-MM-DD HH24:MI:SS')
                     ) AS inspect_date
                FROM log_spi_vd x
-              WHERE x.MASTER_BARCODE = :serialNo
+              WHERE x.ARRAY_BARCODE = :serialNo
                 AND REGEXP_LIKE(x.INSPECTION_DATE, '^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
                 AND REGEXP_LIKE(x.INSPECTION_START_TIME, '^[0-9]{2}:[0-9]{2}:[0-9]{2}$')
            ) z

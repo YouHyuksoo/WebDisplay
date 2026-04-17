@@ -1390,7 +1390,7 @@
           "spi": {
             "label": "Theo Thiết bị SPI",
             "desc": "Trích mã được kiểm SPI trong khoảng",
-            "hint": "LOG_SPI.LOG_TIMESTAMP · MASTER_BARCODE → SERIAL_NO · tối đa 1000"
+            "hint": "LOG_SPI.LOG_TIMESTAMP · ARRAY_BARCODE → SERIAL_NO · tối đa 1000"
           },
           "aoi": {
             "label": "Theo Thiết bị AOI",

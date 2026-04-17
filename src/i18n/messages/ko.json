@@ -1392,7 +1392,7 @@
           "spi": {
             "label": "SPI 설비기준",
             "desc": "LOG_SPI 기간 검사 바코드 추출",
-            "hint": "LOG_SPI.LOG_TIMESTAMP 기준 · MASTER_BARCODE → SERIAL_NO · 최대 1000건"
+            "hint": "LOG_SPI.LOG_TIMESTAMP 기준 · ARRAY_BARCODE → SERIAL_NO · 최대 1000건"
           },
           "aoi": {
             "label": "AOI 설비기준",

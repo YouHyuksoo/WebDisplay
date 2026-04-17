@@ -88,7 +88,7 @@ export const TABLE_CONFIG: Record<MxvcFpyTableKey, TableColumnConfig> = {
   LOG_COATINGVISION: { resultCol: "FINAL_RESULT",   barcodeCol: "MAIN_BARCODE",   breakdown: true },
   LOG_ICT:           { resultCol: "RESULT",         barcodeCol: "BARCODE",        groupedFpy: true,  breakdown: true },
   LOG_AOI:           { resultCol: "RESULT",         barcodeCol: "SERIAL_NO",      breakdown: true },
-  LOG_SPI:           { resultCol: "PCB_RESULT",     barcodeCol: "MASTER_BARCODE", breakdown: true },
+  LOG_SPI:           { resultCol: "PCB_RESULT",     barcodeCol: "ARRAY_BARCODE",  breakdown: true },
 };
 
 export const TABLE_KEYS: MxvcFpyTableKey[] = Object.keys(TABLE_CONFIG) as MxvcFpyTableKey[];
