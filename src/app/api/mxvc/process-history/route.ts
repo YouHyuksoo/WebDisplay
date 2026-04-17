@@ -13,6 +13,18 @@ import { executeQuery } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+/** WORKSTAGE_CODE 정렬 — SPI → AOI → 나머지는 localeCompare 오름차순. */
+const STAGE_ORDER_HINT: Record<string, number> = { SPI: 0, AOI: 1 };
+function compareWorkstageCode(
+  a: { code: string },
+  b: { code: string },
+): number {
+  const ao = STAGE_ORDER_HINT[a.code] ?? 100;
+  const bo = STAGE_ORDER_HINT[b.code] ?? 100;
+  if (ao !== bo) return ao - bo;
+  return a.code.localeCompare(b.code);
+}
+
 /**
  * RATING_LABEL 완전일치로 IP_PRODUCT_2D_BARCODE 에서 SERIAL_NO 목록을 조회한다.
  * 같은 라벨에 Top(T) / Bottom(B) 면이 각각 등록되어 복수 건이 반환될 수 있음.
@@ -50,6 +62,108 @@ async function fetchLabelSerials(
     }
   }
   return Array.from(map.values());
+}
+
+/**
+ * LOG_SPI + LOG_SPI_VD UNION — Top/Bot 시리얼(MASTER_BARCODE) 매칭.
+ * 실제 검사일자 사용: INSPECTION_DATE('YYYY-MM-DD') + INSPECTION_END_TIME('HH24:MI:SS').
+ * 기간 필터는 날짜 부분(대시 형식) 문자열 비교. LOG_TIMESTAMP(DB 수신시각)는 쓰지 않음.
+ */
+async function fetchSpiRows(
+  serials: string[],
+  dateFromDash: string,
+  dateToDash: string,
+  isLastValue: string | null,
+) {
+  if (serials.length === 0) return [] as RawRow[];
+  const binds: Record<string, string> = { dateFrom: dateFromDash, dateTo: dateToDash };
+  const names = serials.map((_, i) => `:sn${i}`);
+  serials.forEach((s, i) => { binds[`sn${i}`] = s; });
+  if (isLastValue) binds.isLast = isLastValue;
+  const isLastS = isLastValue ? 'AND s.IS_LAST = :isLast' : '';
+  const isLastV = isLastValue ? 'AND v.IS_LAST = :isLast' : '';
+
+  /* 각 서브쿼리 컬럼 alias 로 별칭 강제(ORA-00918 방지). LOG_SPI/VD 와 JOIN 한
+     IP_PRODUCT_2D_BARCODE 모두 동일명 컬럼(IS_LAST 등)을 갖고 있으므로. */
+  return await executeQuery<RawRow>(
+    `SELECT PID, MODEL_NAME, RATING_LABEL, PCB_ITEM,
+            WORKSTAGE_CODE, WORKSTAGE_NAME, MACHINE_CODE,
+            INSPECT_RESULT, INSPECT_DATE, IS_LAST
+       FROM (
+         SELECT s.MASTER_BARCODE                              AS PID,
+                F_GET_MODEL_NAME_BY_PID(s.MASTER_BARCODE)     AS MODEL_NAME,
+                b.RATING_LABEL                                AS RATING_LABEL,
+                b.PCB_ITEM                                    AS PCB_ITEM,
+                'SPI'                                          AS WORKSTAGE_CODE,
+                'SPI'                                          AS WORKSTAGE_NAME,
+                s.EQUIPMENT_ID                                 AS MACHINE_CODE,
+                s.PCB_RESULT                                   AS INSPECT_RESULT,
+                (s.INSPECTION_DATE || ' ' || NVL(s.INSPECTION_END_TIME, '')) AS INSPECT_DATE,
+                s.IS_LAST                                      AS IS_LAST
+           FROM LOG_SPI s
+           LEFT JOIN IP_PRODUCT_2D_BARCODE b ON b.SERIAL_NO = s.MASTER_BARCODE
+          WHERE s.MASTER_BARCODE IN (${names.join(',')})
+            AND s.INSPECTION_DATE BETWEEN :dateFrom AND :dateTo
+            ${isLastS}
+         UNION ALL
+         SELECT v.MASTER_BARCODE                              AS PID,
+                F_GET_MODEL_NAME_BY_PID(v.MASTER_BARCODE)     AS MODEL_NAME,
+                b.RATING_LABEL                                AS RATING_LABEL,
+                b.PCB_ITEM                                    AS PCB_ITEM,
+                'SPI'                                          AS WORKSTAGE_CODE,
+                'SPI'                                          AS WORKSTAGE_NAME,
+                v.EQUIPMENT_ID                                 AS MACHINE_CODE,
+                v.PCB_RESULT                                   AS INSPECT_RESULT,
+                (v.INSPECTION_DATE || ' ' || NVL(v.INSPECTION_END_TIME, '')) AS INSPECT_DATE,
+                v.IS_LAST                                      AS IS_LAST
+           FROM LOG_SPI_VD v
+           LEFT JOIN IP_PRODUCT_2D_BARCODE b ON b.SERIAL_NO = v.MASTER_BARCODE
+          WHERE v.MASTER_BARCODE IN (${names.join(',')})
+            AND v.INSPECTION_DATE BETWEEN :dateFrom AND :dateTo
+            ${isLastV}
+       )
+      ORDER BY PID, INSPECT_DATE
+      FETCH FIRST 5000 ROWS ONLY`,
+    binds,
+  );
+}
+
+/**
+ * LOG_AOI — SERIAL_NO 직접 매칭. 실제 검사일자 = START_DATE('YYYY/MM/DD HH24:MI:SS').
+ * 기간 필터는 슬래시 형식 문자열 비교.
+ */
+async function fetchAoiRows(
+  serials: string[],
+  fromSlash: string,
+  toSlash: string,
+  isLastValue: string | null,
+) {
+  if (serials.length === 0) return [] as RawRow[];
+  const binds: Record<string, string> = { dateFrom: fromSlash, dateTo: toSlash };
+  const names = serials.map((_, i) => `:sn${i}`);
+  serials.forEach((s, i) => { binds[`sn${i}`] = s; });
+  if (isLastValue) binds.isLast = isLastValue;
+  const isLastWhere = isLastValue ? 'AND a.IS_LAST = :isLast' : '';
+
+  return await executeQuery<RawRow>(
+    `SELECT a.SERIAL_NO                                 AS PID,
+            F_GET_MODEL_NAME_BY_PID(a.SERIAL_NO)        AS MODEL_NAME,
+            b.RATING_LABEL, b.PCB_ITEM,
+            'AOI' AS WORKSTAGE_CODE, 'AOI' AS WORKSTAGE_NAME,
+            a.EQUIPMENT_ID AS MACHINE_CODE,
+            a.RESULT       AS INSPECT_RESULT,
+            a.START_DATE   AS INSPECT_DATE,
+            a.IS_LAST
+       FROM LOG_AOI a
+       LEFT JOIN IP_PRODUCT_2D_BARCODE b ON b.SERIAL_NO = a.SERIAL_NO
+      WHERE a.SERIAL_NO IN (${names.join(',')})
+        AND a.START_DATE BETWEEN :dateFrom || ' 00:00:00'
+                             AND :dateTo   || ' 23:59:59'
+        ${isLastWhere}
+      ORDER BY a.SERIAL_NO, INSPECT_DATE
+      FETCH FIRST 5000 ROWS ONLY`,
+    binds,
+  );
 }
 
 /** TOP SERIAL_NO → BOT SERIAL_NO (F_GET_SMT_BOT_2_TOP). 실패/동일 시 null. */
@@ -166,7 +280,7 @@ export async function GET(req: NextRequest) {
     /* INSPECT_DATE는 VARCHAR2 'YYYY-MM-DD HH24:MI:SS' — 문자열 범위 비교.
        IP_PRODUCT_2D_BARCODE LEFT JOIN 으로 각 PID 의 RATING_LABEL 를 함께 조회.
        JOIN 은 PID = SERIAL_NO 일치 기준. 라벨이 없는 PID 도 행은 유지(LEFT). */
-    const rows = await executeQuery<RawRow>(
+    const iqRows = await executeQuery<RawRow>(
       `SELECT t.PID,
               F_GET_MODEL_NAME_BY_PID(t.PID) AS MODEL_NAME,
               b.RATING_LABEL,
@@ -189,6 +303,17 @@ export async function GET(req: NextRequest) {
       binds,
     );
 
+    /* ── SPI / AOI 합류: resolvedSerials 있을 때만 별도 LOG 테이블에서 조회 ── */
+    const spiAoiSerials = resolvedSerials.map((r) => r.serial);
+    const isLastVal = isLast === 'all' || isLast === '' ? null : isLast;
+    const [spiRows, aoiRows] = spiAoiSerials.length > 0
+      ? await Promise.all([
+          fetchSpiRows(spiAoiSerials, dateFrom, dateTo, isLastVal),
+          fetchAoiRows(spiAoiSerials, fromSlash, toSlash, isLastVal),
+        ])
+      : [[] as RawRow[], [] as RawRow[]];
+    const rows: RawRow[] = [...iqRows, ...spiRows, ...aoiRows];
+
     /* ── list 모드: raw 데이터를 공정별 그룹으로 반환 + QC 데이터 ── */
     if (mode === 'list') {
       const wsMap = new Map<string, string>();
@@ -199,7 +324,7 @@ export async function GET(req: NextRequest) {
       }
       const workstages = Array.from(wsMap.entries())
         .map(([code, name]) => ({ code, name }))
-        .sort((a, b) => a.code.localeCompare(b.code));
+        .sort(compareWorkstageCode);
 
       /* QC / WORKSTAGE_IO 조회 공통 WHERE:
          resolvedSerials 있으면 IN 절, serialNo 있으면 LIKE */

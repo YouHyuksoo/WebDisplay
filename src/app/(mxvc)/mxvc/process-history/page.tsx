@@ -319,7 +319,7 @@ export default function ProcessHistoryPage() {
               onChange={(e) => setRatingLabel(e.target.value)}
               onBlur={(e) => resolveFromLabel(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-              placeholder="완전일치 — Top/Bot 자동 채움"
+              placeholder="RATING"
               className={`${inputClass} font-mono text-[11px]`}
             />
           </div>
@@ -332,7 +332,7 @@ export default function ProcessHistoryPage() {
               onChange={(e) => setTopSerial(e.target.value)}
               onBlur={(e) => resolveFromTop(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-              placeholder="RATING_LABEL 매칭 = TOP. Bot 자동 도출"
+              placeholder="TOP"
               className={`${inputClass} font-mono text-[11px]`}
             />
           </div>
@@ -344,7 +344,7 @@ export default function ProcessHistoryPage() {
               value={botSerial}
               onChange={(e) => setBotSerial(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-              placeholder="F_GET_SMT_BOT_2_TOP 로 자동"
+              placeholder="BOT"
               className={`${inputClass} font-mono text-[11px]`}
             />
           </div>

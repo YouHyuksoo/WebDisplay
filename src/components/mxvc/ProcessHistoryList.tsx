@@ -92,15 +92,15 @@ function repairResultLabel(code: string | null): string {
   return REPAIR_RESULT_MAP[code.toUpperCase()] ?? code;
 }
 
-/** 공정별 색상 팔레트 */
-const PALETTE = [
-  { bg: 'bg-blue-50 dark:bg-blue-950/30', header: 'bg-blue-100 dark:bg-blue-900/50', border: 'border-blue-300 dark:border-blue-700', dot: 'bg-blue-500' },
-  { bg: 'bg-emerald-50 dark:bg-emerald-950/30', header: 'bg-emerald-100 dark:bg-emerald-900/50', border: 'border-emerald-300 dark:border-emerald-700', dot: 'bg-emerald-500' },
-  { bg: 'bg-purple-50 dark:bg-purple-950/30', header: 'bg-purple-100 dark:bg-purple-900/50', border: 'border-purple-300 dark:border-purple-700', dot: 'bg-purple-500' },
-  { bg: 'bg-amber-50 dark:bg-amber-950/30', header: 'bg-amber-100 dark:bg-amber-900/50', border: 'border-amber-300 dark:border-amber-700', dot: 'bg-amber-500' },
-  { bg: 'bg-pink-50 dark:bg-pink-950/30', header: 'bg-pink-100 dark:bg-pink-900/50', border: 'border-pink-300 dark:border-pink-700', dot: 'bg-pink-500' },
-  { bg: 'bg-teal-50 dark:bg-teal-950/30', header: 'bg-teal-100 dark:bg-teal-900/50', border: 'border-teal-300 dark:border-teal-700', dot: 'bg-teal-500' },
-];
+/** 단일 중립 팔레트 — 섹션간 색상 구분 없음 (사용자 선호). */
+const NEUTRAL_PALETTE = {
+  bg: 'bg-slate-50 dark:bg-slate-900/40',
+  header: 'bg-slate-100 dark:bg-slate-800/60',
+  border: 'border-slate-300 dark:border-slate-700',
+  dot: 'bg-slate-500',
+};
+/** PALETTE 배열 API 는 보존하되 모든 인덱스가 동일 중립 색을 반환. */
+const PALETTE = new Array(1).fill(NEUTRAL_PALETTE);
 
 /** 공정통과이력 리스트 뷰 — 공정별 그룹 + 시간순 */
 export default function ProcessHistoryList({ rows, workstages, qcRows = [], ioRows = [] }: Props) {
@@ -253,25 +253,25 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [], ioRo
         })}
 
         {/* ── QC 검사 섹션 ── */}
-        <div className="rounded-lg border border-orange-300 dark:border-orange-700 overflow-hidden">
+        <div className={`rounded-lg border ${NEUTRAL_PALETTE.border} overflow-hidden`}>
           <button
             onClick={() => toggle('__QC__')}
-            className="w-full flex items-center gap-2 px-4 py-2.5 text-left transition-colors bg-orange-100 dark:bg-orange-900/50"
+            className={`w-full flex items-center gap-2 px-4 py-2.5 text-left transition-colors ${NEUTRAL_PALETTE.header}`}
           >
             {!collapsed.has('__QC__') ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            <span className="inline-block h-3 w-3 rounded-full bg-orange-500" />
+            <span className={`inline-block h-3 w-3 rounded-full ${NEUTRAL_PALETTE.dot}`} />
             <span className="font-bold text-sm text-gray-800 dark:text-gray-100">QC 검사</span>
             <span className="text-xs text-gray-500 dark:text-gray-400">(IP_PRODUCT_WORK_QC)</span>
             <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">{qcRows.length}건</span>
           </button>
 
           {!collapsed.has('__QC__') && qcRows.length === 0 && (
-            <div className="bg-orange-50 dark:bg-orange-950/30 px-4 py-3 text-xs text-gray-400 dark:text-gray-500">
+            <div className={`${NEUTRAL_PALETTE.bg} px-4 py-3 text-xs text-gray-400 dark:text-gray-500`}>
               데이터 없음
             </div>
           )}
           {!collapsed.has('__QC__') && qcRows.length > 0 && (
-            <div className="bg-orange-50 dark:bg-orange-950/30">
+            <div className={NEUTRAL_PALETTE.bg}>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
@@ -322,25 +322,25 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [], ioRo
         </div>
 
         {/* ── 공정 IO 섹션 (IP_PRODUCT_WORKSTAGE_IO) ── */}
-        <div className="rounded-lg border border-indigo-300 dark:border-indigo-700 overflow-hidden">
+        <div className={`rounded-lg border ${NEUTRAL_PALETTE.border} overflow-hidden`}>
           <button
             onClick={() => toggle('__IO__')}
-            className="w-full flex items-center gap-2 px-4 py-2.5 text-left transition-colors bg-indigo-100 dark:bg-indigo-900/50"
+            className={`w-full flex items-center gap-2 px-4 py-2.5 text-left transition-colors ${NEUTRAL_PALETTE.header}`}
           >
             {!collapsed.has('__IO__') ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            <span className="inline-block h-3 w-3 rounded-full bg-indigo-500" />
+            <span className={`inline-block h-3 w-3 rounded-full ${NEUTRAL_PALETTE.dot}`} />
             <span className="font-bold text-sm text-gray-800 dark:text-gray-100">공정 IO</span>
             <span className="text-xs text-gray-500 dark:text-gray-400">(IP_PRODUCT_WORKSTAGE_IO)</span>
             <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">{ioRows.length}건</span>
           </button>
 
           {!collapsed.has('__IO__') && ioRows.length === 0 && (
-            <div className="bg-indigo-50 dark:bg-indigo-950/30 px-4 py-3 text-xs text-gray-400 dark:text-gray-500">
+            <div className={`${NEUTRAL_PALETTE.bg} px-4 py-3 text-xs text-gray-400 dark:text-gray-500`}>
               데이터 없음
             </div>
           )}
           {!collapsed.has('__IO__') && ioRows.length > 0 && (
-            <div className="bg-indigo-50 dark:bg-indigo-950/30 overflow-x-auto">
+            <div className={`${NEUTRAL_PALETTE.bg} overflow-x-auto`}>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">

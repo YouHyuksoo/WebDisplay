@@ -43,17 +43,11 @@ interface Props {
 const PASS_VALUES = new Set(['PASS', 'OK', 'GOOD', 'Y']);
 
 /**
- * 공정 그룹별 배경 팔레트 — 라이트/다크 모드 공통 동작하는 낮은 alpha.
- * border는 그룹 첫 컬럼 좌측 경계선으로 공정 구분.
+ * 공정 그룹 중립 팔레트 — 모든 공정에 동일한 색. 경계선만 옅은 회색.
+ * 섹션/그룹 색상 구분 없음 (사용자 선호).
  */
-const STAGE_PALETTE = [
-  { bg: 'rgba(59, 130, 246, 0.08)',  border: '#3b82f6' }, // blue
-  { bg: 'rgba(34, 197, 94, 0.08)',   border: '#22c55e' }, // green
-  { bg: 'rgba(168, 85, 247, 0.08)',  border: '#a855f7' }, // purple
-  { bg: 'rgba(245, 158, 11, 0.10)',  border: '#f59e0b' }, // amber
-  { bg: 'rgba(236, 72, 153, 0.08)',  border: '#ec4899' }, // pink
-  { bg: 'rgba(20, 184, 166, 0.08)',  border: '#14b8a6' }, // teal
-];
+const STAGE_NEUTRAL = { bg: 'rgba(100, 116, 139, 0.06)', border: '#94a3b8' };
+const STAGE_PALETTE = [STAGE_NEUTRAL];
 
 function ResultCell(params: ICellRendererParams) {
   const v = params.value;
