@@ -1,5 +1,319 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-16T00:00:00.000Z",
-  "domains": []
+  "updatedAt": "2026-04-17T04:27:39.204Z",
+  "domains": [
+    {
+      "id": "audit-who",
+      "name": "입력·수정자",
+      "description": "감사 로그 - 누가 레코드를 등록·변경했는가",
+      "members": [
+        "BAD_CAUSE_BY",
+        "CHECK_BY",
+        "ENTER_BY",
+        "ISSUE_COMPARE_BY",
+        "LAST_ISSUE_COMPARE_BY",
+        "LAST_MODIFY_BY",
+        "MADE_BY",
+        "RECEIPT_COMPARE_BY",
+        "REPAIR_BY",
+        "RUN_NO_CHANGED_BY",
+        "SCAN_BY",
+        "UNLOCK_BY"
+      ],
+      "excludeFromPrompt": true
+    },
+    {
+      "id": "audit-when",
+      "name": "입력·수정 일시",
+      "description": "감사 로그 - 언제 등록·변경됐는가",
+      "members": [
+        "ACQUISITION_DATE",
+        "ACTION_DATE",
+        "ACTUAL_DATE",
+        "AOI_SAMPLE_CHECK_DATE",
+        "ARRIVAL_DATE",
+        "BACKUPBLOCK_CHECK_DATE",
+        "BAKING_END_DATE",
+        "BAKING_START_DATE",
+        "CALL_DATE",
+        "CCS_DATE",
+        "CCS_END_DATE",
+        "CHANGE_DATE",
+        "CHECK_DATE",
+        "CLOSE_DATE",
+        "COMPANY_ENTER_DATE",
+        "COMPANY_WITHDRAW_DATE",
+        "CONFIRM_DATE",
+        "CREATED_AT",
+        "DEHUMIDIFY_END_DATE",
+        "DEHUMIDIFY_START_DATE",
+        "DESTROY_DATE",
+        "END_DATE",
+        "ENTER_DATE",
+        "FEEDING_DATE",
+        "FINAL_INSPECT_DATE",
+        "FIRST_LINE_INPUT_DATE",
+        "FIXTURE_CHECK_DATE",
+        "FULL_CHECK_DATE",
+        "GATHER_DATE",
+        "ICT_CHECK_DATE",
+        "INPUT_DATE",
+        "INPUT_SCAN_DATE",
+        "INSPECTION_DATE",
+        "INSPECT_DATE",
+        "INTERFACE_DATE",
+        "IO_DATE",
+        "ISSUE_COMPARE_DATE",
+        "ISSUE_DATE",
+        "ISSUE_RETURN_DATE",
+        "KITTING_DATE",
+        "LAST_ACTUAL_DATE",
+        "LAST_ENTER_DATE",
+        "LAST_ICT_CHECK_DATE",
+        "LAST_ISSUE_COMPARE_DATE",
+        "LAST_LINE_STATUS_CHANGE_DATE",
+        "LAST_MODIFY_DATE",
+        "LAST_PASSWORD_DATE",
+        "LAST_SOLDER_CHECK_DATE",
+        "LAST_SPEC_CHECK_DATE",
+        "LCR_CHECK_DATE",
+        "LINE_WORKER_CHANGE_DATE",
+        "LOG_DATE",
+        "LOT_DIVIDE_DATE",
+        "LV_SAMPLE_CHECK_DATE",
+        "MANUFACTURE_DATE",
+        "MASK_CHECK_DATE",
+        "MIX_END_DATE",
+        "MIX_START_DATE",
+        "MSL_OPEN_DATE",
+        "NOZZLE_CHECK_DATE",
+        "NSNP_START_DATE",
+        "OCCURRED_AT",
+        "OLD_ISSUE_DATE",
+        "OPEN_DATE",
+        "OUTPUT_SCAN_DATE",
+        "OUT_DATE",
+        "PCB_COATING_DATE",
+        "PCB_SCAN_DATE",
+        "PLAN_DATE",
+        "PROFILE_CHECK_DATE",
+        "QC_DATE",
+        "RECEIPT_COMPARE_DATE",
+        "RECEIPT_DATE",
+        "REEL_DESTROY_DATE",
+        "REEL_DIVIDE_COMPARE_DATE",
+        "REEL_MERGE_DATE",
+        "REFLOW_CHECK_DATE",
+        "REFREEZE_END_DATE",
+        "REFREEZE_START_DATE",
+        "REPAIR_DATE",
+        "RETURN_DATE",
+        "RETURN_REQUEST_DATE",
+        "ROMWRITE_CHECK_DATE",
+        "ROUTER_CHECK_DATE",
+        "RUN_DATE",
+        "SAMPLE_CHECK_DATE",
+        "SAMPLE_ICT_CHECK_DATE",
+        "SAVE_DATE",
+        "SCAN_DATE",
+        "SOLDER_CHECK_DATE",
+        "SPEC_CHECK_DATE",
+        "SQUEEZE_CHECK_DATE",
+        "SQUEZE_CHECK_DATE",
+        "START_DATE",
+        "TILT_SAMPLE_CHECK_DATE",
+        "TIME_CHECK_DATE",
+        "UNFREEZING_END_DATE",
+        "UNFREEZING_START_DATE",
+        "UNLOCK_DATE",
+        "VACUUM_END_DATE",
+        "VACUUM_START_DATE",
+        "VALID_DATE",
+        "VISCOSITY_END_DATE",
+        "VISCOSITY_START_DATE",
+        "WORKING_END_DATE",
+        "WORKING_START_DATE",
+        "XRAY_CHECK_DATE"
+      ],
+      "excludeFromPrompt": true
+    },
+    {
+      "id": "system-org",
+      "name": "조직 ID",
+      "description": "MES 멀티 조직 구분",
+      "members": [
+        "ORGANIZATION_ID"
+      ],
+      "excludeFromPrompt": true
+    },
+    {
+      "id": "bad-reason-code",
+      "name": "BAD REASON CODE",
+      "description": "F_GET_BASECODE('BAD REASON CODE', ...) 로 해석",
+      "members": [
+        "BAD_REASON_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "BAD REASON CODE"
+      }
+    },
+    {
+      "id": "company-code",
+      "name": "COMPANY CODE",
+      "description": "F_GET_BASECODE('COMPANY CODE', ...) 로 해석",
+      "members": [
+        "COMPANY_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "COMPANY CODE"
+      }
+    },
+    {
+      "id": "department-code",
+      "name": "DEPARTMENT CODE",
+      "description": "F_GET_BASECODE('DEPARTMENT CODE', ...) 로 해석",
+      "members": [
+        "DEPARTMENT_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "DEPARTMENT CODE"
+      }
+    },
+    {
+      "id": "dest-workstage-code",
+      "name": "DEST WORKSTAGE CODE",
+      "description": "F_GET_BASECODE('DEST WORKSTAGE CODE', ...) 로 해석",
+      "members": [
+        "DEST_WORKSTAGE_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "DEST WORKSTAGE CODE"
+      }
+    },
+    {
+      "id": "factory-code",
+      "name": "FACTORY CODE",
+      "description": "F_GET_BASECODE('FACTORY CODE', ...) 로 해석",
+      "members": [
+        "FACTORY_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "FACTORY CODE"
+      }
+    },
+    {
+      "id": "line-code",
+      "name": "LINE CODE",
+      "description": "F_GET_BASECODE('LINE CODE', ...) 로 해석",
+      "members": [
+        "LINE_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "LINE CODE"
+      }
+    },
+    {
+      "id": "line-status-code",
+      "name": "LINE STATUS CODE",
+      "description": "F_GET_BASECODE('LINE STATUS CODE', ...) 로 해석",
+      "members": [
+        "LINE_STATUS_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "LINE STATUS CODE"
+      }
+    },
+    {
+      "id": "location-code",
+      "name": "LOCATION CODE",
+      "description": "F_GET_BASECODE('LOCATION CODE', ...) 로 해석",
+      "members": [
+        "LOCATION_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "LOCATION CODE"
+      }
+    },
+    {
+      "id": "machine-status-code",
+      "name": "MACHINE STATUS CODE",
+      "description": "F_GET_BASECODE('MACHINE STATUS CODE', ...) 로 해석",
+      "members": [
+        "MACHINE_STATUS_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "MACHINE STATUS CODE"
+      }
+    },
+    {
+      "id": "nation-code",
+      "name": "NATION CODE",
+      "description": "F_GET_BASECODE('NATION CODE', ...) 로 해석",
+      "members": [
+        "NATION_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "NATION CODE"
+      }
+    },
+    {
+      "id": "repair-result-code",
+      "name": "REPAIR RESULT CODE",
+      "description": "F_GET_BASECODE('REPAIR RESULT CODE', ...) 로 해석",
+      "members": [
+        "REPAIR_RESULT_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "REPAIR RESULT CODE"
+      }
+    },
+    {
+      "id": "shift-code",
+      "name": "SHIFT CODE",
+      "description": "F_GET_BASECODE('SHIFT CODE', ...) 로 해석",
+      "members": [
+        "SHIFT_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "SHIFT CODE"
+      }
+    },
+    {
+      "id": "site-code",
+      "name": "SITE CODE",
+      "description": "F_GET_BASECODE('SITE CODE', ...) 로 해석",
+      "members": [
+        "SITE_CODE"
+      ],
+      "priority": "common",
+      "decode": {
+        "kind": "basecode",
+        "codeType": "SITE CODE"
+      }
+    }
+  ]
 }

@@ -1,5 +1,3731 @@
 {
   "version": 1,
-  "refreshedAt": "2026-04-16T00:00:00.000Z",
-  "codeTypes": []
+  "refreshedAt": "2026-04-17T04:27:39.200Z",
+  "codeTypes": [
+    {
+      "codeType": "A",
+      "sampleValues": [
+        "In Line"
+      ]
+    },
+    {
+      "codeType": "ACCOUNT CODE",
+      "sampleValues": [
+        "101"
+      ]
+    },
+    {
+      "codeType": "ACQUISITION TYPE",
+      "sampleValues": [
+        "A",
+        "P",
+        "R",
+        "S",
+        "Z"
+      ]
+    },
+    {
+      "codeType": "ACTION CODE",
+      "sampleValues": [
+        "C",
+        "P",
+        "W"
+      ]
+    },
+    {
+      "codeType": "ACTIVE YN",
+      "sampleValues": [
+        "N",
+        "P",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "ALIGNMENT",
+      "sampleValues": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    {
+      "codeType": "ARRAY TYPE",
+      "sampleValues": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "codeType": "ARRIVAL LOCATION CODE",
+      "sampleValues": [
+        "HUB",
+        "INSIDE"
+      ]
+    },
+    {
+      "codeType": "ARRIVAL STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "ARRIVAL TYPE",
+      "sampleValues": [
+        "A",
+        "D",
+        "R"
+      ]
+    },
+    {
+      "codeType": "ASSY EXP YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "ASSY EXPLOSION YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "ATTR CODE",
+      "sampleValues": [
+        "ETC",
+        "MODEL_ID",
+        "PBA_PN",
+        "SOLUM_MODEL"
+      ]
+    },
+    {
+      "codeType": "AUTO DISTRIBUTE YN",
+      "sampleValues": [
+        "A",
+        "M"
+      ]
+    },
+    {
+      "codeType": "AUTO ISSUE PLAN YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "AUTO ISSUE YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "AUTO RECEIPT YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "B",
+      "sampleValues": [
+        "0 km"
+      ]
+    },
+    {
+      "codeType": "BAD CAUSE BY",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ]
+    },
+    {
+      "codeType": "BAD PHENOMENON",
+      "sampleValues": [
+        "ATV",
+        "AUDIO LOOPBACK",
+        "AX POWER ON",
+        "BAD ASSEMBLY",
+        "BLE CHECK"
+      ]
+    },
+    {
+      "codeType": "BAD RATE CONTROL",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "BAD REASON CODE",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    {
+      "codeType": "BARCODE STATUS",
+      "sampleValues": [
+        "H",
+        "N"
+      ]
+    },
+    {
+      "codeType": "BARCODE TYPE",
+      "sampleValues": [
+        "1",
+        "102",
+        "104",
+        "106",
+        "108"
+      ]
+    },
+    {
+      "codeType": "BASIS CURRENCY",
+      "sampleValues": [
+        "CNY",
+        "HKD",
+        "JPY",
+        "KRW",
+        "USD"
+      ]
+    },
+    {
+      "codeType": "BILL COLLECTION STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "BILL COLLECTION TYPE",
+      "sampleValues": [
+        "C",
+        "P",
+        "W"
+      ]
+    },
+    {
+      "codeType": "BOOK TYPE",
+      "sampleValues": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "codeType": "BRING IN YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "BUFFER TYPE",
+      "sampleValues": [
+        "M",
+        "N",
+        "S"
+      ]
+    },
+    {
+      "codeType": "BUSINESS CATEGORY",
+      "sampleValues": [
+        "L",
+        "M",
+        "P",
+        "S",
+        "W"
+      ]
+    },
+    {
+      "codeType": "BUSINESS STATUS",
+      "sampleValues": [
+        "A",
+        "D"
+      ]
+    },
+    {
+      "codeType": "BUSINESS TYPE",
+      "sampleValues": [
+        "C",
+        "D",
+        "M",
+        "O",
+        "S"
+      ]
+    },
+    {
+      "codeType": "BUYER DIVISION",
+      "sampleValues": [
+        "D",
+        "H",
+        "R",
+        "V"
+      ]
+    },
+    {
+      "codeType": "Bosch ",
+      "sampleValues": [
+        "Bosch "
+      ]
+    },
+    {
+      "codeType": "C",
+      "sampleValues": [
+        "CS1000"
+      ]
+    },
+    {
+      "codeType": "CABINET STATUS",
+      "sampleValues": [
+        "CLOSE",
+        "NEW",
+        "OPEN"
+      ]
+    },
+    {
+      "codeType": "CABLE STATUS",
+      "sampleValues": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    {
+      "codeType": "CABLE TXN TYPE",
+      "sampleValues": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    {
+      "codeType": "CAPACITY UOM",
+      "sampleValues": [
+        "KG",
+        "ST"
+      ]
+    },
+    {
+      "codeType": "CARRIER SIZE",
+      "sampleValues": [
+        "1",
+        "12",
+        "2",
+        "4",
+        "5"
+      ]
+    },
+    {
+      "codeType": "CARRYING OUT DIVISION",
+      "sampleValues": [
+        "A",
+        "E",
+        "I",
+        "J",
+        "M"
+      ]
+    },
+    {
+      "codeType": "CARRYING OUT TYPE",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ]
+    },
+    {
+      "codeType": "CART DIVISION",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CART GROUP",
+      "sampleValues": [
+        "L0",
+        "MP",
+        "PD",
+        "Z1",
+        "Z2"
+      ]
+    },
+    {
+      "codeType": "CART SIZE",
+      "sampleValues": [
+        "D",
+        "X",
+        "Z"
+      ]
+    },
+    {
+      "codeType": "CART TYPE",
+      "sampleValues": [
+        "B",
+        "T"
+      ]
+    },
+    {
+      "codeType": "CART USE STATUS",
+      "sampleValues": [
+        "L",
+        "S",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CASH IO REVERSE",
+      "sampleValues": [
+        "C",
+        "N",
+        "T"
+      ]
+    },
+    {
+      "codeType": "CASH IO TYPE",
+      "sampleValues": [
+        "I",
+        "O",
+        "P",
+        "S"
+      ]
+    },
+    {
+      "codeType": "CCS YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CHECK INOUT",
+      "sampleValues": [
+        "I",
+        "O"
+      ]
+    },
+    {
+      "codeType": "CHECK RESULT",
+      "sampleValues": [
+        "NG",
+        "OK",
+        "PASS"
+      ]
+    },
+    {
+      "codeType": "CHECK STATUS",
+      "sampleValues": [
+        "C",
+        "E",
+        "P",
+        "R",
+        "W"
+      ]
+    },
+    {
+      "codeType": "CHECK TYPE",
+      "sampleValues": [
+        "1",
+        "2",
+        "2M",
+        "3",
+        "4"
+      ]
+    },
+    {
+      "codeType": "CHECK VALUE",
+      "sampleValues": [
+        "NG",
+        "OK"
+      ]
+    },
+    {
+      "codeType": "CHECK YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CHILD EMS UOM",
+      "sampleValues": [
+        "G",
+        "KEA",
+        "KG"
+      ]
+    },
+    {
+      "codeType": "CHILD ITEM ITEM TYPE",
+      "sampleValues": [
+        "M",
+        "T",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CHILD ITEM LINE TYPE",
+      "sampleValues": [
+        "A",
+        "D",
+        "F",
+        "G",
+        "L"
+      ]
+    },
+    {
+      "codeType": "CHILD ITEM TYPE",
+      "sampleValues": [
+        "M",
+        "T",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CHILD LINE TYPE",
+      "sampleValues": [
+        "A",
+        "D",
+        "F",
+        "G",
+        "L"
+      ]
+    },
+    {
+      "codeType": "CHLD LINE TYPE",
+      "sampleValues": [
+        "N"
+      ]
+    },
+    {
+      "codeType": "CLOSING FLAG",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "COLLECT DEFICIT",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "COLLECT STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "COLLECT TYPE",
+      "sampleValues": [
+        "A"
+      ]
+    },
+    {
+      "codeType": "COLLECTION CYCLE",
+      "sampleValues": [
+        "C",
+        "L",
+        "M",
+        "T",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "COLLECTION TYPE",
+      "sampleValues": [
+        "C",
+        "E",
+        "Z"
+      ]
+    },
+    {
+      "codeType": "COLUMN FORMAT",
+      "sampleValues": [
+        "#",
+        "##0",
+        "#",
+        "##0.00",
+        "#"
+      ]
+    },
+    {
+      "codeType": "COMBINATION YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "COMM_BAUDRATES",
+      "sampleValues": [
+        "115200",
+        "19200",
+        "9600",
+        "NONE"
+      ]
+    },
+    {
+      "codeType": "COMM_DATABITS",
+      "sampleValues": [
+        "7",
+        "8",
+        "NONE"
+      ]
+    },
+    {
+      "codeType": "COMM_PARITYBITS",
+      "sampleValues": [
+        "1",
+        "N"
+      ]
+    },
+    {
+      "codeType": "COMM_PORTS",
+      "sampleValues": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13"
+      ]
+    },
+    {
+      "codeType": "COMM_STOPBITS",
+      "sampleValues": [
+        "1",
+        "N"
+      ]
+    },
+    {
+      "codeType": "COMPANY CODE",
+      "sampleValues": [
+        "*",
+        "EB4N",
+        "PCSZ"
+      ]
+    },
+    {
+      "codeType": "COMPANY NO",
+      "sampleValues": [
+        "0"
+      ]
+    },
+    {
+      "codeType": "COMPARISON STATUS",
+      "sampleValues": [
+        "A",
+        "C",
+        "D",
+        "M"
+      ]
+    },
+    {
+      "codeType": "COMPLAINTS DIVISION",
+      "sampleValues": [
+        "C",
+        "N",
+        "P",
+        "R",
+        "W"
+      ]
+    },
+    {
+      "codeType": "COMPLAINTS GRADE",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ]
+    },
+    {
+      "codeType": "COMPLETE FLAG",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "COMPLETE YN",
+      "sampleValues": [
+        "A",
+        "C",
+        "N",
+        "W",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CONFIRM STATUS",
+      "sampleValues": [
+        "N",
+        "W",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CONFIRM YN",
+      "sampleValues": [
+        "N",
+        "W",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CONTENT TYPE",
+      "sampleValues": [
+        "M",
+        "S"
+      ]
+    },
+    {
+      "codeType": "COST ELEMENT",
+      "sampleValues": [
+        "D",
+        "DE",
+        "DL",
+        "DM",
+        "ID"
+      ]
+    },
+    {
+      "codeType": "COST WORK CENTER DIV",
+      "sampleValues": [
+        "C",
+        "W"
+      ]
+    },
+    {
+      "codeType": "CREDIT GRADE",
+      "sampleValues": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    {
+      "codeType": "CURRENCY",
+      "sampleValues": [
+        "CNY",
+        "HKD",
+        "JPY",
+        "KRW",
+        "MXN"
+      ]
+    },
+    {
+      "codeType": "CURRENTLY IN USE",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CUSTOMER CLOSE YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "CUSTOMS CODE",
+      "sampleValues": [
+        "1213940119",
+        "4200",
+        "5307"
+      ]
+    },
+    {
+      "codeType": "CUSTOMS PORT",
+      "sampleValues": [
+        "0100",
+        "0200",
+        "0201",
+        "0202",
+        "0207"
+      ]
+    },
+    {
+      "codeType": "D",
+      "sampleValues": [
+        "CS10000",
+        "데스크탑"
+      ]
+    },
+    {
+      "codeType": "DATA TYPE",
+      "sampleValues": [
+        "DATE",
+        "NUMBER",
+        "STRING"
+      ]
+    },
+    {
+      "codeType": "DEFAULT LOCATION CODE",
+      "sampleValues": [
+        "L1",
+        "LOCATION"
+      ]
+    },
+    {
+      "codeType": "DEFAULT RECEIVER CODE",
+      "sampleValues": [
+        "RECEIVER"
+      ]
+    },
+    {
+      "codeType": "DEFAULT WAREHOUSE CODE",
+      "sampleValues": [
+        "W1",
+        "WAREHOUSE"
+      ]
+    },
+    {
+      "codeType": "DEFECT TYPE",
+      "sampleValues": [
+        "M",
+        "P"
+      ]
+    },
+    {
+      "codeType": "DELIVERY",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "DELIVERY LOCATION CODE",
+      "sampleValues": [
+        "G01",
+        "G02",
+        "G03"
+      ]
+    },
+    {
+      "codeType": "DELIVERY METHOD",
+      "sampleValues": [
+        "A",
+        "C",
+        "S",
+        "T"
+      ]
+    },
+    {
+      "codeType": "DELIVERY PLACE",
+      "sampleValues": [
+        "A",
+        "FAC-A",
+        "FAC-B"
+      ]
+    },
+    {
+      "codeType": "DEPARTMENT CODE",
+      "sampleValues": [
+        "G",
+        "J",
+        "K",
+        "S"
+      ]
+    },
+    {
+      "codeType": "DEST WORKSTAGE CODE",
+      "sampleValues": [
+        "L001"
+      ]
+    },
+    {
+      "codeType": "DESTROY REASON CODE",
+      "sampleValues": [
+        "BAD1",
+        "BAD3"
+      ]
+    },
+    {
+      "codeType": "DESTROY REASON CODE ",
+      "sampleValues": [
+        "BAD2"
+      ]
+    },
+    {
+      "codeType": "DETECT LOCATION",
+      "sampleValues": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    {
+      "codeType": "DIRECT YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "DISTRIBUTE TYPE",
+      "sampleValues": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "codeType": "DIV",
+      "sampleValues": [
+        "MATERIAL",
+        "MOLD",
+        "SUBMAT"
+      ]
+    },
+    {
+      "codeType": "DOCUMENT ATTACH STATUS",
+      "sampleValues": [
+        "C",
+        "D",
+        "N"
+      ]
+    },
+    {
+      "codeType": "DOCUMENT EXTENSION",
+      "sampleValues": [
+        "DOC",
+        "TXT"
+      ]
+    },
+    {
+      "codeType": "DOCUMENT FORMAT",
+      "sampleValues": [
+        "DOC",
+        "HWP",
+        "PPT",
+        "TXT",
+        "XLS"
+      ]
+    },
+    {
+      "codeType": "DOCUMENT GROUP",
+      "sampleValues": [
+        "NEWS",
+        "REPORT"
+      ]
+    },
+    {
+      "codeType": "DRAWING DIVISION",
+      "sampleValues": [
+        "A",
+        "B",
+        "M",
+        "Q"
+      ]
+    },
+    {
+      "codeType": "DY",
+      "sampleValues": [
+        "DY"
+      ]
+    },
+    {
+      "codeType": "E",
+      "sampleValues": [
+        "ETC"
+      ]
+    },
+    {
+      "codeType": "ECO DIVISION",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    {
+      "codeType": "ECO REASON CODE",
+      "sampleValues": [
+        "C",
+        "I",
+        "P"
+      ]
+    },
+    {
+      "codeType": "ECO STATUS",
+      "sampleValues": [
+        "C",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "ECO TYPE",
+      "sampleValues": [
+        "C",
+        "D",
+        "I",
+        "M",
+        "R"
+      ]
+    },
+    {
+      "codeType": "EDITMASK",
+      "sampleValues": [
+        "#",
+        "##0",
+        "#",
+        "##0.00",
+        "#"
+      ]
+    },
+    {
+      "codeType": "EMS CHANGE TITLE",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "EMS CHANGE TYPE",
+      "sampleValues": [
+        "01",
+        "02",
+        "11",
+        "12",
+        "13"
+      ]
+    },
+    {
+      "codeType": "EMS IE TYPE",
+      "sampleValues": [
+        "E",
+        "I"
+      ]
+    },
+    {
+      "codeType": "EQUIP LOC",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "Z"
+      ]
+    },
+    {
+      "codeType": "EQUIPMENT STATUS",
+      "sampleValues": [
+        "B",
+        "C",
+        "N",
+        "S"
+      ]
+    },
+    {
+      "codeType": "ES ITEM TYPE",
+      "sampleValues": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    {
+      "codeType": "EXCEPTION REASON",
+      "sampleValues": [
+        "E",
+        "S"
+      ]
+    },
+    {
+      "codeType": "FACTORY CODE",
+      "sampleValues": [
+        "H"
+      ]
+    },
+    {
+      "codeType": "FEEDER NG REASON",
+      "sampleValues": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    {
+      "codeType": "FG ISSUE BAR TYPE",
+      "sampleValues": [
+        "I",
+        "P"
+      ]
+    },
+    {
+      "codeType": "FOLDER STATUS",
+      "sampleValues": [
+        "CLOSE",
+        "NEW",
+        "OPEN"
+      ]
+    },
+    {
+      "codeType": "FONT WEIGHT",
+      "sampleValues": [
+        "400",
+        "700"
+      ]
+    },
+    {
+      "codeType": "FOOLPROOF",
+      "sampleValues": [
+        "W182",
+        "W187"
+      ]
+    },
+    {
+      "codeType": "FOREIGN SALE CURRENCY",
+      "sampleValues": [
+        "USD"
+      ]
+    },
+    {
+      "codeType": "FPCB",
+      "sampleValues": [
+        "1"
+      ]
+    },
+    {
+      "codeType": "FQC INSPECT HANDLING",
+      "sampleValues": [
+        "D",
+        "R",
+        "U",
+        "W"
+      ]
+    },
+    {
+      "codeType": "FQC INSPECT RESULT",
+      "sampleValues": [
+        "P",
+        "R",
+        "W"
+      ]
+    },
+    {
+      "codeType": "FQC STATUS",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "FWDN CODE",
+      "sampleValues": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5"
+      ]
+    },
+    {
+      "codeType": "GEN SUB MFS YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "GOODS CLASS",
+      "sampleValues": [
+        "B",
+        "D",
+        "H",
+        "J",
+        "L"
+      ]
+    },
+    {
+      "codeType": "GOODS DELIVERY TYPE",
+      "sampleValues": [
+        "D",
+        "G",
+        "L"
+      ]
+    },
+    {
+      "codeType": "GOODS DEPOSIT METHOD",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "GOODS STATUS",
+      "sampleValues": [
+        "B",
+        "G"
+      ]
+    },
+    {
+      "codeType": "GOODS TYPE",
+      "sampleValues": [
+        "A",
+        "I",
+        "P"
+      ]
+    },
+    {
+      "codeType": "GOODS UOM",
+      "sampleValues": [
+        "EA",
+        "ST"
+      ]
+    },
+    {
+      "codeType": "GRADE",
+      "sampleValues": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    {
+      "codeType": "HLDS",
+      "sampleValues": [
+        "HLDS"
+      ]
+    },
+    {
+      "codeType": "HOLIDAY YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "IMAGE FORMAT",
+      "sampleValues": [
+        "BMP",
+        "DWG",
+        "GIF",
+        "JPG",
+        "PDF"
+      ]
+    },
+    {
+      "codeType": "IMPORT MODE",
+      "sampleValues": [
+        "*"
+      ]
+    },
+    {
+      "codeType": "IMPUTED CENTER",
+      "sampleValues": [
+        "C",
+        "W"
+      ]
+    },
+    {
+      "codeType": "INCIDENTAL EXPENSE CODE",
+      "sampleValues": [
+        "C&F",
+        "C&I",
+        "CIF",
+        "FOB"
+      ]
+    },
+    {
+      "codeType": "INITIA VALUE TYPE",
+      "sampleValues": [
+        "FUNCTION",
+        "NORMAL",
+        "SEQUENCE",
+        "SQL"
+      ]
+    },
+    {
+      "codeType": "INITIAL VALUE",
+      "sampleValues": [
+        "SYSDATE",
+        "SYSMONTH"
+      ]
+    },
+    {
+      "codeType": "INITIAL VALUE TYPE",
+      "sampleValues": [
+        "FUNCTION",
+        "NORMAL",
+        "SEQUENCE",
+        "SQL"
+      ]
+    },
+    {
+      "codeType": "INSPECT HANDLING",
+      "sampleValues": [
+        "D",
+        "U"
+      ]
+    },
+    {
+      "codeType": "INSPECT IQC STRICT DGREE",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ]
+    },
+    {
+      "codeType": "INSPECT METHOD",
+      "sampleValues": [
+        "A",
+        "R",
+        "S"
+      ]
+    },
+    {
+      "codeType": "INSPECT RESULT",
+      "sampleValues": [
+        "P",
+        "R",
+        "U",
+        "W"
+      ]
+    },
+    {
+      "codeType": "INSPECT RULE",
+      "sampleValues": [
+        "I",
+        "P"
+      ]
+    },
+    {
+      "codeType": "INSPECT STRICT DGREE",
+      "sampleValues": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "codeType": "INSPECT TYPE",
+      "sampleValues": [
+        "AOI",
+        "FUNCTION",
+        "SPI"
+      ]
+    },
+    {
+      "codeType": "INSPECTION ITEM TYPE",
+      "sampleValues": [
+        "D",
+        "R"
+      ]
+    },
+    {
+      "codeType": "INSPECTION TYPE",
+      "sampleValues": [
+        "X",
+        "Y",
+        "Z"
+      ]
+    },
+    {
+      "codeType": "INTERFACE CODE",
+      "sampleValues": [
+        "A",
+        "C",
+        "M",
+        "R",
+        "S"
+      ]
+    },
+    {
+      "codeType": "INTERFACE CYCLE",
+      "sampleValues": [
+        "D",
+        "M",
+        "T",
+        "W"
+      ]
+    },
+    {
+      "codeType": "INTERFACE REQUEST YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "INTERFACE STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "INTERFACE TYPE",
+      "sampleValues": [
+        "A",
+        "M"
+      ]
+    },
+    {
+      "codeType": "INTERFACE YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "INTERLOCK CHECK TYPE",
+      "sampleValues": [
+        "AOI_EXISTS_CHECK",
+        "AOI_NG_COUNT_CHECK",
+        "AOI_NG_EXISTS_CHECK",
+        "AOI_NG_EXISTS_CHECK_TB",
+        "AOI_OK_EXISTS_CHECK"
+      ]
+    },
+    {
+      "codeType": "INVENTORY DIVISION",
+      "sampleValues": [
+        "A",
+        "M",
+        "P"
+      ]
+    },
+    {
+      "codeType": "INVENTORY HOLD",
+      "sampleValues": [
+        "C",
+        "N",
+        "R",
+        "W",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "INVENTORY STATUS",
+      "sampleValues": [
+        "B",
+        "G"
+      ]
+    },
+    {
+      "codeType": "INVENTORY TYPE",
+      "sampleValues": [
+        "P",
+        "S"
+      ]
+    },
+    {
+      "codeType": "INVOICE ACCOUNT",
+      "sampleValues": [
+        "M001"
+      ]
+    },
+    {
+      "codeType": "INVOICE DEFICIT",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "INVOICE OPEN YN",
+      "sampleValues": [
+        "N",
+        "R",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "INVOICE STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "IO DEFICIT",
+      "sampleValues": [
+        "I",
+        "O"
+      ]
+    },
+    {
+      "codeType": "IQC INSPECT HANDLING",
+      "sampleValues": [
+        "*",
+        "A",
+        "C",
+        "E",
+        "R"
+      ]
+    },
+    {
+      "codeType": "IS LAST YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "ISSUE ACCOUNT",
+      "sampleValues": [
+        "M001",
+        "M002",
+        "M003",
+        "M004",
+        "M005"
+      ]
+    },
+    {
+      "codeType": "ISSUE COMPARE YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "ISSUE DEFICIT",
+      "sampleValues": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "codeType": "ISSUE DIVISION",
+      "sampleValues": [
+        "P"
+      ]
+    },
+    {
+      "codeType": "ISSUE IMPROVMENT YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "ISSUE STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "ISSUE TYPE",
+      "sampleValues": [
+        "A",
+        "D",
+        "E",
+        "I",
+        "N"
+      ]
+    },
+    {
+      "codeType": "ITEM 1LEVEL",
+      "sampleValues": [
+        "E",
+        "X"
+      ]
+    },
+    {
+      "codeType": "ITEM 2LEVEL",
+      "sampleValues": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "codeType": "ITEM 3LEVEL",
+      "sampleValues": [
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    {
+      "codeType": "ITEM 4LEVEL",
+      "sampleValues": [
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "codeType": "ITEM CLASS",
+      "sampleValues": [
+        "*",
+        "ASSY AUTO MOTIVE LAMP MODULE",
+        "ASSY CHIP-BOTTOM",
+        "ASSY CHIP-TOP",
+        "BAG-PE"
+      ]
+    },
+    {
+      "codeType": "ITEM CLASS TYPE",
+      "sampleValues": [
+        "M",
+        "P"
+      ]
+    },
+    {
+      "codeType": "ITEM DIVISION",
+      "sampleValues": [
+        "F",
+        "R",
+        "W"
+      ]
+    },
+    {
+      "codeType": "ITEM STATUS",
+      "sampleValues": [
+        "B",
+        "G"
+      ]
+    },
+    {
+      "codeType": "ITEM TYPE",
+      "sampleValues": [
+        "M",
+        "S",
+        "T",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "ITEM UOM",
+      "sampleValues": [
+        "EA",
+        "G",
+        "KG",
+        "KP",
+        "PC"
+      ]
+    },
+    {
+      "codeType": "JIG CHECK STATUS",
+      "sampleValues": [
+        "N",
+        "P",
+        "R"
+      ]
+    },
+    {
+      "codeType": "JIG ISSUE ACCOUNT",
+      "sampleValues": [
+        "N"
+      ]
+    },
+    {
+      "codeType": "JIG STATUS",
+      "sampleValues": [
+        "B",
+        "P",
+        "S",
+        "T",
+        "X"
+      ]
+    },
+    {
+      "codeType": "JIG TYPE",
+      "sampleValues": [
+        "B",
+        "C",
+        "F",
+        "H",
+        "M"
+      ]
+    },
+    {
+      "codeType": "JUDGMENT",
+      "sampleValues": [
+        "F",
+        "G",
+        "P",
+        "W"
+      ]
+    },
+    {
+      "codeType": "KPI GROUP",
+      "sampleValues": [
+        "LOGISTIC",
+        "MATERIAL",
+        "PRODUCTION",
+        "QUALITY"
+      ]
+    },
+    {
+      "codeType": "Kefico",
+      "sampleValues": [
+        "Kefico"
+      ]
+    },
+    {
+      "codeType": "LABEL FORM TYPE",
+      "sampleValues": [
+        "B",
+        "P",
+        "R",
+        "S"
+      ]
+    },
+    {
+      "codeType": "LABEL STEP",
+      "sampleValues": [
+        "BARCODE",
+        "COMPANY_CODE",
+        "COUNTRY_CODE",
+        "CUSTOMER_MODEL_NAME",
+        "CUSTOMER_NAME"
+      ]
+    },
+    {
+      "codeType": "LABEL TYPE",
+      "sampleValues": [
+        "B",
+        "N",
+        "R"
+      ]
+    },
+    {
+      "codeType": "LANGUAGE",
+      "sampleValues": [
+        "C",
+        "E",
+        "K"
+      ]
+    },
+    {
+      "codeType": "LAST FLAG",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "LG IVI",
+      "sampleValues": [
+        "LG IVI"
+      ]
+    },
+    {
+      "codeType": "LG VC",
+      "sampleValues": [
+        "LG VC"
+      ]
+    },
+    {
+      "codeType": "LG이노텍",
+      "sampleValues": [
+        "LG이노텍"
+      ]
+    },
+    {
+      "codeType": "LINE CODE",
+      "sampleValues": [
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "codeType": "LINE DIVISION",
+      "sampleValues": [
+        "A",
+        "D",
+        "E"
+      ]
+    },
+    {
+      "codeType": "LINE ONOFF TYPE",
+      "sampleValues": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    {
+      "codeType": "LINE PRODUCT DIVISION",
+      "sampleValues": [
+        "ASSEMBLE",
+        "COMMON",
+        "INSPECT",
+        "PBA",
+        "REPAIR"
+      ]
+    },
+    {
+      "codeType": "LINE STATUS",
+      "sampleValues": [
+        "N",
+        "S"
+      ]
+    },
+    {
+      "codeType": "LINE STATUS CODE",
+      "sampleValues": [
+        "N",
+        "STOP001",
+        "STOP002",
+        "STOP003",
+        "STOP004"
+      ]
+    },
+    {
+      "codeType": "LINE TYPE",
+      "sampleValues": [
+        "A",
+        "D",
+        "F",
+        "G",
+        "L"
+      ]
+    },
+    {
+      "codeType": "LINK TYPE",
+      "sampleValues": [
+        "C",
+        "D",
+        "P",
+        "PS",
+        "S"
+      ]
+    },
+    {
+      "codeType": "LOCAL CURRENCY",
+      "sampleValues": [
+        "KRW"
+      ]
+    },
+    {
+      "codeType": "LOCATION CODE",
+      "sampleValues": [
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05"
+      ]
+    },
+    {
+      "codeType": "LONGTERM DELIVERY YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "LOT COMPLETE YN",
+      "sampleValues": [
+        "N",
+        "P",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "LQC BAD REASON CODE",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "LQC INSPECT HANDLING",
+      "sampleValues": [
+        "*",
+        "A",
+        "D",
+        "R",
+        "S"
+      ]
+    },
+    {
+      "codeType": "LQC INSPECT RESULT",
+      "sampleValues": [
+        "P",
+        "R",
+        "U",
+        "W"
+      ]
+    },
+    {
+      "codeType": "MACHINE CARE TYPE",
+      "sampleValues": [
+        "T"
+      ]
+    },
+    {
+      "codeType": "MACHINE CARE YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "MACHINE REPAIR YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "MACHINE STATUS",
+      "sampleValues": [
+        "*",
+        "G",
+        "N",
+        "S"
+      ]
+    },
+    {
+      "codeType": "MACHINE STATUS CODE",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "E",
+        "G"
+      ]
+    },
+    {
+      "codeType": "MACHINE TYPE",
+      "sampleValues": [
+        "AOI",
+        "BAKING",
+        "COATING",
+        "COMCOATING",
+        "DEHUMIDIFY"
+      ]
+    },
+    {
+      "codeType": "MAGAZINE LABEL TYPE",
+      "sampleValues": [
+        "B",
+        "D",
+        "P",
+        "R",
+        "S"
+      ]
+    },
+    {
+      "codeType": "MAGAZINE_STATUS",
+      "sampleValues": [
+        "C",
+        "N",
+        "R"
+      ]
+    },
+    {
+      "codeType": "MAIN ROUTING YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "MAIN VENDOR YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "MAPPING TYPE",
+      "sampleValues": [
+        "ACC_PN",
+        "BOX_SN",
+        "PANNEL_PN",
+        "SMD_PN"
+      ]
+    },
+    {
+      "codeType": "MARKING CONDITION",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "MARKING YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "MATERIAL",
+      "sampleValues": [
+        "PLASTIC",
+        "TC",
+        "WOOD"
+      ]
+    },
+    {
+      "codeType": "MATERIAL COST ELEMENT",
+      "sampleValues": [
+        "A",
+        "M",
+        "X"
+      ]
+    },
+    {
+      "codeType": "MATERIAL LOCATION CODE",
+      "sampleValues": [
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05"
+      ]
+    },
+    {
+      "codeType": "METALMASK_SPEC",
+      "sampleValues": [
+        "0.40",
+        "0.80"
+      ]
+    },
+    {
+      "codeType": "MODEL 1LEVEL",
+      "sampleValues": [
+        "E",
+        "X"
+      ]
+    },
+    {
+      "codeType": "MODEL 2LEVEL",
+      "sampleValues": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "codeType": "MODEL 3LEVEL",
+      "sampleValues": [
+        "0",
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "MODEL 4LEVEL",
+      "sampleValues": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    {
+      "codeType": "MODEL 5LEVEL",
+      "sampleValues": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    {
+      "codeType": "MODEL CLASS",
+      "sampleValues": [
+        "D",
+        "H",
+        "IFPD",
+        "O",
+        "P"
+      ]
+    },
+    {
+      "codeType": "MODEL DELIVERY CODE",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "MODEL DIVISION",
+      "sampleValues": [
+        "B",
+        "F",
+        "M",
+        "P",
+        "S"
+      ]
+    },
+    {
+      "codeType": "MODEL STATUS",
+      "sampleValues": [
+        "R"
+      ]
+    },
+    {
+      "codeType": "MODEL TYPE",
+      "sampleValues": [
+        "*",
+        "F",
+        "W"
+      ]
+    },
+    {
+      "codeType": "MODEL UOM",
+      "sampleValues": [
+        "EA",
+        "KG",
+        "LT",
+        "ST"
+      ]
+    },
+    {
+      "codeType": "MOLD CHECK STATUS",
+      "sampleValues": [
+        "B",
+        "N"
+      ]
+    },
+    {
+      "codeType": "MOLD GROUP",
+      "sampleValues": [
+        "AS",
+        "BLT",
+        "CB",
+        "CD",
+        "CV"
+      ]
+    },
+    {
+      "codeType": "MOLD IN OUT",
+      "sampleValues": [
+        "I",
+        "O"
+      ]
+    },
+    {
+      "codeType": "MOLD ISSUE ACCOUNT",
+      "sampleValues": [
+        "M001",
+        "M002",
+        "M003",
+        "M007",
+        "M010"
+      ]
+    },
+    {
+      "codeType": "MOLD LINE TYPE",
+      "sampleValues": [
+        "D",
+        "F",
+        "G",
+        "P"
+      ]
+    },
+    {
+      "codeType": "MOLD LOCATION CODE",
+      "sampleValues": [
+        "C-03-027",
+        "M01",
+        "M03",
+        "사무실 A",
+        "컨테이너창고"
+      ]
+    },
+    {
+      "codeType": "MOLD LOCATION STATUS",
+      "sampleValues": [
+        "I",
+        "O",
+        "S",
+        "X"
+      ]
+    },
+    {
+      "codeType": "MOLD RENT LOCATION",
+      "sampleValues": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "codeType": "MOLD TYPE",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "M"
+      ]
+    },
+    {
+      "codeType": "MOLD UOM",
+      "sampleValues": [
+        "EA",
+        "KG",
+        "LT",
+        "ST"
+      ]
+    },
+    {
+      "codeType": "MOLD USE STATUS",
+      "sampleValues": [
+        "D",
+        "N",
+        "P",
+        "R",
+        "S"
+      ]
+    },
+    {
+      "codeType": "MOLD WAREHOUSE CODE",
+      "sampleValues": [
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    {
+      "codeType": "MONITOR ITEM",
+      "sampleValues": [
+        "C100",
+        "E100",
+        "M100",
+        "M200",
+        "M300"
+      ]
+    },
+    {
+      "codeType": "MOVIE GROUP",
+      "sampleValues": [
+        "WWS"
+      ]
+    },
+    {
+      "codeType": "MOVIE NAME",
+      "sampleValues": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "codeType": "MSL ACTION CODE",
+      "sampleValues": [
+        "B",
+        "D",
+        "R"
+      ]
+    },
+    {
+      "codeType": "MSL LEVEL",
+      "sampleValues": [
+        "1",
+        "2",
+        "2A",
+        "3",
+        "4"
+      ]
+    },
+    {
+      "codeType": "NATION CODE",
+      "sampleValues": [
+        "ABW",
+        "AFG",
+        "AGO",
+        "AIA",
+        "ALA"
+      ]
+    },
+    {
+      "codeType": "NEW ORDER TYPE",
+      "sampleValues": [
+        "A",
+        "C",
+        "D",
+        "F",
+        "M"
+      ]
+    },
+    {
+      "codeType": "NG REASON CODE",
+      "sampleValues": [
+        "E",
+        "M",
+        "N",
+        "P"
+      ]
+    },
+    {
+      "codeType": "NOTIFY STATUS",
+      "sampleValues": [
+        "C",
+        "O",
+        "T",
+        "W"
+      ]
+    },
+    {
+      "codeType": "OLED",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "OQC BAD REASON CODE",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "OQC INSPECT HANDLING",
+      "sampleValues": [
+        "D",
+        "W"
+      ]
+    },
+    {
+      "codeType": "OQC INSPECT RESULT",
+      "sampleValues": [
+        "P",
+        "R",
+        "U",
+        "W"
+      ]
+    },
+    {
+      "codeType": "OQC INSPECT TYPE",
+      "sampleValues": [
+        "L",
+        "P"
+      ]
+    },
+    {
+      "codeType": "ORDER CYCLE",
+      "sampleValues": [
+        "D",
+        "M",
+        "S",
+        "X"
+      ]
+    },
+    {
+      "codeType": "ORDER PROGRESS",
+      "sampleValues": [
+        "OQC",
+        "ORDER",
+        "TRANSFER",
+        "WORK"
+      ]
+    },
+    {
+      "codeType": "ORDER RULE",
+      "sampleValues": [
+        "A",
+        "E",
+        "M",
+        "O"
+      ]
+    },
+    {
+      "codeType": "ORDER TYPE",
+      "sampleValues": [
+        "A",
+        "C",
+        "D",
+        "F",
+        "M"
+      ]
+    },
+    {
+      "codeType": "ORGANIZATION CODE",
+      "sampleValues": [
+        "*",
+        "DD"
+      ]
+    },
+    {
+      "codeType": "ORIGIN NATION CODE",
+      "sampleValues": [
+        "133",
+        "142",
+        "502"
+      ]
+    },
+    {
+      "codeType": "PACK TYPE",
+      "sampleValues": [
+        "C",
+        "G",
+        "M",
+        "R"
+      ]
+    },
+    {
+      "codeType": "PALLET STATUS",
+      "sampleValues": [
+        "C",
+        "P"
+      ]
+    },
+    {
+      "codeType": "PALLET TYPE",
+      "sampleValues": [
+        "C",
+        "M",
+        "P",
+        "S"
+      ]
+    },
+    {
+      "codeType": "PARENT EMS UOM",
+      "sampleValues": [
+        "G",
+        "KEA",
+        "KG"
+      ]
+    },
+    {
+      "codeType": "PARENT ITEM TYPE",
+      "sampleValues": [
+        "M",
+        "T",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "PARENT LINE TYPE",
+      "sampleValues": [
+        "D",
+        "F",
+        "G",
+        "L",
+        "M"
+      ]
+    },
+    {
+      "codeType": "PAY BONUS DIV",
+      "sampleValues": [
+        "B",
+        "P"
+      ]
+    },
+    {
+      "codeType": "PAYMENT CONDITION",
+      "sampleValues": [
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    {
+      "codeType": "PAYMENT CYCLE",
+      "sampleValues": [
+        "1",
+        "12",
+        "15",
+        "25",
+        "30"
+      ]
+    },
+    {
+      "codeType": "PAYMENT TYPE",
+      "sampleValues": [
+        "C",
+        "D",
+        "F",
+        "L",
+        "T"
+      ]
+    },
+    {
+      "codeType": "PAYMENT TYPE ENG",
+      "sampleValues": [
+        "C",
+        "T"
+      ]
+    },
+    {
+      "codeType": "PCB COATING TYPE",
+      "sampleValues": [
+        "GOLD",
+        "HASL",
+        "OSP",
+        "TIN"
+      ]
+    },
+    {
+      "codeType": "PCB ITEM",
+      "sampleValues": [
+        "B",
+        "S",
+        "T"
+      ]
+    },
+    {
+      "codeType": "PCB STATUS",
+      "sampleValues": [
+        "C",
+        "Q",
+        "V"
+      ]
+    },
+    {
+      "codeType": "PID CREATION TYPE",
+      "sampleValues": [
+        "KTC01",
+        "KTC02",
+        "KTC03",
+        "SOLUM01"
+      ]
+    },
+    {
+      "codeType": "PID ISSUE TYPE",
+      "sampleValues": [
+        "B",
+        "C",
+        "L"
+      ]
+    },
+    {
+      "codeType": "PLAN STATUS",
+      "sampleValues": [
+        "C",
+        "L",
+        "N",
+        "P",
+        "W"
+      ]
+    },
+    {
+      "codeType": "PLAN TRANSFER YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "PM DIVISION",
+      "sampleValues": [
+        "1",
+        "2",
+        "6",
+        "8",
+        "D"
+      ]
+    },
+    {
+      "codeType": "PM TYPE",
+      "sampleValues": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05"
+      ]
+    },
+    {
+      "codeType": "POSITION",
+      "sampleValues": [
+        "AA",
+        "BB",
+        "BC",
+        "BD",
+        "BE"
+      ]
+    },
+    {
+      "codeType": "PRICE CHANGE CONFIRM YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "PRICE CHANGE REASON",
+      "sampleValues": [
+        "D",
+        "I",
+        "N"
+      ]
+    },
+    {
+      "codeType": "PRICE TYPE",
+      "sampleValues": [
+        "F",
+        "T"
+      ]
+    },
+    {
+      "codeType": "PRODUCT ACTUAL STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "PRODUCT CLASS",
+      "sampleValues": [
+        "*",
+        "ME1A",
+        "MV1A",
+        "MX5A",
+        "NE1A"
+      ]
+    },
+    {
+      "codeType": "PRODUCT DIVISION",
+      "sampleValues": [
+        "A",
+        "P",
+        "R"
+      ]
+    },
+    {
+      "codeType": "PRODUCT GROUP",
+      "sampleValues": [
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    {
+      "codeType": "PRODUCT LINE TYPE",
+      "sampleValues": [
+        "G",
+        "M",
+        "P",
+        "T"
+      ]
+    },
+    {
+      "codeType": "PRODUCT LOCATION CODE",
+      "sampleValues": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05"
+      ]
+    },
+    {
+      "codeType": "PRODUCT RUN TYPE",
+      "sampleValues": [
+        "B",
+        "D",
+        "G",
+        "J",
+        "P"
+      ]
+    },
+    {
+      "codeType": "PRODUCTION TYPE",
+      "sampleValues": [
+        "D",
+        "P",
+        "S"
+      ]
+    },
+    {
+      "codeType": "PUBLIC KEY STATUS",
+      "sampleValues": [
+        "T",
+        "W"
+      ]
+    },
+    {
+      "codeType": "PUBLIC KEY TYPE",
+      "sampleValues": [
+        "P",
+        "S"
+      ]
+    },
+    {
+      "codeType": "PURCHASE ORDER STATUS",
+      "sampleValues": [
+        "N",
+        "P",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "QC BLOCK",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "QC INSPECT HANDLING",
+      "sampleValues": [
+        "B",
+        "D",
+        "S",
+        "U",
+        "W"
+      ]
+    },
+    {
+      "codeType": "QC RESULT",
+      "sampleValues": [
+        "N",
+        "O",
+        "W"
+      ]
+    },
+    {
+      "codeType": "RAW MATERIAL",
+      "sampleValues": [
+        "GOLD",
+        "HASL",
+        "OSP",
+        "TIN"
+      ]
+    },
+    {
+      "codeType": "RCV ISS CODE",
+      "sampleValues": [
+        "I",
+        "R"
+      ]
+    },
+    {
+      "codeType": "RCV ISS TYPE",
+      "sampleValues": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    {
+      "codeType": "RCV TYPE",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "RECEIPT ACCOUNT",
+      "sampleValues": [
+        "M001",
+        "M002",
+        "M003",
+        "M009",
+        "M011"
+      ]
+    },
+    {
+      "codeType": "RECEIPT COMPARE YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "RECEIPT DEFICIT",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "RECEIPT ISSUE DEFICIT",
+      "sampleValues": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    {
+      "codeType": "RECEIPT ISSUE STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "RECEIPT ISSUE TYPE",
+      "sampleValues": [
+        "B",
+        "E",
+        "I",
+        "R",
+        "T"
+      ]
+    },
+    {
+      "codeType": "RECEIPT LOT CHECK YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "RECEIPT STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "RECEIPT TYPE",
+      "sampleValues": [
+        "B",
+        "E",
+        "I",
+        "N",
+        "R"
+      ]
+    },
+    {
+      "codeType": "RECEIPT YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "REFLOW RESULT",
+      "sampleValues": [
+        "N"
+      ]
+    },
+    {
+      "codeType": "RENT STATUS",
+      "sampleValues": [
+        "C",
+        "N",
+        "W"
+      ]
+    },
+    {
+      "codeType": "REPAIR DIVISION",
+      "sampleValues": [
+        "P",
+        "R",
+        "S"
+      ]
+    },
+    {
+      "codeType": "REPAIR REASON CODE",
+      "sampleValues": [
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    {
+      "codeType": "REPAIR RESULT",
+      "sampleValues": [
+        "G",
+        "N"
+      ]
+    },
+    {
+      "codeType": "REPAIR RESULT CODE",
+      "sampleValues": [
+        "G",
+        "N",
+        "W"
+      ]
+    },
+    {
+      "codeType": "REPAIR STATUS",
+      "sampleValues": [
+        "A",
+        "C",
+        "M",
+        "P",
+        "Q"
+      ]
+    },
+    {
+      "codeType": "REPAIR VENDOR CODE",
+      "sampleValues": [
+        "E",
+        "F",
+        "H",
+        "I",
+        "M"
+      ]
+    },
+    {
+      "codeType": "REPORT DIVISION",
+      "sampleValues": [
+        "C",
+        "U"
+      ]
+    },
+    {
+      "codeType": "REQUEST DEFICIT",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "REQUEST STATUS",
+      "sampleValues": [
+        "B",
+        "C",
+        "E",
+        "R",
+        "W"
+      ]
+    },
+    {
+      "codeType": "RESULT",
+      "sampleValues": [
+        "FAIL",
+        "N",
+        "NG",
+        "OK",
+        "PASS"
+      ]
+    },
+    {
+      "codeType": "RESULT TYPE",
+      "sampleValues": [
+        "P"
+      ]
+    },
+    {
+      "codeType": "RETURN CONDITION",
+      "sampleValues": [
+        "N",
+        "R"
+      ]
+    },
+    {
+      "codeType": "RETURN TYPE",
+      "sampleValues": [
+        "B",
+        "R",
+        "T"
+      ]
+    },
+    {
+      "codeType": "RETURN YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "REWORK REASON",
+      "sampleValues": [
+        "E",
+        "V"
+      ]
+    },
+    {
+      "codeType": "ROLE TYPE",
+      "sampleValues": [
+        "N",
+        "U"
+      ]
+    },
+    {
+      "codeType": "ROUTE_NO",
+      "sampleValues": [
+        "1"
+      ]
+    },
+    {
+      "codeType": "RUN STATUS",
+      "sampleValues": [
+        "1",
+        "10",
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    {
+      "codeType": "RUNNING STATUS",
+      "sampleValues": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    {
+      "codeType": "RWFLOW_RESULT",
+      "sampleValues": [
+        "A",
+        "L",
+        "N",
+        "U"
+      ]
+    },
+    {
+      "codeType": "SALE CURRENCY",
+      "sampleValues": [
+        "CNY",
+        "USD",
+        "WON"
+      ]
+    },
+    {
+      "codeType": "SALE PLAN STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "SALE PLAN TYPE",
+      "sampleValues": [
+        "F",
+        "P"
+      ]
+    },
+    {
+      "codeType": "SAMPLE GRADE",
+      "sampleValues": [
+        "*"
+      ]
+    },
+    {
+      "codeType": "SAMPLE SECTION",
+      "sampleValues": [
+        "B",
+        "G"
+      ]
+    },
+    {
+      "codeType": "SAMPLE STATUS",
+      "sampleValues": [
+        "B",
+        "P",
+        "S",
+        "T",
+        "X"
+      ]
+    },
+    {
+      "codeType": "SAMPLE TYPE",
+      "sampleValues": [
+        "C",
+        "E",
+        "L",
+        "M",
+        "P"
+      ]
+    },
+    {
+      "codeType": "SCRAP TYPE",
+      "sampleValues": [
+        "E",
+        "M",
+        "S"
+      ]
+    },
+    {
+      "codeType": "SET ITEM DIVISION",
+      "sampleValues": [
+        "E"
+      ]
+    },
+    {
+      "codeType": "SET ITEM YN",
+      "sampleValues": [
+        "M",
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "SHIFT CODE",
+      "sampleValues": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    {
+      "codeType": "SHIP FLAG",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "SHIPPING ACCOUNT",
+      "sampleValues": [
+        "M001",
+        "M002",
+        "M003",
+        "M004",
+        "M005"
+      ]
+    },
+    {
+      "codeType": "SHIPPING DEFICIT",
+      "sampleValues": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "codeType": "SHIPPING METHOD",
+      "sampleValues": [
+        "A",
+        "C",
+        "T"
+      ]
+    },
+    {
+      "codeType": "SHIPPING PLAN STATUS",
+      "sampleValues": [
+        "A",
+        "C",
+        "R"
+      ]
+    },
+    {
+      "codeType": "SHIPPING STATUS",
+      "sampleValues": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "codeType": "SHIPPING TYPE",
+      "sampleValues": [
+        "E",
+        "N"
+      ]
+    },
+    {
+      "codeType": "SHOW TABLE YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "SIDE",
+      "sampleValues": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "codeType": "SITE CODE",
+      "sampleValues": [
+        "EB4N",
+        "MX02"
+      ]
+    },
+    {
+      "codeType": "SLIP DIV",
+      "sampleValues": [
+        "002"
+      ]
+    },
+    {
+      "codeType": "SLIP KIND CODE",
+      "sampleValues": [
+        "AM6",
+        "CM1",
+        "CM2"
+      ]
+    },
+    {
+      "codeType": "SMD FACTORY",
+      "sampleValues": [
+        "H"
+      ]
+    },
+    {
+      "codeType": "SOLDER TYPE",
+      "sampleValues": [
+        "F",
+        "P"
+      ]
+    },
+    {
+      "codeType": "SOUND GROUP",
+      "sampleValues": [
+        "HUMIDITY",
+        "MSL",
+        "REFLOW"
+      ]
+    },
+    {
+      "codeType": "SOUND STATUS",
+      "sampleValues": [
+        "C",
+        "O"
+      ]
+    },
+    {
+      "codeType": "SQUEEZE_AIR_SPEC",
+      "sampleValues": [
+        "0.10",
+        "0.20"
+      ]
+    },
+    {
+      "codeType": "STATUS FLAG",
+      "sampleValues": [
+        "C",
+        "I"
+      ]
+    },
+    {
+      "codeType": "STATYS",
+      "sampleValues": [
+        "N"
+      ]
+    },
+    {
+      "codeType": "SUB ITEM UOM",
+      "sampleValues": [
+        "EA",
+        "ST"
+      ]
+    },
+    {
+      "codeType": "SUPPLIER_CODE",
+      "sampleValues": [
+        "J"
+      ]
+    },
+    {
+      "codeType": "SUPPLY STATUS",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "SVC CODE",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "SYSTEM MENU ID",
+      "sampleValues": [
+        "M_MAIN_FRAME_MENU"
+      ]
+    },
+    {
+      "codeType": "TARGET QC INSPECT RESULT",
+      "sampleValues": [
+        "NG",
+        "OK"
+      ]
+    },
+    {
+      "codeType": "TARGET QC REQUEST STATUS",
+      "sampleValues": [
+        "C",
+        "R"
+      ]
+    },
+    {
+      "codeType": "TARGET QC REQUEST TYPE",
+      "sampleValues": [
+        "S",
+        "T"
+      ]
+    },
+    {
+      "codeType": "TAX RATE",
+      "sampleValues": [
+        "1.17"
+      ]
+    },
+    {
+      "codeType": "TIEM CLASS",
+      "sampleValues": [
+        "PCB A'SSY"
+      ]
+    },
+    {
+      "codeType": "TIME DIVISION",
+      "sampleValues": [
+        "O",
+        "R",
+        "S",
+        "W"
+      ]
+    },
+    {
+      "codeType": "TOP BOTTOM",
+      "sampleValues": [
+        "B",
+        "T"
+      ]
+    },
+    {
+      "codeType": "TRADE EXCHANGE TYPE",
+      "sampleValues": [
+        "*",
+        "test2"
+      ]
+    },
+    {
+      "codeType": "TRADE MODE",
+      "sampleValues": [
+        "*",
+        "0110",
+        "0200",
+        "0214",
+        "0255"
+      ]
+    },
+    {
+      "codeType": "TRADE OWNER LOCATION",
+      "sampleValues": [
+        "12074",
+        "12075",
+        "12077",
+        "12109",
+        "12119"
+      ]
+    },
+    {
+      "codeType": "TRADE OWNER TYPE",
+      "sampleValues": [
+        "*",
+        "test1"
+      ]
+    },
+    {
+      "codeType": "TRADE SOURCE NATION",
+      "sampleValues": [
+        "116",
+        "133",
+        "142",
+        "502"
+      ]
+    },
+    {
+      "codeType": "TRADE TARGET NATION",
+      "sampleValues": [
+        "110",
+        "116",
+        "133",
+        "142",
+        "304"
+      ]
+    },
+    {
+      "codeType": "TRADE TYPE",
+      "sampleValues": [
+        "a",
+        "b",
+        "c",
+        "test"
+      ]
+    },
+    {
+      "codeType": "TRADE WORK MODE",
+      "sampleValues": [
+        "ETC"
+      ]
+    },
+    {
+      "codeType": "TRANSACTION MODE",
+      "sampleValues": [
+        "C&F",
+        "C&I",
+        "CIF",
+        "FOB"
+      ]
+    },
+    {
+      "codeType": "TRANSFER TYPE",
+      "sampleValues": [
+        "C",
+        "L",
+        "M",
+        "S",
+        "T"
+      ]
+    },
+    {
+      "codeType": "TRANSFER UOM",
+      "sampleValues": [
+        "EA",
+        "G",
+        "KEA",
+        "KG"
+      ]
+    },
+    {
+      "codeType": "TRANSFER YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "TXN DEFICIT",
+      "sampleValues": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    {
+      "codeType": "TYPE",
+      "sampleValues": [
+        "D",
+        "N"
+      ]
+    },
+    {
+      "codeType": "UI CONTROL",
+      "sampleValues": [
+        "RELEASE_MATERIAL"
+      ]
+    },
+    {
+      "codeType": "UOM",
+      "sampleValues": [
+        "EA",
+        "MZ",
+        "ST"
+      ]
+    },
+    {
+      "codeType": "URGENT TYPE",
+      "sampleValues": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "codeType": "USE FLAG",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "USE STATUS",
+      "sampleValues": [
+        "D",
+        "N",
+        "S",
+        "T",
+        "U"
+      ]
+    },
+    {
+      "codeType": "USE TPM YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "USE YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "USER DEPT CONDITION",
+      "sampleValues": [
+        "SALE"
+      ]
+    },
+    {
+      "codeType": "USER LEVEL",
+      "sampleValues": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "8"
+      ]
+    },
+    {
+      "codeType": "VERIFICATION STATE1",
+      "sampleValues": [
+        "*",
+        "NG",
+        "OK",
+        "SYS_NG",
+        "SYS_OK"
+      ]
+    },
+    {
+      "codeType": "VERIFICATION STATE2",
+      "sampleValues": [
+        "*",
+        "NG",
+        "OK",
+        "SYS_NG",
+        "SYS_OK"
+      ]
+    },
+    {
+      "codeType": "VERIFICATION STATE3",
+      "sampleValues": [
+        "*",
+        "NG",
+        "OK",
+        "SYS_NG",
+        "SYS_OK"
+      ]
+    },
+    {
+      "codeType": "VERIFICATION STATE4",
+      "sampleValues": [
+        "*",
+        "NG",
+        "OK",
+        "SYS_NG",
+        "SYS_OK"
+      ]
+    },
+    {
+      "codeType": "VERIFICATION STATE5",
+      "sampleValues": [
+        "*",
+        "NG",
+        "OK",
+        "SYS_NG",
+        "SYS_OK"
+      ]
+    },
+    {
+      "codeType": "VERIFICATION STATE6",
+      "sampleValues": [
+        "*",
+        "NG",
+        "OK",
+        "SYS_NG",
+        "SYS_OK"
+      ]
+    },
+    {
+      "codeType": "VIRTUAL RECEIPT YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "WAREHOUSE TYPE",
+      "sampleValues": [
+        "EXTERNAL",
+        "INTERNAL",
+        "WORKSTAGE"
+      ]
+    },
+    {
+      "codeType": "WEEK GUBUN",
+      "sampleValues": [
+        "01",
+        "02"
+      ]
+    },
+    {
+      "codeType": "WINDOW GROUP",
+      "sampleValues": [
+        " business",
+        "BASIS",
+        "CONFIRM",
+        "COST",
+        "DESIGN"
+      ]
+    },
+    {
+      "codeType": "WINDOW GROUP KOR",
+      "sampleValues": [
+        "GENERAL",
+        "Material",
+        "PRODUCTION",
+        "QULITY",
+        "SYSTEM"
+      ]
+    },
+    {
+      "codeType": "WINDOW OPEN YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "WINDOW TYPE",
+      "sampleValues": [
+        "REPORT",
+        "SYSTEM",
+        "WINDOW"
+      ]
+    },
+    {
+      "codeType": "WIP SUPPLY TYPE",
+      "sampleValues": [
+        "*",
+        "P",
+        "R",
+        "S",
+        "T"
+      ]
+    },
+    {
+      "codeType": "WIP_PRINTER",
+      "sampleValues": [
+        "A"
+      ]
+    },
+    {
+      "codeType": "WORK BOARD COMPLETE YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "WORK CURRENCY",
+      "sampleValues": [
+        "CNY",
+        "USD"
+      ]
+    },
+    {
+      "codeType": "WORK DIVISION",
+      "sampleValues": [
+        "F",
+        "P",
+        "R",
+        "W"
+      ]
+    },
+    {
+      "codeType": "WORK ORDER TYPE",
+      "sampleValues": [
+        "M",
+        "N"
+      ]
+    },
+    {
+      "codeType": "WORKSTAGE CODE GROUP",
+      "sampleValues": [
+        "PACKING",
+        "PBA",
+        "REPAIR",
+        "SMT",
+        "WAREHOUSE"
+      ]
+    },
+    {
+      "codeType": "WORKSTAGE START YN",
+      "sampleValues": [
+        "N",
+        "Y"
+      ]
+    },
+    {
+      "codeType": "WORKSTAGE STATUS",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "E",
+        "G"
+      ]
+    },
+    {
+      "codeType": "WORKSTAGE TYPE",
+      "sampleValues": [
+        "I",
+        "L",
+        "Q",
+        "S"
+      ]
+    },
+    {
+      "codeType": "WORKSTAGE TYPE OLD",
+      "sampleValues": [
+        "AOI",
+        "ICT",
+        "INSPECT",
+        "INTENAL",
+        "LAST"
+      ]
+    },
+    {
+      "codeType": "WORKSTAGE_CODE",
+      "sampleValues": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ]
+    },
+    {
+      "codeType": "WQC DIVISION",
+      "sampleValues": [
+        "R",
+        "S",
+        "V"
+      ]
+    },
+    {
+      "codeType": "WQC INSPECT HANDLING",
+      "sampleValues": [
+        "D",
+        "Q",
+        "R",
+        "S",
+        "U"
+      ]
+    },
+    {
+      "codeType": "WQC INSPECT RESULT",
+      "sampleValues": [
+        "P",
+        "R",
+        "W"
+      ]
+    }
+  ]
 }

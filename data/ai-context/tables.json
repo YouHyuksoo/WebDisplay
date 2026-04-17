@@ -1,7 +1,595 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-16T00:00:00.000Z",
+  "updatedAt": "2026-04-17T04:27:16.651Z",
   "sites": {
-    "default": { "tables": {} }
+    "default": {
+      "tables": {
+        "IB_SMT_CHECKHIST": {
+          "enabled": true,
+          "tags": [
+            "SMT"
+          ],
+          "summary": "IB_SMT_CHECKHIST 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "ICOM_TEMPERATURE_DATA": {
+          "enabled": true,
+          "tags": [
+            "설비"
+          ],
+          "summary": "¿¿¿¿¿¿",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "ICOM_WEB_SERVICE_LOG": {
+          "enabled": true,
+          "tags": [
+            "설비"
+          ],
+          "summary": "ICOM_WEB_SERVICE_LOG 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IM_ITEM_BAKING_MASTER": {
+          "enabled": true,
+          "tags": [
+            "자재",
+            "베이킹"
+          ],
+          "summary": "PB SQL 사용 기준 추정 테이블 | PB화면: w_mat_baking_dehumi_scan_query, w_mat_baking_scan_query, w_mat_baking_dehumi_scan_master, w_mat_baking_scan_master, w_mat_dehumi_scan_query | DW: d_mat_material_baking_dehumi_query_lst, d_mat_material_baking_dehumi_scan_lst, d_mat_material_baking_scan_lst, d_mat_material_dehumi_query_lst",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IM_ITEM_ISSUE": {
+          "enabled": true,
+          "tags": [
+            "자재"
+          ],
+          "summary": "Item Issue Master | PB화면: w_mat_bad_issue_master, w_mat_other_issue_barcode_master, w_pln_product_pda_scan_query, w_mat_request_issue_master, w_mat_mass_issue_return_confirm_master | DW: d_mat_bad_issue_lst, d_mat_internal_arrival_lst, d_mat_internal_issue_cancel_lst, d_mat_issue_4_barcode_compare_lst, d_mat_issue_4_barcode_compare_view",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IM_ITEM_MSL_CHECK_VIEW": {
+          "enabled": true,
+          "tags": [
+            "자재",
+            "MSL"
+          ],
+          "summary": "MSL 체크 뷰 (VIEW)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IM_ITEM_RECEIPT_BARCODE": {
+          "enabled": true,
+          "tags": [
+            "자재"
+          ],
+          "summary": "PB SQL 사용 기준 추정 테이블 | PB화면: w_mat_mass_issue_cancel_master, w_qc_iqc_master, w_mat_other_issue_barcode_master, w_mat_other_issue_barcode_return_master, w_mat_other_mass_issue_barcode_return_master | DW: d_mat_issue_cancel_lst, d_mat_rceipt_barcode_4_iqc_cancel_lst, d_mat_rceipt_barcode_4_issue_return_lst, d_mat_rceipt_barcode_4_receipt_returnt_lst, d_mat_rceipt_barcode_4_receipt_wait_lst",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IM_ITEM_SOLDER_INPUT_HIST": {
+          "enabled": true,
+          "tags": [
+            "자재",
+            "납땜"
+          ],
+          "summary": "PB SQL 사용 기준 추정 테이블 | PB화면: w_mat_solder_input_move_query | DW: d_mat_solder_input_move_lst",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IM_ITEM_SOLDER_MASTER": {
+          "enabled": true,
+          "tags": [
+            "자재",
+            "납땜"
+          ],
+          "summary": "IM_ITEM_SOLDER_MASTER 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IMCN_JIG_INPUT_HIST": {
+          "enabled": true,
+          "tags": [
+            "기계"
+          ],
+          "summary": "IMCN_JIG_INPUT_HIST 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IMCN_MACHINE": {
+          "enabled": true,
+          "tags": [
+            "기계"
+          ],
+          "summary": "PB SQL 사용 기준 추정 테이블 | PB화면: w_mat_baking_dehumi_scan_query, w_mat_baking_scan_query, w_mat_dehumi_scan_query, w_mat_vacuum_scan_query, w_mcn_machine_pm_master | DW: d_mat_material_baking_dehumi_query_lst, d_mat_material_dehumi_query_lst, d_mcn_inspect_machine_control_lst, d_mcn_machine_4_pm_lst, d_mcn_machine_4_repair_request_lst",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_LINE_DAILY_OPERATION_HIST": {
+          "enabled": true,
+          "tags": [
+            "기타"
+          ],
+          "summary": "IP_LINE_DAILY_OPERATION_HIST 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_PRODUCT_LINE": {
+          "enabled": true,
+          "tags": [
+            "생산",
+            "라인",
+            "마스터"
+          ],
+          "summary": "라인 마스터. 라인코드/라인명/구분/상태/현재모델/UPH 등 라인 기본정보 관리.",
+          "relatedTables": [
+            "IP_PRODUCT_WORKSTAGE_IO",
+            "IP_PRODUCT_LINE_TARGET"
+          ],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_PRODUCT_LINE_TARGET": {
+          "enabled": true,
+          "tags": [
+            "생산",
+            "목표",
+            "계획",
+            "KPI"
+          ],
+          "summary": "라인별 시프트별 생산 목표(계획 수량). PLAN_DATE+LINE_CODE+SHIFT_CODE로 목표 조회.",
+          "relatedTables": [
+            "IP_PRODUCT_LINE",
+            "IP_PRODUCT_WORKSTAGE_IO"
+          ],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_PRODUCT_MAGAZINE": {
+          "enabled": true,
+          "tags": [
+            "생산"
+          ],
+          "summary": "IP_PRODUCT_MAGAZINE 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_PRODUCT_MAGAZINE_INVENTORY": {
+          "enabled": true,
+          "tags": [
+            "생산"
+          ],
+          "summary": "매거진 재고",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_PRODUCT_MODEL_MASTER": {
+          "enabled": true,
+          "tags": [
+            "생산"
+          ],
+          "summary": "PB SQL 사용 기준 추정 테이블 | PB화면: w_com_document_master, w_pln_product_model_master, w_des_mfs_bom_master, w_des_apply_item_master, w_pln_product_model_st_master | DW: d_com_document_lst, d_com_model_master_4_batender_popup, d_pln_product_model_master_4_interlock_mst, d_pln_product_model_master_4_label_lst, d_pln_product_model_master_4_mfs_bom_lst",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_PRODUCT_PACK_SERIAL": {
+          "enabled": true,
+          "tags": [
+            "생산"
+          ],
+          "summary": "PB SQL 사용 기준 추정 테이블 | PB화면: w_pln_product_packing_dupulicate_check_master, w_prd_product_packing_history | DW: d_pln_product_pack_dupulicate_hst, d_pln_product_pack_dupulicate_lst, d_prd_cell_biz_pack_serial_hisory",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_PRODUCT_ROUTING_MODEL": {
+          "enabled": true,
+          "tags": [
+            "생산"
+          ],
+          "summary": "IP_PRODUCT_ROUTING_MODEL 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_PRODUCT_RUN_CARD": {
+          "enabled": true,
+          "tags": [
+            "생산",
+            "로트",
+            "RUN",
+            "모델"
+          ],
+          "summary": "RUN(로트) 카드. RUN_NO별 모델명/품목/라인/수량 등 로트 단위 생산 정보.",
+          "relatedTables": [
+            "IP_PRODUCT_2D_BARCODE",
+            "IP_PRODUCT_MODEL_MASTER",
+            "IP_PRODUCT_LINE"
+          ],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_PRODUCT_WORK_QC": {
+          "enabled": true,
+          "tags": [
+            "생산",
+            "품질",
+            "불량",
+            "수리",
+            "QC"
+          ],
+          "summary": "품질검사(QC) 결과. 불량유형/수리결과/폐기/반품 등 공정 품질 이벤트 기록.",
+          "relatedTables": [
+            "IP_PRODUCT_RUN_CARD",
+            "IP_PRODUCT_LINE"
+          ],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "IP_PRODUCT_WORKSTAGE_IO": {
+          "enabled": true,
+          "tags": [
+            "생산",
+            "실적",
+            "IO",
+            "공정",
+            "포장",
+            "투입"
+          ],
+          "summary": "공정별 입출고 실적. 투입(W310), 포장(W220), SMD(W110), PBA(W210) 등 각 공정 통과 시 1행 기록.",
+          "relatedTables": [
+            "IP_PRODUCT_LINE_TARGET",
+            "IP_PRODUCT_RUN_CARD",
+            "IP_PRODUCT_MODEL_MASTER"
+          ],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "ISYS_BASECODE": {
+          "enabled": true,
+          "tags": [
+            "시스템"
+          ],
+          "summary": "Base code Master Table | PB화면: w_basecode_master | DW: d_basecode_lst",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "ISYS_USERS": {
+          "enabled": true,
+          "tags": [
+            "시스템"
+          ],
+          "summary": "User Master | PB화면: w_com_carrying_out_bring_in_analysis_report, w_com_carrying_out_bring_in_confirm, w_com_carrying_out_master, w_privilege_master, w_bulletin_board | DW: d_com_carrying_out_analysys_byt_dept_rpt, d_man_bring_in_confirm_lst, d_man_bring_in_security_lst, d_man_carrying_out_confirm_lst, d_man_carrying_out_lst",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_ALARM": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사"
+          ],
+          "summary": "설비 알람 로그 (JSON 형식)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_AOI": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "AOI",
+            "광학",
+            "FPY"
+          ],
+          "summary": "AOI(자동광학검사) 로그. 설비별 검사결과(OK/NG/PASS/FAIL), 바코드(SERIAL_NO) 기록.",
+          "relatedTables": [
+            "IP_PRODUCT_RUN_CARD",
+            "IP_PRODUCT_LINE"
+          ],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_COATING1": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "코팅"
+          ],
+          "summary": "LOG_COATING1 테이블 (DB에서 자동 추출)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_COATING2": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "코팅"
+          ],
+          "summary": "LOG_COATING2 테이블 (DB에서 자동 추출)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_COATINGREVIEW": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "코팅"
+          ],
+          "summary": "LOG_COATINGREVIEW 테이블 (DB에서 자동 추출)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_COATINGVISION": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사"
+          ],
+          "summary": "LOG_COATINGVISION 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_DOWNLOAD": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사"
+          ],
+          "summary": "LOG_DOWNLOAD 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_EOL": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "EOL",
+            "최종검사",
+            "FPY"
+          ],
+          "summary": "EOL(End-Of-Line) 최종검사 로그. 완제품 기능검사 결과 + 측정값 기록.",
+          "relatedTables": [
+            "IP_PRODUCT_RUN_CARD",
+            "IP_PRODUCT_LINE"
+          ],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_ERROR": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사"
+          ],
+          "summary": "DB 삽입 실패 시 에러 정보 및 원본 데이터 보관",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_FCT": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "품질"
+          ],
+          "summary": "LOG_FCT 테이블 (DB에서 자동 추출)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_ICT": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "ICT",
+            "전기",
+            "FPY"
+          ],
+          "summary": "ICT(In-Circuit Test) 전기검사 로그. 회로 단선/단락/저항값 검사 결과 기록.",
+          "relatedTables": [
+            "IP_PRODUCT_RUN_CARD",
+            "IP_PRODUCT_LINE"
+          ],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_LCR": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사"
+          ],
+          "summary": "LOG_LCR 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_LOWCURRENT": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사"
+          ],
+          "summary": "LOG_LOWCURRENT 테이블 (DB에서 자동 추출)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_MAOI": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "품질"
+          ],
+          "summary": "LOG_MAOI 테이블 (DB에서 자동 추출)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_MARKING": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "마킹"
+          ],
+          "summary": "LOG_MARKING 테이블 (DB에서 자동 추출)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_MOUNTER": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사"
+          ],
+          "summary": "LOG_MOUNTER 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_PROCESS": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사"
+          ],
+          "summary": "공정 단계 로그 (CSV 형식)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_REFLOW_01": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "리플로우",
+            "온도"
+          ],
+          "summary": "LOG_REFLOW_01 테이블 (DB에서 자동 추출)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_REFLOW_02": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "리플로우",
+            "온도"
+          ],
+          "summary": "LOG_REFLOW_02 테이블 (DB에서 자동 추출)",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_SPI": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사",
+            "SPI",
+            "솔더",
+            "납땜"
+          ],
+          "summary": "LOG_SPI 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        },
+        "LOG_SPI_VD": {
+          "enabled": true,
+          "tags": [
+            "로그",
+            "검사"
+          ],
+          "summary": "LOG_SPI_VD 테이블",
+          "relatedTables": [],
+          "columnOverrides": {},
+          "examples": [],
+          "feedbackQueue": []
+        }
+      }
+    }
   }
 }
