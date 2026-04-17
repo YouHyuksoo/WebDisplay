@@ -139,12 +139,13 @@ export default function ProcessHistoryPage() {
 
     /* ── list 모드 엑셀 ── */
     if (data.mode === 'list') {
-      const header = ['공정코드', '공정명', 'PID', '모델명', '머신', '결과', 'IS_LAST', '검사일시'];
+      const header = ['공정코드', '공정명', 'PID', '모델명', 'Rating Label', '머신', '결과', 'IS_LAST', '검사일시'];
       const dataRows = (data.rows as ListRow[]).map((r) => [
         r.WORKSTAGE_CODE ?? '',
         r.WORKSTAGE_NAME ?? '',
         r.PID ?? '',
         r.MODEL_NAME ?? '',
+        r.RATING_LABEL ?? '',
         r.MACHINE_CODE ?? '',
         r.INSPECT_RESULT ?? '',
         r.IS_LAST ?? '',
@@ -152,7 +153,7 @@ export default function ProcessHistoryPage() {
       ]);
       const sheet = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
       sheet['!cols'] = [
-        { wch: 10 }, { wch: 16 }, { wch: 24 }, { wch: 16 },
+        { wch: 10 }, { wch: 16 }, { wch: 24 }, { wch: 16 }, { wch: 38 },
         { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 20 },
       ];
       const wb = XLSX.utils.book_new();
@@ -184,10 +185,10 @@ export default function ProcessHistoryPage() {
     if (pivotRows.length === 0) return;
     const ws = data.workstages;
 
-    /* Row 0: 공정 그룹 헤더 (PID/모델명은 빈칸, 공정은 3칸 병합 예정) */
-    const row0: (string | null)[] = ['', ''];
+    /* Row 0: 공정 그룹 헤더 (PID/모델명/Rating Label 은 빈칸, 공정은 3칸 병합 예정) */
+    const row0: (string | null)[] = ['', '', ''];
     /* Row 1: 세부 컬럼 헤더 */
-    const row1: string[] = ['PID', '모델명'];
+    const row1: string[] = ['PID', '모델명', 'Rating Label'];
     for (const w of ws) {
       const label = `${w.name} (${w.code})`;
       row0.push(label, null, null);  // 3칸 중 첫 번째만 값, 나머지는 병합
@@ -199,6 +200,7 @@ export default function ProcessHistoryPage() {
       const out: (string | number | null)[] = [
         (r.PID as string) ?? '',
         (r.MODEL_NAME as string) ?? '',
+        (r.RATING_LABEL as string) ?? '',
       ];
       for (const w of ws) {
         out.push((r[`${w.code}__MACHINE`] as string) ?? '');
@@ -214,18 +216,20 @@ export default function ProcessHistoryPage() {
     /* 공정 그룹 헤더 병합 (r=0 행, 각 공정마다 3열 병합) */
     const merges: XLSX.Range[] = [];
     for (let i = 0; i < ws.length; i++) {
-      const startCol = 2 + i * 3;   // PID(0), 모델명(1) 다음부터
+      const startCol = 3 + i * 3;   // PID(0), 모델명(1), Rating Label(2) 다음부터
       merges.push({ s: { r: 0, c: startCol }, e: { r: 0, c: startCol + 2 } });
     }
-    /* PID / 모델명도 0~1 행 세로 병합 */
+    /* PID / 모델명 / Rating Label 도 0~1 행 세로 병합 */
     merges.push({ s: { r: 0, c: 0 }, e: { r: 1, c: 0 } });
     merges.push({ s: { r: 0, c: 1 }, e: { r: 1, c: 1 } });
+    merges.push({ s: { r: 0, c: 2 }, e: { r: 1, c: 2 } });
     sheet['!merges'] = merges;
 
     /* 컬럼 폭 */
     const cols = [
       { wch: 24 }, // PID
       { wch: 16 }, // 모델명
+      { wch: 38 }, // Rating Label
       ...ws.flatMap(() => [{ wch: 12 }, { wch: 8 }, { wch: 20 }]),
     ];
     sheet['!cols'] = cols;

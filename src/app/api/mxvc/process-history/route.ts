@@ -16,6 +16,7 @@ export const dynamic = 'force-dynamic';
 interface RawRow {
   PID: string;
   MODEL_NAME: string | null;
+  RATING_LABEL: string | null;
   WORKSTAGE_CODE: string;
   WORKSTAGE_NAME: string | null;
   MACHINE_CODE: string | null;
@@ -27,6 +28,7 @@ interface RawRow {
 interface PivotRow {
   PID: string;
   MODEL_NAME: string | null;
+  RATING_LABEL: string | null;
   [key: string]: unknown;
 }
 
@@ -79,10 +81,13 @@ export async function GET(req: NextRequest) {
     if (isLastClause) binds.isLast = isLast;
     if (pidClause)    binds.pidLike = `%${pid}%`;
 
-    /* INSPECT_DATE는 VARCHAR2 'YYYY-MM-DD HH24:MI:SS' — 문자열 범위 비교 */
+    /* INSPECT_DATE는 VARCHAR2 'YYYY-MM-DD HH24:MI:SS' — 문자열 범위 비교.
+       IP_PRODUCT_2D_BARCODE LEFT JOIN 으로 각 PID 의 RATING_LABEL 를 함께 조회.
+       JOIN 은 PID = SERIAL_NO 일치 기준. 라벨이 없는 PID 도 행은 유지(LEFT). */
     const rows = await executeQuery<RawRow>(
       `SELECT t.PID,
               F_GET_MODEL_NAME_BY_PID(t.PID) AS MODEL_NAME,
+              b.RATING_LABEL,
               t.WORKSTAGE_CODE,
               NVL(F_GET_WORKSTAGE_NAME(t.WORKSTAGE_CODE), t.WORKSTAGE_CODE) AS WORKSTAGE_NAME,
               t.MACHINE_CODE,
@@ -90,6 +95,7 @@ export async function GET(req: NextRequest) {
               t.INSPECT_DATE,
               t.IS_LAST
          FROM IQ_MACHINE_INSPECT_RESULT t
+         LEFT JOIN IP_PRODUCT_2D_BARCODE b ON b.SERIAL_NO = t.PID
         WHERE t.INSPECT_DATE BETWEEN :dateFrom || ' 00:00:00'
                                  AND :dateTo   || ' 23:59:59'
           ${isLastClause}
@@ -143,6 +149,7 @@ export async function GET(req: NextRequest) {
         rows: rows.map((r) => ({
           PID: r.PID,
           MODEL_NAME: r.MODEL_NAME,
+          RATING_LABEL: r.RATING_LABEL,
           WORKSTAGE_CODE: r.WORKSTAGE_CODE,
           WORKSTAGE_NAME: r.WORKSTAGE_NAME,
           MACHINE_CODE: r.MACHINE_CODE,
@@ -170,7 +177,7 @@ export async function GET(req: NextRequest) {
       }
 
       if (!pidMap.has(pid)) {
-        pidMap.set(pid, { PID: pid, MODEL_NAME: r.MODEL_NAME });
+        pidMap.set(pid, { PID: pid, MODEL_NAME: r.MODEL_NAME, RATING_LABEL: r.RATING_LABEL });
       }
       const row = pidMap.get(pid)!;
       /* 같은 PID+WORKSTAGE가 여러 건이면 최신(ORDER BY INSPECT_DATE)이 뒤에 오므로 덮어씀 */

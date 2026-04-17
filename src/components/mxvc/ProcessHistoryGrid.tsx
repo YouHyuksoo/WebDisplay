@@ -74,6 +74,8 @@ export default function ProcessHistoryGrid({ rows, workstages }: Props) {
     const base: (ColDef | ColGroupDef)[] = [
       { field: 'PID', headerName: 'PID', width: 140, pinned: 'left', tooltipField: 'PID' },
       { field: 'MODEL_NAME', headerName: '모델명', width: 120, pinned: 'left' },
+      { field: 'RATING_LABEL', headerName: 'Rating Label', width: 260, pinned: 'left', tooltipField: 'RATING_LABEL',
+        cellStyle: { fontFamily: 'monospace', fontSize: 10, color: '#64748b' } },
     ];
     const stageCols: ColGroupDef[] = workstages.map((w, i) => {
       const pal = STAGE_PALETTE[i % STAGE_PALETTE.length];
