@@ -18,9 +18,11 @@
         "ICOM_TEMPERATURE_DATA": {
           "enabled": true,
           "tags": [
-            "설비"
+            "설비",
+            "온도",
+            "환경"
           ],
-          "summary": "¿¿¿¿¿¿",
+          "summary": "온도 모니터링 데이터 (리플로우/설비 온도·습도·이슬점 기록, 게이트웨이 ID + 설비 노드별)",
           "relatedTables": [],
           "columnOverrides": {},
           "examples": [],
