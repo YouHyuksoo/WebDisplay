@@ -38,19 +38,20 @@ export default function AiTablesPage() {
 
   if (error) {
     return (
-      <div className="p-6 text-red-600 dark:text-red-400">
+      <div className="text-red-600 dark:text-red-400">
         로드 실패: {error.message ?? String(error)}
       </div>
     );
   }
   if (isLoading || !data) {
-    return (
-      <div className="p-6 text-zinc-600 dark:text-zinc-400">로딩 중...</div>
-    );
+    return <div className="text-zinc-600 dark:text-zinc-400">로딩 중...</div>;
   }
 
+  // settings layout 의 main 은 p-6 패딩을 가짐 → -m-6 으로 상쇄하여 3단 콘솔이
+  // 설정 네비 옆 전체 영역을 차지하도록. h-screen 은 부모 flex 기준이 아닌
+  // 뷰포트 기준이 필요하므로 calc(100vh) 유지.
   return (
-    <div className="flex h-[calc(100vh-56px)] bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <div className="-m-6 flex h-[calc(100vh)] bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <aside className="w-[18%] min-w-[220px] border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto">
         <ModeSwitcher />
         {mode === 'tables' ? (

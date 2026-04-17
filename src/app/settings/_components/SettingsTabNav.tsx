@@ -11,13 +11,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Bot, UserCog, BookOpen } from "lucide-react";
+import { LayoutGrid, Bot, UserCog, BookOpen, Database } from "lucide-react";
 
 const TABS = [
   { href: "/settings/cards", label: "카드 관리", icon: LayoutGrid },
   { href: "/settings/ai-models", label: "AI 모델", icon: Bot },
   { href: "/settings/ai-personas", label: "AI 페르소나", icon: UserCog },
   { href: "/settings/ai-glossary", label: "AI 용어사전", icon: BookOpen },
+  { href: "/settings/ai-tables", label: "AI 테이블 학습", icon: Database },
 ];
 
 export default function SettingsTabNav() {
