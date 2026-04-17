@@ -16,11 +16,13 @@ import { api } from '../../_lib/api-client';
 import OverviewTab from '../tabs/OverviewTab';
 import ColumnsTab from '../tabs/ColumnsTab';
 import HistoryTab from '../tabs/HistoryTab';
+import ExamplesTab from '../tabs/ExamplesTab';
 import type { AiTablesDetailTab } from '../../_hooks/useAiTablesStore';
 
 const TABS: Array<{ id: AiTablesDetailTab; label: string }> = [
   { id: 'overview', label: 'Overview' },
   { id: 'columns', label: 'Columns' },
+  { id: 'examples', label: 'Examples' },
   { id: 'history', label: 'History' },
 ];
 
@@ -88,6 +90,9 @@ export default function TableDetail() {
       )}
       {detailTab === 'columns' && (
         <ColumnsTab data={data} onChange={() => mutate()} />
+      )}
+      {detailTab === 'examples' && (
+        <ExamplesTab data={data} onChange={() => mutate()} />
       )}
       {detailTab === 'history' && <HistoryTab tableName={activeTable} />}
     </div>

@@ -83,5 +83,36 @@ export const api = {
     req<any>(
       `/api/ai-tables/comment-history${table ? `?table=${encodeURIComponent(table)}` : ''}`,
     ),
+
+  // ── Phase 3b: Examples CRUD + Run ──────────────────────────────────────────
+  listExamples: (site: string, table: string) =>
+    req<any>(`${tPath(site, table)}/examples`),
+  addExample: (site: string, table: string, ex: unknown) =>
+    req<any>(`${tPath(site, table)}/examples`, json(ex)),
+  patchExample: (
+    site: string,
+    table: string,
+    id: string,
+    patch: unknown,
+  ) =>
+    req<any>(
+      `${tPath(site, table)}/examples/${encodeURIComponent(id)}`,
+      jsonPatch(patch),
+    ),
+  deleteExample: (site: string, table: string, id: string) =>
+    req<any>(
+      `${tPath(site, table)}/examples/${encodeURIComponent(id)}`,
+      { method: 'DELETE' },
+    ),
+  runExample: (
+    site: string,
+    table: string,
+    id: string,
+    bindings: Record<string, string | number> = {},
+  ) =>
+    req<any>(
+      `${tPath(site, table)}/examples/${encodeURIComponent(id)}/run`,
+      json({ bindings }),
+    ),
 };
 /* eslint-enable @typescript-eslint/no-explicit-any */
