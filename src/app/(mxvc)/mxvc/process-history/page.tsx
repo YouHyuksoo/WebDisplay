@@ -235,7 +235,7 @@ export default function ProcessHistoryPage() {
           { wch: 24 }, { wch: 8 }, { wch: 12 }, { wch: 6 }, { wch: 20 },
           { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 20 }, { wch: 40 },
         ];
-        XLSX.utils.book_append_sheet(wb, qcSheet, 'QC검사');
+        XLSX.utils.book_append_sheet(wb, qcSheet, '수리이력');
       }
 
       XLSX.writeFile(wb, `공정통과이력_노멀_${dateFrom}_${dateTo}.xlsx`);
