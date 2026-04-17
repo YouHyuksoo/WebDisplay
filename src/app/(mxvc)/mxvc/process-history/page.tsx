@@ -347,6 +347,15 @@ export default function ProcessHistoryPage() {
               placeholder="BOT"
               className={`${inputClass} font-mono text-[11px]`}
             />
+            {(ratingLabel || topSerial || botSerial) && (
+              <button
+                type="button"
+                onClick={() => { setRatingLabel(''); setTopSerial(''); setBotSerial(''); }}
+                className="mt-1.5 w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                🔄 입력 초기화 (RATING · TOP · BOT)
+              </button>
+            )}
           </div>
 
           <div>
