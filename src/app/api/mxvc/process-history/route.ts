@@ -35,28 +35,50 @@ export async function GET(req: NextRequest) {
   const dateFrom = sp.get('dateFrom')?.trim() ?? '';
   const dateTo   = sp.get('dateTo')?.trim()   ?? '';
   const isLast   = sp.get('isLast')?.trim()   ?? 'Y';
-  const pid      = sp.get('pid')?.trim()      ?? '';
+  let   pid      = sp.get('pid')?.trim()      ?? '';
   const mode     = sp.get('mode')?.trim()     ?? 'pivot';
 
   if (!dateFrom || !dateTo) {
     return NextResponse.json({ error: 'dateFrom, dateTo 필수' }, { status: 400 });
   }
 
-  const isLastClause = isLast === 'all' || isLast === ''
-    ? ''
-    : `AND t.IS_LAST = :isLast`;
-
-  /* PID 부분 일치 (대소문자 무시) */
-  const pidClause = pid ? `AND UPPER(t.PID) LIKE UPPER(:pidLike)` : '';
-
   /* INSPECT_DATE는 VARCHAR2 'YYYY/MM/DD HH24:MI:SS' — 입력 대시 → 슬래시 변환 */
   const fromSlash = dateFrom.replace(/-/g, '/');
   const toSlash   = dateTo.replace(/-/g, '/');
-  const binds: Record<string, string> = { dateFrom: fromSlash, dateTo: toSlash };
-  if (isLastClause) binds.isLast = isLast;
-  if (pidClause)    binds.pidLike = `%${pid}%`;
 
   try {
+    /* RATING_LABEL → SERIAL_NO 변환:
+       사용자가 완제품 바코드(RATING_LABEL)를 붙여넣은 경우
+       IP_PRODUCT_2D_BARCODE 에서 매칭되는 SERIAL_NO를 찾아 내부 조회에 사용.
+       완전 일치로만 시도 — 부분 입력은 기존 LIKE 동작 유지. */
+    let resolvedLabel: { originalLabel: string; resolvedSerial: string } | null = null;
+    if (pid) {
+      const labelMatch = await executeQuery<{ SERIAL_NO: string | null }>(
+        `SELECT SERIAL_NO
+           FROM IP_PRODUCT_2D_BARCODE
+          WHERE RATING_LABEL = :label
+            AND SERIAL_NO IS NOT NULL
+            AND ROWNUM = 1`,
+        { label: pid },
+      );
+      const sn = labelMatch[0]?.SERIAL_NO;
+      if (sn) {
+        resolvedLabel = { originalLabel: pid, resolvedSerial: sn };
+        pid = sn;
+      }
+    }
+
+    const isLastClause = isLast === 'all' || isLast === ''
+      ? ''
+      : `AND t.IS_LAST = :isLast`;
+
+    /* PID 부분 일치 (대소문자 무시) */
+    const pidClause = pid ? `AND UPPER(t.PID) LIKE UPPER(:pidLike)` : '';
+
+    const binds: Record<string, string> = { dateFrom: fromSlash, dateTo: toSlash };
+    if (isLastClause) binds.isLast = isLast;
+    if (pidClause)    binds.pidLike = `%${pid}%`;
+
     /* INSPECT_DATE는 VARCHAR2 'YYYY-MM-DD HH24:MI:SS' — 문자열 범위 비교 */
     const rows = await executeQuery<RawRow>(
       `SELECT t.PID,
@@ -130,6 +152,7 @@ export async function GET(req: NextRequest) {
         })),
         qcRows,
         totalRaw: rows.length,
+        resolvedLabel,
       });
     }
 
@@ -167,6 +190,7 @@ export async function GET(req: NextRequest) {
       rows: Array.from(pidMap.values()),
       totalRaw: rows.length,
       totalPids: pidMap.size,
+      resolvedLabel,
     });
   } catch (err) {
     console.error('공정통과이력 조회 실패:', err);

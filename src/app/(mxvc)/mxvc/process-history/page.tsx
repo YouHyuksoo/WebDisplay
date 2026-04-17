@@ -23,12 +23,18 @@ type ViewMode = 'pivot' | 'list';
 
 const SCREEN_ID = 'mxvc-process-history';
 
+interface ResolvedLabel {
+  originalLabel: string;
+  resolvedSerial: string;
+}
+
 interface PivotResponse {
   mode: 'pivot';
   workstages: Workstage[];
   rows: Record<string, unknown>[];
   totalRaw: number;
   totalPids: number;
+  resolvedLabel?: ResolvedLabel | null;
   error?: string;
 }
 
@@ -52,6 +58,7 @@ interface ListResponse {
   rows: ListRow[];
   qcRows: QcRow[];
   totalRaw: number;
+  resolvedLabel?: ResolvedLabel | null;
   error?: string;
 }
 
@@ -253,8 +260,8 @@ export default function ProcessHistoryPage() {
             value={pid}
             onChange={(e) => setPid(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-            placeholder="PID 부분일치 (대소문자 무시)"
-            className={`${inputClass} w-56 font-mono`}
+            placeholder="PID(SERIAL_NO) 부분일치 또는 RATING_LABEL 완전일치"
+            className={`${inputClass} w-64 font-mono`}
           />
           {pid && (
             <button
@@ -364,6 +371,18 @@ export default function ProcessHistoryPage() {
       {error && (
         <div className="shrink-0 px-6 py-2 bg-red-50 dark:bg-red-900/30 border-b border-red-300 dark:border-red-700 text-red-600 dark:text-red-300 text-sm">
           {error}
+        </div>
+      )}
+
+      {data?.resolvedLabel && (
+        <div className="shrink-0 flex items-center gap-2 px-6 py-2 bg-amber-50 dark:bg-amber-900/30 border-b border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 text-xs">
+          <span>📦</span>
+          <span>
+            입력값 <span className="font-mono font-semibold">{data.resolvedLabel.originalLabel}</span>
+            {' '}이 RATING_LABEL 과 일치하여{' '}
+            SERIAL_NO <span className="font-mono font-semibold">{data.resolvedLabel.resolvedSerial}</span>
+            {' '}로 변환 조회했습니다.
+          </span>
         </div>
       )}
 
