@@ -90,8 +90,8 @@ async function fetchSpiRows(
             WORKSTAGE_CODE, WORKSTAGE_NAME, MACHINE_CODE,
             INSPECT_RESULT, INSPECT_DATE, IS_LAST
        FROM (
-         SELECT s.MASTER_BARCODE                              AS PID,
-                F_GET_MODEL_NAME_BY_PID(s.MASTER_BARCODE)     AS MODEL_NAME,
+         SELECT s.ARRAY_BARCODE                               AS PID,
+                F_GET_MODEL_NAME_BY_PID(s.ARRAY_BARCODE)      AS MODEL_NAME,
                 b.RATING_LABEL                                AS RATING_LABEL,
                 b.PCB_ITEM                                    AS PCB_ITEM,
                 'SPI'                                          AS WORKSTAGE_CODE,
@@ -101,8 +101,8 @@ async function fetchSpiRows(
                 (s.INSPECTION_DATE || ' ' || NVL(s.INSPECTION_END_TIME, '')) AS INSPECT_DATE,
                 s.IS_LAST                                      AS IS_LAST
            FROM LOG_SPI s
-           LEFT JOIN IP_PRODUCT_2D_BARCODE b ON b.SERIAL_NO = s.MASTER_BARCODE
-          WHERE s.MASTER_BARCODE IN (${names.join(',')})
+           LEFT JOIN IP_PRODUCT_2D_BARCODE b ON b.SERIAL_NO = s.ARRAY_BARCODE
+          WHERE s.ARRAY_BARCODE IN (${names.join(',')})
             AND s.INSPECTION_DATE BETWEEN :dateFrom AND :dateTo
             ${isLastS}
          UNION ALL

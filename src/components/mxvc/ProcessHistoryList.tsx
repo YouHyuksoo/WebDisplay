@@ -1,13 +1,13 @@
 /**
  * @file src/components/mxvc/ProcessHistoryList.tsx
- * @description 공정통과이력 노멀(리스트) 뷰 — 공정별 그룹 + 시간순 정렬.
- * 초보자 가이드: 피벗 대신 raw 데이터를 공정(WORKSTAGE) 단위로 그룹핑하여
- * 접고/펼칠 수 있는 리스트 형태로 표시한다. 각 그룹 내부는 시간순 정렬.
+ * @description 공정통과이력 노멀(리스트) 뷰 — 추적성 스타일 단일 테이블.
+ * 초보자 가이드: 공정별 접기 그룹 대신 하나의 테이블에 모든 행을 나열하고
+ * 왼쪽 첫 컬럼이 "공정 구분(코드 + 명)"을 배지 형태로 표시한다.
+ * QC / 공정 IO 는 각각 별도 테이블이지만 헤더 타이틀만 간소하게.
  */
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useMemo } from 'react';
 import type { Workstage } from './ProcessHistoryGrid';
 
 /** raw 행 데이터 */
@@ -102,175 +102,145 @@ const NEUTRAL_PALETTE = {
 /** PALETTE 배열 API 는 보존하되 모든 인덱스가 동일 중립 색을 반환. */
 const PALETTE = new Array(1).fill(NEUTRAL_PALETTE);
 
-/** 공정통과이력 리스트 뷰 — 공정별 그룹 + 시간순 */
+/** 공정통과이력 리스트 뷰 — 추적성 스타일 단일 테이블. */
 export default function ProcessHistoryList({ rows, workstages, qcRows = [], ioRows = [] }: Props) {
-  /** 그룹별 접힘 상태 (기본: 모두 펼침) */
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-
-  const toggle = useCallback((code: string) => {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
-      return next;
+  /** workstages 순서 기반 인덱스 — rows 를 공정 순으로 재정렬할 때 사용. */
+  const sortedRows = useMemo(() => {
+    const order = new Map(workstages.map((w, i) => [w.code, i]));
+    return [...rows].sort((a, b) => {
+      const ai = order.get(a.WORKSTAGE_CODE) ?? 999;
+      const bi = order.get(b.WORKSTAGE_CODE) ?? 999;
+      if (ai !== bi) return ai - bi;
+      const pcbA = (a.PCB_ITEM ?? '').localeCompare(b.PCB_ITEM ?? '');
+      if (pcbA !== 0) return pcbA;
+      return (a.INSPECT_DATE ?? '').localeCompare(b.INSPECT_DATE ?? '');
     });
-  }, []);
-
-  const expandAll = useCallback(() => setCollapsed(new Set()), []);
-  const collapseAll = useCallback(() => {
-    setCollapsed(new Set(workstages.map((w) => w.code)));
-  }, [workstages]);
-
-  /** 공정별 그룹핑 — workstages 순서 유지 */
-  const groups = useMemo(() => {
-    const map = new Map<string, ListRow[]>();
-    for (const w of workstages) map.set(w.code, []);
-    for (const r of rows) {
-      const arr = map.get(r.WORKSTAGE_CODE);
-      if (arr) arr.push(r);
-      else map.set(r.WORKSTAGE_CODE, [r]);
-    }
-    return workstages
-      .map((w, i) => ({
-        code: w.code,
-        name: w.name,
-        rows: map.get(w.code) ?? [],
-        palette: PALETTE[i % PALETTE.length],
-      }))
-      ; /* 데이터 없는 공정도 섹션 표시 */
   }, [rows, workstages]);
 
-  const totalNg = useMemo(() => {
-    return rows.filter((r) => r.INSPECT_RESULT && !PASS_VALUES.has(r.INSPECT_RESULT.toUpperCase())).length;
-  }, [rows]);
+  const totalNg = useMemo(
+    () => rows.filter((r) => r.INSPECT_RESULT && !PASS_VALUES.has(r.INSPECT_RESULT.toUpperCase())).length,
+    [rows],
+  );
+
+  /** 공정 코드 → 배지 색상. 추적성처럼 왼쪽 구분 셀에 사용. */
+  function stageBadge(code: string): string {
+    if (code === 'SPI') return 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100';
+    if (code === 'AOI') return 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100';
+    return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200';
+  }
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* 상단 도구 바 */}
       <div className="shrink-0 flex items-center gap-3 px-3 py-1.5 border-b border-gray-200 dark:border-gray-700">
-        <button onClick={expandAll} className="text-xs text-blue-500 hover:text-blue-400">전체 펼치기</button>
-        <button onClick={collapseAll} className="text-xs text-blue-500 hover:text-blue-400">전체 접기</button>
-        <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
-          {groups.length}개 공정 · {rows.length}건
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          공정이력 <b>{sortedRows.length}</b>건
           {totalNg > 0 && <span className="ml-2 text-red-500 font-semibold">NG {totalNg}건</span>}
+          <span className="ml-2">· QC <b>{qcRows.length}</b> · 공정IO <b>{ioRows.length}</b></span>
         </span>
       </div>
 
       {/* 스크롤 영역 */}
-      <div className="flex-1 min-h-0 overflow-auto px-3 py-2 space-y-2">
-        {groups.map((g) => {
-          const isOpen = !collapsed.has(g.code);
-          const ngCount = g.rows.filter((r) => r.INSPECT_RESULT && !PASS_VALUES.has(r.INSPECT_RESULT.toUpperCase())).length;
-
-          return (
-            <div key={g.code} className={`rounded-lg border ${g.palette.border} overflow-hidden`}>
-              {/* 그룹 헤더 */}
-              <button
-                onClick={() => toggle(g.code)}
-                className={`w-full flex items-center gap-2 px-4 py-2.5 text-left transition-colors ${g.palette.header}`}
-              >
-                {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                <span className={`inline-block h-3 w-3 rounded-full ${g.palette.dot}`} />
-                <span className="font-bold text-sm text-gray-800 dark:text-gray-100">
-                  {g.name}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">({g.code})</span>
-                <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
-                  {g.rows.length}건
-                </span>
-                {ngCount > 0 && (
-                  <span className="text-xs font-bold text-red-600 dark:text-red-400">NG {ngCount}</span>
-                )}
-              </button>
-
-              {/* 데이터 테이블 */}
-              {isOpen && g.rows.length === 0 && (
-                <div className={`${g.palette.bg} px-4 py-3 text-xs text-gray-400 dark:text-gray-500`}>
-                  데이터 없음
-                </div>
-              )}
-              {isOpen && g.rows.length > 0 && (
-                <div className={g.palette.bg}>
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
-                        <th className="px-3 py-1.5 text-center font-medium w-[80px]">공정코드</th>
-                        <th className="px-3 py-1.5 text-left font-medium w-[120px]">공정명</th>
-                        <th className="px-2 py-1.5 text-center font-medium w-[50px]">면</th>
-                        <th className="px-4 py-1.5 text-left font-medium w-[220px]">PID</th>
-                        <th className="px-3 py-1.5 text-left font-medium w-[120px]">모델명</th>
-                        <th className="px-3 py-1.5 text-left font-medium w-[360px]">Rating Label</th>
-                        <th className="px-3 py-1.5 text-center font-medium w-[100px]">머신</th>
-                        <th className="px-3 py-1.5 text-center font-medium w-[80px]">결과</th>
-                        <th className="px-3 py-1.5 text-center font-medium w-[60px]">IS_LAST</th>
-                        <th className="px-3 py-1.5 text-center font-medium w-[180px]">검사일시</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {g.rows.map((r, idx) => {
-                        const isPass = r.INSPECT_RESULT ? PASS_VALUES.has(r.INSPECT_RESULT.toUpperCase()) : true;
-                        const badge = pcbItemBadge(r.PCB_ITEM);
-                        return (
-                          <tr
-                            key={`${r.PID}-${idx}`}
-                            className={`border-b border-gray-100 dark:border-gray-800 last:border-b-0 ${
-                              !isPass ? 'bg-red-50/50 dark:bg-red-950/20' : ''
-                            }`}
-                          >
-                            <td className="px-3 py-1.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">{r.WORKSTAGE_CODE}</td>
-                            <td className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 truncate">{r.WORKSTAGE_NAME ?? '-'}</td>
-                            <td className="px-2 py-1.5 text-center">
-                              {badge
-                                ? <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10px] ${badge.cls}`}>{badge.label}</span>
-                                : <span className="text-gray-400 text-xs">—</span>}
-                            </td>
-                            <td className="px-4 py-1.5 font-mono text-xs text-gray-700 dark:text-gray-300 truncate">{r.PID}</td>
-                            <td className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 truncate">{r.MODEL_NAME ?? '-'}</td>
-                            <td className="px-3 py-1.5 font-mono text-[11px] text-gray-500 dark:text-gray-400 truncate" title={r.RATING_LABEL ?? undefined}>{r.RATING_LABEL ?? '-'}</td>
-                            <td className="px-3 py-1.5 text-center text-xs text-gray-600 dark:text-gray-400">{r.MACHINE_CODE ?? '-'}</td>
-                            <td className={`px-3 py-1.5 text-center text-xs font-bold ${
-                              isPass ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                            }`}>
-                              {r.INSPECT_RESULT ?? '-'}
-                            </td>
-                            <td className={`px-3 py-1.5 text-center text-xs font-semibold ${
-                              r.IS_LAST === 'Y' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-600'
-                            }`}>
-                              {r.IS_LAST ?? '-'}
-                            </td>
-                            <td className="px-3 py-1.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">
-                              {r.INSPECT_DATE ?? '-'}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* ── QC 검사 섹션 ── */}
+      <div className="flex-1 min-h-0 overflow-auto px-3 py-2 space-y-3">
+        {/* ── 공정 이력 (추적성 스타일 단일 테이블) ── */}
         <div className={`rounded-lg border ${NEUTRAL_PALETTE.border} overflow-hidden`}>
-          <button
-            onClick={() => toggle('__QC__')}
-            className={`w-full flex items-center gap-2 px-4 py-2.5 text-left transition-colors ${NEUTRAL_PALETTE.header}`}
-          >
-            {!collapsed.has('__QC__') ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            <span className={`inline-block h-3 w-3 rounded-full ${NEUTRAL_PALETTE.dot}`} />
-            <span className="font-bold text-sm text-gray-800 dark:text-gray-100">QC 검사</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">(IP_PRODUCT_WORK_QC)</span>
-            <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">{qcRows.length}건</span>
-          </button>
-
-          {!collapsed.has('__QC__') && qcRows.length === 0 && (
+          <div className={`px-4 py-2 text-sm font-bold text-gray-800 dark:text-gray-100 ${NEUTRAL_PALETTE.header}`}>
+            공정 이력 <span className="ml-1 text-xs font-normal text-gray-500">({sortedRows.length}건)</span>
+          </div>
+          {sortedRows.length === 0 ? (
             <div className={`${NEUTRAL_PALETTE.bg} px-4 py-3 text-xs text-gray-400 dark:text-gray-500`}>
               데이터 없음
             </div>
+          ) : (
+            <div className={NEUTRAL_PALETTE.bg}>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                    <th className="px-3 py-1.5 text-left font-medium w-[180px]">공정</th>
+                    <th className="px-2 py-1.5 text-center font-medium w-[50px]">면</th>
+                    <th className="px-4 py-1.5 text-left font-medium w-[220px]">PID</th>
+                    <th className="px-3 py-1.5 text-left font-medium w-[120px]">모델명</th>
+                    <th className="px-3 py-1.5 text-left font-medium w-[360px]">Rating Label</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[100px]">머신</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[80px]">결과</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[60px]">IS_LAST</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[180px]">검사일시</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedRows.map((r, idx) => {
+                    const isPass = r.INSPECT_RESULT ? PASS_VALUES.has(r.INSPECT_RESULT.toUpperCase()) : true;
+                    const badge = pcbItemBadge(r.PCB_ITEM);
+                    const prev = idx > 0 ? sortedRows[idx - 1] : null;
+                    /** 이전 행과 같은 공정이면 왼쪽 구분 셀의 시각적 강조를 줄여 그룹감 부여. */
+                    const isFirstOfStage = !prev || prev.WORKSTAGE_CODE !== r.WORKSTAGE_CODE;
+                    return (
+                      <tr
+                        key={`${r.PID}-${r.WORKSTAGE_CODE}-${idx}`}
+                        className={`border-b border-gray-100 dark:border-gray-800 last:border-b-0 ${
+                          !isPass ? 'bg-red-50/50 dark:bg-red-950/20' : ''
+                        }`}
+                      >
+                        <td className="px-3 py-1.5 align-middle">
+                          {isFirstOfStage ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${stageBadge(r.WORKSTAGE_CODE)}`}>
+                                {r.WORKSTAGE_CODE}
+                              </span>
+                              <span className="text-xs text-gray-700 dark:text-gray-300 truncate">
+                                {r.WORKSTAGE_NAME ?? '-'}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 opacity-40">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${stageBadge(r.WORKSTAGE_CODE)}`}>
+                                {r.WORKSTAGE_CODE}
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-2 py-1.5 text-center">
+                          {badge
+                            ? <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10px] ${badge.cls}`}>{badge.label}</span>
+                            : <span className="text-gray-400 text-xs">—</span>}
+                        </td>
+                        <td className="px-4 py-1.5 font-mono text-xs text-gray-700 dark:text-gray-300 truncate">{r.PID}</td>
+                        <td className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 truncate">{r.MODEL_NAME ?? '-'}</td>
+                        <td className="px-3 py-1.5 font-mono text-[11px] text-gray-500 dark:text-gray-400 truncate" title={r.RATING_LABEL ?? undefined}>{r.RATING_LABEL ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-center text-xs text-gray-600 dark:text-gray-400">{r.MACHINE_CODE ?? '-'}</td>
+                        <td className={`px-3 py-1.5 text-center text-xs font-bold ${
+                          isPass ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {r.INSPECT_RESULT ?? '-'}
+                        </td>
+                        <td className={`px-3 py-1.5 text-center text-xs font-semibold ${
+                          r.IS_LAST === 'Y' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-600'
+                        }`}>
+                          {r.IS_LAST ?? '-'}
+                        </td>
+                        <td className="px-3 py-1.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">
+                          {r.INSPECT_DATE ?? '-'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
-          {!collapsed.has('__QC__') && qcRows.length > 0 && (
+        </div>
+
+        {/* ── QC 검사 섹션 ── */}
+        <div className={`rounded-lg border ${NEUTRAL_PALETTE.border} overflow-hidden`}>
+          <div className={`px-4 py-2 text-sm font-bold text-gray-800 dark:text-gray-100 ${NEUTRAL_PALETTE.header}`}>
+            QC 검사 <span className="ml-1 text-xs font-normal text-gray-500">({qcRows.length}건)</span>
+          </div>
+
+          {qcRows.length === 0 ? (
+            <div className={`${NEUTRAL_PALETTE.bg} px-4 py-3 text-xs text-gray-400 dark:text-gray-500`}>
+              데이터 없음
+            </div>
+          ) : (
             <div className={NEUTRAL_PALETTE.bg}>
               <table className="w-full text-sm">
                 <thead>
@@ -323,23 +293,15 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [], ioRo
 
         {/* ── 공정 IO 섹션 (IP_PRODUCT_WORKSTAGE_IO) ── */}
         <div className={`rounded-lg border ${NEUTRAL_PALETTE.border} overflow-hidden`}>
-          <button
-            onClick={() => toggle('__IO__')}
-            className={`w-full flex items-center gap-2 px-4 py-2.5 text-left transition-colors ${NEUTRAL_PALETTE.header}`}
-          >
-            {!collapsed.has('__IO__') ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            <span className={`inline-block h-3 w-3 rounded-full ${NEUTRAL_PALETTE.dot}`} />
-            <span className="font-bold text-sm text-gray-800 dark:text-gray-100">공정 IO</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">(IP_PRODUCT_WORKSTAGE_IO)</span>
-            <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">{ioRows.length}건</span>
-          </button>
+          <div className={`px-4 py-2 text-sm font-bold text-gray-800 dark:text-gray-100 ${NEUTRAL_PALETTE.header}`}>
+            공정 IO <span className="ml-1 text-xs font-normal text-gray-500">({ioRows.length}건)</span>
+          </div>
 
-          {!collapsed.has('__IO__') && ioRows.length === 0 && (
+          {ioRows.length === 0 ? (
             <div className={`${NEUTRAL_PALETTE.bg} px-4 py-3 text-xs text-gray-400 dark:text-gray-500`}>
               데이터 없음
             </div>
-          )}
-          {!collapsed.has('__IO__') && ioRows.length > 0 && (
+          ) : (
             <div className={`${NEUTRAL_PALETTE.bg} overflow-x-auto`}>
               <table className="w-full text-sm">
                 <thead>
