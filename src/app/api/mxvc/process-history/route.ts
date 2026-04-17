@@ -17,6 +17,12 @@ export const dynamic = 'force-dynamic';
  * RATING_LABEL 완전일치로 IP_PRODUCT_2D_BARCODE 에서 SERIAL_NO 목록을 조회한다.
  * 같은 라벨에 Top(T) / Bottom(B) 면이 각각 등록되어 복수 건이 반환될 수 있음.
  * PCB_ITEM 은 'T'=Top / 'B'=Bottom / 'S'=PBA 등 코드값.
+ *
+ * **SMT 공정 확장**:
+ * SPI/AOI/COATING1/COATING2/COATINGVISION 등 SMT 단계는 TOP/BOT 면이 각각
+ * 별도 SERIAL_NO 로 기록되므로, IP_PRODUCT_2D_BARCODE 에 한쪽(주로 Top)만
+ * 등록되어 있어도 누락되지 않도록 `F_GET_SMT_BOT_2_TOP(topSerial)` 로
+ * 상대 면 SERIAL_NO 를 도출해 결과에 합류한다.
  */
 async function fetchLabelSerials(
   label: string,
@@ -29,9 +35,36 @@ async function fetchLabelSerials(
       ORDER BY PCB_ITEM, SERIAL_NO`,
     { label },
   );
-  return rows
-    .filter((r) => r.SERIAL_NO)
-    .map((r) => ({ serial: r.SERIAL_NO as string, side: r.PCB_ITEM }));
+  const map = new Map<string, { serial: string; side: string | null }>();
+  for (const r of rows) {
+    if (!r.SERIAL_NO) continue;
+    map.set(r.SERIAL_NO, { serial: r.SERIAL_NO, side: r.PCB_ITEM });
+  }
+
+  /* F_GET_SMT_BOT_2_TOP(topSerial) → BOT 자동 도출. 이미 존재하면 중복 제거. */
+  const originals = Array.from(map.values());
+  for (const o of originals) {
+    const bot = await fetchBotFromTop(o.serial);
+    if (bot && bot !== o.serial && !map.has(bot)) {
+      map.set(bot, { serial: bot, side: 'B' });
+    }
+  }
+  return Array.from(map.values());
+}
+
+/** TOP SERIAL_NO → BOT SERIAL_NO (F_GET_SMT_BOT_2_TOP). 실패/동일 시 null. */
+async function fetchBotFromTop(topSerial: string): Promise<string | null> {
+  try {
+    const r = await executeQuery<{ BOT: string | null }>(
+      `SELECT F_GET_SMT_BOT_2_TOP(:t) AS BOT FROM DUAL`,
+      { t: topSerial },
+    );
+    const bot = r[0]?.BOT;
+    if (!bot || bot === topSerial) return null;
+    return bot;
+  } catch {
+    return null;
+  }
 }
 
 interface RawRow {
@@ -58,11 +91,16 @@ export async function GET(req: NextRequest) {
   const dateFrom    = sp.get('dateFrom')?.trim()    ?? '';
   const dateTo      = sp.get('dateTo')?.trim()      ?? '';
   const isLast      = sp.get('isLast')?.trim()      ?? 'Y';
-  /* 입력 분리: serialNo = 부분일치, ratingLabel = 완전일치(Top+Bot 포함).
-     구버전 하위호환: `pid` 파라미터가 오면 serialNo 로 대체 처리 + 값이 RATING_LABEL
-     과 완전 일치하면 자동으로 ratingLabel 경로로 폴백. */
-  let   serialNo    = (sp.get('serialNo') ?? sp.get('pid') ?? '').trim();
+  /* 입력 우선순위 (상→하):
+     1) ratingLabel (완전일치) → IP_PRODUCT_2D_BARCODE Top+Bot 모두 조회
+     2) topSerial   (완전일치) → TOP + F_GET_SMT_BOT_2_TOP(topSerial) 로 BOT 자동 도출
+     3) botSerial   (완전일치) → BOT 단독 조회
+     4) serialNo    (부분일치, 하위호환) → LIKE
+     하위호환 `pid` 는 serialNo 로 매핑. */
   let   ratingLabel = (sp.get('ratingLabel') ?? '').trim();
+  let   topSerial   = (sp.get('topSerial')   ?? '').trim();
+  let   botSerial   = (sp.get('botSerial')   ?? '').trim();
+  let   serialNo    = (sp.get('serialNo') ?? sp.get('pid') ?? '').trim();
   const mode        = sp.get('mode')?.trim()        ?? 'pivot';
 
   if (!dateFrom || !dateTo) {
@@ -74,14 +112,22 @@ export async function GET(req: NextRequest) {
   const toSlash   = dateTo.replace(/-/g, '/');
 
   try {
-    /* 1. RATING_LABEL 완전일치 → SERIAL_NO 목록(Top/Bot 다면) 조회
-       IP_PRODUCT_2D_BARCODE.PCB_ITEM 으로 Top/Bot 구분 (T=Top, B=Bottom, S=PBA 등) */
+    /* 입력 우선순위:
+       1) ratingLabel → fetchLabelSerials (Top+Bot 자동 합류)
+       2) topSerial   → TOP + F_GET_SMT_BOT_2_TOP(TOP) 로 BOT 도출
+       3) botSerial   → BOT 단독
+       4) serialNo    → RATING_LABEL 자동 폴백 시도 후 실패 시 LIKE */
     let resolvedSerials: Array<{ serial: string; side: string | null }> = [];
     if (ratingLabel) {
       resolvedSerials = await fetchLabelSerials(ratingLabel);
+    } else if (topSerial) {
+      resolvedSerials = [{ serial: topSerial, side: 'T' }];
+      const bot = await fetchBotFromTop(topSerial);
+      if (bot) resolvedSerials.push({ serial: bot, side: 'B' });
+    } else if (botSerial) {
+      resolvedSerials = [{ serial: botSerial, side: 'B' }];
     } else if (serialNo) {
-      /* 2. 하위호환: serialNo 값이 사실 RATING_LABEL 일 수도 있음.
-         완전일치로 조회해 매칭되면 RATING_LABEL 경로로 폴백. */
+      /* 하위호환: serialNo 값이 사실 RATING_LABEL 일 수도 있음. */
       const fallback = await fetchLabelSerials(serialNo);
       if (fallback.length > 0) {
         ratingLabel     = serialNo;

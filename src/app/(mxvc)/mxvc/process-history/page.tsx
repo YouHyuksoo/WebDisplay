@@ -83,10 +83,12 @@ export default function ProcessHistoryPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo,   setDateTo]   = useState('');
   const [isLast,   setIsLast]   = useState<'Y' | 'N' | 'all'>('Y');
-  const [viewMode,  setViewMode] = useState<ViewMode>('pivot');
+  const [viewMode,  setViewMode] = useState<ViewMode>('list');
   const [resultFilter, setResultFilter] = useState<'all' | 'ok' | 'ng'>('all');
-  const [serialNo,    setSerialNo]    = useState('');
+  /* 입력 우선순위: ratingLabel > topSerial > botSerial. 3 개 필드 분리. */
   const [ratingLabel, setRatingLabel] = useState('');
+  const [topSerial,   setTopSerial]   = useState('');
+  const [botSerial,   setBotSerial]   = useState('');
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState('');
   const [data,     setData]     = useState<ApiResponse | null>(null);
@@ -100,10 +102,11 @@ export default function ProcessHistoryPage() {
 
   const handleSearch = useCallback(async () => {
     if (!dateFrom || !dateTo) return;
-    const sn = serialNo.trim();
-    const rl = ratingLabel.trim();
-    if (viewMode === 'list' && !sn && !rl) {
-      setError('노멀 뷰에서는 SERIAL_NO 또는 RATING_LABEL 을 입력해야 합니다');
+    const rl  = ratingLabel.trim();
+    const top = topSerial.trim();
+    const bot = botSerial.trim();
+    if (viewMode === 'list' && !rl && !top && !bot) {
+      setError('노멀 뷰에서는 RATING_LABEL 또는 TOP/BOT SERIAL_NO 중 하나가 필요합니다');
       return;
     }
     setLoading(true);
@@ -111,8 +114,9 @@ export default function ProcessHistoryPage() {
     setData(null);
     try {
       const p = new URLSearchParams({ dateFrom, dateTo, isLast, mode: viewMode });
-      if (sn) p.set('serialNo', sn);
-      if (rl) p.set('ratingLabel', rl);
+      if (rl)  p.set('ratingLabel', rl);
+      if (top) p.set('topSerial',   top);
+      if (bot) p.set('botSerial',   bot);
       const res = await fetch(`/api/mxvc/process-history?${p}`, { cache: 'no-store' });
       const json = (await res.json()) as ApiResponse;
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
@@ -122,7 +126,7 @@ export default function ProcessHistoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateFrom, dateTo, isLast, serialNo, ratingLabel, viewMode]);
+  }, [dateFrom, dateTo, isLast, ratingLabel, topSerial, botSerial, viewMode]);
 
   const inputClass = 'w-full rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 [color-scheme:dark]';
 
@@ -258,25 +262,13 @@ export default function ProcessHistoryPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">SERIAL_NO (PID)</label>
-            <input
-              type="text"
-              value={serialNo}
-              onChange={(e) => setSerialNo(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-              placeholder="부분일치, 대소문자 무시"
-              className={`${inputClass} font-mono`}
-            />
-          </div>
-
-          <div>
             <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">RATING_LABEL</label>
             <input
               type="text"
               value={ratingLabel}
               onChange={(e) => setRatingLabel(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-              placeholder="완전일치 (Top+Bot 모두 조회)"
+              placeholder="완전일치 (SPI/AOI/Coating 는 Top+Bot 자동)"
               className={`${inputClass} font-mono text-[11px]`}
             />
             {(resolvedRatingLabel || resolvedSerials.length > 0) && (
@@ -300,6 +292,30 @@ export default function ProcessHistoryPage() {
                 ) : null}
               </div>
             )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">TOP SERIAL_NO</label>
+            <input
+              type="text"
+              value={topSerial}
+              onChange={(e) => setTopSerial(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+              placeholder="완전일치, F_GET_SMT_BOT_2_TOP 로 Bot 자동"
+              className={`${inputClass} font-mono text-[11px]`}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">BOT SERIAL_NO</label>
+            <input
+              type="text"
+              value={botSerial}
+              onChange={(e) => setBotSerial(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+              placeholder="완전일치 (Bot 단독 조회)"
+              className={`${inputClass} font-mono text-[11px]`}
+            />
           </div>
 
           <div>
@@ -422,7 +438,7 @@ export default function ProcessHistoryPage() {
             ) : (
               <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
                 {viewMode === 'list'
-                  ? 'SERIAL_NO 또는 RATING_LABEL 을 입력하고 조회 버튼을 누르세요'
+                  ? 'RATING_LABEL · TOP · BOT 중 하나를 입력하고 조회 버튼을 누르세요'
                   : '날짜를 선택하고 조회 버튼을 누르세요'}
               </div>
             )}
