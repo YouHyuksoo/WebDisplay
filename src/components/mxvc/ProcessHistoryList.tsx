@@ -166,7 +166,7 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [] }: Pr
                         <th className="px-3 py-1.5 text-left font-medium w-[120px]">공정명</th>
                         <th className="px-4 py-1.5 text-left font-medium w-[220px]">PID</th>
                         <th className="px-3 py-1.5 text-left font-medium w-[120px]">모델명</th>
-                        <th className="px-3 py-1.5 text-left font-medium w-[260px]">Rating Label</th>
+                        <th className="px-3 py-1.5 text-left font-medium w-[360px]">Rating Label</th>
                         <th className="px-3 py-1.5 text-center font-medium w-[100px]">머신</th>
                         <th className="px-3 py-1.5 text-center font-medium w-[80px]">결과</th>
                         <th className="px-3 py-1.5 text-center font-medium w-[60px]">IS_LAST</th>
@@ -187,7 +187,7 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [] }: Pr
                             <td className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 truncate">{r.WORKSTAGE_NAME ?? '-'}</td>
                             <td className="px-4 py-1.5 font-mono text-xs text-gray-700 dark:text-gray-300 truncate">{r.PID}</td>
                             <td className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 truncate">{r.MODEL_NAME ?? '-'}</td>
-                            <td className="px-3 py-1.5 font-mono text-[10px] text-gray-500 dark:text-gray-400 truncate" title={r.RATING_LABEL ?? undefined}>{r.RATING_LABEL ?? '-'}</td>
+                            <td className="px-3 py-1.5 font-mono text-[11px] text-gray-500 dark:text-gray-400 truncate" title={r.RATING_LABEL ?? undefined}>{r.RATING_LABEL ?? '-'}</td>
                             <td className="px-3 py-1.5 text-center text-xs text-gray-600 dark:text-gray-400">{r.MACHINE_CODE ?? '-'}</td>
                             <td className={`px-3 py-1.5 text-center text-xs font-bold ${
                               isPass ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
