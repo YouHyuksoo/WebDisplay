@@ -71,6 +71,7 @@ interface RawRow {
   PID: string;
   MODEL_NAME: string | null;
   RATING_LABEL: string | null;
+  PCB_ITEM: string | null;          // IP_PRODUCT_2D_BARCODE.PCB_ITEM — 'T'=Top, 'B'=Bottom, 'S'=PBA
   WORKSTAGE_CODE: string;
   WORKSTAGE_NAME: string | null;
   MACHINE_CODE: string | null;
@@ -83,6 +84,7 @@ interface PivotRow {
   PID: string;
   MODEL_NAME: string | null;
   RATING_LABEL: string | null;
+  PCB_ITEM: string | null;
   [key: string]: unknown;
 }
 
@@ -168,6 +170,7 @@ export async function GET(req: NextRequest) {
       `SELECT t.PID,
               F_GET_MODEL_NAME_BY_PID(t.PID) AS MODEL_NAME,
               b.RATING_LABEL,
+              b.PCB_ITEM,
               t.WORKSTAGE_CODE,
               NVL(F_GET_WORKSTAGE_NAME(t.WORKSTAGE_CODE), t.WORKSTAGE_CODE) AS WORKSTAGE_NAME,
               t.MACHINE_CODE,
@@ -240,6 +243,7 @@ export async function GET(req: NextRequest) {
           PID: r.PID,
           MODEL_NAME: r.MODEL_NAME,
           RATING_LABEL: r.RATING_LABEL,
+          PCB_ITEM: r.PCB_ITEM,
           WORKSTAGE_CODE: r.WORKSTAGE_CODE,
           WORKSTAGE_NAME: r.WORKSTAGE_NAME,
           MACHINE_CODE: r.MACHINE_CODE,
@@ -268,7 +272,12 @@ export async function GET(req: NextRequest) {
       }
 
       if (!pidMap.has(pid)) {
-        pidMap.set(pid, { PID: pid, MODEL_NAME: r.MODEL_NAME, RATING_LABEL: r.RATING_LABEL });
+        pidMap.set(pid, {
+          PID: pid,
+          MODEL_NAME: r.MODEL_NAME,
+          RATING_LABEL: r.RATING_LABEL,
+          PCB_ITEM: r.PCB_ITEM,
+        });
       }
       const row = pidMap.get(pid)!;
       /* 같은 PID+WORKSTAGE가 여러 건이면 최신(ORDER BY INSPECT_DATE)이 뒤에 오므로 덮어씀 */

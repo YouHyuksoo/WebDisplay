@@ -180,10 +180,11 @@ export default function ProcessHistoryPage() {
 
     /* ── list 모드 엑셀 ── */
     if (data.mode === 'list') {
-      const header = ['공정코드', '공정명', 'PID', '모델명', 'Rating Label', '머신', '결과', 'IS_LAST', '검사일시'];
+      const header = ['공정코드', '공정명', '면', 'PID', '모델명', 'Rating Label', '머신', '결과', 'IS_LAST', '검사일시'];
       const dataRows = (data.rows as ListRow[]).map((r) => [
         r.WORKSTAGE_CODE ?? '',
         r.WORKSTAGE_NAME ?? '',
+        r.PCB_ITEM ?? '',
         r.PID ?? '',
         r.MODEL_NAME ?? '',
         r.RATING_LABEL ?? '',
@@ -194,7 +195,7 @@ export default function ProcessHistoryPage() {
       ]);
       const sheet = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
       sheet['!cols'] = [
-        { wch: 10 }, { wch: 16 }, { wch: 24 }, { wch: 16 }, { wch: 38 },
+        { wch: 10 }, { wch: 16 }, { wch: 4 }, { wch: 24 }, { wch: 16 }, { wch: 38 },
         { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 20 },
       ];
       const wb = XLSX.utils.book_new();
@@ -225,8 +226,8 @@ export default function ProcessHistoryPage() {
     if (pivotRows.length === 0) return;
     const ws = data.workstages;
 
-    const row0: (string | null)[] = ['', '', ''];
-    const row1: string[] = ['PID', '모델명', 'Rating Label'];
+    const row0: (string | null)[] = ['', '', '', ''];
+    const row1: string[] = ['면', 'PID', '모델명', 'Rating Label'];
     for (const w of ws) {
       const label = `${w.name} (${w.code})`;
       row0.push(label, null, null);
@@ -235,6 +236,7 @@ export default function ProcessHistoryPage() {
 
     const dataRows = pivotRows.map((r) => {
       const out: (string | number | null)[] = [
+        (r.PCB_ITEM as string) ?? '',
         (r.PID as string) ?? '',
         (r.MODEL_NAME as string) ?? '',
         (r.RATING_LABEL as string) ?? '',
@@ -252,16 +254,17 @@ export default function ProcessHistoryPage() {
 
     const merges: XLSX.Range[] = [];
     for (let i = 0; i < ws.length; i++) {
-      const startCol = 3 + i * 3;
+      const startCol = 4 + i * 3;  // 면/PID/모델명/RatingLabel = 4 컬럼 이후
       merges.push({ s: { r: 0, c: startCol }, e: { r: 0, c: startCol + 2 } });
     }
     merges.push({ s: { r: 0, c: 0 }, e: { r: 1, c: 0 } });
     merges.push({ s: { r: 0, c: 1 }, e: { r: 1, c: 1 } });
     merges.push({ s: { r: 0, c: 2 }, e: { r: 1, c: 2 } });
+    merges.push({ s: { r: 0, c: 3 }, e: { r: 1, c: 3 } });
     sheet['!merges'] = merges;
 
     sheet['!cols'] = [
-      { wch: 24 }, { wch: 16 }, { wch: 38 },
+      { wch: 4 }, { wch: 24 }, { wch: 16 }, { wch: 38 },
       ...ws.flatMap(() => [{ wch: 12 }, { wch: 8 }, { wch: 20 }]),
     ];
 

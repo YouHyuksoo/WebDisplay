@@ -15,12 +15,23 @@ export interface ListRow {
   PID: string;
   MODEL_NAME: string | null;
   RATING_LABEL: string | null;
+  PCB_ITEM: string | null;  // 'T'=Top, 'B'=Bottom, 'S'=PBA
   WORKSTAGE_CODE: string;
   WORKSTAGE_NAME: string | null;
   MACHINE_CODE: string | null;
   INSPECT_RESULT: string | null;
   INSPECT_DATE: string | null;
   IS_LAST: string | null;
+}
+
+/** PCB_ITEM 코드 → 색상 배지 스펙. */
+function pcbItemBadge(code: string | null): { label: string; cls: string } | null {
+  if (!code) return null;
+  const c = code.toUpperCase();
+  if (c === 'T') return { label: 'Top', cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-200' };
+  if (c === 'B') return { label: 'Bot', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200' };
+  if (c === 'S') return { label: 'PBA', cls: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' };
+  return { label: c, cls: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' };
 }
 
 /** QC 검사 행 데이터 */
@@ -164,6 +175,7 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [] }: Pr
                       <tr className="border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
                         <th className="px-3 py-1.5 text-center font-medium w-[80px]">공정코드</th>
                         <th className="px-3 py-1.5 text-left font-medium w-[120px]">공정명</th>
+                        <th className="px-2 py-1.5 text-center font-medium w-[50px]">면</th>
                         <th className="px-4 py-1.5 text-left font-medium w-[220px]">PID</th>
                         <th className="px-3 py-1.5 text-left font-medium w-[120px]">모델명</th>
                         <th className="px-3 py-1.5 text-left font-medium w-[360px]">Rating Label</th>
@@ -176,6 +188,7 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [] }: Pr
                     <tbody>
                       {g.rows.map((r, idx) => {
                         const isPass = r.INSPECT_RESULT ? PASS_VALUES.has(r.INSPECT_RESULT.toUpperCase()) : true;
+                        const badge = pcbItemBadge(r.PCB_ITEM);
                         return (
                           <tr
                             key={`${r.PID}-${idx}`}
@@ -185,6 +198,11 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [] }: Pr
                           >
                             <td className="px-3 py-1.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">{r.WORKSTAGE_CODE}</td>
                             <td className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 truncate">{r.WORKSTAGE_NAME ?? '-'}</td>
+                            <td className="px-2 py-1.5 text-center">
+                              {badge
+                                ? <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10px] ${badge.cls}`}>{badge.label}</span>
+                                : <span className="text-gray-400 text-xs">—</span>}
+                            </td>
                             <td className="px-4 py-1.5 font-mono text-xs text-gray-700 dark:text-gray-300 truncate">{r.PID}</td>
                             <td className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 truncate">{r.MODEL_NAME ?? '-'}</td>
                             <td className="px-3 py-1.5 font-mono text-[11px] text-gray-500 dark:text-gray-400 truncate" title={r.RATING_LABEL ?? undefined}>{r.RATING_LABEL ?? '-'}</td>

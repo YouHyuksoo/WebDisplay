@@ -65,6 +65,23 @@ function ResultCell(params: ICellRendererParams) {
   return <span className={cls}>{String(v)}</span>;
 }
 
+/** PCB_ITEM 배지 셀 — T/B/S 를 색상 배지로. 빈 값은 dash. */
+function PcbItemCell(params: ICellRendererParams) {
+  const v = params.value;
+  if (v == null || v === '') return <span className="text-gray-400">—</span>;
+  const code = String(v).toUpperCase();
+  const label = code === 'T' ? 'Top' : code === 'B' ? 'Bot' : code === 'S' ? 'PBA' : code;
+  const color =
+    code === 'T' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-200'
+    : code === 'B' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200'
+    : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+  return (
+    <span className={`inline-block px-1.5 py-0 rounded font-bold text-[10px] ${color}`}>
+      {label}
+    </span>
+  );
+}
+
 export default function ProcessHistoryGrid({ rows, workstages }: Props) {
   const { resolvedTheme } = useTheme();
   const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
@@ -72,6 +89,8 @@ export default function ProcessHistoryGrid({ rows, workstages }: Props) {
 
   const colDefs: (ColDef | ColGroupDef)[] = useMemo(() => {
     const base: (ColDef | ColGroupDef)[] = [
+      { field: 'PCB_ITEM', headerName: '면', width: 60, pinned: 'left', cellRenderer: PcbItemCell,
+        cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' } },
       { field: 'PID', headerName: 'PID', width: 140, pinned: 'left', tooltipField: 'PID' },
       { field: 'MODEL_NAME', headerName: '모델명', width: 120, pinned: 'left' },
       { field: 'RATING_LABEL', headerName: 'Rating Label', width: 360, pinned: 'left', tooltipField: 'RATING_LABEL',
