@@ -55,11 +55,31 @@ interface QcRow {
   FILE_NAME: string | null;
 }
 
+interface IoRow {
+  SERIAL_NO: string;
+  WORKSTAGE_CODE: string | null;
+  WORKSTAGE_NAME: string | null;
+  IO_DEFICIT: string | null;      // 'I'=공정In, 'O'=공정Out
+  IO_DATE: string | null;
+  OUT_DATE: string | null;
+  ACTUAL_DATE: string | null;
+  IO_QTY: number | null;
+  LINE_CODE: string | null;
+  DEST_LINE_CODE: string | null;
+  FROM_LINE_CODE: string | null;
+  DEST_WORKSTAGE_CODE: string | null;
+  MODEL_NAME: string | null;
+  SHIFT_CODE: string | null;
+  LOT_NO: string | null;
+  RUN_NO: string | null;
+}
+
 interface ListResponse {
   mode: 'list';
   workstages: Workstage[];
   rows: ListRow[];
   qcRows: QcRow[];
+  ioRows: IoRow[];
   totalRaw: number;
   ratingLabel?: string | null;
   resolvedSerials?: ResolvedSerial[];
@@ -432,8 +452,13 @@ export default function ProcessHistoryPage() {
               </div>
             ) : data ? (
               data.mode === 'list' ? (
-                data.rows.length > 0 || data.qcRows.length > 0 ? (
-                  <ProcessHistoryList rows={data.rows as ListRow[]} workstages={data.workstages} qcRows={data.qcRows as QcRow[]} />
+                data.rows.length > 0 || data.qcRows.length > 0 || (data.ioRows?.length ?? 0) > 0 ? (
+                  <ProcessHistoryList
+                    rows={data.rows as ListRow[]}
+                    workstages={data.workstages}
+                    qcRows={data.qcRows as QcRow[]}
+                    ioRows={data.ioRows as IoRow[]}
+                  />
                 ) : (
                   <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
                     해당 조건에 데이터가 없습니다

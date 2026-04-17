@@ -201,21 +201,26 @@ export async function GET(req: NextRequest) {
         .map(([code, name]) => ({ code, name }))
         .sort((a, b) => a.code.localeCompare(b.code));
 
-      /* QC 조회: resolvedSerials 있으면 IN 절, serialNo 있으면 LIKE */
+      /* QC / WORKSTAGE_IO 조회 공통 WHERE:
+         resolvedSerials 있으면 IN 절, serialNo 있으면 LIKE */
       const pids = [...new Set(rows.map((r) => r.PID))];
       let qcRows: Record<string, unknown>[] = [];
+      let ioRows: Record<string, unknown>[] = [];
       const hasFilter = resolvedSerials.length > 0 || !!serialNo;
-      if (pids.length > 0 && hasFilter) {
-        let qcWhere = '';
-        const qcBinds: Record<string, string> = {};
+
+      function buildSerialFilter(prefix: string): { where: string; binds: Record<string, string> } {
+        const binds: Record<string, string> = {};
         if (resolvedSerials.length > 0) {
-          const bindNames = resolvedSerials.map((_, i) => `:qsn${i}`);
-          qcWhere = `SERIAL_NO IN (${bindNames.join(',')})`;
-          resolvedSerials.forEach((r, i) => { qcBinds[`qsn${i}`] = r.serial; });
-        } else {
-          qcWhere = `UPPER(SERIAL_NO) LIKE UPPER(:pidLike)`;
-          qcBinds.pidLike = `%${serialNo}%`;
+          const names = resolvedSerials.map((_, i) => `:${prefix}${i}`);
+          resolvedSerials.forEach((r, i) => { binds[`${prefix}${i}`] = r.serial; });
+          return { where: `SERIAL_NO IN (${names.join(',')})`, binds };
         }
+        binds[`${prefix}Like`] = `%${serialNo}%`;
+        return { where: `UPPER(SERIAL_NO) LIKE UPPER(:${prefix}Like)`, binds };
+      }
+
+      if (pids.length > 0 && hasFilter) {
+        const qc = buildSerialFilter('qsn');
         qcRows = await executeQuery<Record<string, unknown>>(
           `SELECT SERIAL_NO,
                   WORKSTAGE_CODE,
@@ -229,10 +234,37 @@ export async function GET(req: NextRequest) {
                   TO_CHAR(REPAIR_DATE, 'YYYY/MM/DD HH24:MI:SS') AS REPAIR_DATE,
                   FILE_NAME
              FROM IP_PRODUCT_WORK_QC
-            WHERE ${qcWhere}
+            WHERE ${qc.where}
             ORDER BY SERIAL_NO, QC_DATE
             FETCH FIRST 5000 ROWS ONLY`,
-          qcBinds,
+          qc.binds,
+        );
+
+        /* IP_PRODUCT_WORKSTAGE_IO — 공정 단위 In/Out 이력
+           IO_DEFICIT: I=공정In, O=공정Out. NVL(F_GET_WORKSTAGE_NAME(...)) 로 라벨 보강. */
+        const io = buildSerialFilter('isn');
+        ioRows = await executeQuery<Record<string, unknown>>(
+          `SELECT SERIAL_NO,
+                  WORKSTAGE_CODE,
+                  NVL(F_GET_WORKSTAGE_NAME(WORKSTAGE_CODE), WORKSTAGE_CODE) AS WORKSTAGE_NAME,
+                  IO_DEFICIT,
+                  TO_CHAR(IO_DATE,     'YYYY/MM/DD HH24:MI:SS') AS IO_DATE,
+                  TO_CHAR(OUT_DATE,    'YYYY/MM/DD HH24:MI:SS') AS OUT_DATE,
+                  TO_CHAR(ACTUAL_DATE, 'YYYY/MM/DD HH24:MI:SS') AS ACTUAL_DATE,
+                  IO_QTY,
+                  LINE_CODE,
+                  DEST_LINE_CODE,
+                  FROM_LINE_CODE,
+                  DEST_WORKSTAGE_CODE,
+                  MODEL_NAME,
+                  SHIFT_CODE,
+                  LOT_NO,
+                  RUN_NO
+             FROM IP_PRODUCT_WORKSTAGE_IO
+            WHERE ${io.where}
+            ORDER BY SERIAL_NO, IO_DATE
+            FETCH FIRST 5000 ROWS ONLY`,
+          io.binds,
         );
       }
 
@@ -252,6 +284,7 @@ export async function GET(req: NextRequest) {
           IS_LAST: r.IS_LAST,
         })),
         qcRows,
+        ioRows,
         totalRaw: rows.length,
         ratingLabel: ratingLabel || null,
         resolvedSerials,

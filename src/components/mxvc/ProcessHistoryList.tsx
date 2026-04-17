@@ -34,6 +34,26 @@ function pcbItemBadge(code: string | null): { label: string; cls: string } | nul
   return { label: c, cls: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' };
 }
 
+/** IP_PRODUCT_WORKSTAGE_IO 행 — 공정 단위 In/Out 이력 */
+export interface IoRow {
+  SERIAL_NO: string;
+  WORKSTAGE_CODE: string | null;
+  WORKSTAGE_NAME: string | null;
+  IO_DEFICIT: string | null;         // 'I'=공정In, 'O'=공정Out
+  IO_DATE: string | null;
+  OUT_DATE: string | null;
+  ACTUAL_DATE: string | null;
+  IO_QTY: number | null;
+  LINE_CODE: string | null;
+  DEST_LINE_CODE: string | null;
+  FROM_LINE_CODE: string | null;
+  DEST_WORKSTAGE_CODE: string | null;
+  MODEL_NAME: string | null;
+  SHIFT_CODE: string | null;
+  LOT_NO: string | null;
+  RUN_NO: string | null;
+}
+
 /** QC 검사 행 데이터 */
 export interface QcRow {
   SERIAL_NO: string;
@@ -53,6 +73,7 @@ interface Props {
   rows: ListRow[];
   workstages: Workstage[];
   qcRows?: QcRow[];
+  ioRows?: IoRow[];
 }
 
 const PASS_VALUES = new Set(['PASS', 'OK', 'GOOD', 'Y']);
@@ -82,7 +103,7 @@ const PALETTE = [
 ];
 
 /** 공정통과이력 리스트 뷰 — 공정별 그룹 + 시간순 */
-export default function ProcessHistoryList({ rows, workstages, qcRows = [] }: Props) {
+export default function ProcessHistoryList({ rows, workstages, qcRows = [], ioRows = [] }: Props) {
   /** 그룹별 접힘 상태 (기본: 모두 펼침) */
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
@@ -266,6 +287,7 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [] }: Pr
                     <th className="px-3 py-1.5 text-left font-medium">파일명</th>
                   </tr>
                 </thead>
+                {/* IO 섹션 아래에서 이어짐 */}
                 <tbody>
                   {qcRows.map((r, idx) => {
                     const isNg = r.QC_RESULT && r.QC_RESULT.toUpperCase() !== 'O';
@@ -290,6 +312,84 @@ export default function ProcessHistoryList({ rows, workstages, qcRows = [] }: Pr
                         <td className="px-3 py-1.5 text-center text-xs text-gray-600 dark:text-gray-400">{repairResultLabel(r.REPAIR_RESULT_CODE)}</td>
                         <td className="px-3 py-1.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">{r.REPAIR_DATE ?? '-'}</td>
                         <td className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 truncate max-w-[300px]">{r.FILE_NAME ?? '-'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* ── 공정 IO 섹션 (IP_PRODUCT_WORKSTAGE_IO) ── */}
+        <div className="rounded-lg border border-indigo-300 dark:border-indigo-700 overflow-hidden">
+          <button
+            onClick={() => toggle('__IO__')}
+            className="w-full flex items-center gap-2 px-4 py-2.5 text-left transition-colors bg-indigo-100 dark:bg-indigo-900/50"
+          >
+            {!collapsed.has('__IO__') ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            <span className="inline-block h-3 w-3 rounded-full bg-indigo-500" />
+            <span className="font-bold text-sm text-gray-800 dark:text-gray-100">공정 IO</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">(IP_PRODUCT_WORKSTAGE_IO)</span>
+            <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">{ioRows.length}건</span>
+          </button>
+
+          {!collapsed.has('__IO__') && ioRows.length === 0 && (
+            <div className="bg-indigo-50 dark:bg-indigo-950/30 px-4 py-3 text-xs text-gray-400 dark:text-gray-500">
+              데이터 없음
+            </div>
+          )}
+          {!collapsed.has('__IO__') && ioRows.length > 0 && (
+            <div className="bg-indigo-50 dark:bg-indigo-950/30 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                    <th className="px-4 py-1.5 text-left font-medium w-[220px]">SERIAL_NO</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[80px]">공정코드</th>
+                    <th className="px-3 py-1.5 text-left font-medium w-[120px]">공정명</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[60px]">In/Out</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[180px]">IO일시</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[180px]">실적일시</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[60px]">수량</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[80px]">라인</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[80px]">대상라인</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[100px]">대상공정</th>
+                    <th className="px-3 py-1.5 text-left font-medium w-[120px]">모델명</th>
+                    <th className="px-3 py-1.5 text-center font-medium w-[50px]">교대</th>
+                    <th className="px-3 py-1.5 text-left font-medium w-[140px]">LOT/Run</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ioRows.map((r, idx) => {
+                    const io = (r.IO_DEFICIT ?? '').toUpperCase();
+                    const ioLabel = io === 'I' ? 'In' : io === 'O' ? 'Out' : (r.IO_DEFICIT ?? '-');
+                    const ioCls = io === 'I'
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-200'
+                      : io === 'O'
+                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
+                        : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300';
+                    return (
+                      <tr
+                        key={`io-${idx}`}
+                        className="border-b border-gray-100 dark:border-gray-800 last:border-b-0"
+                      >
+                        <td className="px-4 py-1.5 font-mono text-xs text-gray-700 dark:text-gray-300 truncate">{r.SERIAL_NO}</td>
+                        <td className="px-3 py-1.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">{r.WORKSTAGE_CODE ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 truncate">{r.WORKSTAGE_NAME ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-center">
+                          <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10px] ${ioCls}`}>
+                            {ioLabel}
+                          </span>
+                        </td>
+                        <td className="px-3 py-1.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">{r.IO_DATE ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">{r.ACTUAL_DATE ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-center text-xs text-gray-700 dark:text-gray-300">{r.IO_QTY ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-center text-xs text-gray-600 dark:text-gray-400">{r.LINE_CODE ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-center text-xs text-gray-600 dark:text-gray-400">{r.DEST_LINE_CODE ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">{r.DEST_WORKSTAGE_CODE ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 truncate">{r.MODEL_NAME ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-center text-xs text-gray-600 dark:text-gray-400">{r.SHIFT_CODE ?? '-'}</td>
+                        <td className="px-3 py-1.5 text-xs font-mono text-gray-500 dark:text-gray-400 truncate">{r.LOT_NO ?? r.RUN_NO ?? '-'}</td>
                       </tr>
                     );
                   })}
