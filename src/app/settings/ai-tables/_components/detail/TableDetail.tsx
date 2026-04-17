@@ -17,12 +17,18 @@ import OverviewTab from '../tabs/OverviewTab';
 import ColumnsTab from '../tabs/ColumnsTab';
 import HistoryTab from '../tabs/HistoryTab';
 import ExamplesTab from '../tabs/ExamplesTab';
+import DictionaryTab from '../tabs/DictionaryTab';
+import FiltersJoinsTab from '../tabs/FiltersJoinsTab';
+import PromptPreviewTab from '../tabs/PromptPreviewTab';
 import type { AiTablesDetailTab } from '../../_hooks/useAiTablesStore';
 
 const TABS: Array<{ id: AiTablesDetailTab; label: string }> = [
   { id: 'overview', label: 'Overview' },
   { id: 'columns', label: 'Columns' },
+  { id: 'dictionary', label: 'Dictionary' },
+  { id: 'filters-joins', label: 'Filters/Joins' },
   { id: 'examples', label: 'Examples' },
+  { id: 'prompt', label: 'Prompt Preview' },
   { id: 'history', label: 'History' },
 ];
 
@@ -91,9 +97,14 @@ export default function TableDetail() {
       {detailTab === 'columns' && (
         <ColumnsTab data={data} onChange={() => mutate()} />
       )}
+      {detailTab === 'dictionary' && <DictionaryTab data={data} />}
+      {detailTab === 'filters-joins' && (
+        <FiltersJoinsTab data={data} onChange={() => mutate()} />
+      )}
       {detailTab === 'examples' && (
         <ExamplesTab data={data} onChange={() => mutate()} />
       )}
+      {detailTab === 'prompt' && <PromptPreviewTab />}
       {detailTab === 'history' && <HistoryTab tableName={activeTable} />}
     </div>
   );

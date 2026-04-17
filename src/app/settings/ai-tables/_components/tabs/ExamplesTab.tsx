@@ -16,6 +16,7 @@ import { useAiDraftStream } from '../../_hooks/useAiDraftStream';
 import KindSubTabs from './examples/KindSubTabs';
 import ExampleCard from './examples/ExampleCard';
 import DraftCard from './examples/DraftCard';
+import FeedbackQueueSection from '../feedback/FeedbackQueueSection';
 import type { Example, ExampleKind } from '@/lib/ai-tables/types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -136,8 +137,8 @@ export default function ExamplesTab({ data, onChange }: Props) {
         )}
       </div>
 
-      {/* phase3b-part2: FeedbackQueueSection placeholder */}
-      {/* <FeedbackQueueSection site={site} table={table} /> */}
+      {/* 승격 대기 피드백 */}
+      <FeedbackQueueSection onChange={onChange} />
     </div>
   );
 }

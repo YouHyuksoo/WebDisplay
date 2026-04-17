@@ -114,5 +114,47 @@ export const api = {
       `${tPath(site, table)}/examples/${encodeURIComponent(id)}/run`,
       json({ bindings }),
     ),
+
+  // ── Phase 3b part2: Domains CRUD + auto-suggest ────────────────────────────
+  listDomains: () => req<any>('/api/ai-tables/domains'),
+  createDomain: (d: unknown) => req<any>('/api/ai-tables/domains', json(d)),
+  patchDomain: (id: string, patch: unknown) =>
+    req<any>(`/api/ai-tables/domains/${encodeURIComponent(id)}`, jsonPatch(patch)),
+  deleteDomain: (id: string) =>
+    req<any>(`/api/ai-tables/domains/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+  autoSuggestDomains: () =>
+    req<any>('/api/ai-tables/domains/auto-suggest', json({})),
+
+  // ── Phase 3b part2: Columns bulk ──────────────────────────────────────────
+  bulkColumnAction: (
+    site: string,
+    table: string,
+    body: { columns: string[]; action: string; value: unknown },
+  ) => req<any>(`${tPath(site, table)}/columns/bulk`, json(body)),
+
+  // ── Phase 3b part2: Feedback queue ────────────────────────────────────────
+  getFeedbackQueue: (site: string, table: string) =>
+    req<any>(`${tPath(site, table)}/feedback-queue`),
+  promoteFeedback: (
+    site: string,
+    table: string,
+    fbId: string,
+    example: unknown,
+  ) =>
+    req<any>(
+      `${tPath(site, table)}/feedback-queue/${encodeURIComponent(fbId)}/promote`,
+      json(example),
+    ),
+  rejectFeedback: (site: string, table: string, fbId: string) =>
+    req<any>(
+      `${tPath(site, table)}/feedback-queue/${encodeURIComponent(fbId)}`,
+      { method: 'DELETE' },
+    ),
+
+  // ── Phase 3b part2: Prompt preview ────────────────────────────────────────
+  getPromptPreview: (site: string, table: string) =>
+    req<any>(`${tPath(site, table)}/preview`),
 };
 /* eslint-enable @typescript-eslint/no-explicit-any */

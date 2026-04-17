@@ -126,6 +126,33 @@ export async function POST(request: Request) {
           site: selection.site,
         });
 
+        // Phase 3b part2: Stage 1 매칭 preview (현재는 로깅만 — 실제 분기는 v2).
+        // 실패해도 전체 /ai-chat 흐름을 중단해선 안 된다.
+        try {
+          const { matchExamples } = await import(
+            '@/lib/ai-tables/example-matcher'
+          );
+          const { loadTables } = await import('@/lib/ai-tables/store');
+          const tablesFile = await loadTables();
+          type SiteKey = keyof typeof tablesFile.sites;
+          const siteTables =
+            tablesFile.sites[selection.site as SiteKey]?.tables ?? {};
+          const tableMetas = selection.tables
+            .map((n) => ({ name: n, meta: siteTables[n] }))
+            .filter((t): t is { name: string; meta: NonNullable<typeof t.meta> } =>
+              Boolean(t.meta),
+            );
+          const matches = matchExamples(prompt, tableMetas);
+          if (matches.length > 0) {
+            const top = matches[0];
+            console.log(
+              `[ai-chat] top match: ${top.tableName}.${top.example.id} score=${top.score.toFixed(3)}`,
+            );
+          }
+        } catch {
+          // 조용히 무시
+        }
+
         // 3) SQL generation stage.
         const today = new Date().toISOString().slice(0, 10);
         const sqlSystemPrompt = await buildSystemPrompt({
