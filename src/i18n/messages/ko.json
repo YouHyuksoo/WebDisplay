@@ -164,6 +164,7 @@
     "aiModels": "AI 모델",
     "aiPersonas": "AI 페르소나",
     "aiGlossary": "AI 용어사전",
+    "aiTables": "AI 테이블 학습",
     "rollingEnabled": "페이지 순환 활성화",
     "rollingInterval": "전환 간격 (초)",
     "rollingScreens": "순환 화면 목록",

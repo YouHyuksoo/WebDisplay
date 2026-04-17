@@ -164,6 +164,7 @@
     "aiModels": "Modelos IA",
     "aiPersonas": "Personajes IA",
     "aiGlossary": "Glosario IA",
+    "aiTables": "Tablas IA",
     "rollingEnabled": "Activar rotación de páginas",
     "rollingInterval": "Intervalo de transición (seg)",
     "rollingScreens": "Lista de pantallas en rotación",

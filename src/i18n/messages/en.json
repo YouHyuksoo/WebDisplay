@@ -164,6 +164,7 @@
     "aiModels": "AI Models",
     "aiPersonas": "AI Personas",
     "aiGlossary": "AI Glossary",
+    "aiTables": "AI Tables",
     "rollingEnabled": "Enable page rolling",
     "rollingInterval": "Transition interval (sec)",
     "rollingScreens": "Rolling screen list",

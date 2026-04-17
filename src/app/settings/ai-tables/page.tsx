@@ -47,11 +47,12 @@ export default function AiTablesPage() {
     return <div className="text-zinc-600 dark:text-zinc-400">로딩 중...</div>;
   }
 
-  // settings layout 의 main 은 p-6 패딩을 가짐 → -m-6 으로 상쇄하여 3단 콘솔이
-  // 설정 네비 옆 전체 영역을 차지하도록. h-screen 은 부모 flex 기준이 아닌
-  // 뷰포트 기준이 필요하므로 calc(100vh) 유지.
+  // 이 페이지는 두 가지 호스트에서 임베드된다:
+  //  (1) /settings/ai-tables — settings layout main 이 p-6 패딩 + overflow-y-auto 제공
+  //  (2) /display/18 의 DisplayOption 탭 — 부모가 min-h-0 flex-1 overflow-auto 제공
+  // 부모가 이미 높이·스크롤을 관장하므로 여기선 h-full 로 채우고 내부에서만 스크롤.
   return (
-    <div className="-m-6 flex h-[calc(100vh)] bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <div className="flex h-full bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <aside className="w-[18%] min-w-[220px] border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto">
         <ModeSwitcher />
         {mode === 'tables' ? (

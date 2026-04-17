@@ -16,8 +16,16 @@ import AutoLaunchPanel from './AutoLaunchPanel';
 const AiModelsPanel = dynamic(() => import('@/app/settings/ai-models/page'), { ssr: false });
 const AiPersonasPanel = dynamic(() => import('@/app/settings/ai-personas/page'), { ssr: false });
 const AiGlossaryPanel = dynamic(() => import('@/app/settings/ai-glossary/page'), { ssr: false });
+const AiTablesPanel = dynamic(() => import('@/app/settings/ai-tables/page'), { ssr: false });
 
-type Tab = 'rolling' | 'database' | 'autolaunch' | 'aiModels' | 'aiPersonas' | 'aiGlossary';
+type Tab =
+  | 'rolling'
+  | 'database'
+  | 'autolaunch'
+  | 'aiModels'
+  | 'aiPersonas'
+  | 'aiGlossary'
+  | 'aiTables';
 
 const TAB_KEYS: { key: Tab; labelKey: string }[] = [
   { key: 'rolling', labelKey: 'pageRolling' },
@@ -26,6 +34,7 @@ const TAB_KEYS: { key: Tab; labelKey: string }[] = [
   { key: 'aiModels', labelKey: 'aiModels' },
   { key: 'aiPersonas', labelKey: 'aiPersonas' },
   { key: 'aiGlossary', labelKey: 'aiGlossary' },
+  { key: 'aiTables', labelKey: 'aiTables' },
 ];
 
 interface DisplayOptionProps {
@@ -64,6 +73,7 @@ export default function DisplayOption({ screenId }: DisplayOptionProps) {
           {activeTab === 'aiModels' && <div className="p-4"><AiModelsPanel /></div>}
           {activeTab === 'aiPersonas' && <div className="p-4"><AiPersonasPanel /></div>}
           {activeTab === 'aiGlossary' && <div className="p-4"><AiGlossaryPanel /></div>}
+          {activeTab === 'aiTables' && <div className="h-full"><AiTablesPanel /></div>}
         </div>
       </div>
     </DisplayLayout>
