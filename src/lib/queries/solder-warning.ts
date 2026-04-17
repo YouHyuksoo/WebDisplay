@@ -46,12 +46,9 @@ SELECT w.LOT_NO,
            F_GET_TIME_TERM_HMI(NVL(ISSUE_DATE, SYSDATE), NVL(UNFREEZING_END_DATE, SYSDATE))         AS GAP1,
            SUBSTR(VISCOSITY_FILE_NAME, 1, 10)                                                        AS VISCOSITY_FILE_NAME,
            VISCOSITY_START_DATE                                                                       AS VISCOSITY_DATE,
-           NVL(NVL(VISCOSITY_START_DATE, FIRST_LINE_INPUT_DATE), INPUT_DATE)                         AS INPUT_DATE,
+           INPUT_DATE,
            F_GET_TIME_TERM_HMI(NVL(NVL(FIRST_LINE_INPUT_DATE, INPUT_DATE), SYSDATE), SYSDATE)       AS GAP2,
-           F_GET_TIME_TERM_HMI(
-             NVL(NVL(NVL(VISCOSITY_START_DATE, FIRST_LINE_INPUT_DATE), INPUT_DATE), SYSDATE),
-             SYSDATE
-           )                                                                                          AS GAP3,
+           F_GET_TIME_TERM_HMI(NVL(INPUT_DATE, SYSDATE), SYSDATE)                                       AS GAP3,
            VALID_DATE,
            F_GET_TIME_TERM_HHMISS(
              NVL(MIX_START_DATE, SYSDATE),
