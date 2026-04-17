@@ -63,9 +63,10 @@ function pickSite(question: string): string {
 }
 
 /** catalog의 tags + summary 텍스트 매칭으로 관련 테이블을 넓게 찾는 폴백 */
-function heuristicSelection(question: string): ContextSelection {
+async function heuristicSelection(question: string): Promise<ContextSelection> {
   const q = question.toLowerCase();
-  const catalog = loadCatalog();
+  // loadCatalog는 이미 enabled=true 만 반환하므로 추가 필터 불필요.
+  const catalog = await loadCatalog();
   const scored: { name: string; score: number }[] = [];
 
   for (const t of catalog.tables) {
@@ -137,9 +138,11 @@ export async function selectContext(
   providerId: ProviderId,
   modelId?: string,
 ): Promise<ContextSelection> {
-  const catalog = loadCatalog();
+  const catalog = await loadCatalog();
   const providerCfg = await getProviderForRuntime(providerId);
 
+  // loadCatalog 가 이미 enabled=true 만 반환하므로 validTables 에는 disabled 들어올 수 없음.
+  // LLM 이 disabled 테이블을 hallucinate 해도 normalize 단계에서 제거됨.
   const validTables = new Set(catalog.tables.map((t) => t.name));
   const validDomains = new Set(catalog.domains.map((d) => d.name));
   const validSites = new Set(catalog.sites.map((s) => s.key));
@@ -150,7 +153,7 @@ export async function selectContext(
     site: validSites.has(selection.site) ? selection.site : 'default',
   });
 
-  const fallback = normalize(heuristicSelection(userQuestion));
+  const fallback = normalize(await heuristicSelection(userQuestion));
 
   if (!providerCfg?.apiKey) {
     return fallback;
@@ -159,7 +162,8 @@ export async function selectContext(
   const provider = getProvider(providerId);
   const model = modelId || providerCfg.defaultModelId || provider.listModels()[0];
 
-  const userMsg = `# 카탈로그\n${catalogToPrompt()}\n\n# 사용자 질문\n${userQuestion}`;
+  const catalogText = await catalogToPrompt();
+  const userMsg = `# 카탈로그\n${catalogText}\n\n# 사용자 질문\n${userQuestion}`;
 
   let responseText = '';
   try {

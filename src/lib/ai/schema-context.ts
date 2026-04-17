@@ -1456,3 +1456,39 @@ export function buildTableSummary(): string {
     .map(([name, spec]) => `- ${name} (${Object.keys(spec.columns).length}컬럼): ${spec.description || '(설명 없음)'}`)
     .join('\n');
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Phase 2 추가: schema-cache.json 기반 동적 조회 API
+//
+// 기존 const SCHEMA 는 Phase 4 이관 전까지 그대로 유지 (호환성).
+// 신규 호출부는 가급적 `getSchema(site)` 를 사용할 것.
+// ────────────────────────────────────────────────────────────────────────────
+
+import { loadSchemaCache } from '@/lib/ai-tables/schema-loader';
+import type { SiteKey } from '@/lib/ai-tables/types';
+
+/**
+ * 런타임에 `data/ai-context/schema-cache.json` 에서 동적으로 스키마를 가져온다.
+ * 반환 형태는 기존 `SCHEMA` 와 동일한 Record<테이블명, TableSpec> — 호환 유지.
+ *
+ * @param site 사이트 키 (default | 멕시코전장내부 | ...)
+ */
+export async function getSchema(
+  site: SiteKey = 'default',
+): Promise<Record<string, TableSpec>> {
+  const cache = await loadSchemaCache();
+  const siteTables = cache.sites[site]?.tables ?? {};
+  const out: Record<string, TableSpec> = {};
+  for (const [name, ts] of Object.entries(siteTables)) {
+    out[name] = {
+      description: ts.tableComment ?? '',
+      columns: Object.fromEntries(
+        ts.columns.map((c) => [
+          c.name,
+          { type: c.type, nullable: c.nullable, comment: c.comment },
+        ]),
+      ),
+    };
+  }
+  return out;
+}
