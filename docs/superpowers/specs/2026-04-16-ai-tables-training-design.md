@@ -780,14 +780,63 @@ npm i zustand
 
 ## 13. 오픈 이슈 (구현 착수 시 확인)
 
-| # | 이슈 | 해결 시점 |
+| # | 이슈 | 상태 |
 |---|---|---|
-| O1 | `ISYS_DUAL_LANGUAGE` 실제 스키마 확인 (CATEGORY/KEY_CODE/KOR/ENG/SPA 가정 중) | Phase 0 착수 직후 DB 조회로 확정 |
-| O2 | `nanoid` 패키지 설치 여부 확인 | Phase 0 |
-| O3 | 임베딩 기반 매칭 API 선택 (Gemini text-embedding-004 vs OpenAI) | Phase 3b (v2) |
-| O4 | Skeleton 대화 멀티턴을 `/ai-chat` UI에 노출할지 | Phase 3b |
-| O5 | F_GET_BASECODE 함수의 3번째 인자(언어) 호출 규약 확인 | Phase 0 |
-| O6 | 특정 컬럼명(`NULL` 등)이 SQL 파서에서 문제 일으키지 않는지 | sql-table-parser.ts 테스트 단계 |
+| O1 | `ISYS_DUAL_LANGUAGE` 실제 스키마 확인 | **✅ 확인 (Phase 0)** — 실스키마는 UI 번역 사전 (컬럼별 라벨이 아님). 아래 §13.1 참고 |
+| O2 | `nanoid` 패키지 설치 여부 확인 | ✅ 미설치 → Phase 0에서 설치 완료 |
+| O3 | 임베딩 기반 매칭 API 선택 (Gemini text-embedding-004 vs OpenAI) | 보류 (v2) |
+| O4 | Skeleton 대화 멀티턴을 `/ai-chat` UI에 노출할지 | 보류 (v2) |
+| O5 | F_GET_BASECODE 함수 호출 규약 확인 | **✅ 확인 (Phase 0)** — **4 인자 필요**. 아래 §13.2 참고 |
+| O6 | 특정 컬럼명(`NULL` 등)이 SQL 파서에서 문제 일으키지 않는지 | `sql-table-parser.ts` 구현 단계 |
+| O7 | 프로젝트에 Jest/Vitest 테스트 프레임워크 **미설치**. 플랜의 TDD 단계는 수동 검증으로 대체 | **결정 (Phase 0)** — 현재는 수동 검증. v2에서 테스트 인프라 도입 검토 |
+
+### 13.1 ISYS_DUAL_LANGUAGE 실스키마 (확인 결과)
+
+```
+| COLUMN              | TYPE          | NULLABLE | 역할 |
+|---------------------|---------------|----------|------|
+| ENGLISH_TEXT        | VARCHAR2(100) | N        | **키** (영문 용어) |
+| ORGANIZATION_ID     | NUMBER        | N        | 멀티 조직 구분 |
+| LOCAL_TEXT          | VARCHAR2(200) | Y        | 현지어 (스페인어) |
+| KOREA_TEXT          | VARCHAR2(100) | Y        | 한국어 |
+| CONVER_CHK          | VARCHAR2(1)   | Y        | 변환 체크 |
+| ENTER_DATE/BY, LAST_MODIFY_DATE/BY — 감사 컬럼                |
+| ENGLISH_ORIGIN_TEXT | VARCHAR2(100) | Y        | 원 영문 대소문자 |
+```
+
+**샘플**: `ENGLISH_TEXT="MODEL STATUS"` → `KOREA_TEXT="모델상태"` / `LOCAL_TEXT="Estado modelo"`
+
+**용도**: **UI/화면 라벨 번역 사전**. 컬럼별 한/영/스 라벨이 아니라 영문 용어를 키로 하는 번역 테이블.
+
+**설계 수정**:
+- §4.5 `CachedColumn.labels`는 v1에서 **빈 객체**로 유지 (구조는 남겨두되 채우지 않음)
+- §6.2의 `POST /label` 엔드포인트는 v1에서 **구현 제외** (ISYS_DUAL_LANGUAGE 직접 편집은 구조가 맞지 않음)
+- 컬럼 한글 의미는 **Oracle `USER_COL_COMMENTS`**가 유일한 SSOT (이미 `ADMIN` 계정이 한글 주석 대부분 채워놓음)
+- v2: 컬럼명 → `ENGLISH_TEXT` 매칭 규약을 정립하면 라벨 조회 가능 (예: `LOCATION_CODE` → `ENGLISH_TEXT='LOCATION CODE'` 조회)
+
+### 13.2 F_GET_BASECODE 호출 규약 (확인 결과)
+
+```
+FUNCTION F_GET_BASECODE(
+  P_CODE_TYPE  IN VARCHAR2,   -- 공백 포함 문자열 (예: 'LOCATION CODE')
+  P_CODE_NAME  IN VARCHAR2,   -- 코드 값 (예: 'M01')
+  P_LANG       IN VARCHAR2,   -- 'KO' | 'EN' | 'SP' 등
+  P_ORG        IN NUMBER      -- 조직 ID (필수)
+) RETURN VARCHAR2
+```
+
+**실행 샘플**:
+```sql
+SELECT F_GET_BASECODE('LOCATION CODE', 'M01', 'KO', 1) FROM DUAL
+-- → 'NORMAL'
+SELECT F_GET_BASECODE('CHECK STATUS', 'P', 'KO', 1) FROM DUAL
+-- → 'OK'
+```
+
+**설계 반영**:
+- `ColumnDecode.basecode`는 `codeType`만 저장하고, 실행 시 `P_LANG='KO'` + `P_ORG={현재 조직}` 보강
+- 조직 ID는 환경변수 또는 설정값으로 관리 (기본값 `1`)
+- **프롬프트 주입 포맷**: `basecode('LOCATION CODE')` → LLM에게 "F_GET_BASECODE로 디코딩 가능"만 전달하고 인자 세부는 서버가 자동 주입
 
 ---
 

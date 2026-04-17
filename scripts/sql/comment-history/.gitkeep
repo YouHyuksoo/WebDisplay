@@ -1,0 +1,2 @@
+# AI Tables 페이지의 DDL 실행 이력이 이 폴더에 YYYY-MM-DD_HHmmss_<TABLE>.sql 파일로 자동 생성됩니다.
+# 각 파일은 before/after 주석 + 실행된 DDL을 담아 감사·롤백 참고용으로 git에 커밋됩니다.
