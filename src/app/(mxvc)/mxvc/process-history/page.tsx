@@ -68,14 +68,12 @@ interface ListResponse {
 
 type ApiResponse = PivotResponse | ListResponse;
 
-/** PCB_ITEM 코드 → 사람이 읽을 수 있는 라벨. */
-function sideLabel(side: string | null): string {
-  if (!side) return '?';
-  const s = side.toUpperCase();
-  if (s === 'T') return 'Top';
-  if (s === 'B') return 'Bottom';
-  if (s === 'S') return 'PBA';
-  return s;
+interface ResolveResponse {
+  top?: string;
+  bot?: string;
+  matched?: boolean;
+  ratingLabel?: string;
+  error?: string;
 }
 
 export default function ProcessHistoryPage() {
@@ -92,6 +90,38 @@ export default function ProcessHistoryPage() {
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState('');
   const [data,     setData]     = useState<ApiResponse | null>(null);
+
+  /** RATING_LABEL blur → TOP/BOT 자동 채움. */
+  const resolveFromLabel = useCallback(async (label: string) => {
+    if (!label.trim()) return;
+    try {
+      const p = new URLSearchParams({ ratingLabel: label.trim() });
+      const res = await fetch(`/api/mxvc/process-history/resolve?${p}`, { cache: 'no-store' });
+      const json = (await res.json()) as ResolveResponse;
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      if (json.matched) {
+        if (json.top) setTopSerial(json.top);
+        if (json.bot) setBotSerial(json.bot);
+      }
+    } catch {
+      /* 자동 채움 실패는 무시 — 사용자가 직접 입력 가능 */
+    }
+  }, []);
+
+  /** TOP SERIAL_NO blur → BOT 자동 채움 (F_GET_SMT_BOT_2_TOP). */
+  const resolveFromTop = useCallback(async (top: string) => {
+    if (!top.trim()) return;
+    if (botSerial.trim()) return; // 이미 Bot 있으면 덮어쓰지 않음
+    try {
+      const p = new URLSearchParams({ topSerial: top.trim() });
+      const res = await fetch(`/api/mxvc/process-history/resolve?${p}`, { cache: 'no-store' });
+      const json = (await res.json()) as ResolveResponse;
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      if (json.bot) setBotSerial(json.bot);
+    } catch {
+      /* 무시 */
+    }
+  }, [botSerial]);
 
   useEffect(() => {
     if (serverToday && !dateFrom) {
@@ -240,9 +270,6 @@ export default function ProcessHistoryPage() {
     XLSX.writeFile(wb, `공정통과이력_${dateFrom}_${dateTo}.xlsx`);
   }, [data, pivotRows, dateFrom, dateTo]);
 
-  const resolvedSerials = data?.resolvedSerials ?? [];
-  const resolvedRatingLabel = data?.ratingLabel ?? null;
-
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-white overflow-hidden">
       <DisplayHeader title="공정통과이력" screenId={SCREEN_ID} />
@@ -267,31 +294,11 @@ export default function ProcessHistoryPage() {
               type="text"
               value={ratingLabel}
               onChange={(e) => setRatingLabel(e.target.value)}
+              onBlur={(e) => resolveFromLabel(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-              placeholder="완전일치 (SPI/AOI/Coating 는 Top+Bot 자동)"
+              placeholder="완전일치 — Top/Bot 자동 채움"
               className={`${inputClass} font-mono text-[11px]`}
             />
-            {(resolvedRatingLabel || resolvedSerials.length > 0) && (
-              <div className="mt-2 rounded border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 px-2 py-1.5 text-[11px] text-amber-800 dark:text-amber-200">
-                {resolvedRatingLabel && (
-                  <div className="truncate font-mono" title={resolvedRatingLabel}>📦 {resolvedRatingLabel}</div>
-                )}
-                {resolvedSerials.length > 0 ? (
-                  <ul className="mt-1 space-y-0.5">
-                    {resolvedSerials.map((s) => (
-                      <li key={s.serial} className="flex items-center gap-1 font-mono">
-                        <span className="shrink-0 rounded bg-amber-200 dark:bg-amber-800 px-1 text-[10px] font-semibold">
-                          {sideLabel(s.side)}
-                        </span>
-                        <span className="truncate" title={s.serial}>{s.serial}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : resolvedRatingLabel ? (
-                  <div className="mt-1 italic text-amber-700 dark:text-amber-300">매칭되는 SERIAL_NO 없음</div>
-                ) : null}
-              </div>
-            )}
           </div>
 
           <div>
@@ -300,8 +307,9 @@ export default function ProcessHistoryPage() {
               type="text"
               value={topSerial}
               onChange={(e) => setTopSerial(e.target.value)}
+              onBlur={(e) => resolveFromTop(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-              placeholder="완전일치, F_GET_SMT_BOT_2_TOP 로 Bot 자동"
+              placeholder="RATING_LABEL 매칭 = TOP. Bot 자동 도출"
               className={`${inputClass} font-mono text-[11px]`}
             />
           </div>
@@ -313,7 +321,7 @@ export default function ProcessHistoryPage() {
               value={botSerial}
               onChange={(e) => setBotSerial(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-              placeholder="완전일치 (Bot 단독 조회)"
+              placeholder="F_GET_SMT_BOT_2_TOP 로 자동"
               className={`${inputClass} font-mono text-[11px]`}
             />
           </div>

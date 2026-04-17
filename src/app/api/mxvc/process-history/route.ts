@@ -120,12 +120,19 @@ export async function GET(req: NextRequest) {
     let resolvedSerials: Array<{ serial: string; side: string | null }> = [];
     if (ratingLabel) {
       resolvedSerials = await fetchLabelSerials(ratingLabel);
-    } else if (topSerial) {
-      resolvedSerials = [{ serial: topSerial, side: 'T' }];
-      const bot = await fetchBotFromTop(topSerial);
-      if (bot) resolvedSerials.push({ serial: bot, side: 'B' });
-    } else if (botSerial) {
-      resolvedSerials = [{ serial: botSerial, side: 'B' }];
+    } else if (topSerial || botSerial) {
+      /* UI 가 미리 resolve 해서 topSerial+botSerial 둘 다 채워 보낸 경우엔
+         함수 재호출 없이 그대로 IN 절로 사용. topSerial 만 있으면 BOT 자동. */
+      if (topSerial) resolvedSerials.push({ serial: topSerial, side: 'T' });
+      if (botSerial && !resolvedSerials.some((r) => r.serial === botSerial)) {
+        resolvedSerials.push({ serial: botSerial, side: 'B' });
+      }
+      if (topSerial && !botSerial) {
+        const bot = await fetchBotFromTop(topSerial);
+        if (bot && !resolvedSerials.some((r) => r.serial === bot)) {
+          resolvedSerials.push({ serial: bot, side: 'B' });
+        }
+      }
     } else if (serialNo) {
       /* 하위호환: serialNo 값이 사실 RATING_LABEL 일 수도 있음. */
       const fallback = await fetchLabelSerials(serialNo);
