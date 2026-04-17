@@ -33,6 +33,7 @@ import {
   RotateCw,
   CircleHelp,
   Bell,
+  Database,
 } from "lucide-react";
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -248,6 +249,17 @@ export default function MenuControls() {
             <AppWindow size={16} />
           </span>
           <span>카드 관리</span>
+        </div>
+        <div
+          className="settings-item"
+          id="menu-ai-tables"
+          onClick={() => window.location.href = '/settings/ai-tables'}
+          style={{ cursor: 'pointer' }}
+        >
+          <span className="icon">
+            <Database size={16} />
+          </span>
+          <span>AI 테이블 학습</span>
         </div>
         <div
           className="settings-item"
