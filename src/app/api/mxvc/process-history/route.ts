@@ -13,6 +13,27 @@ import { executeQuery } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * RATING_LABEL 완전일치로 IP_PRODUCT_2D_BARCODE 에서 SERIAL_NO 목록을 조회한다.
+ * 같은 라벨에 Top(T) / Bottom(B) 면이 각각 등록되어 복수 건이 반환될 수 있음.
+ * PCB_ITEM 은 'T'=Top / 'B'=Bottom / 'S'=PBA 등 코드값.
+ */
+async function fetchLabelSerials(
+  label: string,
+): Promise<Array<{ serial: string; side: string | null }>> {
+  const rows = await executeQuery<{ SERIAL_NO: string | null; PCB_ITEM: string | null }>(
+    `SELECT SERIAL_NO, PCB_ITEM
+       FROM IP_PRODUCT_2D_BARCODE
+      WHERE RATING_LABEL = :label
+        AND SERIAL_NO IS NOT NULL
+      ORDER BY PCB_ITEM, SERIAL_NO`,
+    { label },
+  );
+  return rows
+    .filter((r) => r.SERIAL_NO)
+    .map((r) => ({ serial: r.SERIAL_NO as string, side: r.PCB_ITEM }));
+}
+
 interface RawRow {
   PID: string;
   MODEL_NAME: string | null;
@@ -34,11 +55,15 @@ interface PivotRow {
 
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
-  const dateFrom = sp.get('dateFrom')?.trim() ?? '';
-  const dateTo   = sp.get('dateTo')?.trim()   ?? '';
-  const isLast   = sp.get('isLast')?.trim()   ?? 'Y';
-  let   pid      = sp.get('pid')?.trim()      ?? '';
-  const mode     = sp.get('mode')?.trim()     ?? 'pivot';
+  const dateFrom    = sp.get('dateFrom')?.trim()    ?? '';
+  const dateTo      = sp.get('dateTo')?.trim()      ?? '';
+  const isLast      = sp.get('isLast')?.trim()      ?? 'Y';
+  /* 입력 분리: serialNo = 부분일치, ratingLabel = 완전일치(Top+Bot 포함).
+     구버전 하위호환: `pid` 파라미터가 오면 serialNo 로 대체 처리 + 값이 RATING_LABEL
+     과 완전 일치하면 자동으로 ratingLabel 경로로 폴백. */
+  let   serialNo    = (sp.get('serialNo') ?? sp.get('pid') ?? '').trim();
+  let   ratingLabel = (sp.get('ratingLabel') ?? '').trim();
+  const mode        = sp.get('mode')?.trim()        ?? 'pivot';
 
   if (!dateFrom || !dateTo) {
     return NextResponse.json({ error: 'dateFrom, dateTo 필수' }, { status: 400 });
@@ -49,24 +74,19 @@ export async function GET(req: NextRequest) {
   const toSlash   = dateTo.replace(/-/g, '/');
 
   try {
-    /* RATING_LABEL → SERIAL_NO 변환:
-       사용자가 완제품 바코드(RATING_LABEL)를 붙여넣은 경우
-       IP_PRODUCT_2D_BARCODE 에서 매칭되는 SERIAL_NO를 찾아 내부 조회에 사용.
-       완전 일치로만 시도 — 부분 입력은 기존 LIKE 동작 유지. */
-    let resolvedLabel: { originalLabel: string; resolvedSerial: string } | null = null;
-    if (pid) {
-      const labelMatch = await executeQuery<{ SERIAL_NO: string | null }>(
-        `SELECT SERIAL_NO
-           FROM IP_PRODUCT_2D_BARCODE
-          WHERE RATING_LABEL = :label
-            AND SERIAL_NO IS NOT NULL
-            AND ROWNUM = 1`,
-        { label: pid },
-      );
-      const sn = labelMatch[0]?.SERIAL_NO;
-      if (sn) {
-        resolvedLabel = { originalLabel: pid, resolvedSerial: sn };
-        pid = sn;
+    /* 1. RATING_LABEL 완전일치 → SERIAL_NO 목록(Top/Bot 다면) 조회
+       IP_PRODUCT_2D_BARCODE.PCB_ITEM 으로 Top/Bot 구분 (T=Top, B=Bottom, S=PBA 등) */
+    let resolvedSerials: Array<{ serial: string; side: string | null }> = [];
+    if (ratingLabel) {
+      resolvedSerials = await fetchLabelSerials(ratingLabel);
+    } else if (serialNo) {
+      /* 2. 하위호환: serialNo 값이 사실 RATING_LABEL 일 수도 있음.
+         완전일치로 조회해 매칭되면 RATING_LABEL 경로로 폴백. */
+      const fallback = await fetchLabelSerials(serialNo);
+      if (fallback.length > 0) {
+        ratingLabel     = serialNo;
+        resolvedSerials = fallback;
+        serialNo        = '';
       }
     }
 
@@ -74,12 +94,19 @@ export async function GET(req: NextRequest) {
       ? ''
       : `AND t.IS_LAST = :isLast`;
 
-    /* PID 부분 일치 (대소문자 무시) */
-    const pidClause = pid ? `AND UPPER(t.PID) LIKE UPPER(:pidLike)` : '';
-
+    /* PID 필터: resolvedSerials 있으면 IN 절, 아니면 serialNo LIKE */
+    let pidClause = '';
     const binds: Record<string, string> = { dateFrom: fromSlash, dateTo: toSlash };
     if (isLastClause) binds.isLast = isLast;
-    if (pidClause)    binds.pidLike = `%${pid}%`;
+
+    if (resolvedSerials.length > 0) {
+      const bindNames = resolvedSerials.map((_, i) => `:sn${i}`);
+      pidClause = `AND t.PID IN (${bindNames.join(',')})`;
+      resolvedSerials.forEach((r, i) => { binds[`sn${i}`] = r.serial; });
+    } else if (serialNo) {
+      pidClause = `AND UPPER(t.PID) LIKE UPPER(:pidLike)`;
+      binds.pidLike = `%${serialNo}%`;
+    }
 
     /* INSPECT_DATE는 VARCHAR2 'YYYY-MM-DD HH24:MI:SS' — 문자열 범위 비교.
        IP_PRODUCT_2D_BARCODE LEFT JOIN 으로 각 PID 의 RATING_LABEL 를 함께 조회.
@@ -118,11 +145,21 @@ export async function GET(req: NextRequest) {
         .map(([code, name]) => ({ code, name }))
         .sort((a, b) => a.code.localeCompare(b.code));
 
-      /* PID 목록으로 IP_PRODUCT_WORK_QC 조회 */
+      /* QC 조회: resolvedSerials 있으면 IN 절, serialNo 있으면 LIKE */
       const pids = [...new Set(rows.map((r) => r.PID))];
       let qcRows: Record<string, unknown>[] = [];
-      if (pids.length > 0 && pid) {
-        const qcBinds: Record<string, string> = { pidLike: `%${pid}%` };
+      const hasFilter = resolvedSerials.length > 0 || !!serialNo;
+      if (pids.length > 0 && hasFilter) {
+        let qcWhere = '';
+        const qcBinds: Record<string, string> = {};
+        if (resolvedSerials.length > 0) {
+          const bindNames = resolvedSerials.map((_, i) => `:qsn${i}`);
+          qcWhere = `SERIAL_NO IN (${bindNames.join(',')})`;
+          resolvedSerials.forEach((r, i) => { qcBinds[`qsn${i}`] = r.serial; });
+        } else {
+          qcWhere = `UPPER(SERIAL_NO) LIKE UPPER(:pidLike)`;
+          qcBinds.pidLike = `%${serialNo}%`;
+        }
         qcRows = await executeQuery<Record<string, unknown>>(
           `SELECT SERIAL_NO,
                   WORKSTAGE_CODE,
@@ -136,7 +173,7 @@ export async function GET(req: NextRequest) {
                   TO_CHAR(REPAIR_DATE, 'YYYY/MM/DD HH24:MI:SS') AS REPAIR_DATE,
                   FILE_NAME
              FROM IP_PRODUCT_WORK_QC
-            WHERE UPPER(SERIAL_NO) LIKE UPPER(:pidLike)
+            WHERE ${qcWhere}
             ORDER BY SERIAL_NO, QC_DATE
             FETCH FIRST 5000 ROWS ONLY`,
           qcBinds,
@@ -159,7 +196,8 @@ export async function GET(req: NextRequest) {
         })),
         qcRows,
         totalRaw: rows.length,
-        resolvedLabel,
+        ratingLabel: ratingLabel || null,
+        resolvedSerials,
       });
     }
 
@@ -197,7 +235,8 @@ export async function GET(req: NextRequest) {
       rows: Array.from(pidMap.values()),
       totalRaw: rows.length,
       totalPids: pidMap.size,
-      resolvedLabel,
+      ratingLabel: ratingLabel || null,
+      resolvedSerials,
     });
   } catch (err) {
     console.error('공정통과이력 조회 실패:', err);
