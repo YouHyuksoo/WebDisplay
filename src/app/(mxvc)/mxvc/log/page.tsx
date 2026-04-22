@@ -17,6 +17,7 @@ import LogTableSidebar from '@/components/mxvc/LogTableSidebar';
 import LogDataGrid from '@/components/mxvc/LogDataGrid';
 import LogEolMasterDetail from '@/components/mxvc/LogEolMasterDetail';
 import LogIctMasterDetail from '@/components/mxvc/LogIctMasterDetail';
+import LogCoatingVisionMasterDetail from '@/components/mxvc/LogCoatingVisionMasterDetail';
 
 const SCREEN_ID = 'mxvc-log';
 
@@ -59,7 +60,9 @@ export default function MexicoLogPage() {
           ? <LogEolMasterDetail lineCode={lineCode} lineCodes={lineCodes} onLineCodeChange={setLineCode} />
           : selectedTable === 'LOG_ICT'
             ? <LogIctMasterDetail lineCode={lineCode} lineCodes={lineCodes} onLineCodeChange={setLineCode} />
-            : <LogDataGrid tableName={selectedTable} lineCode={lineCode} lineCodes={lineCodes} onLineCodeChange={setLineCode} />
+            : selectedTable === 'LOG_COATINGVISION'
+              ? <LogCoatingVisionMasterDetail lineCode={lineCode} lineCodes={lineCodes} onLineCodeChange={setLineCode} />
+              : <LogDataGrid tableName={selectedTable} lineCode={lineCode} lineCodes={lineCodes} onLineCodeChange={setLineCode} />
         }
       </div>
 

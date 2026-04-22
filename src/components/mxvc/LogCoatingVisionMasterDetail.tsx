@@ -1,0 +1,396 @@
+/**
+ * @file src/components/mxvc/LogCoatingVisionMasterDetail.tsx
+ * @description LOG_COATINGVISION 마스터-디테일 그리드 (ICT/EOL 동일 패턴).
+ * 초보자 가이드:
+ * - 상단 마스터: EQUIPMENT_ID + MAIN_BARCODE + FILE_NAME 그룹핑, 행 클릭 시 하단 상세 로드
+ * - 하단 디테일: 해당 바코드/파일의 영역별(AREA_NAME) 측정값·판정 상세
+ * - FINAL_RESULT 대표값은 서버에서 FAIL 우선 규칙으로 계산 (AREA 중 하나라도 FAIL이면 FAIL)
+ */
+'use client';
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  colorSchemeDark,
+  colorSchemeLight,
+  themeQuartz,
+  type ColDef,
+  type RowClickedEvent,
+} from 'ag-grid-community';
+import { useTheme } from 'next-themes';
+import * as XLSX from 'xlsx';
+import { useServerTime, useServerNow } from '@/hooks/useServerTime';
+import Modal from '@/components/ui/Modal';
+
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+const gridParams = { fontSize: 11, headerFontSize: 12, rowHeight: 28, headerHeight: 32 };
+const lightTheme = themeQuartz.withPart(colorSchemeLight).withParams(gridParams);
+const darkTheme = themeQuartz.withPart(colorSchemeDark).withParams(gridParams);
+
+interface MasterRow {
+  EQUIPMENT_ID: string;
+  BARCODE: string;           // MAIN_BARCODE alias
+  FILE_NAME: string;
+  LINE_CODE: string;
+  FIRST_TIME: string;
+  SAVE_DATE: string;
+  PROGRAM_NAME: string;
+  FINAL_RESULT: string;
+  IS_LAST: string;
+  IS_SAMPLE: string;
+  STEP_COUNT: number;
+}
+
+interface Props {
+  apiBase?: string;
+  lineCode?: string;
+  lineCodes?: string[];
+  onLineCodeChange?: (v: string) => void;
+}
+
+/** 기준일로부터 7일 전 datetime-local 형식 반환 */
+function weekAgo(base: string): string {
+  const d = new Date(base + 'T00:00:00');
+  d.setDate(d.getDate() - 7);
+  return d.toISOString().slice(0, 10) + 'T00:00';
+}
+
+export default function LogCoatingVisionMasterDetail({ apiBase = '/api/mxvc', lineCode = '', lineCodes = [], onLineCodeChange }: Props) {
+  const { resolvedTheme } = useTheme();
+  const serverToday = useServerTime();
+  const serverNow = useServerNow();
+  const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
+
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [masterRows, setMasterRows] = useState<MasterRow[]>([]);
+  const [detailRows, setDetailRows] = useState<Record<string, unknown>[]>([]);
+  const [selectedKey, setSelectedKey] = useState('');
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailMaximized, setDetailMaximized] = useState(false);
+  const [selectedDetailIds, setSelectedDetailIds] = useState<number[]>([]);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const masterRef = useRef<AgGridReact>(null);
+  const detailRef = useRef<AgGridReact>(null);
+
+  useEffect(() => {
+    if (serverToday && serverNow && !toDate) {
+      setFromDate(weekAgo(serverToday));
+      setToDate(serverNow);
+    }
+  }, [serverToday, serverNow, toDate]);
+
+  /** 마스터 조회 */
+  const fetchMaster = useCallback(async () => {
+    setLoading(true);
+    setDetailRows([]);
+    setSelectedKey('');
+    try {
+      const p = new URLSearchParams({ mode: 'master', from: fromDate, to: toDate });
+      if (lineCode) p.set('lineCode', lineCode);
+      const res = await fetch(`${apiBase}/coatingvision?${p}`);
+      if (!res.ok) throw new Error('마스터 조회 실패');
+      const data = await res.json();
+      setMasterRows(data.rows ?? []);
+      setTotal(data.total ?? 0);
+    } catch { setMasterRows([]); }
+    finally { setLoading(false); }
+  }, [apiBase, fromDate, toDate, lineCode]);
+
+  /** 디테일 조회 — 마스터 행 클릭 시 */
+  const fetchDetail = useCallback(async (row: MasterRow) => {
+    const key = `${row.EQUIPMENT_ID}|${row.BARCODE}|${row.FILE_NAME}`;
+    if (key === selectedKey) return;
+    setSelectedKey(key);
+    setDetailLoading(true);
+    try {
+      const p = new URLSearchParams({
+        mode: 'detail',
+        equipment: row.EQUIPMENT_ID,
+        barcode: row.BARCODE,
+        fileName: row.FILE_NAME ?? '',
+      });
+      const res = await fetch(`${apiBase}/coatingvision?${p}`);
+      if (!res.ok) throw new Error('디테일 조회 실패');
+      const data = await res.json();
+      setDetailRows(data.rows ?? []);
+    } catch { setDetailRows([]); }
+    finally { setDetailLoading(false); }
+  }, [apiBase, selectedKey]);
+
+  const onMasterRowClicked = useCallback((e: RowClickedEvent<MasterRow>) => {
+    if (e.data) fetchDetail(e.data);
+  }, [fetchDetail]);
+
+  /** 마스터 컬럼 */
+  const masterCols: ColDef<MasterRow>[] = useMemo(() => [
+    { field: 'EQUIPMENT_ID', headerName: '설비', minWidth: 130 },
+    { field: 'BARCODE', headerName: '메인바코드', minWidth: 200 },
+    { field: 'FILE_NAME', headerName: '파일명', minWidth: 220 },
+    { field: 'LINE_CODE', headerName: '라인', minWidth: 80 },
+    {
+      field: 'FIRST_TIME', headerName: '최초시간', minWidth: 160,
+      valueFormatter: (p) => {
+        if (!p.value) return '';
+        const d = new Date(p.value);
+        return isNaN(d.getTime()) ? String(p.value) : d.toLocaleString('ko-KR');
+      },
+    },
+    { field: 'PROGRAM_NAME', headerName: '프로그램', minWidth: 160 },
+    { field: 'FINAL_RESULT', headerName: '최종판정', minWidth: 90 },
+    { field: 'STEP_COUNT', headerName: '영역수', minWidth: 80, type: 'numericColumn' },
+    { field: 'IS_LAST', headerName: 'Last', minWidth: 60 },
+    { field: 'IS_SAMPLE', headerName: 'Sample', minWidth: 70 },
+  ], []);
+
+  /** 디테일 컬럼 (체크박스 + 영역별 판정) */
+  const detailCols: ColDef[] = useMemo(() => [
+    {
+      headerCheckboxSelection: true,
+      checkboxSelection: true,
+      headerCheckboxSelectionFilteredOnly: true,
+      width: 50, maxWidth: 50, pinned: 'left',
+      suppressMovable: true, sortable: false, filter: false, resizable: false,
+    },
+    { field: 'LOG_ID', headerName: 'LOG_ID', minWidth: 90, type: 'numericColumn' },
+    {
+      field: 'LOG_TIMESTAMP', headerName: '시간', minWidth: 160,
+      valueFormatter: (p) => {
+        if (!p.value) return '';
+        const d = new Date(p.value as string);
+        return isNaN(d.getTime()) ? String(p.value) : d.toLocaleString('ko-KR');
+      },
+    },
+    { field: 'AREA_NAME', headerName: '영역', minWidth: 140 },
+    { field: 'RESULT', headerName: '판정', minWidth: 80 },
+    { field: 'FINAL_RESULT', headerName: '최종판정', minWidth: 90 },
+    { field: 'COATING_RESULTS', headerName: '코팅결과', minWidth: 200 },
+    { field: 'SUB_BARCODE', headerName: '서브바코드', minWidth: 150 },
+    { field: 'SAVE_DATE', headerName: '저장일시', minWidth: 140 },
+    { field: 'SHIFT_CODE', headerName: 'Shift', minWidth: 70 },
+    { field: 'ZONE_CODE', headerName: 'Zone', minWidth: 70 },
+    { field: 'IS_LAST', headerName: 'Last', minWidth: 60 },
+    { field: 'IS_SAMPLE', headerName: 'Sample', minWidth: 70 },
+  ], []);
+
+  const defaultColDef: ColDef = useMemo(() => ({
+    sortable: true, filter: true, resizable: true, minWidth: 60,
+  }), []);
+
+  return (
+    <div className="flex-1 flex flex-col min-w-0">
+      {/* 필터 바 */}
+      <div className="flex items-center gap-4 px-6 py-3.5 border-b
+                       border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Table</span>
+          <span className="text-sm font-bold text-blue-600 dark:text-blue-300 font-mono">LOG_COATINGVISION</span>
+        </div>
+        <div className="w-px h-7 bg-gray-300 dark:bg-gray-700" />
+        {lineCodes.length > 0 && (
+          <>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Line</span>
+              <select
+                value={lineCode}
+                onChange={(e) => onLineCodeChange?.(e.target.value)}
+                className="h-9 px-3 text-sm rounded-lg transition-colors
+                           bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
+                           text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="">전체</option>
+                {lineCodes.map((lc) => (
+                  <option key={lc} value={lc}>{lc}</option>
+                ))}
+              </select>
+            </div>
+            <div className="w-px h-7 bg-gray-300 dark:bg-gray-700" />
+          </>
+        )}
+        <div className="flex items-center gap-2 rounded-lg px-3 h-9
+                        bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+          <input type="datetime-local" value={fromDate} onChange={(e) => setFromDate(e.target.value)}
+            className="bg-transparent text-sm text-gray-900 dark:text-white focus:outline-none" />
+          <span className="text-gray-400">~</span>
+          <input type="datetime-local" value={toDate} onChange={(e) => setToDate(e.target.value)}
+            className="bg-transparent text-sm text-gray-900 dark:text-white focus:outline-none" />
+        </div>
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{total.toLocaleString()}건</span>
+          <button onClick={fetchMaster} disabled={loading}
+            className="h-9 px-5 text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:bg-gray-300
+                       dark:disabled:bg-gray-700 text-white rounded-lg transition-colors">
+            {loading ? '조회 중...' : '새로고침'}
+          </button>
+          <button
+            onClick={() => {
+              if (masterRows.length === 0) return;
+              const wb = XLSX.utils.book_new();
+              const masterClean = masterRows.map((r) => ({ ...r })) as Record<string, unknown>[];
+              XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(masterClean), 'LOG_COATINGVISION 마스터');
+              if (detailRows.length > 0) {
+                const cleaned = detailRows.map((row) => {
+                  const o: Record<string, unknown> = {};
+                  for (const [k, v] of Object.entries(row)) if (k !== 'RNUM') o[k] = v;
+                  return o;
+                });
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cleaned), 'LOG_COATINGVISION 디테일');
+              }
+              const today = serverToday || new Date().toISOString().slice(0, 10);
+              XLSX.writeFile(wb, `LOG_COATINGVISION_${today}.xlsx`);
+            }}
+            disabled={masterRows.length === 0}
+            className="h-9 px-5 text-sm font-medium bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-300
+                       dark:disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-lg transition-colors"
+            title="마스터 + 선택된 디테일을 각 시트로 저장"
+          >
+            Excel 다운로드
+          </button>
+        </div>
+      </div>
+
+      {/* 마스터 그리드 */}
+      <div className={`border-b-2 border-blue-500/30 dark:border-blue-400/30 transition-all ${detailMaximized ? 'h-0 overflow-hidden' : 'h-[45%]'}`}>
+        <AgGridReact<MasterRow>
+          ref={masterRef}
+          theme={gridTheme}
+          rowData={masterRows}
+          columnDefs={masterCols}
+          defaultColDef={defaultColDef}
+          rowSelection="single"
+          onRowClicked={onMasterRowClicked}
+          animateRows={false}
+          enableCellTextSelection
+          suppressCellFocus
+          onFirstDataRendered={() => masterRef.current?.api?.autoSizeAllColumns()}
+        />
+      </div>
+
+      {/* 디테일 헤더 */}
+      <div className="flex items-center justify-between px-4 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400
+                       bg-gray-100 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700">
+        <span>
+          {selectedKey
+            ? `상세 영역: ${selectedKey.split('|')[1]} (${detailRows.length}건)${detailLoading ? ' 조회 중...' : ''}`
+            : '마스터 행을 클릭하면 영역별 상세가 표시됩니다'}
+        </span>
+        {selectedKey && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setDeleteModalOpen(true)}
+              disabled={selectedDetailIds.length === 0}
+              className="px-2 py-0.5 text-[11px] rounded bg-red-600 hover:bg-red-500 text-white font-medium
+                       disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500 transition-colors"
+            >
+              선택 삭제 ({selectedDetailIds.length})
+            </button>
+            <button
+              onClick={() => setDetailMaximized((v) => !v)}
+              className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              title={detailMaximized ? '원래 크기' : '최대화'}
+            >
+              {detailMaximized ? (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                </svg>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 디테일 그리드 */}
+      <div className="flex-1">
+        <AgGridReact
+          ref={detailRef}
+          theme={gridTheme}
+          rowData={detailRows}
+          columnDefs={detailCols}
+          defaultColDef={defaultColDef}
+          rowSelection="multiple"
+          suppressRowClickSelection={true}
+          onSelectionChanged={(e) => {
+            const selected = e.api.getSelectedRows() as Record<string, unknown>[];
+            setSelectedDetailIds(selected.map((r) => Number(r.LOG_ID)).filter((id) => !isNaN(id)));
+          }}
+          animateRows={false}
+          enableCellTextSelection
+          suppressCellFocus
+          onFirstDataRendered={() => detailRef.current?.api?.autoSizeAllColumns()}
+        />
+      </div>
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="디테일 영역 삭제 확인"
+        subtitle={`LOG_COATINGVISION 테이블에서 선택한 영역 ${selectedDetailIds.length}건 삭제`}
+        size="sm"
+        footer={
+          <div className="flex gap-2">
+            <button onClick={() => setDeleteModalOpen(false)}
+              className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              취소
+            </button>
+            <button onClick={async () => {
+                setDeleting(true);
+                setDeleteError('');
+                try {
+                  const res = await fetch(`${apiBase}/data`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ table: 'LOG_COATINGVISION', ids: selectedDetailIds }),
+                  });
+                  if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || '삭제 실패');
+                  }
+                  setDeleteModalOpen(false);
+                  setSelectedDetailIds([]);
+                  /* 디테일 재조회 */
+                  if (selectedKey) {
+                    const [eq, bc, fn] = selectedKey.split('|');
+                    setDetailLoading(true);
+                    try {
+                      const params = new URLSearchParams({ mode: 'detail', equipment: eq, barcode: bc, fileName: fn });
+                      const r = await fetch(`${apiBase}/coatingvision?${params}`);
+                      if (r.ok) {
+                        const d = await r.json();
+                        setDetailRows(d.rows ?? []);
+                      }
+                    } finally { setDetailLoading(false); }
+                  }
+                } catch (e) {
+                  setDeleteError((e as Error).message);
+                } finally {
+                  setDeleting(false);
+                }
+              }}
+              disabled={deleting}
+              className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-500 disabled:opacity-50 transition-colors font-medium">
+              {deleting ? '삭제 중...' : `${selectedDetailIds.length}건 삭제`}
+            </button>
+          </div>
+        }
+      >
+        <div className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="mb-3">선택한 <strong className="text-red-500">{selectedDetailIds.length}</strong>건의 영역 로그를 삭제하시겠습니까?</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">이 작업은 되돌릴 수 없습니다.</p>
+          {deleteError && <p className="mt-2 text-xs text-red-500">{deleteError}</p>}
+        </div>
+      </Modal>
+    </div>
+  );
+}

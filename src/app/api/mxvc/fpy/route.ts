@@ -69,9 +69,26 @@ async function queryTableFpy(
     : `TO_CHAR(MIN_TS, 'HH24')`;
 
   /**
+   * 그룹핑 컬럼/NULL 가드 — stepCol이 있으면 (BARCODE, stepCol) 조합으로 1건.
+   * 예) LOG_COATINGVISION: (MAIN_BARCODE, FILE_NAME) 조합 = 파일 단위 검사 1건
+   */
+  const groupCols = cfg.stepCol
+    ? `${cfg.barcodeCol}, ${cfg.stepCol}`
+    : cfg.barcodeCol;
+  const groupNotNull = cfg.stepCol
+    ? `AND ${cfg.barcodeCol} IS NOT NULL AND ${cfg.stepCol} IS NOT NULL`
+    : `AND ${cfg.barcodeCol} IS NOT NULL`;
+
+  /**
+   * IS_SAMPLE='Y' 샘플 레코드 제외 (컬럼이 존재하는 테이블만).
+   * NVL로 NULL은 유지 (정상 데이터).
+   */
+  const sampleFilter = cfg.hasIsSample ? `AND NVL(IS_SAMPLE, 'N') <> 'Y'` : '';
+
+  /**
    * 쿼리 분기:
-   * 1) groupedFpy=true (EOL/ICT/FCT) → BARCODE 단위 1건 카운트 (진짜 FPY)
-   * 2) 일반 (그 외)                  → 단순 row 단위 PASS/FAIL
+   * 1) groupedFpy=true (EOL/ICT/FCT, COATINGVISION 등) → 바코드(±스텝) 단위 1건 카운트 (진짜 FPY)
+   * 2) 일반 (그 외)                                     → 단순 row 단위 PASS/FAIL
    */
   const sql = cfg.groupedFpy
     ? `
@@ -87,8 +104,9 @@ async function queryTableFpy(
         FROM ${tableKey}
         WHERE ${whereTime}
           AND ${cfg.resultCol} IS NOT NULL
-          AND ${cfg.barcodeCol} IS NOT NULL
-        GROUP BY ${cfg.barcodeCol}
+          ${groupNotNull}
+          ${sampleFilter}
+        GROUP BY ${groupCols}
       )
       GROUP BY ${bucketExprForGrouped}
       ORDER BY HOUR
@@ -100,6 +118,7 @@ async function queryTableFpy(
       FROM ${tableKey}
       WHERE ${whereTime}
         AND ${cfg.resultCol} IS NOT NULL
+        ${sampleFilter}
       GROUP BY ${bucketExpr}
       ORDER BY HOUR
     `;
@@ -136,8 +155,9 @@ async function queryTableFpy(
                FROM ${tableKey}
               WHERE ${whereTime}
                 AND ${cfg.resultCol} IS NOT NULL
-                AND ${cfg.barcodeCol} IS NOT NULL
-              GROUP BY ${cfg.barcodeCol}
+                ${groupNotNull}
+                ${sampleFilter}
+              GROUP BY ${groupCols}
            )
            GROUP BY FINAL_LABEL
            ORDER BY CNT DESC`
@@ -145,6 +165,7 @@ async function queryTableFpy(
              FROM ${tableKey}
             WHERE ${whereTime}
               AND ${cfg.resultCol} IS NOT NULL
+              ${sampleFilter}
             GROUP BY ${cfg.resultCol}
             ORDER BY CNT DESC`;
       const bdRows = await executeQuery<{ VAL: string; CNT: number }>(bdSql, binds);
