@@ -5,6 +5,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Plug } from 'lucide-react';
 import ApiKeyInput from './ApiKeyInput';
 import type { ProviderSettingPublic } from '@/lib/ai/provider-store';
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function ProviderCard({ provider, modelOptions, onUpdated }: Props) {
+  const t = useTranslations('settingsAi.models');
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message?: string } | null>(null);
   const [model, setModel] = useState(provider.defaultModelId || modelOptions[0]);
@@ -51,7 +53,7 @@ export default function ProviderCard({ provider, modelOptions, onUpdated }: Prop
         <label className="flex items-center gap-2 text-sm text-zinc-300">
           <input type="checkbox" checked={provider.enabled}
             onChange={(e) => update({ enabled: e.target.checked })} />
-          활성
+          {t('flagActive')}
         </label>
       </div>
 
@@ -65,7 +67,7 @@ export default function ProviderCard({ provider, modelOptions, onUpdated }: Prop
       </div>
 
       <div className="mb-3">
-        <label className="mb-1 block text-xs font-medium text-zinc-400">기본 모델</label>
+        <label className="mb-1 block text-xs font-medium text-zinc-400">{t('defaultModel')}</label>
         <select value={model} onChange={(e) => { setModel(e.target.value); update({ defaultModelId: e.target.value }); }}
           className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100">
           {modelOptions.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -74,7 +76,7 @@ export default function ProviderCard({ provider, modelOptions, onUpdated }: Prop
 
       <button onClick={test} disabled={!provider.hasApiKey || testing}
         className="flex items-center gap-1 rounded bg-zinc-800 px-3 py-1 text-xs text-zinc-300 hover:bg-zinc-700 disabled:opacity-50">
-        <Plug className="size-3" /> {testing ? '테스트 중...' : '연결 테스트'}
+        <Plug className="size-3" /> {testing ? t('testing') : t('testConnection')}
       </button>
       {testResult && (
         <div className={`mt-2 text-xs ${testResult.ok ? 'text-green-400' : 'text-red-400'}`}>

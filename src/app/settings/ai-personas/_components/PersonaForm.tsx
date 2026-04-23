@@ -5,6 +5,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Persona } from '@/lib/ai/persona-store';
 
 interface Props {
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export default function PersonaForm({ initial, onSubmit, onCancel }: Props) {
+  const t = useTranslations('settingsAi.personas');
+  const tc = useTranslations('common');
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [icon, setIcon] = useState(initial?.icon ?? '');
@@ -34,32 +37,32 @@ export default function PersonaForm({ initial, onSubmit, onCancel }: Props) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
       <div className="grid grid-cols-2 gap-3 mb-3">
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="이름"
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('placeholderName')}
           className="rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100" />
-        <input value={icon ?? ''} onChange={(e) => setIcon(e.target.value)} placeholder="아이콘 (lucide 이름)"
+        <input value={icon ?? ''} onChange={(e) => setIcon(e.target.value)} placeholder={t('placeholderIcon')}
           className="rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100" />
       </div>
-      <input value={description ?? ''} onChange={(e) => setDescription(e.target.value)} placeholder="설명"
+      <input value={description ?? ''} onChange={(e) => setDescription(e.target.value)} placeholder={t('placeholderDescription')}
         className="mb-3 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100" />
       <textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)}
-        rows={6} placeholder="시스템 프롬프트 (응답 어조)"
+        rows={6} placeholder={t('placeholderSystemPrompt')}
         className="mb-3 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-xs text-zinc-100" />
       <div className="mb-3 flex gap-4">
         <label className="flex items-center gap-2 text-sm text-zinc-300">
-          <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} /> 기본
+          <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} /> {t('flagDefault')}
         </label>
         <label className="flex items-center gap-2 text-sm text-zinc-300">
-          <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> 활성
+          <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} /> {t('flagActive')}
         </label>
       </div>
       <div className="flex gap-2">
         <button onClick={handleSubmit} disabled={busy || !name || !systemPrompt}
           className="rounded bg-cyan-600 px-3 py-1 text-xs text-white hover:bg-cyan-500 disabled:opacity-50">
-          {busy ? '저장 중...' : '저장'}
+          {busy ? t('saving') : t('save')}
         </button>
         <button onClick={onCancel}
           className="rounded border border-zinc-700 px-3 py-1 text-xs text-zinc-300 hover:bg-zinc-800">
-          취소
+          {tc('cancel')}
         </button>
       </div>
     </div>

@@ -29,13 +29,76 @@
     "loading": "Generando respuesta…",
     "noKey": "Registre la clave API en Configuración de modelos IA",
     "sqlConfirmTitle": "¿Ejecutar esta consulta?",
+    "sqlRiskyTitle": "¿Ejecutar este SQL riesgoso?",
     "execute": "Ejecutar",
-    "cancel": "Cancelar"
+    "executing": "Ejecutando...",
+    "cancel": "Cancelar",
+    "keyNotRegistered": "(sin clave)",
+    "estimatedCost": "Costo est.",
+    "estimatedRows": "Filas est.",
+    "resultEmpty": "Sin filas",
+    "analytics": {
+      "pageTitle": "Analíticas de Chat IA",
+      "presets": {
+        "today": "Hoy",
+        "days7": "7d",
+        "days30": "30d",
+        "all": "Todo"
+      },
+      "ratingAll": "Todas las valoraciones",
+      "ratingPositive": "Positivo",
+      "ratingNegative": "Negativo",
+      "ratingNeutral": "Neutral",
+      "providerAll": "Todos los proveedores",
+      "search": "Buscar",
+      "topQuestions": "Top 10 Preguntas",
+      "noData": "Sin datos",
+      "providerCompare": "Comparación de proveedores",
+      "col": {
+        "provider": "Proveedor",
+        "count": "Cantidad",
+        "positiveRate": "% Positivo",
+        "avgResponse": "Respuesta promedio"
+      },
+      "countItems": "{count}",
+      "selectedCount": "{count} seleccionados",
+      "delete": "Eliminar",
+      "confirmDelete": "¿Eliminar realmente?",
+      "deleting": "Eliminando…",
+      "confirm": "Confirmar",
+      "dailyUsage": "Uso diario"
+    }
+  },
+  "settingsTabs": {
+    "cards": "Gestión de Tarjetas",
+    "models": "Modelos IA",
+    "personas": "Personajes IA"
   },
   "settingsAi": {
-    "models": "Modelos IA",
-    "personas": "Personajes IA",
-    "glossary": "Glosario IA"
+    "models": {
+      "tabLabel": "Modelos IA",
+      "title": "Registro de modelos IA",
+      "description": "Registre y active las claves API de 4 proveedores de LLM.",
+      "flagActive": "Activo",
+      "defaultModel": "Modelo predeterminado",
+      "testing": "Probando...",
+      "testConnection": "Probar conexión"
+    },
+    "personas": {
+      "tabLabel": "Personajes IA",
+      "title": "Personajes IA",
+      "add": "Agregar",
+      "inactive": "(inactivo)",
+      "confirmDelete": "¿Eliminar?",
+      "placeholderName": "Nombre",
+      "placeholderIcon": "Icono (nombre lucide)",
+      "placeholderDescription": "Descripción",
+      "placeholderSystemPrompt": "Prompt del sistema (tono de respuesta)",
+      "flagDefault": "Predeterminado",
+      "flagActive": "Activo",
+      "saving": "Guardando...",
+      "save": "Guardar"
+    }
   },
   "display": {
     "refreshInterval": "Actualización: {seconds}s",
@@ -161,10 +224,9 @@
     "pageRolling": "Rotación de páginas",
     "dbSettings": "Config. BD",
     "autoLaunch": "Página de inicio",
-    "aiModels": "Modelos IA",
+    "aiModels": "Modelos/Personajes IA",
     "aiPersonas": "Personajes IA",
-    "aiGlossary": "Glosario IA",
-    "aiTables": "Tablas IA",
+    "aiTraining": "Entrenamiento IA",
     "rollingEnabled": "Activar rotación de páginas",
     "rollingInterval": "Intervalo de transición (seg)",
     "rollingScreens": "Lista de pantallas en rotación",
@@ -1449,5 +1511,59 @@
     "removeCardTitle": "Mover a sin asignar",
     "selectUnassigned": "📦 Sin asignar",
     "loadFailed": "Error al cargar tarjetas"
+  },
+  "mxvcLog": {
+    "title": "Consulta de registros México MXVC"
+  },
+  "mxvcSpc": {
+    "title": "Gráfico de Control SPC México MXVC"
+  },
+  "mxvcProcessHistory": {
+    "title": "Historial de Procesos",
+    "dateFrom": "Fecha inicio",
+    "dateTo": "Fecha fin",
+    "resetInputs": "🔄 Reiniciar entradas (RATING · TOP · BOT)",
+    "all": "Todo",
+    "view": "Vista",
+    "pivot": "Pivote",
+    "normal": "Normal",
+    "resultFilter": "Filtro de Resultado",
+    "okOnly": "Solo OK",
+    "ngOnly": "Solo NG",
+    "searching": "Buscando...",
+    "search": "Buscar",
+    "excelTitle": "Guardar como archivo Excel (xlsx)",
+    "excelExport": "Exportar Excel",
+    "shown": "Mostrados",
+    "countUnit": "",
+    "raw": "RAW",
+    "maxLimit": "(máx 10000 límite)",
+    "loadingMsg": "Cargando historial de procesos...",
+    "noData": "Sin datos para las condiciones seleccionadas",
+    "noFilterData": "No hay filas que coincidan con el filtro de resultado",
+    "placeholderList": "Ingrese RATING_LABEL, TOP o BOT y haga clic en Buscar",
+    "placeholderPivot": "Seleccione fechas y haga clic en Buscar",
+    "errorRequired": "La vista Normal requiere RATING_LABEL o TOP/BOT SERIAL_NO",
+    "xlsx": {
+      "workstage": "Código de proceso",
+      "workstageName": "Nombre de proceso",
+      "side": "Lado",
+      "modelName": "Modelo",
+      "machine": "Máquina",
+      "result": "Resultado",
+      "inspectDate": "Fecha de inspección",
+      "defectCode": "Código de defecto",
+      "defectPos": "Posición del defecto",
+      "location": "Ubicación",
+      "repairResult": "Resultado de reparación",
+      "repairDate": "Fecha de reparación",
+      "fileName": "Nombre de archivo",
+      "dateTime": "Fecha/Hora",
+      "sheetProcess": "Historial de Procesos",
+      "sheetRepair": "Historial de Reparación"
+    }
+  },
+  "u1Log": {
+    "title": "Consulta de registros Vietnam U1"
   }
 }

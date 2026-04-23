@@ -29,13 +29,76 @@
     "loading": "Đang tạo phản hồi…",
     "noKey": "Vui lòng đăng ký khóa API trong cài đặt mô hình AI trước",
     "sqlConfirmTitle": "Thực thi truy vấn này?",
+    "sqlRiskyTitle": "Chạy SQL rủi ro này?",
     "execute": "Chạy",
-    "cancel": "Hủy"
+    "executing": "Đang chạy...",
+    "cancel": "Hủy",
+    "keyNotRegistered": "(chưa có khóa)",
+    "estimatedCost": "Chi phí ước tính",
+    "estimatedRows": "Số hàng ước tính",
+    "resultEmpty": "Không có hàng",
+    "analytics": {
+      "pageTitle": "Phân tích Chat AI",
+      "presets": {
+        "today": "Hôm nay",
+        "days7": "7 ngày",
+        "days30": "30 ngày",
+        "all": "Tất cả"
+      },
+      "ratingAll": "Tất cả đánh giá",
+      "ratingPositive": "Tích cực",
+      "ratingNegative": "Tiêu cực",
+      "ratingNeutral": "Trung lập",
+      "providerAll": "Tất cả nhà cung cấp",
+      "search": "Tìm",
+      "topQuestions": "10 câu hỏi hàng đầu",
+      "noData": "Không có dữ liệu",
+      "providerCompare": "So sánh nhà cung cấp",
+      "col": {
+        "provider": "Nhà cung cấp",
+        "count": "Số lượng",
+        "positiveRate": "Tỷ lệ tích cực",
+        "avgResponse": "Phản hồi TB"
+      },
+      "countItems": "{count} mục",
+      "selectedCount": "Đã chọn {count}",
+      "delete": "Xóa",
+      "confirmDelete": "Bạn chắc chắn xóa?",
+      "deleting": "Đang xóa…",
+      "confirm": "Xác nhận",
+      "dailyUsage": "Lượng dùng hàng ngày"
+    }
+  },
+  "settingsTabs": {
+    "cards": "Quản lý Thẻ",
+    "models": "Mô hình AI",
+    "personas": "Vai trò AI"
   },
   "settingsAi": {
-    "models": "Mô hình AI",
-    "personas": "Vai trò AI",
-    "glossary": "Từ điển AI"
+    "models": {
+      "tabLabel": "Mô hình AI",
+      "title": "Đăng ký Mô hình AI",
+      "description": "Đăng ký và kích hoạt khóa API cho 4 nhà cung cấp LLM.",
+      "flagActive": "Hoạt động",
+      "defaultModel": "Mô hình mặc định",
+      "testing": "Đang kiểm tra...",
+      "testConnection": "Kiểm tra kết nối"
+    },
+    "personas": {
+      "tabLabel": "Vai trò AI",
+      "title": "Vai trò AI",
+      "add": "Thêm",
+      "inactive": "(không hoạt động)",
+      "confirmDelete": "Xóa?",
+      "placeholderName": "Tên",
+      "placeholderIcon": "Biểu tượng (tên lucide)",
+      "placeholderDescription": "Mô tả",
+      "placeholderSystemPrompt": "Lời nhắc hệ thống (giọng điệu)",
+      "flagDefault": "Mặc định",
+      "flagActive": "Hoạt động",
+      "saving": "Đang lưu...",
+      "save": "Lưu"
+    }
   },
   "display": {
     "refreshInterval": "Làm mới: {seconds}s",
@@ -161,10 +224,9 @@
     "pageRolling": "Cuộn trang",
     "dbSettings": "Cài đặt DB",
     "autoLaunch": "Trang khởi động",
-    "aiModels": "Mô hình AI",
+    "aiModels": "Mô hình/Vai trò AI",
     "aiPersonas": "Vai trò AI",
-    "aiGlossary": "Từ điển AI",
-    "aiTables": "Bảng AI",
+    "aiTraining": "Huấn luyện AI",
     "rollingEnabled": "Bật cuộn trang",
     "rollingInterval": "Khoảng cách chuyển (giây)",
     "rollingScreens": "Danh sách màn hình cuộn",
@@ -1446,5 +1508,59 @@
     "removeCardTitle": "Chuyển sang chưa gán",
     "selectUnassigned": "📦 Chưa gán",
     "loadFailed": "Tải thẻ thất bại"
+  },
+  "mxvcLog": {
+    "title": "Tra cứu nhật ký Mexico MXVC"
+  },
+  "mxvcSpc": {
+    "title": "Biểu đồ kiểm soát SPC Mexico MXVC"
+  },
+  "mxvcProcessHistory": {
+    "title": "Lịch sử quy trình",
+    "dateFrom": "Ngày bắt đầu",
+    "dateTo": "Ngày kết thúc",
+    "resetInputs": "🔄 Đặt lại (RATING · TOP · BOT)",
+    "all": "Tất cả",
+    "view": "Chế độ xem",
+    "pivot": "Pivot",
+    "normal": "Thường",
+    "resultFilter": "Lọc kết quả",
+    "okOnly": "Chỉ OK",
+    "ngOnly": "Chỉ NG",
+    "searching": "Đang tìm...",
+    "search": "Tìm",
+    "excelTitle": "Lưu dưới dạng tệp Excel (xlsx)",
+    "excelExport": "Xuất Excel",
+    "shown": "Hiển thị",
+    "countUnit": " mục",
+    "raw": "RAW",
+    "maxLimit": "(giới hạn tối đa 10000)",
+    "loadingMsg": "Đang tải lịch sử quy trình...",
+    "noData": "Không có dữ liệu cho điều kiện đã chọn",
+    "noFilterData": "Không có hàng phù hợp với bộ lọc",
+    "placeholderList": "Nhập RATING_LABEL, TOP hoặc BOT và nhấn Tìm",
+    "placeholderPivot": "Chọn ngày và nhấn Tìm",
+    "errorRequired": "Chế độ thường yêu cầu RATING_LABEL hoặc TOP/BOT SERIAL_NO",
+    "xlsx": {
+      "workstage": "Mã công đoạn",
+      "workstageName": "Tên công đoạn",
+      "side": "Mặt",
+      "modelName": "Tên mô hình",
+      "machine": "Máy",
+      "result": "Kết quả",
+      "inspectDate": "Ngày kiểm tra",
+      "defectCode": "Mã lỗi",
+      "defectPos": "Vị trí lỗi",
+      "location": "Vị trí",
+      "repairResult": "Kết quả sửa chữa",
+      "repairDate": "Ngày sửa chữa",
+      "fileName": "Tên tệp",
+      "dateTime": "Thời gian",
+      "sheetProcess": "Lịch sử quy trình",
+      "sheetRepair": "Lịch sử sửa chữa"
+    }
+  },
+  "u1Log": {
+    "title": "Tra cứu nhật ký U1 Việt Nam"
   }
 }

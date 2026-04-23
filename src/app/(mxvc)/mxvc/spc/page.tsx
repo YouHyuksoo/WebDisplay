@@ -8,6 +8,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import MxvcSpcControlChart from '@/components/mxvc/MxvcSpcControlChart';
@@ -15,9 +16,10 @@ import MxvcSpcControlChart from '@/components/mxvc/MxvcSpcControlChart';
 const SCREEN_ID = 'mxvc-spc';
 
 export default function MexicoSpcPage() {
+  const t = useTranslations('mxvcSpc');
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <DisplayHeader title="멕시코전장 관리도보기" screenId={SCREEN_ID} />
+      <DisplayHeader title={t('title')} screenId={SCREEN_ID} />
 
       <div className="flex-1 min-h-0">
         <MxvcSpcControlChart />

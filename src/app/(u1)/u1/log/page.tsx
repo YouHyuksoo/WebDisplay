@@ -10,6 +10,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import LogTableSidebar from '@/components/mxvc/LogTableSidebar';
@@ -19,11 +20,12 @@ const SCREEN_ID = 'u1-log';
 const API_BASE = '/api/u1';
 
 export default function U1LogPage() {
+  const t = useTranslations('u1Log');
   const [selectedTable, setSelectedTable] = useState('');
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <DisplayHeader title="베트남U1 로그조회" screenId={SCREEN_ID} />
+      <DisplayHeader title={t('title')} screenId={SCREEN_ID} />
 
       {/* 본문: 사이드바 + 그리드 */}
       <div className="flex-1 flex min-h-0">

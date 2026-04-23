@@ -29,13 +29,76 @@
     "loading": "응답 생성 중…",
     "noKey": "AI 모델 설정에서 API 키를 먼저 등록해주세요",
     "sqlConfirmTitle": "이 쿼리를 실행할까요?",
+    "sqlRiskyTitle": "위험 SQL을 실행할까요?",
     "execute": "실행",
-    "cancel": "취소"
+    "executing": "실행 중...",
+    "cancel": "취소",
+    "keyNotRegistered": "(키 미등록)",
+    "estimatedCost": "예상 비용",
+    "estimatedRows": "예상 행수",
+    "resultEmpty": "결과 0행",
+    "analytics": {
+      "pageTitle": "AI 챗 분석",
+      "presets": {
+        "today": "오늘",
+        "days7": "7일",
+        "days30": "30일",
+        "all": "전체"
+      },
+      "ratingAll": "평점 전체",
+      "ratingPositive": "긍정",
+      "ratingNegative": "부정",
+      "ratingNeutral": "중립",
+      "providerAll": "프로바이더 전체",
+      "search": "조회",
+      "topQuestions": "자주 묻는 질문 TOP 10",
+      "noData": "데이터 없음",
+      "providerCompare": "프로바이더 비교",
+      "col": {
+        "provider": "프로바이더",
+        "count": "건수",
+        "positiveRate": "긍정률",
+        "avgResponse": "평균 응답"
+      },
+      "countItems": "{count}건",
+      "selectedCount": "{count}건 선택",
+      "delete": "삭제",
+      "confirmDelete": "정말 삭제할까요?",
+      "deleting": "삭제 중…",
+      "confirm": "확인",
+      "dailyUsage": "일별 사용량"
+    }
+  },
+  "settingsTabs": {
+    "cards": "카드 관리",
+    "models": "AI 모델",
+    "personas": "AI 페르소나"
   },
   "settingsAi": {
-    "models": "AI 모델",
-    "personas": "AI 페르소나",
-    "glossary": "AI 용어사전"
+    "models": {
+      "tabLabel": "AI 모델",
+      "title": "AI 모델 등록",
+      "description": "4개 LLM 프로바이더의 API 키를 등록하고 활성화하세요.",
+      "flagActive": "활성",
+      "defaultModel": "기본 모델",
+      "testing": "테스트 중...",
+      "testConnection": "연결 테스트"
+    },
+    "personas": {
+      "tabLabel": "AI 페르소나",
+      "title": "AI 페르소나",
+      "add": "추가",
+      "inactive": "(비활성)",
+      "confirmDelete": "삭제할까요?",
+      "placeholderName": "이름",
+      "placeholderIcon": "아이콘 (lucide 이름)",
+      "placeholderDescription": "설명",
+      "placeholderSystemPrompt": "시스템 프롬프트 (응답 어조)",
+      "flagDefault": "기본",
+      "flagActive": "활성",
+      "saving": "저장 중...",
+      "save": "저장"
+    }
   },
   "display": {
     "refreshInterval": "새로고침: {seconds}초",
@@ -161,10 +224,9 @@
     "pageRolling": "페이지 순환",
     "dbSettings": "DB 설정",
     "autoLaunch": "시작페이지 설정",
-    "aiModels": "AI 모델",
+    "aiModels": "AI 모델/페르소나",
     "aiPersonas": "AI 페르소나",
-    "aiGlossary": "AI 용어사전",
-    "aiTables": "AI 테이블 학습",
+    "aiTraining": "AI 학습",
     "rollingEnabled": "페이지 순환 활성화",
     "rollingInterval": "전환 간격 (초)",
     "rollingScreens": "순환 화면 목록",
@@ -1448,5 +1510,59 @@
     "removeCardTitle": "미분류로 이동",
     "selectUnassigned": "📦 미분류",
     "loadFailed": "카드 로드 실패"
+  },
+  "mxvcLog": {
+    "title": "멕시코전장 로그조회"
+  },
+  "mxvcSpc": {
+    "title": "멕시코전장 관리도보기"
+  },
+  "mxvcProcessHistory": {
+    "title": "공정통과이력",
+    "dateFrom": "시작일",
+    "dateTo": "종료일",
+    "resetInputs": "🔄 입력 초기화 (RATING · TOP · BOT)",
+    "all": "전체",
+    "view": "뷰",
+    "pivot": "피벗",
+    "normal": "노멀",
+    "resultFilter": "결과 필터",
+    "okOnly": "OK만",
+    "ngOnly": "NG만",
+    "searching": "조회 중...",
+    "search": "조회",
+    "excelTitle": "Excel(xlsx) 파일로 저장",
+    "excelExport": "Excel 내보내기",
+    "shown": "표시",
+    "countUnit": "건",
+    "raw": "RAW",
+    "maxLimit": "(최대 10000건 제한)",
+    "loadingMsg": "공정통과이력 조회 중...",
+    "noData": "해당 조건에 데이터가 없습니다",
+    "noFilterData": "결과 필터 조건에 해당하는 행이 없습니다",
+    "placeholderList": "RATING_LABEL · TOP · BOT 중 하나를 입력하고 조회 버튼을 누르세요",
+    "placeholderPivot": "날짜를 선택하고 조회 버튼을 누르세요",
+    "errorRequired": "노멀 뷰에서는 RATING_LABEL 또는 TOP/BOT SERIAL_NO 중 하나가 필요합니다",
+    "xlsx": {
+      "workstage": "공정코드",
+      "workstageName": "공정명",
+      "side": "면",
+      "modelName": "모델명",
+      "machine": "머신",
+      "result": "결과",
+      "inspectDate": "검사일시",
+      "defectCode": "불량코드",
+      "defectPos": "불량위치",
+      "location": "위치",
+      "repairResult": "수리결과",
+      "repairDate": "수리일시",
+      "fileName": "파일명",
+      "dateTime": "일시",
+      "sheetProcess": "공정통과이력",
+      "sheetRepair": "수리이력"
+    }
+  },
+  "u1Log": {
+    "title": "베트남U1 로그조회"
   }
 }

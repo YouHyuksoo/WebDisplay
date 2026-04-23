@@ -5,6 +5,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { ProviderId } from '@/lib/ai/providers/types';
 import type { ProviderSettingPublic } from '@/lib/ai/provider-store';
 
@@ -23,6 +24,7 @@ const MODEL_OPTIONS: Record<ProviderId, string[]> = {
 };
 
 export default function ModelPicker({ providerId, modelId, onProviderChange, onModelChange }: Props) {
+  const t = useTranslations('aiChat');
   const [enabled, setEnabled] = useState<ProviderId[]>([]);
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export default function ModelPicker({ providerId, modelId, onProviderChange, onM
       >
         {(['claude','gemini','mistral','kimi'] as ProviderId[]).map((p) => (
           <option key={p} value={p} disabled={!enabled.includes(p)}>
-            {p}{!enabled.includes(p) ? ' (키 미등록)' : ''}
+            {p}{!enabled.includes(p) ? ` ${t('keyNotRegistered')}` : ''}
           </option>
         ))}
       </select>

@@ -13,6 +13,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import * as XLSX from 'xlsx';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
@@ -97,6 +98,7 @@ interface ResolveResponse {
 }
 
 export default function ProcessHistoryPage() {
+  const t = useTranslations('mxvcProcessHistory');
   const serverToday = useServerTime();
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo,   setDateTo]   = useState('');
@@ -156,7 +158,7 @@ export default function ProcessHistoryPage() {
     const top = topSerial.trim();
     const bot = botSerial.trim();
     if (viewMode === 'list' && !rl && !top && !bot) {
-      setError('노멀 뷰에서는 RATING_LABEL 또는 TOP/BOT SERIAL_NO 중 하나가 필요합니다');
+      setError(t('errorRequired'));
       return;
     }
     setLoading(true);
@@ -176,7 +178,7 @@ export default function ProcessHistoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateFrom, dateTo, isLast, ratingLabel, topSerial, botSerial, viewMode]);
+  }, [dateFrom, dateTo, isLast, ratingLabel, topSerial, botSerial, viewMode, t]);
 
   const inputClass = 'w-full rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 [color-scheme:dark]';
 
@@ -200,7 +202,7 @@ export default function ProcessHistoryPage() {
 
     /* ── list 모드 엑셀 ── */
     if (data.mode === 'list') {
-      const header = ['공정코드', '공정명', '면', 'PID', '모델명', 'Rating Label', '머신', '결과', 'IS_LAST', '검사일시'];
+      const header = [t('xlsx.workstage'), t('xlsx.workstageName'), t('xlsx.side'), 'PID', t('xlsx.modelName'), 'Rating Label', t('xlsx.machine'), t('xlsx.result'), 'IS_LAST', t('xlsx.inspectDate')];
       const dataRows = (data.rows as ListRow[]).map((r) => [
         r.WORKSTAGE_CODE ?? '',
         r.WORKSTAGE_NAME ?? '',
@@ -219,11 +221,11 @@ export default function ProcessHistoryPage() {
         { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 20 },
       ];
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, sheet, '공정통과이력');
+      XLSX.utils.book_append_sheet(wb, sheet, t('xlsx.sheetProcess'));
 
       const qcRows = (data as ListResponse).qcRows ?? [];
       if (qcRows.length > 0) {
-        const qcHeader = ['SERIAL_NO', '공정', '머신', '결과', '검사일시', '불량코드', '불량위치', '위치', '수리결과', '수리일시', '파일명'];
+        const qcHeader = ['SERIAL_NO', t('xlsx.workstage'), t('xlsx.machine'), t('xlsx.result'), t('xlsx.inspectDate'), t('xlsx.defectCode'), t('xlsx.defectPos'), t('xlsx.location'), t('xlsx.repairResult'), t('xlsx.repairDate'), t('xlsx.fileName')];
         const qcData = qcRows.map((r: QcRow) => [
           r.SERIAL_NO ?? '', r.WORKSTAGE_CODE ?? '', r.MACHINE_CODE ?? '',
           r.QC_RESULT ?? '', r.QC_DATE ?? '', r.BAD_REASON_CODE ?? '',
@@ -235,10 +237,10 @@ export default function ProcessHistoryPage() {
           { wch: 24 }, { wch: 8 }, { wch: 12 }, { wch: 6 }, { wch: 20 },
           { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 20 }, { wch: 40 },
         ];
-        XLSX.utils.book_append_sheet(wb, qcSheet, '수리이력');
+        XLSX.utils.book_append_sheet(wb, qcSheet, t('xlsx.sheetRepair'));
       }
 
-      XLSX.writeFile(wb, `공정통과이력_노멀_${dateFrom}_${dateTo}.xlsx`);
+      XLSX.writeFile(wb, `${t('xlsx.sheetProcess')}_${t('normal')}_${dateFrom}_${dateTo}.xlsx`);
       return;
     }
 
@@ -247,11 +249,11 @@ export default function ProcessHistoryPage() {
     const ws = data.workstages;
 
     const row0: (string | null)[] = ['', '', '', ''];
-    const row1: string[] = ['면', 'PID', '모델명', 'Rating Label'];
+    const row1: string[] = [t('xlsx.side'), 'PID', t('xlsx.modelName'), 'Rating Label'];
     for (const w of ws) {
       const label = `${w.name} (${w.code})`;
       row0.push(label, null, null);
-      row1.push('머신', '결과', '일시');
+      row1.push(t('xlsx.machine'), t('xlsx.result'), t('xlsx.dateTime'));
     }
 
     const dataRows = pivotRows.map((r) => {
@@ -289,24 +291,24 @@ export default function ProcessHistoryPage() {
     ];
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, sheet, '공정통과이력');
-    XLSX.writeFile(wb, `공정통과이력_${dateFrom}_${dateTo}.xlsx`);
-  }, [data, pivotRows, dateFrom, dateTo]);
+    XLSX.utils.book_append_sheet(wb, sheet, t('xlsx.sheetProcess'));
+    XLSX.writeFile(wb, `${t('xlsx.sheetProcess')}_${dateFrom}_${dateTo}.xlsx`);
+  }, [data, pivotRows, dateFrom, dateTo, t]);
 
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-white overflow-hidden">
-      <DisplayHeader title="공정통과이력" screenId={SCREEN_ID} />
+      <DisplayHeader title={t('title')} screenId={SCREEN_ID} />
 
       <div className="flex-1 min-h-0 flex">
         {/* ── 좌측 사이드 패널 ── */}
         <aside className="w-[280px] shrink-0 flex flex-col gap-3 overflow-y-auto border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/80 p-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">시작일</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">{t('dateFrom')}</label>
             <input type="date" value={dateFrom} max={dateTo}
               onChange={(e) => setDateFrom(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">종료일</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">{t('dateTo')}</label>
             <input type="date" value={dateTo} min={dateFrom}
               onChange={(e) => setDateTo(e.target.value)} className={inputClass} />
           </div>
@@ -353,7 +355,7 @@ export default function ProcessHistoryPage() {
                 onClick={() => { setRatingLabel(''); setTopSerial(''); setBotSerial(''); }}
                 className="mt-1.5 w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                🔄 입력 초기화 (RATING · TOP · BOT)
+                {t('resetInputs')}
               </button>
             )}
           </div>
@@ -368,18 +370,18 @@ export default function ProcessHistoryPage() {
                       ? 'bg-blue-500 text-white font-semibold'
                       : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   } ${i > 0 ? 'border-l border-gray-300 dark:border-gray-600' : ''}`}>
-                  {v === 'all' ? '전체' : v}
+                  {v === 'all' ? t('all') : v}
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">뷰</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">{t('view')}</label>
             <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-xs">
               {([
-                { v: 'pivot' as ViewMode, label: '피벗' },
-                { v: 'list' as ViewMode,  label: '노멀' },
+                { v: 'pivot' as ViewMode, label: t('pivot') },
+                { v: 'list' as ViewMode,  label: t('normal') },
               ]).map((opt, i) => (
                 <button key={opt.v}
                   onClick={() => { setViewMode(opt.v); setData(null); }}
@@ -396,12 +398,12 @@ export default function ProcessHistoryPage() {
 
           {viewMode === 'pivot' && (
             <div>
-              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">결과 필터</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">{t('resultFilter')}</label>
               <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-xs">
                 {([
-                  { v: 'all', label: '전체' },
-                  { v: 'ok',  label: 'OK만' },
-                  { v: 'ng',  label: 'NG만' },
+                  { v: 'all', label: t('all') },
+                  { v: 'ok',  label: t('okOnly') },
+                  { v: 'ng',  label: t('ngOnly') },
                 ] as const).map((opt, i) => (
                   <button key={opt.v} onClick={() => setResultFilter(opt.v)}
                     className={`flex-1 px-2 py-1 transition-colors ${
@@ -423,25 +425,25 @@ export default function ProcessHistoryPage() {
             disabled={loading || !dateFrom || !dateTo}
             className="mt-2 w-full rounded bg-blue-500 hover:bg-blue-600 py-2 text-sm font-semibold text-white disabled:opacity-50 transition-colors"
           >
-            {loading ? '조회 중...' : '조회'}
+            {loading ? t('searching') : t('search')}
           </button>
 
           <button
             onClick={handleExcelExport}
             disabled={!data || data.rows.length === 0}
-            title="Excel(xlsx) 파일로 저장"
+            title={t('excelTitle')}
             className="w-full rounded bg-emerald-600 hover:bg-emerald-500 py-1.5 text-sm font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
-            Excel 내보내기
+            {t('excelExport')}
           </button>
 
           {data && (
             <div className="mt-2 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
               {data.mode === 'pivot'
-                ? <>표시 <b>{pivotRows.length}</b>건 · PID <b>{(data as PivotResponse).totalPids}</b> · RAW <b>{data.totalRaw}</b></>
-                : <>RAW <b>{data.totalRaw}</b>건</>
+                ? <>{t('shown')} <b>{pivotRows.length}</b>{t('countUnit')} · PID <b>{(data as PivotResponse).totalPids}</b> · {t('raw')} <b>{data.totalRaw}</b></>
+                : <>{t('raw')} <b>{data.totalRaw}</b>{t('countUnit')}</>
               }
-              {data.totalRaw >= 10000 && <div className="mt-1 text-amber-500">(최대 10000건 제한)</div>}
+              {data.totalRaw >= 10000 && <div className="mt-1 text-amber-500">{t('maxLimit')}</div>}
             </div>
           )}
         </aside>
@@ -457,7 +459,7 @@ export default function ProcessHistoryPage() {
           <div className="flex-1 min-h-0 flex flex-col p-3">
             {loading ? (
               <div className="flex-1 flex items-center justify-center">
-                <Spinner size="lg" vertical label="공정통과이력 조회 중..." />
+                <Spinner size="lg" vertical label={t('loadingMsg')} />
               </div>
             ) : data ? (
               data.mode === 'list' ? (
@@ -470,21 +472,19 @@ export default function ProcessHistoryPage() {
                   />
                 ) : (
                   <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-                    해당 조건에 데이터가 없습니다
+                    {t('noData')}
                   </div>
                 )
               ) : pivotRows.length > 0 ? (
                 <ProcessHistoryGrid rows={pivotRows} workstages={data.workstages} />
               ) : (
                 <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-                  {data.rows.length === 0 ? '해당 조건에 데이터가 없습니다' : '결과 필터 조건에 해당하는 행이 없습니다'}
+                  {data.rows.length === 0 ? t('noData') : t('noFilterData')}
                 </div>
               )
             ) : (
               <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-                {viewMode === 'list'
-                  ? 'RATING_LABEL · TOP · BOT 중 하나를 입력하고 조회 버튼을 누르세요'
-                  : '날짜를 선택하고 조회 버튼을 누르세요'}
+                {viewMode === 'list' ? t('placeholderList') : t('placeholderPivot')}
               </div>
             )}
           </div>

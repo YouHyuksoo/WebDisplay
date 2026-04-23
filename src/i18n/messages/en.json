@@ -29,13 +29,76 @@
     "loading": "Generating response…",
     "noKey": "Please register API keys in AI Models settings first",
     "sqlConfirmTitle": "Run this query?",
+    "sqlRiskyTitle": "Run this risky SQL?",
     "execute": "Run",
-    "cancel": "Cancel"
+    "executing": "Running...",
+    "cancel": "Cancel",
+    "keyNotRegistered": "(no key)",
+    "estimatedCost": "Est. Cost",
+    "estimatedRows": "Est. Rows",
+    "resultEmpty": "No rows",
+    "analytics": {
+      "pageTitle": "AI Chat Analytics",
+      "presets": {
+        "today": "Today",
+        "days7": "7d",
+        "days30": "30d",
+        "all": "All"
+      },
+      "ratingAll": "All Ratings",
+      "ratingPositive": "Positive",
+      "ratingNegative": "Negative",
+      "ratingNeutral": "Neutral",
+      "providerAll": "All Providers",
+      "search": "Search",
+      "topQuestions": "Top 10 Questions",
+      "noData": "No data",
+      "providerCompare": "Provider Comparison",
+      "col": {
+        "provider": "Provider",
+        "count": "Count",
+        "positiveRate": "Positive %",
+        "avgResponse": "Avg Response"
+      },
+      "countItems": "{count}",
+      "selectedCount": "{count} selected",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure?",
+      "deleting": "Deleting…",
+      "confirm": "Confirm",
+      "dailyUsage": "Daily Usage"
+    }
+  },
+  "settingsTabs": {
+    "cards": "Card Management",
+    "models": "AI Models",
+    "personas": "AI Personas"
   },
   "settingsAi": {
-    "models": "AI Models",
-    "personas": "AI Personas",
-    "glossary": "AI Glossary"
+    "models": {
+      "tabLabel": "AI Models",
+      "title": "AI Model Registration",
+      "description": "Register and activate API keys for 4 LLM providers.",
+      "flagActive": "Active",
+      "defaultModel": "Default Model",
+      "testing": "Testing...",
+      "testConnection": "Test Connection"
+    },
+    "personas": {
+      "tabLabel": "AI Personas",
+      "title": "AI Personas",
+      "add": "Add",
+      "inactive": "(inactive)",
+      "confirmDelete": "Delete this?",
+      "placeholderName": "Name",
+      "placeholderIcon": "Icon (lucide name)",
+      "placeholderDescription": "Description",
+      "placeholderSystemPrompt": "System prompt (response tone)",
+      "flagDefault": "Default",
+      "flagActive": "Active",
+      "saving": "Saving...",
+      "save": "Save"
+    }
   },
   "display": {
     "refreshInterval": "Refresh: {seconds}s",
@@ -161,10 +224,9 @@
     "pageRolling": "Page Rolling",
     "dbSettings": "DB Settings",
     "autoLaunch": "Auto Launch",
-    "aiModels": "AI Models",
+    "aiModels": "AI Models/Personas",
     "aiPersonas": "AI Personas",
-    "aiGlossary": "AI Glossary",
-    "aiTables": "AI Tables",
+    "aiTraining": "AI Training",
     "rollingEnabled": "Enable page rolling",
     "rollingInterval": "Transition interval (sec)",
     "rollingScreens": "Rolling screen list",
@@ -1451,5 +1513,59 @@
     "removeCardTitle": "Move to unassigned",
     "selectUnassigned": "📦 Unassigned",
     "loadFailed": "Failed to load cards"
+  },
+  "mxvcLog": {
+    "title": "Mexico MXVC Log Inquiry"
+  },
+  "mxvcSpc": {
+    "title": "Mexico MXVC SPC Control Chart"
+  },
+  "mxvcProcessHistory": {
+    "title": "Process History",
+    "dateFrom": "Start Date",
+    "dateTo": "End Date",
+    "resetInputs": "🔄 Reset Inputs (RATING · TOP · BOT)",
+    "all": "All",
+    "view": "View",
+    "pivot": "Pivot",
+    "normal": "Normal",
+    "resultFilter": "Result Filter",
+    "okOnly": "OK only",
+    "ngOnly": "NG only",
+    "searching": "Searching...",
+    "search": "Search",
+    "excelTitle": "Save as Excel (xlsx) file",
+    "excelExport": "Export Excel",
+    "shown": "Shown",
+    "countUnit": "",
+    "raw": "RAW",
+    "maxLimit": "(max 10000 limit)",
+    "loadingMsg": "Loading process history...",
+    "noData": "No data for selected conditions",
+    "noFilterData": "No rows match the result filter",
+    "placeholderList": "Enter RATING_LABEL, TOP or BOT and click Search",
+    "placeholderPivot": "Select dates and click Search",
+    "errorRequired": "Normal view requires RATING_LABEL or TOP/BOT SERIAL_NO",
+    "xlsx": {
+      "workstage": "Workstage Code",
+      "workstageName": "Workstage Name",
+      "side": "Side",
+      "modelName": "Model",
+      "machine": "Machine",
+      "result": "Result",
+      "inspectDate": "Inspect Date",
+      "defectCode": "Defect Code",
+      "defectPos": "Defect Position",
+      "location": "Location",
+      "repairResult": "Repair Result",
+      "repairDate": "Repair Date",
+      "fileName": "File Name",
+      "dateTime": "DateTime",
+      "sheetProcess": "Process History",
+      "sheetRepair": "Repair History"
+    }
+  },
+  "u1Log": {
+    "title": "Vietnam U1 Log Inquiry"
   }
 }

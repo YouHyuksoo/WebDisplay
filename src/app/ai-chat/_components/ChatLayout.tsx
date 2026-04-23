@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import DisplayLayout from '@/components/display/DisplayLayout';
 import SessionSidebar from './SessionSidebar';
 import MessageList from './MessageList';
@@ -38,6 +39,7 @@ const PROVIDER_COLORS: Record<string, string> = {
 };
 
 export default function ChatLayout() {
+  const t = useTranslations('aiChat');
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessageRow[]>([]);
   const [providerId, setProviderId] = useState<ProviderId>('mistral');
@@ -97,7 +99,7 @@ export default function ChatLayout() {
   );
 
   return (
-    <DisplayLayout title="AI 어시스턴트" extraHeaderContent={headerContent} hideTimingBadge>
+    <DisplayLayout title={t('title')} extraHeaderContent={headerContent} hideTimingBadge>
       <div className="flex h-full">
         <SessionSidebar
           currentSessionId={currentSessionId}

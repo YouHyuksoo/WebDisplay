@@ -13,6 +13,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
+import { useTranslations } from 'next-intl';
 import { ArrowLeft, Search, Trash2, X } from 'lucide-react';
 import StatsCards from './_components/StatsCards';
 import DailyChart from './_components/DailyChart';
@@ -21,12 +22,12 @@ import FeedbackDetailModal from './_components/FeedbackDetailModal';
 import type { StatsData } from './_components/StatsCards';
 import type { FeedbackRow } from './_components/FeedbackTable';
 
-/* ── 기간 프리셋 ── */
+/* ── 기간 프리셋 (key 는 i18n 키, 라벨은 런타임에 t() 로 변환) ── */
 const PRESETS = [
-  { label: '오늘', days: 0 },
-  { label: '7일', days: 7 },
-  { label: '30일', days: 30 },
-  { label: '전체', days: -1 },
+  { key: 'today', days: 0 },
+  { key: 'days7', days: 7 },
+  { key: 'days30', days: 30 },
+  { key: 'all', days: -1 },
 ] as const;
 
 /** SWR fetcher */
@@ -64,6 +65,7 @@ interface ListResponse {
 }
 
 export default function AnalyticsPage() {
+  const t = useTranslations('aiChat.analytics');
   /* ── 필터 상태 ── */
   const [preset, setPreset] = useState(1); // 7일
   const [dateFrom, setDateFrom] = useState(() => presetRange(7).from);
@@ -147,7 +149,7 @@ export default function AnalyticsPage() {
         <Link href="/ai-chat" className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition">
           <ArrowLeft size={20} className="text-gray-600 dark:text-gray-300" />
         </Link>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">AI 챗 분석</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('pageTitle')}</h1>
       </div>
 
       {/* 필터 바 */}
@@ -158,7 +160,7 @@ export default function AnalyticsPage() {
             <button key={i} onClick={() => handlePreset(i)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${preset === i
                 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
-              {p.label}
+              {t(`presets.${p.key}`)}
             </button>
           ))}
         </div>
@@ -173,16 +175,16 @@ export default function AnalyticsPage() {
         {/* 평점 */}
         <select value={rating} onChange={(e) => setRating(e.target.value)}
           className="h-8 px-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-          <option value="">평점 전체</option>
-          <option value="POSITIVE">긍정</option>
-          <option value="NEGATIVE">부정</option>
-          <option value="NEUTRAL">중립</option>
+          <option value="">{t('ratingAll')}</option>
+          <option value="POSITIVE">{t('ratingPositive')}</option>
+          <option value="NEGATIVE">{t('ratingNegative')}</option>
+          <option value="NEUTRAL">{t('ratingNeutral')}</option>
         </select>
 
         {/* 프로바이더 */}
         <select value={provider} onChange={(e) => setProvider(e.target.value)}
           className="h-8 px-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-          <option value="">프로바이더 전체</option>
+          <option value="">{t('providerAll')}</option>
           {(stats?.providerStats ?? []).map((p) => (
             <option key={p.providerId} value={p.providerId}>{p.providerId}</option>
           ))}
@@ -191,7 +193,7 @@ export default function AnalyticsPage() {
         {/* 조회 */}
         <button onClick={handleSearch}
           className="h-8 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg flex items-center gap-1 transition">
-          <Search size={14} /> 조회
+          <Search size={14} /> {t('search')}
         </button>
       </div>
 
@@ -205,15 +207,15 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* TOP 질문 */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">자주 묻는 질문 TOP 10</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('topQuestions')}</h3>
           {(stats?.topQueries ?? []).length === 0
-            ? <p className="text-xs text-gray-400">데이터 없음</p>
+            ? <p className="text-xs text-gray-400">{t('noData')}</p>
             : <ul className="space-y-1.5">
                 {stats!.topQueries.slice(0, 10).map((q, i) => (
                   <li key={i} className="flex items-center gap-2 text-xs">
                     <span className="w-5 text-right text-gray-400 font-mono">{i + 1}</span>
                     <span className="flex-1 truncate text-gray-800 dark:text-gray-200">{q.query}</span>
-                    <span className="text-gray-400">{q.count}건</span>
+                    <span className="text-gray-400">{t('countItems', { count: q.count })}</span>
                   </li>
                 ))}
               </ul>
@@ -222,14 +224,14 @@ export default function AnalyticsPage() {
 
         {/* 프로바이더 비교 */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">프로바이더 비교</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('providerCompare')}</h3>
           {(stats?.providerStats ?? []).length === 0
-            ? <p className="text-xs text-gray-400">데이터 없음</p>
+            ? <p className="text-xs text-gray-400">{t('noData')}</p>
             : <table className="w-full text-xs">
                 <thead>
                   <tr className="text-gray-500 dark:text-gray-400 text-left">
-                    <th className="pb-1">프로바이더</th><th className="pb-1 text-right">건수</th>
-                    <th className="pb-1 text-right">긍정률</th><th className="pb-1 text-right">평균 응답</th>
+                    <th className="pb-1">{t('col.provider')}</th><th className="pb-1 text-right">{t('col.count')}</th>
+                    <th className="pb-1 text-right">{t('col.positiveRate')}</th><th className="pb-1 text-right">{t('col.avgResponse')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -250,18 +252,18 @@ export default function AnalyticsPage() {
       {/* 삭제 액션 바 */}
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2">
-          <span className="text-xs text-gray-600 dark:text-gray-300">{selectedIds.size}건 선택</span>
+          <span className="text-xs text-gray-600 dark:text-gray-300">{t('selectedCount', { count: selectedIds.size })}</span>
           {!deleteConfirm ? (
             <button onClick={() => setDeleteConfirm(true)}
               className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition">
-              <Trash2 size={13} /> 삭제
+              <Trash2 size={13} /> {t('delete')}
             </button>
           ) : (
             <>
-              <span className="text-xs text-red-500 font-medium">정말 삭제할까요?</span>
+              <span className="text-xs text-red-500 font-medium">{t('confirmDelete')}</span>
               <button onClick={handleDelete} disabled={deleting}
                 className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg disabled:opacity-50">
-                {deleting ? '삭제 중…' : '확인'}
+                {deleting ? t('deleting') : t('confirm')}
               </button>
               <button onClick={() => setDeleteConfirm(false)}
                 className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">

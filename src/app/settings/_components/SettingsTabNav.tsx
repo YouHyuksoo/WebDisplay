@@ -11,26 +11,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Bot, UserCog, BookOpen } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { LayoutGrid, Bot, UserCog } from "lucide-react";
 
 const TABS = [
-  { href: "/settings/cards", label: "카드 관리", icon: LayoutGrid },
-  { href: "/settings/ai-models", label: "AI 모델", icon: Bot },
-  { href: "/settings/ai-personas", label: "AI 페르소나", icon: UserCog },
-  { href: "/settings/ai-glossary", label: "AI 용어사전", icon: BookOpen },
-];
+  { href: "/settings/cards", labelKey: "cards", icon: LayoutGrid },
+  { href: "/settings/ai-models", labelKey: "models", icon: Bot },
+  { href: "/settings/ai-personas", labelKey: "personas", icon: UserCog },
+] as const;
 
 export default function SettingsTabNav() {
+  const t = useTranslations("settingsTabs");
   const pathname = usePathname();
   return (
     <nav className="flex w-56 shrink-0 flex-col gap-1 border-r border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
-      {TABS.map((t) => {
-        const active = pathname.startsWith(t.href);
-        const Icon = t.icon;
+      {TABS.map((tab) => {
+        const active = pathname.startsWith(tab.href);
+        const Icon = tab.icon;
         return (
           <Link
-            key={t.href}
-            href={t.href}
+            key={tab.href}
+            href={tab.href}
             className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${
               active
                 ? "bg-zinc-100 text-cyan-600 dark:bg-zinc-800 dark:text-cyan-400"
@@ -38,7 +39,7 @@ export default function SettingsTabNav() {
             }`}
           >
             <Icon className="size-4" />
-            {t.label}
+            {t(tab.labelKey)}
           </Link>
         );
       })}

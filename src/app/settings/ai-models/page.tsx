@@ -5,7 +5,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import ProviderCard from './_components/ProviderCard';
+import SystemPromptPanel from './_components/SystemPromptPanel';
 import type { ProviderSettingPublic } from '@/lib/ai/provider-store';
 
 const MODEL_OPTIONS: Record<string, string[]> = {
@@ -16,6 +18,7 @@ const MODEL_OPTIONS: Record<string, string[]> = {
 };
 
 export default function AiModelsPage() {
+  const t = useTranslations('settingsAi.models');
   const [providers, setProviders] = useState<ProviderSettingPublic[]>([]);
 
   const refresh = useCallback(async () => {
@@ -28,8 +31,8 @@ export default function AiModelsPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold text-zinc-100">AI 모델 등록</h1>
-      <p className="mb-6 text-sm text-zinc-400">4개 LLM 프로바이더의 API 키를 등록하고 활성화하세요.</p>
+      <h1 className="mb-4 text-2xl font-bold text-zinc-100">{t('title')}</h1>
+      <p className="mb-6 text-sm text-zinc-400">{t('description')}</p>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {providers.map((p) => (
           <ProviderCard
@@ -40,6 +43,8 @@ export default function AiModelsPage() {
           />
         ))}
       </div>
+
+      <SystemPromptPanel providers={providers} onUpdated={refresh} />
     </div>
   );
 }

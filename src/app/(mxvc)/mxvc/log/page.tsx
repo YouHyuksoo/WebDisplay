@@ -11,6 +11,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import DisplayHeader from '@/components/display/DisplayHeader';
 import DisplayFooter from '@/components/display/DisplayFooter';
 import LogTableSidebar from '@/components/mxvc/LogTableSidebar';
@@ -22,6 +23,7 @@ import LogCoatingVisionMasterDetail from '@/components/mxvc/LogCoatingVisionMast
 const SCREEN_ID = 'mxvc-log';
 
 export default function MexicoLogPage() {
+  const t = useTranslations('mxvcLog');
   const [selectedTable, setSelectedTable] = useState('');
   const [lineCodes, setLineCodes] = useState<string[]>([]);
   const [lineCode, setLineCode] = useState('');
@@ -48,7 +50,7 @@ export default function MexicoLogPage() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-zinc-950 text-white">
-      <DisplayHeader title="멕시코전장 로그조회" screenId={SCREEN_ID} />
+      <DisplayHeader title={t('title')} screenId={SCREEN_ID} />
 
       {/* 본문: 사이드바 + 그리드 */}
       <div className="flex-1 flex min-h-0">

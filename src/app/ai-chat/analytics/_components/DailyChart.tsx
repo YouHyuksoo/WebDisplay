@@ -9,6 +9,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, Legend,
@@ -35,10 +36,11 @@ function toDailyData(rows: DailyRow[]) {
 }
 
 export default function DailyChart({ dailyUsage }: Props) {
+  const t = useTranslations('aiChat.analytics');
   if (!dailyUsage || dailyUsage.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex items-center justify-center h-64">
-        <span className="text-gray-400 dark:text-gray-500 text-sm">데이터 없음</span>
+        <span className="text-gray-400 dark:text-gray-500 text-sm">{t('noData')}</span>
       </div>
     );
   }
@@ -47,7 +49,7 @@ export default function DailyChart({ dailyUsage }: Props) {
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">일별 사용량</h3>
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('dailyUsage')}</h3>
       <ResponsiveContainer width="100%" height={260}>
         <ComposedChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
@@ -64,8 +66,8 @@ export default function DailyChart({ dailyUsage }: Props) {
             }}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar yAxisId="left" dataKey="count" name="건수" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-          <Line yAxisId="right" dataKey="positiveRate" name="긍정률(%)" stroke="#10b981" strokeWidth={2} dot={false} />
+          <Bar yAxisId="left" dataKey="count" name={t('col.count')} fill="#3b82f6" radius={[4, 4, 0, 0]} />
+          <Line yAxisId="right" dataKey="positiveRate" name={`${t('col.positiveRate')}(%)`} stroke="#10b981" strokeWidth={2} dot={false} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>

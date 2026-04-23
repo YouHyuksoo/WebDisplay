@@ -4,6 +4,8 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 interface Props {
   rows: Record<string, unknown>[];
 }
@@ -15,8 +17,9 @@ function formatCell(v: unknown): string {
 }
 
 export default function ResultTable({ rows }: Props) {
+  const t = useTranslations('aiChat');
   if (rows.length === 0) {
-    return <div className="rounded bg-zinc-900 p-3 text-sm text-zinc-500">결과 0행</div>;
+    return <div className="rounded bg-zinc-900 p-3 text-sm text-zinc-500">{t('resultEmpty')}</div>;
   }
   const cols = Object.keys(rows[0]);
 
