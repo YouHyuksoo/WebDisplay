@@ -36,20 +36,9 @@ export interface PersonaSetting {
   sortOrder: number;
 }
 
-export interface GlossaryTerm {
-  termId: string;
-  category: 'abbreviation' | 'code' | 'rule' | 'example';
-  term: string;
-  definition: string;
-  exampleSql: string | null;
-  priority: number;
-  isActive: boolean;
-}
-
 export interface AiConfig {
   providers: ProviderSetting[];
   personas: PersonaSetting[];
-  glossary: GlossaryTerm[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -83,13 +72,6 @@ const DEFAULT_CONFIG: AiConfig = {
       isDefault: false, isActive: true, sortOrder: 2,
     },
   ],
-  glossary: [
-    { termId: 'g_p51', category: 'code', term: 'P51', definition: 'SMPS-1 라인. 베트남 SMPS 1호기.', exampleSql: null, priority: 100, isActive: true },
-    { termId: 'g_w220', category: 'code', term: 'W220', definition: '포장 공정 코드. IP_PRODUCT_WORKSTAGE_IO.WORKSTAGE_CODE 컬럼.', exampleSql: null, priority: 100, isActive: true },
-    { termId: 'g_w310', category: 'code', term: 'W310', definition: '투입 공정 코드.', exampleSql: null, priority: 100, isActive: true },
-    { termId: 'g_uph', category: 'abbreviation', term: 'UPH', definition: 'Units Per Hour. 시간당 생산수량 목표.', exampleSql: null, priority: 50, isActive: true },
-    { termId: 'g_eol', category: 'abbreviation', term: 'EOL', definition: 'End Of Line 검사 — 생산 라인 마지막 단계.', exampleSql: null, priority: 50, isActive: true },
-  ],
 };
 
 /* ------------------------------------------------------------------ */
@@ -105,7 +87,6 @@ export async function getAiConfig(): Promise<AiConfig> {
     return {
       providers: parsed.providers ?? DEFAULT_CONFIG.providers,
       personas: parsed.personas ?? DEFAULT_CONFIG.personas,
-      glossary: parsed.glossary ?? DEFAULT_CONFIG.glossary,
     };
   } catch {
     return structuredClone(DEFAULT_CONFIG);

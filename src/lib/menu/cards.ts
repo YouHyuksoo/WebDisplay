@@ -43,6 +43,8 @@ const FAVORITES_LAYER = FAVORITES_CATEGORY_ID;
 const _failedThumbnails = new Set<string>();
 /** 썸네일 업로드 타임스탬프 — 업로드 시에만 캐시 갱신 */
 const _thumbnailTimestamps = new Map<string, number>();
+let _cardDelegationBound = false;
+let _lanesModulePromise: Promise<typeof import('./lanes')> | null = null;
 
 /**
  * 해당 URL이 즐겨찾기에 등록되어 있는지 확인
@@ -80,6 +82,213 @@ function toggleFavorite(shortcut: Shortcut): boolean {
   saveShortcuts();
   showToast(t('menuUI.favAdded'));
   return true;
+}
+
+function findShortcutByCardId(cardId: string | undefined): Shortcut | null {
+  if (!cardId) return null;
+  return state.shortcuts.find((s) => s.id === cardId) ?? null;
+}
+
+function isCardInActiveSection(card: Element): boolean {
+  const parent = card.closest('.section-cards');
+  return !!parent?.classList.contains('active');
+}
+
+function isThumbnailCard(card: Element): boolean {
+  return !!card.closest('.section-cards.thumbnail-layout');
+}
+
+function getLanesModule(): Promise<typeof import('./lanes')> {
+  if (!_lanesModulePromise) {
+    _lanesModulePromise = import('./lanes');
+  }
+  return _lanesModulePromise;
+}
+
+function rerenderCurrentSectionAfterMutation(): void {
+  if (state.cardLayout === 'carousel') {
+    renderCards();
+    return;
+  }
+
+  if (state.cardLayout === 'thumbnail') {
+    renderThumbnailPage();
+    return;
+  }
+
+  const currentSectionEl = document.querySelector(
+    `.section-cards[data-section="${state.currentSection}"]`,
+  ) as HTMLElement | null;
+
+  if (!currentSectionEl) {
+    renderCards();
+    return;
+  }
+
+  populateSection(currentSectionEl, state.currentSection);
+}
+
+function navigateFromCard(card: HTMLElement, shortcut: Shortcut, event?: MouseEvent): void {
+  if (isThumbnailCard(card)) {
+    try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
+
+    window.dispatchEvent(
+      new CustomEvent('mes-navigate', {
+        detail: { url: shortcut.url, title: shortcut.title },
+      }),
+    );
+
+    getLanesModule().then((Lanes) => {
+      if (Lanes.addToHistory) {
+        Lanes.addToHistory(shortcut);
+      }
+    });
+    return;
+  }
+
+  if (card.classList.contains('opening')) return;
+  card.classList.remove('pressing');
+  card.classList.add('opening');
+
+  try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
+
+  if (event && (event.ctrlKey || event.metaKey)) {
+    window.open(shortcut.url, '_blank');
+    card.classList.remove('opening');
+    return;
+  }
+
+  gsap.to(card, {
+    scale: 1.05,
+    duration: 0.15,
+    ease: 'power2.out',
+    onComplete: () => {
+      window.dispatchEvent(
+        new CustomEvent('mes-navigate', {
+          detail: { url: shortcut.url, title: shortcut.title },
+        }),
+      );
+
+      getLanesModule().then((Lanes) => {
+        if (Lanes.addToHistory) {
+          Lanes.addToHistory(shortcut);
+        }
+      });
+
+      setTimeout(() => {
+        if (!card.isConnected) return;
+        card.classList.remove('opening');
+        gsap.to(card, {
+          scale: 1,
+          duration: 0.3,
+          ease: 'power2.out',
+        });
+      }, 300);
+    },
+  });
+}
+
+function ensureCardEventDelegation(): void {
+  if (_cardDelegationBound) return;
+
+  const space = document.getElementById('cards-3d-space');
+  if (!space) return;
+
+  _cardDelegationBound = true;
+
+  space.addEventListener('mousedown', (e) => {
+    const target = e.target as Element | null;
+    if (!target) return;
+    const card = target.closest('.shortcut-card') as HTMLElement | null;
+    if (!card || isThumbnailCard(card) || !isCardInActiveSection(card)) return;
+    card.classList.add('pressing');
+  });
+
+  space.addEventListener('mouseup', (e) => {
+    const target = e.target as Element | null;
+    if (!target) return;
+    const card = target.closest('.shortcut-card') as HTMLElement | null;
+    if (!card) return;
+    card.classList.remove('pressing');
+  });
+
+  space.addEventListener('mouseout', (e) => {
+    const target = e.target as Element | null;
+    if (!target) return;
+    const card = target.closest('.shortcut-card') as HTMLElement | null;
+    if (!card) return;
+    const related = e.relatedTarget as Node | null;
+    if (related && card.contains(related)) return;
+    card.classList.remove('pressing');
+  });
+
+  space.addEventListener('click', async (e) => {
+    const target = e.target as Element | null;
+    if (!target) return;
+
+    const uploadBtn = target.closest('.thumbnail-upload-btn') as HTMLElement | null;
+    if (uploadBtn) {
+      e.stopPropagation();
+      const card = uploadBtn.closest('.shortcut-card') as HTMLDivElement | null;
+      if (!card) return;
+      triggerThumbnailUpload(uploadBtn.dataset.screenId || '', card);
+      return;
+    }
+
+    const actionBtn = target.closest('.card-btn') as HTMLElement | null;
+    if (actionBtn) {
+      e.stopPropagation();
+      const card = actionBtn.closest('.shortcut-card') as HTMLElement | null;
+      if (!card) return;
+      const shortcut = findShortcutByCardId(card.dataset.id);
+      if (!shortcut) return;
+
+      if (actionBtn.classList.contains('fav-btn')) {
+        const nowActive = toggleFavorite(shortcut);
+        actionBtn.classList.toggle('active', nowActive);
+        rerenderCurrentSectionAfterMutation();
+        return;
+      }
+
+      if (actionBtn.classList.contains('edit-btn')) {
+        openModal(shortcut.id);
+        return;
+      }
+
+      if (actionBtn.classList.contains('delete-btn')) {
+        const confirmed = await showConfirm(t('menuUI.shortcutDeleteConfirm'), {
+          title: t('menuUI.shortcutDelete'),
+          danger: true,
+        });
+        if (!confirmed) return;
+        if (shortcut.id.startsWith('fav-') || shortcut.id.startsWith('menu-')) {
+          addDeletedDefault(shortcut.id);
+        }
+        state.shortcuts = state.shortcuts.filter((x) => x.id !== shortcut.id);
+        saveShortcuts();
+        rerenderCurrentSectionAfterMutation();
+      }
+      return;
+    }
+
+    const card = target.closest('.shortcut-card') as HTMLElement | null;
+    if (!card || state.editMode || !isCardInActiveSection(card)) return;
+
+    const shortcut = findShortcutByCardId(card.dataset.id);
+    if (!shortcut) return;
+    navigateFromCard(card, shortcut, e as MouseEvent);
+  });
+
+  space.addEventListener('contextmenu', (e) => {
+    const target = e.target as Element | null;
+    if (!target) return;
+    const card = target.closest('.shortcut-card') as HTMLElement | null;
+    if (!card || !isCardInActiveSection(card)) return;
+    const shortcutId = card.dataset.id;
+    if (!shortcutId) return;
+    e.preventDefault();
+    showContextMenu(e, shortcutId);
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -264,120 +473,6 @@ export function createCard(shortcut: Shortcut, index = 0): HTMLDivElement {
   card.style.setProperty('--card-color', shortcut.color);
 
   // 즐겨찾기 버튼
-  card.querySelector('.fav-btn')!.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const btn = e.currentTarget as HTMLElement;
-    const nowActive = toggleFavorite(shortcut);
-    btn.classList.toggle('active', nowActive);
-    renderCards();
-  });
-
-  // 로고 아이콘 클릭 — 카드 클릭과 동일하게 내비게이션 (모달은 edit-btn 전용)
-
-  // 수정 버튼
-  card.querySelector('.edit-btn')!.addEventListener('click', (e) => {
-    e.stopPropagation();
-    openModal(shortcut.id);
-  });
-
-  // 삭제 버튼
-  card.querySelector('.delete-btn')!.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    const confirmed = await showConfirm(t('menuUI.shortcutDeleteConfirm'), {
-      title: t('menuUI.shortcutDelete'),
-      danger: true,
-    });
-    if (confirmed) {
-      // 기본 항목(fav-/menu-)을 삭제하면 auto-merge 복원을 방지
-      if (shortcut.id.startsWith('fav-') || shortcut.id.startsWith('menu-')) {
-        addDeletedDefault(shortcut.id);
-      }
-      state.shortcuts = state.shortcuts.filter((x) => x.id !== shortcut.id);
-      saveShortcuts();
-      renderCards();
-    }
-  });
-
-  // 마우스 다운 - 눌림 효과
-  card.addEventListener('mousedown', () => {
-    const parent = card.closest('.section-cards');
-    if (!parent?.classList.contains('active')) return;
-    card.classList.add('pressing');
-  });
-
-  // 마우스 업 - 눌림 해제
-  card.addEventListener('mouseup', () => {
-    card.classList.remove('pressing');
-  });
-
-  card.addEventListener('mouseleave', () => {
-    card.classList.remove('pressing');
-  });
-
-  // 클릭 - MES: dispatch navigation event instead of opening URL
-  // Ctrl+클릭: 새 탭에서 열기
-  card.addEventListener('click', (e: MouseEvent) => {
-    // 수정 모드에서는 액션 버튼(삭제/수정/즐겨찾기) 전용 — 카드 내비게이션 차단
-    if (state.editMode) return;
-    // 액션 버튼 클릭이 카드로 전파된 경우 차단
-    if ((e.target as HTMLElement).closest('.card-btn')) return;
-    const parent = card.closest('.section-cards');
-    if (!parent?.classList.contains('active')) return;
-    if (card.classList.contains('opening')) return; // 중복 클릭 방지
-
-    card.classList.remove('pressing');
-    card.classList.add('opening');
-
-    // 현재 섹션 위치 즉시 저장 (GSAP 애니메이션 전 — 페이지 전환 시 유실 방지)
-    try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
-
-    // Ctrl+클릭: 새 탭에서 열기
-    if (e.ctrlKey || e.metaKey) {
-      window.open(shortcut.url, '_blank');
-      card.classList.remove('opening');
-      return;
-    }
-
-    // 짧은 애니메이션 후 내비게이션 이벤트 발생
-    gsap.to(card, {
-      scale: 1.05,
-      duration: 0.15,
-      ease: 'power2.out',
-      onComplete: () => {
-        // MES: dispatch navigation event instead of opening URL
-        window.dispatchEvent(
-          new CustomEvent('mes-navigate', {
-            detail: { url: shortcut.url, title: shortcut.title },
-          }),
-        );
-
-        // 히스토리에 추가 (lazy import로 순환 참조 방지)
-        import('./lanes').then((Lanes) => {
-          if (Lanes.addToHistory) {
-            Lanes.addToHistory(shortcut);
-          }
-        });
-
-        // 카드 상태 복원 (네비게이션으로 DOM이 제거되면 자동 무시)
-        setTimeout(() => {
-          if (!card.isConnected) return;
-          card.classList.remove('opening');
-          gsap.to(card, {
-            scale: 1,
-            duration: 0.3,
-            ease: 'power2.out',
-          });
-        }, 300);
-      },
-    });
-  });
-
-  card.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    const parent = card.closest('.section-cards');
-    if (!parent?.classList.contains('active')) return;
-    showContextMenu(e, shortcut.id);
-  });
 
   return card;
 }
@@ -424,10 +519,7 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
   const uploadBtn = document.createElement('button');
   uploadBtn.className = 'thumbnail-upload-btn';
   uploadBtn.textContent = t('menuUI.imageRegister');
-  uploadBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    triggerThumbnailUpload(screenId, card);
-  });
+  uploadBtn.dataset.screenId = screenId;
 
   if (hasImage) {
     const img = document.createElement('img');
@@ -476,71 +568,9 @@ export function createThumbnailCard(shortcut: Shortcut, index = 0): HTMLDivEleme
     </button>
   `;
 
-  actions.querySelector('.fav-btn')!.addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggleFavorite(shortcut);
-    renderCards();
-  });
-
-
-  actions.querySelector('.edit-btn')!.addEventListener('click', (e) => {
-    e.stopPropagation();
-    openModal(shortcut.id);
-  });
-
-  actions.querySelector('.delete-btn')!.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    const confirmed = await showConfirm(t('menuUI.shortcutDeleteConfirm'), {
-      title: t('menuUI.shortcutDelete'),
-      danger: true,
-    });
-    if (confirmed) {
-      // 기본 항목(fav-/menu-)을 삭제하면 auto-merge 복원을 방지
-      if (shortcut.id.startsWith('fav-') || shortcut.id.startsWith('menu-')) {
-        addDeletedDefault(shortcut.id);
-      }
-      state.shortcuts = state.shortcuts.filter((x) => x.id !== shortcut.id);
-      saveShortcuts();
-      renderCards();
-    }
-  });
-
   card.appendChild(imageArea);
   card.appendChild(titleArea);
   card.appendChild(actions);
-
-  // 클릭 - 디스플레이 화면 열기
-  card.addEventListener('click', (e: MouseEvent) => {
-    // 수정 모드에서는 액션 버튼 전용 — 카드 내비게이션 차단
-    if (state.editMode) return;
-    // 액션 버튼 클릭이 카드로 전파된 경우 차단
-    if ((e.target as HTMLElement).closest('.card-btn')) return;
-    const parent = card.closest('.section-cards');
-    if (!parent?.classList.contains('active')) return;
-
-    // 현재 섹션 위치 저장 (돌아왔을 때 복원용) — 동기 저장 필수
-    try { localStorage.setItem('mes-display-last-section', String(state.currentSection)); } catch {}
-
-    window.dispatchEvent(
-      new CustomEvent('mes-navigate', {
-        detail: { url: shortcut.url, title: shortcut.title },
-      }),
-    );
-
-    import('./lanes').then((Lanes) => {
-      if (Lanes.addToHistory) {
-        Lanes.addToHistory(shortcut);
-      }
-    });
-  });
-
-  // 우클릭 컨텍스트 메뉴
-  card.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    const parent = card.closest('.section-cards');
-    if (!parent?.classList.contains('active')) return;
-    showContextMenu(e, shortcut.id);
-  });
 
   return card;
 }
@@ -628,11 +658,13 @@ export function populateSection(container: HTMLElement, sectionIndex: number): v
   if (!section) return;
 
   const sectionShortcuts = state.shortcuts.filter((s) => s.layer === section.id);
+  const sectionSignature = sectionShortcuts.map((s) => s.id).join('|');
   const isThumbnail = state.cardLayout === 'thumbnail';
 
   /* 빈 카테고리: 안내 카드 표시 */
   if (sectionShortcuts.length === 0 && section.id !== 0) {
     container.innerHTML = '';
+    container.dataset.cardsSignature = '';
     const empty = document.createElement('div');
     empty.className = 'shortcut-card empty-card';
     empty.style.cssText = 'opacity:0.85; pointer-events:auto; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; border:2px dashed rgba(96,165,250,0.5); border-radius:16px; min-height:160px; min-width:220px; background:rgba(30,41,59,0.5); backdrop-filter:blur(4px); transition:all 0.2s;';
@@ -658,22 +690,25 @@ export function populateSection(container: HTMLElement, sectionIndex: number): v
     pageSlice.forEach((shortcut, i) => {
       container.appendChild(createThumbnailCard(shortcut, i));
     });
+    container.dataset.cardsSignature = sectionSignature;
   } else if (state.cardLayout === 'carousel') {
     // 캐러셀: 기존 로직 유지
     container.innerHTML = '';
     sectionShortcuts.forEach((shortcut, i) => {
       container.appendChild(createCard(shortcut, i));
     });
+    container.dataset.cardsSignature = sectionSignature;
   } else {
     // [최적화] 그리드: 카드가 이미 있고 개수가 같으면 DOM 재활용 (재생성 스킵)
     const existingCards = container.querySelectorAll('.shortcut-card');
-    if (existingCards.length === sectionShortcuts.length && existingCards.length > 0) {
+    if (existingCards.length > 0 && container.dataset.cardsSignature === sectionSignature) {
       return; // DOM 재활용 — 재생성 불필요
     }
     container.innerHTML = '';
     sectionShortcuts.forEach((shortcut, i) => {
       container.appendChild(createCard(shortcut, i));
     });
+    container.dataset.cardsSignature = sectionSignature;
   }
 }
 
@@ -685,6 +720,7 @@ export function populateSection(container: HTMLElement, sectionIndex: number): v
 export function renderAllCards(): void {
   const space = document.getElementById('cards-3d-space');
   if (!space) return;
+  ensureCardEventDelegation();
 
   // 레인 컨테이너 보존 (섹션 카드만 제거)
   const sectionCards = space.querySelectorAll('.section-cards');
@@ -762,7 +798,7 @@ export function renderAllCards(): void {
 
   // 레인 화살표 인디케이터도 확인
   if (!document.getElementById('lane-arrows')) {
-    import('./lanes').then((Lanes) => {
+    getLanesModule().then((Lanes) => {
       Lanes.createLaneIndicator();
     });
   }

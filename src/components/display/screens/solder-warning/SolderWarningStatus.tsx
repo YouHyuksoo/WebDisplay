@@ -69,8 +69,8 @@ export default function SolderWarningStatus({
             <div className="flex items-center gap-4">
               <span className="text-zinc-400">{t('solderGap3Label')}</span>
               <span className="flex items-center gap-1">
-                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-red-600" />
-                <span className="text-red-400">&gt; {thresholds.gap3Danger}</span>
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-pink-600" />
+                <span className="text-pink-400">&gt; {thresholds.gap3Danger}</span>
               </span>
               <span className="flex items-center gap-1">
                 <span className="inline-block h-2.5 w-2.5 rounded-sm bg-amber-500" />
@@ -81,8 +81,8 @@ export default function SolderWarningStatus({
             <div className="flex items-center gap-4">
               <span className="text-zinc-400">{t('solderUnfreezingLabel')}</span>
               <span className="flex items-center gap-1">
-                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-red-600" />
-                <span className="text-red-400">&gt; {thresholds.unfreezingDanger}</span>
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-pink-600" />
+                <span className="text-pink-400">&gt; {thresholds.unfreezingDanger}</span>
               </span>
               <span className="flex items-center gap-1">
                 <span className="inline-block h-2.5 w-2.5 rounded-sm bg-amber-500" />
@@ -93,8 +93,8 @@ export default function SolderWarningStatus({
             <div className="flex items-center gap-4">
               <span className="text-zinc-400">{t('solderValidLabel')}</span>
               <span className="flex items-center gap-1">
-                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-red-600" />
-                <span className="text-red-400">&le; {thresholds.validExpired}{t('solderValidDays')}</span>
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-pink-600" />
+                <span className="text-pink-400">&le; {thresholds.validExpired}{t('solderValidDays')}</span>
               </span>
               <span className="flex items-center gap-1">
                 <span className="inline-block h-2.5 w-2.5 rounded-sm bg-amber-500" />

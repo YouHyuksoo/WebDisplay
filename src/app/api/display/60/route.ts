@@ -1,15 +1,4 @@
-/**
- * @file src/app/api/display/60/route.ts
- * @description SPC 관리도 Mock API — 공정/측정항목 목록 + X̄-R Chart 데이터 제공
- *
- * 초보자 가이드:
- * - GET /api/display/60 → 공정 목록 반환
- * - GET /api/display/60?processId=ICT&itemId=voltage → 해당 측정항목의 SPC 데이터
- * - Mock 데이터로 X̄-R Chart, Cp, Cpk 값을 시뮬레이션
- */
-import { NextResponse } from 'next/server';
-
-/* -- Mock 공정/측정항목 정의 -- */
+﻿import { NextResponse } from 'next/server';
 
 interface MeasurementItem {
   id: string;
@@ -28,48 +17,50 @@ interface ProcessDef {
 
 const PROCESSES: ProcessDef[] = [
   {
-    id: 'ICT', name: 'ICT 검사',
+    id: 'ICT',
+    name: 'ICT Test',
     items: [
-      { id: 'resistance', name: '저항(R1)', unit: 'Ω', usl: 105, lsl: 95, target: 100 },
-      { id: 'capacitance', name: '커패시턴스(C1)', unit: 'pF', usl: 52, lsl: 48, target: 50 },
-      { id: 'voltage', name: '전압(V1)', unit: 'V', usl: 5.25, lsl: 4.75, target: 5.0 },
+      { id: 'resistance', name: 'Resistance (R1)', unit: 'Ohm', usl: 105, lsl: 95, target: 100 },
+      { id: 'capacitance', name: 'Capacitance (C1)', unit: 'pF', usl: 52, lsl: 48, target: 50 },
+      { id: 'voltage', name: 'Voltage (V1)', unit: 'V', usl: 5.25, lsl: 4.75, target: 5.0 },
     ],
   },
   {
-    id: 'HIPOT', name: 'HIPOT 검사',
+    id: 'HIPOT',
+    name: 'HIPOT Test',
     items: [
-      { id: 'leakage', name: '누설전류', unit: 'mA', usl: 0.5, lsl: 0, target: 0.1 },
-      { id: 'insulation', name: '절연저항', unit: 'MΩ', usl: 1200, lsl: 800, target: 1000 },
+      { id: 'leakage', name: 'Leakage Current', unit: 'mA', usl: 0.5, lsl: 0, target: 0.1 },
+      { id: 'insulation', name: 'Insulation Resistance', unit: 'MOhm', usl: 1200, lsl: 800, target: 1000 },
     ],
   },
   {
-    id: 'FT', name: 'FT 검사',
+    id: 'FT',
+    name: 'FT Test',
     items: [
-      { id: 'output_power', name: '출력 파워', unit: 'W', usl: 62, lsl: 58, target: 60 },
-      { id: 'efficiency', name: '효율', unit: '%', usl: 96, lsl: 90, target: 93 },
-      { id: 'ripple', name: '리플 전압', unit: 'mV', usl: 50, lsl: 0, target: 20 },
+      { id: 'output_power', name: 'Output Power', unit: 'W', usl: 62, lsl: 58, target: 60 },
+      { id: 'efficiency', name: 'Efficiency', unit: '%', usl: 96, lsl: 90, target: 93 },
+      { id: 'ripple', name: 'Ripple Voltage', unit: 'mV', usl: 50, lsl: 0, target: 20 },
     ],
   },
   {
-    id: 'BURNIN', name: 'Burn-In 검사',
+    id: 'BURNIN',
+    name: 'Burn-In Test',
     items: [
-      { id: 'temp_rise', name: '온도 상승', unit: '°C', usl: 45, lsl: 30, target: 37 },
-      { id: 'current_drift', name: '전류 드리프트', unit: 'mA', usl: 15, lsl: 0, target: 5 },
+      { id: 'temp_rise', name: 'Temperature Rise', unit: 'degC', usl: 45, lsl: 30, target: 37 },
+      { id: 'current_drift', name: 'Current Drift', unit: 'mA', usl: 15, lsl: 0, target: 5 },
     ],
   },
   {
-    id: 'ATE', name: 'ATE 검사',
+    id: 'ATE',
+    name: 'ATE Test',
     items: [
-      { id: 'frequency', name: '주파수', unit: 'MHz', usl: 102, lsl: 98, target: 100 },
-      { id: 'signal_noise', name: 'S/N비', unit: 'dB', usl: 85, lsl: 70, target: 78 },
-      { id: 'gain', name: '이득(Gain)', unit: 'dB', usl: 22, lsl: 18, target: 20 },
+      { id: 'frequency', name: 'Frequency', unit: 'MHz', usl: 102, lsl: 98, target: 100 },
+      { id: 'signal_noise', name: 'S/N Ratio', unit: 'dB', usl: 85, lsl: 70, target: 78 },
+      { id: 'gain', name: 'Gain', unit: 'dB', usl: 22, lsl: 18, target: 20 },
     ],
   },
 ];
 
-/* -- Mock SPC 데이터 생성 -- */
-
-/** 정규분포 난수 (Box-Muller) */
 function randn(mean: number, std: number, seed: number): number {
   const a = Math.sin(seed * 9301 + 49297) * 0.5 + 0.5;
   const b = Math.sin(seed * 8761 + 31337) * 0.5 + 0.5;
@@ -77,32 +68,41 @@ function randn(mean: number, std: number, seed: number): number {
   return mean + z * std;
 }
 
-/** 서브그룹 데이터 생성 (기간 내 일별 서브그룹, 각 5개 샘플) */
 function generateSubgroups(item: MeasurementItem, seedBase: number, dateFrom: string, dateTo: string) {
   const subgroupSize = 5;
   const range = item.usl - item.lsl;
   const std = range / 8;
 
-  // 날짜 범위로 서브그룹 수 결정
   const from = new Date(dateFrom);
   const to = new Date(dateTo);
   const days = Math.max(1, Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)) + 1);
-  const subgroupCount = Math.min(days, 60); // 최대 60개
+  const subgroupCount = Math.min(days, 60);
 
-  const subgroups = [];
+  const subgroups = [] as Array<{
+    id: number;
+    date: string;
+    dateLabel: string;
+    samples: number[];
+    xbar: number;
+    range: number;
+  }>;
+
   for (let i = 0; i < subgroupCount; i++) {
-    const samples = [];
-    const drift = (i > subgroupCount * 0.75 ? (i - subgroupCount * 0.75) * std * 0.15 : 0);
+    const samples: number[] = [];
+    const drift = i > subgroupCount * 0.75 ? (i - subgroupCount * 0.75) * std * 0.15 : 0;
+
     for (let j = 0; j < subgroupSize; j++) {
       const seed = seedBase + i * 100 + j;
       samples.push(Number(randn(item.target + drift, std, seed).toFixed(4)));
     }
+
     const mean = samples.reduce((s, v) => s + v, 0) / subgroupSize;
     const r = Math.max(...samples) - Math.min(...samples);
-    // 서브그룹 날짜 계산
+
     const sgDate = new Date(from);
-    sgDate.setDate(sgDate.getDate() + Math.round(i * (days - 1) / Math.max(subgroupCount - 1, 1)));
+    sgDate.setDate(sgDate.getDate() + Math.round((i * (days - 1)) / Math.max(subgroupCount - 1, 1)));
     const dateLabel = `${String(sgDate.getMonth() + 1).padStart(2, '0')}/${String(sgDate.getDate()).padStart(2, '0')}`;
+
     subgroups.push({
       id: i + 1,
       date: sgDate.toISOString().slice(0, 10),
@@ -113,13 +113,11 @@ function generateSubgroups(item: MeasurementItem, seedBase: number, dateFrom: st
     });
   }
 
-  // 통계 계산
   const xbars = subgroups.map((s) => s.xbar);
   const ranges = subgroups.map((s) => s.range);
   const xbarBar = xbars.reduce((s, v) => s + v, 0) / subgroupCount;
   const rBar = ranges.reduce((s, v) => s + v, 0) / subgroupCount;
 
-  // X̄ Chart 관리한계 (n=5: A2=0.577, D3=0, D4=2.114)
   const A2 = 0.577;
   const D3 = 0;
   const D4 = 2.114;
@@ -130,14 +128,12 @@ function generateSubgroups(item: MeasurementItem, seedBase: number, dateFrom: st
   const rUCL = D4 * rBar;
   const rLCL = D3 * rBar;
 
-  // Cp, Cpk 계산
   const sigmaEst = rBar / d2;
   const cp = sigmaEst > 0 ? (item.usl - item.lsl) / (6 * sigmaEst) : 0;
   const cpkUpper = sigmaEst > 0 ? (item.usl - xbarBar) / (3 * sigmaEst) : 0;
   const cpkLower = sigmaEst > 0 ? (xbarBar - item.lsl) / (3 * sigmaEst) : 0;
   const cpk = Math.min(cpkUpper, cpkLower);
 
-  // 이탈 여부 판정
   const oocPoints = subgroups
     .filter((s) => s.xbar > xbarUCL || s.xbar < xbarLCL)
     .map((s) => s.id);
@@ -166,14 +162,11 @@ function generateSubgroups(item: MeasurementItem, seedBase: number, dateFrom: st
   };
 }
 
-/* -- GET 핸들러 -- */
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const processId = searchParams.get('processId');
   const itemId = searchParams.get('itemId');
 
-  // 공정 목록만 반환
   if (!processId) {
     return NextResponse.json({
       processes: PROCESSES.map((p) => ({
@@ -184,34 +177,38 @@ export async function GET(request: Request) {
     });
   }
 
-  // 특정 공정+측정항목의 SPC 데이터
   const process = PROCESSES.find((p) => p.id === processId);
   if (!process) {
     return NextResponse.json({ error: 'Process not found' }, { status: 404 });
   }
 
-  const item = itemId
-    ? process.items.find((i) => i.id === itemId)
-    : process.items[0];
-
+  const item = itemId ? process.items.find((i) => i.id === itemId) : process.items[0];
   if (!item) {
     return NextResponse.json({ error: 'Item not found' }, { status: 404 });
   }
 
-  // 기간 파라미터 (기본: 최근 25일)
   const today = new Date().toISOString().slice(0, 10);
   const defaultFrom = new Date(Date.now() - 24 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const dateFrom = searchParams.get('dateFrom') ?? defaultFrom;
   const dateTo = searchParams.get('dateTo') ?? today;
 
-  // seed를 공정+항목+기간 기반으로 고정 → 같은 요청에 같은 데이터
-  const seedBase = (processId + item.id + dateFrom).split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+  const seedBase = (processId + item.id + dateFrom)
+    .split('')
+    .reduce((s, c) => s + c.charCodeAt(0), 0);
+
   const data = generateSubgroups(item, seedBase, dateFrom, dateTo);
 
   return NextResponse.json({
     processId: process.id,
     processName: process.name,
-    item: { id: item.id, name: item.name, unit: item.unit, usl: item.usl, lsl: item.lsl, target: item.target },
+    item: {
+      id: item.id,
+      name: item.name,
+      unit: item.unit,
+      usl: item.usl,
+      lsl: item.lsl,
+      target: item.target,
+    },
     dateFrom,
     dateTo,
     ...data,

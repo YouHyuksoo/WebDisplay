@@ -49,3 +49,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .gstack/
+
+# Claude Code 런타임 lock
+/.claude/scheduled_tasks.lock
+
+# AI 챗 세션 임시 파일 (원자적 쓰기 .tmp-*)
+/data/ai-chats/
+
+# graphify 지식 그래프 (graphify update . 로 재생성 가능)
+/graphify-out/

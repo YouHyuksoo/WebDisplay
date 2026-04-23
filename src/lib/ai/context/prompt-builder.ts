@@ -1,50 +1,12 @@
-﻿/**
- * @file src/lib/ai/context/prompt-builder.ts
- * @description Builds stage-specific system prompts for SQL generation and analysis.
- */
-
-import {
-  CORE_GLOSSARY,
-  CORE_SQL_IDENTITY_PROMPT,
-  CORE_ANALYSIS_IDENTITY_PROMPT,
-} from './domain-glossary';
-import { SQL_RULES } from './sql-rules';
-import { listTerms, formatTermsForPrompt } from './glossary-store';
-import { getSchema } from '@/lib/ai/schema-context';
-import type { SiteKey } from '@/lib/ai-tables/types';
-
 /**
- * schema-cache.json 기반 fallback 섹션.
- * Stage 0 선택이 실패하여 selectedContextDocs 가 비었을 때만 사용.
- * SCHEMA const 제거(Phase 4) 이후 전용 진입점.
+ * @file src/lib/ai/context/prompt-builder.ts
+ * @description Stage 별 시스템 프롬프트 빌더.
+ *   - WIKI MD 파일들이 시스템 프롬프트의 유일한 도메인 지식 원천.
+ *   - identity/rules/skeletons/formulas/joins: 일반 가이드라인
+ *   - tables/functions/procedures: 선택된 객체의 학습자료
  */
-async function buildSchemaFallbackSection(
-  site: SiteKey,
-  selectedTables?: string[],
-): Promise<string> {
-  const schema = await getSchema(site);
-  const names =
-    selectedTables && selectedTables.length > 0
-      ? selectedTables.filter((t) => schema[t])
-      : Object.keys(schema);
 
-  if (names.length === 0) {
-    return '_(화이트리스트 테이블이 아직 등록되지 않았습니다.)_';
-  }
-
-  return names
-    .map((tableName) => {
-      const spec = schema[tableName];
-      const cols = Object.entries(spec.columns)
-        .map(
-          ([name, c]) =>
-            `| ${name} | ${c.type} | ${c.nullable ? 'Y' : 'N'} | ${c.comment ?? ''} |`,
-        )
-        .join('\n');
-      return `## ${tableName}\n${spec.description}\n\n| 컬럼 | 타입 | NULL | 코멘트 |\n|---|---|---|---|\n${cols}`;
-    })
-    .join('\n\n');
-}
+import { loadAiChatContext } from './md-loader';
 
 export interface BuildPromptOpts {
   stage: 'sql_generation' | 'analysis';
@@ -53,58 +15,71 @@ export interface BuildPromptOpts {
   currentContext: { today: string; serverShift: 'A' | 'B'; userTz: string };
   customSqlPrompt?: string;
   customAnalysisPrompt?: string;
-  selectedContextDocs?: string;
   selectedSite?: string;
 }
 
 export async function buildSystemPrompt(opts: BuildPromptOpts): Promise<string> {
   const sections: string[] = [];
+  const ctx = await loadAiChatContext();
 
-  // 1) Core identity
+  // 1) Identity prompt
   if (opts.stage === 'sql_generation') {
-    sections.push(opts.customSqlPrompt || CORE_SQL_IDENTITY_PROMPT);
+    sections.push(opts.customSqlPrompt || ctx.identity.sqlGeneration);
   } else {
-    sections.push(opts.customAnalysisPrompt || CORE_ANALYSIS_IDENTITY_PROMPT);
+    sections.push(opts.customAnalysisPrompt || ctx.identity.analysis);
   }
 
-  // 2) Domain glossary
-  sections.push('# 도메인 용어\n' + CORE_GLOSSARY);
-
-  // 3) Dynamic glossary from DB
-  const dynamicTerms = await listTerms({ topN: 30 });
-  const formatted = formatTermsForPrompt(dynamicTerms);
-  if (formatted) sections.push('# 추가 용어\n' + formatted);
-
-  // 4) SQL rules for SQL generation only
+  // 2) SQL generation 단계 고정 가이드라인 + 학습자료
   if (opts.stage === 'sql_generation') {
-    sections.push('# SQL 규칙\n' + SQL_RULES);
-  }
+    sections.push('# SQL 규칙\n' + ctx.rules);
+    sections.push('# 테이블 성격별 SQL 골격\n\n' + ctx.skeletons);
+    sections.push('# 제조업 관용 계산식\n\n' + ctx.formulas);
+    sections.push('# 도메인 공용 JOIN 레시피\n\n' + ctx.joins);
 
-  // 5) Schema/context section for SQL generation only
-  if (opts.stage === 'sql_generation') {
-    if (opts.selectedContextDocs) {
-      sections.push('# 관련 테이블/도메인 상세\n' + opts.selectedContextDocs);
-    } else {
-      const site = (opts.selectedSite ?? 'default') as SiteKey;
+    // 선택된 테이블의 WIKI MD 본문을 그대로 주입 (enabled=true 만).
+    const selected = opts.selectedTables ?? [];
+    const tableBodies: string[] = [];
+    for (const name of selected) {
+      const md = ctx.tables[name.toUpperCase()];
+      if (md) tableBodies.push(md.body);
+    }
+    if (tableBodies.length > 0) {
       sections.push(
-        '# 사용 가능한 테이블\n' +
-          (await buildSchemaFallbackSection(site, opts.selectedTables)),
+        '# 테이블 학습자료\n\n' + tableBodies.join('\n\n---\n\n'),
+      );
+    } else {
+      sections.push(
+        '# 테이블 학습자료\n\n_(선택된 테이블 중 학습자료가 등록된 것이 없습니다. display/18 의 AI 학습 탭에서 사용함 체크 후 내용을 등록하세요.)_',
+      );
+    }
+
+    // 등록된 함수·프로시저는 모두 주입 (enabled=true 만).
+    const functionBodies = Object.values(ctx.functions).map((f) => f.body);
+    if (functionBodies.length > 0) {
+      sections.push(
+        '# 함수 학습자료\n\n' + functionBodies.join('\n\n---\n\n'),
+      );
+    }
+    const procedureBodies = Object.values(ctx.procedures).map((p) => p.body);
+    if (procedureBodies.length > 0) {
+      sections.push(
+        '# 프로시저 학습자료\n\n' + procedureBodies.join('\n\n---\n\n'),
       );
     }
   }
 
-  // 6) Selected site info (only when non-default)
+  // 3) 사이트 정보
   if (opts.stage === 'sql_generation' && opts.selectedSite && opts.selectedSite !== 'default') {
     sections.push(`# DB 사이트\n현재 쿼리 대상 사이트: ${opts.selectedSite}`);
   }
 
-  // 7) Current runtime context
+  // 4) 현재 시점
   sections.push(
     `# 현재 시점\n- 작업일: ${opts.currentContext.today}\n` +
       `- 현재 시프트: ${opts.currentContext.serverShift}\n- 시간대: ${opts.currentContext.userTz}`,
   );
 
-  // 8) Persona prompt should be prepended for analysis stage
+  // 5) Persona prompt (analysis stage 전용, 맨 앞에 prepend)
   if (opts.stage === 'analysis' && opts.personaPrompt) {
     sections.unshift(opts.personaPrompt);
   }

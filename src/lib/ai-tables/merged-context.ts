@@ -1,59 +1,62 @@
 /**
  * @file src/lib/ai-tables/merged-context.ts
- * @description tables.json + schema-cache + domains 3개 파일을 병합해
- *   `/ai-chat` context-loader에 제공하는 상위 API.
+ * @description Stage 0 프롬프트 빌더. schema-cache + WIKI MD 기반.
  *
  * 초보자 가이드:
- * - `loadMergedContext()`: 3파일을 병렬로 읽어 한 번에 반환.
- * - `buildStage0Prompt()`: Stage 0 (선택기) 프롬프트 문자열.
- * - `buildStage1Prompt()`: Stage 1 (SQL 생성) 프롬프트 문자열.
- *
- * 이 모듈은 기존 `src/lib/ai/context/context-loader.ts` 의
- * `loadCatalog()` + `catalogToPrompt()` 를 대체하되, 외부 시그니처는
- * context-loader.ts 쪽에서 호환 래퍼로 유지한다 (Phase 2 요건).
+ * - Stage 1 은 prompt-builder 가 WIKI MD 본문을 직접 주입 — 이 모듈은 Stage 0 만 담당.
+ * - query 가 주어지면 로컬 prefilter 로 상위 topN 테이블만 렌더링.
  */
 
-import { loadTables, loadDomains } from './store';
 import { loadSchemaCache } from './schema-loader';
-import {
-  renderCatalogForStage0,
-  renderTableForStage1,
-} from './prompt-renderer';
+import { renderCatalogForStage0 } from './prompt-renderer';
 import type { SiteKey } from './types';
 
-/** 3파일 병렬 로드 결과 묶음. */
-export async function loadMergedContext(site: SiteKey = 'default') {
-  const [tables, domains, schema] = await Promise.all([
-    loadTables(),
-    loadDomains(),
-    loadSchemaCache(),
-  ]);
-  return { tables, domains, schema, site };
-}
-
-/** Stage 0 프롬프트: 테이블 카탈로그 한 줄씩. */
+/**
+ * Stage 0 프롬프트.
+ *   query 가 주어지면 로컬 prefilter 로 상위 topN 테이블만 렌더링.
+ *   query 없거나 prefilter 매칭 0개면 "사용함" 테이블 전체 fallback,
+ *   "사용함" 도 0개면 schema 전체 fallback.
+ */
 export async function buildStage0Prompt(
   site: SiteKey = 'default',
+  opts: { query?: string; topN?: number } = {},
 ): Promise<string> {
-  const { tables } = await loadMergedContext(site);
-  return renderCatalogForStage0(tables, site);
-}
+  const schema = await loadSchemaCache();
+  const { loadAiChatContext } = await import('@/lib/ai/context/md-loader');
+  const { prefilterTables } = await import('./table-prefilter');
+  const ctx = await loadAiChatContext();
 
-/**
- * Stage 1 프롬프트: 선택된 테이블들의 compact 블록을 이어 붙임.
- * enabled=false 또는 schema-cache 에 없는 테이블은 조용히 스킵.
- */
-export async function buildStage1Prompt(
-  site: SiteKey,
-  tableNames: string[],
-): Promise<string> {
-  const { tables, domains, schema } = await loadMergedContext(site);
-  const blocks: string[] = [];
-  for (const name of tableNames) {
-    const meta = tables.sites[site]?.tables[name];
-    const sch = schema.sites[site]?.tables[name];
-    if (!meta || !sch || !meta.enabled) continue;
-    blocks.push(renderTableForStage1(name, meta, sch, domains.domains));
+  const wikiTables: Record<
+    string,
+    { fm: Record<string, unknown>; body: string }
+  > = {};
+  for (const [objectName, md] of Object.entries(ctx.tables)) {
+    wikiTables[objectName] = { fm: md.fm, body: md.body };
   }
-  return blocks.join('\n\n');
+
+  // "사용함" 테이블 집합 — md-loader 가 이미 enabled=true 만 로드.
+  const enabledOnly = new Set(Object.keys(ctx.tables));
+
+  let onlyNames: string[] | undefined;
+  if (opts.query) {
+    const pref = prefilterTables({
+      query: opts.query,
+      site,
+      schema,
+      wikiTables,
+      topN: opts.topN ?? 30,
+      enabledOnly: enabledOnly.size > 0 ? enabledOnly : undefined,
+    });
+    if (pref.tables.length > 0) {
+      onlyNames = pref.tables;
+    } else if (enabledOnly.size > 0) {
+      // 사용함은 있는데 키워드 매칭 실패 → 사용함 전체로 fallback
+      onlyNames = [...enabledOnly];
+    }
+    // 사용함 0개 + 매칭 0개 → onlyNames undefined → schema 전체 fallback
+  } else if (enabledOnly.size > 0) {
+    onlyNames = [...enabledOnly];
+  }
+
+  return renderCatalogForStage0(schema, site, { wikiTables, onlyNames });
 }

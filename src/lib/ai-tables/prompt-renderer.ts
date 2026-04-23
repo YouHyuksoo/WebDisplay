@@ -1,147 +1,110 @@
 /**
  * @file src/lib/ai-tables/prompt-renderer.ts
- * @description AI 주입용 compact 포맷 렌더.
+ * @description Stage 0 카탈로그 렌더링.
  *
  * 초보자 가이드:
- * - 저장 구조(tables.json + schema-cache.json + column-domains.json)는 관리 편의를
- *   위해 장황하지만, LLM 주입 직전 이 모듈에서 압축 포맷으로 변환한다.
- *
- * 주요 함수:
- * - `renderCatalogForStage0` → 45개 테이블 한 줄씩 요약 (~1300 토큰)
- * - `renderTableForStage1`   → 선택된 테이블 하나의 compact 블록 (~500 토큰/테이블)
+ * - Stage 1(SQL 생성 단계 테이블 상세) 은 WIKI MD 본문을 prompt-builder 가 직접 주입하므로 별도 렌더링 불필요.
+ * - 이 모듈은 Stage 0 (테이블 선별 단계) 카탈로그 한 줄 요약만 담당.
  */
 
 import type {
-  AiTablesFile,
-  TableMeta,
   CachedTableSchema,
-  ColumnDomain,
   SiteKey,
-  ColumnDecode,
+  SchemaCacheFile,
 } from './types';
-import { resolveColumn } from './domain-resolver';
 
 /**
- * Stage 0 카탈로그 렌더.
- * enabled === true 인 테이블만 한 줄씩 출력.
- * 형식: `  TABLE_NAME: summary [tag1,tag2]`
+ * Stage 0 카탈로그 렌더. schema-cache 의 전체 테이블을 대상.
+ * 형식: `  TABLE_NAME: {category} summary [tag1,tag2] cols(PK*,COL_A,...)`
+ *
+ * 우선순위:
+ *   1. WIKI MD 에 등록된 테이블 → frontmatter summary/tags/category 우선
+ *   2. 없으면 schema.tableComment
  */
 export function renderCatalogForStage0(
-  tables: AiTablesFile,
+  schema: SchemaCacheFile,
   site: SiteKey,
+  options?: {
+    wikiTables?: Record<string, { fm: Record<string, unknown>; body: string }>;
+    /** 지정된 테이블만 렌더링 (prefilter 결과 주입용). 미지정이면 전체. */
+    onlyNames?: string[];
+  },
 ): string {
-  const siteTables = tables.sites[site]?.tables ?? {};
+  const siteSchema = schema.sites[site]?.tables ?? {};
+  const wikiTables = options?.wikiTables ?? {};
+
   const lines: string[] = [`${site}:`];
-  for (const [name, meta] of Object.entries(siteTables)) {
-    if (!meta.enabled) continue;
-    const tagStr = meta.tags.length ? ` [${meta.tags.join(',')}]` : '';
-    lines.push(`  ${name}: ${meta.summary ?? ''}${tagStr}`);
+  const names = options?.onlyNames
+    ? options.onlyNames.filter((n) => siteSchema[n])
+    : Object.keys(siteSchema).sort();
+
+  for (const name of names) {
+    const schemaMeta = siteSchema[name];
+    const wikiMd = wikiTables[name];
+
+    const rawSummary =
+      pickWikiSummary(wikiMd) ?? schemaMeta.tableComment ?? '';
+    const summary = trimSummary(rawSummary);
+
+    const category = wikiMd?.fm?.category as string | undefined;
+    const catStr = category ? ` {${category}}` : '';
+
+    const tags = Array.isArray(wikiMd?.fm?.tags)
+      ? (wikiMd.fm.tags as string[])
+      : [];
+    const tagStr = tags.length ? ` [${tags.join(',')}]` : '';
+
+    const colsPart = buildColsPreview(schemaMeta);
+
+    lines.push(`  ${name}:${catStr} ${summary}${tagStr}${colsPart}`);
   }
   return lines.join('\n');
 }
 
 /**
- * Stage 1 테이블 compact 블록 렌더.
- * excludeFromPrompt=true 컬럼은 제외. 도메인 단위 제외는 별도 주석으로 표시.
+ * Stage 0 summary 축약. tableComment 의 ` | PB화면: ...` 같은 잔재 제거 + 120자 컷.
  */
-export function renderTableForStage1(
-  tableName: string,
-  meta: TableMeta,
-  schema: CachedTableSchema,
-  domains: ColumnDomain[],
-): string {
-  const resolved = schema.columns.map((c) => resolveColumn(c, meta, domains));
-  const key = resolved.filter((r) => !r.excludeFromPrompt && r.priority === 'key');
-  const common = resolved.filter(
-    (r) => !r.excludeFromPrompt && r.priority === 'common',
-  );
-  const excludedDomainIds = new Set(
-    resolved
-      .filter((r) => r.excludeFromPrompt && r.domainId)
-      .map((r) => r.domainId!),
-  );
-  const excludedIndividual = resolved
-    .filter((r) => r.excludeFromPrompt && !r.domainId)
-    .map((r) => r.name);
-
-  const lines: string[] = [];
-  const headline = `${tableName} (${schema.tableComment ?? meta.summary ?? ''})`;
-  lines.push(
-    meta.tags.length ? `${headline}  # tags=${meta.tags.join(',')}` : headline,
-  );
-  if (meta.keywords?.length) {
-    lines.push(`keywords: ${meta.keywords.join(', ')}`);
-  }
-  if (schema.pkColumns.length) {
-    lines.push(`PK: ${schema.pkColumns.join(', ')}`);
-  }
-
-  if (key.length) {
-    lines.push('key:');
-    for (const c of key) {
-      const decodeStr = formatDecode(c.decode);
-      const decodePart = decodeStr ? `  ${decodeStr}` : '';
-      const hintPart = c.hint ? `  # ${c.hint}` : '';
-      lines.push(`  ${c.name}${decodePart}${hintPart}`);
-    }
-  }
-  if (common.length) {
-    lines.push(`common: ${common.map((c) => c.name).join(', ')}`);
-  }
-
-  if (meta.defaultFilters?.length) {
-    lines.push(
-      `default_filters: ${meta.defaultFilters.map((f) => f.sql).join(' AND ')}`,
-    );
-  }
-  if (meta.joinPatterns?.length) {
-    lines.push('joins:');
-    for (const j of meta.joinPatterns) {
-      lines.push(
-        `  ${tableName} a JOIN ${j.withTable} b ON ${j.onClause}  # ${j.purpose}`,
-      );
-    }
-  }
-
-  if (excludedDomainIds.size) {
-    lines.push(`# excluded domains: ${[...excludedDomainIds].join(', ')}`);
-  }
-  if (excludedIndividual.length) {
-    lines.push(`# excluded cols: ${excludedIndividual.join(', ')}`);
-  }
-
-  if (meta.examples.length) {
-    lines.push('ex:');
-    for (const ex of meta.examples.slice(0, 3)) {
-      lines.push(`  [${ex.kind}] Q: ${ex.question}`);
-      if (ex.sql) lines.push(`    SQL: ${ex.sql.replace(/\n/g, ' ')}`);
-      if (ex.sqlTemplate)
-        lines.push(`    SQL: ${ex.sqlTemplate.replace(/\n/g, ' ')}`);
-    }
-  }
-
-  return lines.join('\n');
+function trimSummary(s: string): string {
+  if (!s) return '';
+  let trimmed = s;
+  const pipeIdx = trimmed.indexOf(' | ');
+  if (pipeIdx > 0) trimmed = trimmed.slice(0, pipeIdx);
+  if (trimmed.length > 120) trimmed = trimmed.slice(0, 117) + '...';
+  return trimmed.trim();
 }
 
-/** decode 전략을 한 줄 표기로. Stage 1 프롬프트에 직접 삽입된다. */
-function formatDecode(d: ColumnDecode): string {
-  switch (d.kind) {
-    case 'basecode':
-      return `basecode('${d.codeType}')`;
-    case 'enum': {
-      const pairs = Object.entries(d.values)
-        .map(([k, v]) => `${k}→${v}`)
-        .join('|');
-      return `enum{${pairs}}`;
-    }
-    case 'master':
-      return `master(${d.table}.${d.keyCol}→${d.valCol})`;
-    case 'flag':
-      return `flag(${d.trueValue}/${d.falseValue ?? 'else'})`;
-    case 'date':
-      return `date${d.format ? `(${d.format})` : ''}`;
-    case 'raw':
-    default:
-      return '';
+/**
+ * WIKI MD frontmatter summary 또는 "## 개요" 첫 줄을 사용.
+ */
+function pickWikiSummary(
+  wikiMd: { fm: Record<string, unknown>; body: string } | undefined,
+): string | undefined {
+  if (!wikiMd) return undefined;
+  const fmSummary = wikiMd.fm.summary;
+  if (typeof fmSummary === 'string' && fmSummary.trim()) return fmSummary.trim();
+
+  const match = wikiMd.body.match(/##\s*개요\s*\n([^\n]+)/);
+  if (match) {
+    const firstLine = match[1].trim();
+    if (firstLine && !firstLine.startsWith('(')) return firstLine;
   }
+  return undefined;
+}
+
+/**
+ * Stage 0 용 컬럼 미리보기: PK(표식 *) + 물리 순서 상위 컬럼. 최대 6개.
+ * LLM 이 "이 테이블에 LINE_CODE 가 있나" 수준 판단 가능하도록 핵심 컬럼 앞쪽에.
+ */
+function buildColsPreview(tSchema: CachedTableSchema | undefined): string {
+  if (!tSchema) return '';
+  const pkSet = new Set(tSchema.pkColumns);
+  const preview: string[] = tSchema.pkColumns.map((pk) => `${pk}*`);
+
+  for (const col of tSchema.columns) {
+    if (preview.length >= 6) break;
+    if (pkSet.has(col.name)) continue;
+    preview.push(col.name);
+  }
+
+  return preview.length ? ` cols(${preview.join(',')})` : '';
 }

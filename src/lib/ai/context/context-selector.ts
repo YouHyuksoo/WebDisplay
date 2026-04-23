@@ -162,7 +162,8 @@ export async function selectContext(
   const provider = getProvider(providerId);
   const model = modelId || providerCfg.defaultModelId || provider.listModels()[0];
 
-  const catalogText = await catalogToPrompt();
+  // 질의 기반 prefilter — 636개 전체 대신 상위 30개만 LLM 에 노출 (토큰 20배 감소).
+  const catalogText = await catalogToPrompt('default', userQuestion);
   const userMsg = `# 카탈로그\n${catalogText}\n\n# 사용자 질문\n${userQuestion}`;
 
   let responseText = '';

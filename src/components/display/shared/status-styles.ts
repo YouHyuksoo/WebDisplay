@@ -96,7 +96,7 @@ export function getSolderGap3Style(gap3?: string, thresholds?: SolderThresholdCo
   const danger = thresholds?.gap3Danger ?? SOLDER_GAP3_DANGER;
   const warning = thresholds?.gap3Warning ?? SOLDER_GAP3_WARNING;
   if (!gap3 || gap3.length !== 5) return '';
-  if (gap3 > danger) return 'bg-red-600 text-white';
+  if (gap3 > danger) return 'bg-pink-600 text-white';
   if (gap3 > warning) return 'bg-amber-500 text-black';
   return '';
 }
@@ -106,7 +106,7 @@ export function getSolderUnfreezingStyle(time?: string, thresholds?: SolderThres
   const danger = thresholds?.unfreezingDanger ?? SOLDER_UNFREEZING_DANGER;
   const warning = thresholds?.unfreezingWarning ?? SOLDER_UNFREEZING_WARNING;
   if (!time) return '';
-  if (time > danger) return 'bg-red-600 text-white';
+  if (time > danger) return 'bg-pink-600 text-white';
   if (time > warning) return 'bg-amber-500 text-black';
   return '';
 }
@@ -116,7 +116,7 @@ export function getSolderValidDateStyle(check?: number, thresholds?: SolderThres
   const expired = thresholds?.validExpired ?? SOLDER_VALID_EXPIRED;
   const warning = thresholds?.validWarning ?? SOLDER_VALID_WARNING_DAYS;
   if (check == null) return '';
-  if (check <= expired) return 'bg-red-600 text-white';
+  if (check <= expired) return 'bg-pink-600 text-white';
   if (check <= warning) return 'bg-amber-500 text-black';
   return '';
 }

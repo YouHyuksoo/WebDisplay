@@ -25,7 +25,12 @@ import Modal from '@/components/ui/Modal';
 
 /* -- 타입 정의 -- */
 
-interface MeasItem { id: string; name: string }
+interface MeasItem {
+  id: string;
+  name: string;
+  itemName?: string;
+  volt?: string;
+}
 
 interface Subgroup {
   id: number;
@@ -48,7 +53,7 @@ interface SpcStats {
 
 interface SpcData {
   name: string;
-  item: { id: string; name: string; unit: string; usl: number; lsl: number; target: number };
+  item: { id: string; name: string; volt?: string; unit: string; usl: number; lsl: number; target: number };
   dateFrom: string;
   dateTo: string;
   subgroups: Subgroup[];
@@ -160,6 +165,10 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
   const [selectedModel, setSelectedModel] = useState('');
   const [items, setItems] = useState<MeasItem[]>([]);
   const [selectedItem, setSelectedItem] = useState('');
+  const selectedItemMeta = useMemo(
+    () => items.find((i) => i.id === selectedItem) ?? null,
+    [items, selectedItem],
+  );
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [data, setData] = useState<SpcData | null>(null);
@@ -194,18 +203,20 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
 
   /* SPC 데이터 조회 */
   const handleSearch = useCallback(async () => {
-    if (!selectedItem) return;
+    if (!selectedItemMeta) return;
     setLoading(true);
     try {
       const modelParam = selectedModel ? `&model=${encodeURIComponent(selectedModel)}` : '';
+      const nameParam = encodeURIComponent(selectedItemMeta.itemName ?? selectedItemMeta.name);
+      const voltParam = selectedItemMeta.volt ? `&volt=${encodeURIComponent(selectedItemMeta.volt)}` : '';
       const res = await fetcher(
-        `${apiBase}?name=${selectedItem}&dateFrom=${dateFrom}&dateTo=${dateTo}${modelParam}`
+        `${apiBase}?name=${nameParam}${voltParam}&dateFrom=${dateFrom}&dateTo=${dateTo}${modelParam}`
       ) as SpcData;
       setData(res);
     } finally {
       setLoading(false);
     }
-  }, [apiBase, selectedItem, selectedModel, dateFrom, dateTo]);
+  }, [apiBase, selectedItemMeta, selectedModel, dateFrom, dateTo]);
 
   /* 항목 선택 후 자동 조회 */
   useEffect(() => {
@@ -227,27 +238,31 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
   const [rawLoading, setRawLoading] = useState(false);
 
   const handleRawOpen = useCallback(async () => {
-    if (!selectedItem) return;
+    if (!selectedItemMeta) return;
     setRawOpen(true);
     setRawLoading(true);
     try {
       const modelParam = selectedModel ? `&model=${encodeURIComponent(selectedModel)}` : '';
+      const nameParam = encodeURIComponent(selectedItemMeta.itemName ?? selectedItemMeta.name);
+      const voltParam = selectedItemMeta.volt ? `&volt=${encodeURIComponent(selectedItemMeta.volt)}` : '';
       const res = await fetcher(
-        `${apiBase}?mode=raw&name=${encodeURIComponent(selectedItem)}&dateFrom=${dateFrom}&dateTo=${dateTo}${modelParam}`
+        `${apiBase}?mode=raw&name=${nameParam}${voltParam}&dateFrom=${dateFrom}&dateTo=${dateTo}${modelParam}`
       ) as { rows: Record<string, unknown>[] };
       setRawRows(res.rows ?? []);
     } finally {
       setRawLoading(false);
     }
-  }, [apiBase, selectedItem, dateFrom, dateTo]);
+  }, [apiBase, selectedItemMeta, selectedModel, dateFrom, dateTo]);
 
   const handleExcelDownload = useCallback(() => {
     if (rawRows.length === 0) return;
     const ws = XLSX.utils.json_to_sheet(rawRows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'SPC_RAW');
-    XLSX.writeFile(wb, `SPC_RAW_${selectedItem}_${dateFrom}_${dateTo}.xlsx`);
-  }, [rawRows, selectedItem, dateFrom, dateTo]);
+    const name = selectedItemMeta?.itemName ?? selectedItemMeta?.name ?? selectedItem;
+    const volt = selectedItemMeta?.volt ? `_${selectedItemMeta.volt}` : '';
+    XLSX.writeFile(wb, `SPC_RAW_${name}${volt}_${dateFrom}_${dateTo}.xlsx`);
+  }, [rawRows, selectedItemMeta, selectedItem, dateFrom, dateTo]);
 
   const RAW_COLUMNS = ['LOG_TIME', 'EQUIPMENT_ID', 'BARCODE', 'MODEL', 'LINE_CODE', 'NAME', 'VOLT_V', 'LSL', 'TARGET', 'USL', 'MEAS_VAL', 'STEP_RESULT'];
 
@@ -443,7 +458,7 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
       <Modal
         isOpen={rawOpen}
         onClose={() => setRawOpen(false)}
-        title={`RAW 데이터 — ${selectedItem}`}
+        title={`RAW 데이터 — ${selectedItemMeta?.name ?? selectedItem}`}
         subtitle={`${dateFrom} ~ ${dateTo} | ${rawRows.length}건`}
         size="full"
         footer={
@@ -580,7 +595,15 @@ function Histogram({ subgroups, stats, theme }: { subgroups: Subgroup[]; stats: 
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={bins} margin={{ top: 10, right: 10, bottom: 25, left: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} vertical={false} />
-        <XAxis dataKey="mid" tick={{ fontSize: 9, fill: theme.tick }} interval={1} angle={-45} textAnchor="end" height={40} />
+        <XAxis
+          dataKey="mid"
+          type="number"
+          domain={['dataMin', 'dataMax']}
+          tick={{ fontSize: 9, fill: theme.tick }}
+          angle={-45}
+          textAnchor="end"
+          height={40}
+        />
         <YAxis tick={{ fontSize: 10, fill: theme.tick }} width={30} />
         <Tooltip
           contentStyle={{ background: theme.tooltip.bg, border: `1px solid ${theme.tooltip.border}`, borderRadius: 8 }}

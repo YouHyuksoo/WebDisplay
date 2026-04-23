@@ -137,11 +137,20 @@ python scripts/pb_analyzer.py --parse-all --source-dir "SOLUM MES_DISP/" --outpu
 ## AI 챗 (메뉴 진입: 우하단 ✨ 아이콘)
 
 - 라우트: `/ai-chat` (SCREENS 레지스트리 미등록 — 라인 필터·시프트 무관)
-- 설정: `/settings/ai-models`(키 등록), `/settings/ai-personas`(어조), `/settings/ai-glossary`(용어)
+- 설정: `/settings/ai-models`(키 등록·기본 프롬프트), `/settings/ai-personas`(어조), `/settings/ai-tables`(테이블 허용목록·스키마 캐시)
 - DB 접속: 메인 풀(`getPool()`) 그대로 사용. 별도 read-only 계정 없음 — 안전은 sql-guard.ts의 SELECT-only 정규식 + ROWNUM 자동 주입 + EXPLAIN PLAN 비용 가드 + executeQuery 무커밋(=DML 시도해도 자동 롤백) 3중 방어.
 - API 키는 `AI_PROVIDER_SETTING.API_KEY_ENC`에 base64 저장 (운영 DB 백업에 포함되니 주의)
-- 새 도메인 용어/약어는 `/settings/ai-glossary`에서 추가 → 즉시 LLM 시스템 프롬프트 반영
+- **도메인 지식(identity·rules·skeletons·formulas·joins)은 `wiki/ai-chat/` 의 MD 파일에서 관리** — `src/lib/ai/context/md-loader.ts` 가 서버 시작 시 로드하여 `prompt-builder.ts` 에 주입. 편집 규칙은 `wiki/SCHEMA.md` 참조. 편집 후 즉시 반영이 필요하면 `invalidateAiChatContext()` 호출 또는 서버 재시작.
 - 스키마 컨텍스트 갱신: `/settings/ai-tables` 페이지의 `↻ DB 동기화` 버튼 또는 `/api/ai-tables/sync` 호출로 `data/ai-context/schema-cache.json` 재생성. (Phase 4 이후 `scripts/extract-schema-context.mjs` 방식은 폐기됨.)
 - 멕시코 LOG_* 테이블 등 보조 DB 사이트 조회는 `executeQueryByProfile`을 별도로 써야 하며, 현재 AI 챗은 메인 풀만 사용.
 - SQL 안전: SELECT/WITH만 허용, ROWNUM ≤ 1000 자동 주입, EXPLAIN PLAN cost ≥ 1M 또는 rows ≥ 10K 시 사용자 확인
 - 다중 사이트 배포: 사이트마다 activeProfile이 다르면 각 사이트 DB에 `migrations/001_ai_chat_tables.sql` 1회 실행 필요 (테이블 5개 + 시드).
+
+## graphify
+
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)

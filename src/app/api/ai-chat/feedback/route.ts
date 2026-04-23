@@ -81,26 +81,6 @@ export async function POST(request: Request) {
       },
     );
 
-    // Phase 3b part2: 좋아요(POSITIVE) + SQL 있으면 AI Tables 승격 대기 큐에 적립.
-    // 실패해도 DB 기록은 성공으로 처리 — 피드백 저장을 막지 않는다.
-    if (rating === 'POSITIVE' && body.sqlQuery) {
-      try {
-        const { enqueueFeedback } = await import(
-          '@/lib/ai-tables/feedback-queue'
-        );
-        await enqueueFeedback({
-          id: messageId,
-          sessionId,
-          question: body.userQuery ?? '',
-          sql: body.sqlQuery,
-          likedAt: new Date().toISOString(),
-          resultSampleJson: body.resultJson?.slice(0, 2000),
-        });
-      } catch (err) {
-        console.warn('[ai-chat/feedback] enqueueFeedback skipped:', err);
-      }
-    }
-
     return NextResponse.json({ feedbackId });
   } catch (e) {
     console.error('[ai-chat/feedback POST]', e);

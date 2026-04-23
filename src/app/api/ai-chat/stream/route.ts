@@ -11,8 +11,6 @@ import { guardSql, extractSqlFromResponse } from '@/lib/ai/sql-guard';
 import { executeAiReadQuery, executeQueryByProfile } from '@/lib/db';
 import { getProvider } from '@/lib/ai/router';
 import { selectContext } from '@/lib/ai/context/context-selector';
-import { loadSelectedContext } from '@/lib/ai/context/context-loader';
-import type { SiteKey } from '@/lib/ai-tables/types';
 import type { ProviderId, ChatMessage } from '@/lib/ai/providers/types';
 
 export const runtime = 'nodejs';
@@ -120,43 +118,11 @@ export async function POST(request: Request) {
         } else if (normalizedPrompt.includes('멕시코vd') || normalizedPrompt.includes('smmexpdb')) {
           selection.site = '멕시코VD외부';
         }
-        const contextDocs = await loadSelectedContext(
-          selection.tables,
-          selection.domains,
-          selection.site as SiteKey,
-        );
         send('context_selected', {
           tables: selection.tables,
           domains: selection.domains,
           site: selection.site,
         });
-
-        // Phase 3b part2: Stage 1 매칭 preview (현재는 로깅만 — 실제 분기는 v2).
-        // 실패해도 전체 /ai-chat 흐름을 중단해선 안 된다.
-        try {
-          const { matchExamples } = await import(
-            '@/lib/ai-tables/example-matcher'
-          );
-          const { loadTables } = await import('@/lib/ai-tables/store');
-          const tablesFile = await loadTables();
-          type SiteKey = keyof typeof tablesFile.sites;
-          const siteTables =
-            tablesFile.sites[selection.site as SiteKey]?.tables ?? {};
-          const tableMetas = selection.tables
-            .map((n) => ({ name: n, meta: siteTables[n] }))
-            .filter((t): t is { name: string; meta: NonNullable<typeof t.meta> } =>
-              Boolean(t.meta),
-            );
-          const matches = matchExamples(prompt, tableMetas);
-          if (matches.length > 0) {
-            const top = matches[0];
-            console.log(
-              `[ai-chat] top match: ${top.tableName}.${top.example.id} score=${top.score.toFixed(3)}`,
-            );
-          }
-        } catch {
-          // 조용히 무시
-        }
 
         // 3) SQL generation stage.
         const today = new Date().toISOString().slice(0, 10);
@@ -164,7 +130,7 @@ export async function POST(request: Request) {
           stage: 'sql_generation',
           currentContext: { today, serverShift: getServerShift(), userTz: 'ICT' },
           customSqlPrompt: providerCfg.sqlSystemPrompt || undefined,
-          selectedContextDocs: contextDocs || undefined,
+          selectedTables: selection.tables,
           selectedSite: selection.site,
         });
 

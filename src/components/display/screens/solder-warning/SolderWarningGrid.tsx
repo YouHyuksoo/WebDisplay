@@ -83,6 +83,28 @@ function formatDate(val?: string): string {
   return `${mm}/${dd} ${hh}:${mi}`;
 }
 
+/**
+ * 경과시간 문자열을 HH:MM 단일 포맷으로 통일.
+ * 서버가 컬럼마다 다른 Oracle 함수(F_GET_TIME_TERM_HMI / F_GET_TIME_TERM_HHMISS)를 써서
+ * 포맷이 H:MM, HH:MM, HH:MM:SS로 섞여 있는 문제를 클라이언트에서 흡수한다.
+ *
+ * - "7:23"       → "07:23"  (zero-padding)
+ * - "00:01:32"   → "00:01"  (초 제거)
+ * - "97:41"      → "97:41"  (100시간 미만 그대로)
+ * - "###:##"     → "---"    (HMI 함수의 3자리 시간 오버플로우)
+ */
+function formatElapsed(val?: string): string {
+  if (val == null || val === '') return '-';
+  const s = String(val).trim();
+  if (s === '-' || s === '') return '-';
+  if (s.includes('#')) return '---';          // DB 함수 오버플로우
+  const parts = s.split(':');
+  if (parts.length < 2) return s;
+  const hh = parts[0].padStart(2, '0');
+  const mm = parts[1].padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
 /** 날짜를 YYYY-MM-DD 포맷으로 변환 */
 function formatValidDate(val?: string): string {
   if (!val) return '-';
@@ -167,14 +189,14 @@ export default function SolderWarningGrid({ rows, isLoading, error, scrollSecond
                 <div className="shrink-0 px-2 py-2 text-center text-lg font-bold text-zinc-300" style={{ width: widths[3] }}>
                   {formatDate(row.ISSUE_DATE)}
                 </div>
-                <div className="shrink-0 px-2 py-2 text-center text-lg font-bold text-zinc-300" style={{ width: widths[4] }}>
-                  {row.GAP1 ?? '-'}
+                <div className="shrink-0 px-2 py-2 text-center font-mono text-lg font-bold text-zinc-300" style={{ width: widths[4] }}>
+                  {formatElapsed(row.GAP1)}
                 </div>
-                <div className="shrink-0 px-2 py-2 text-center text-lg font-bold text-zinc-300" style={{ width: widths[5] }}>
-                  {row.MIX_TIME ?? '-'}
+                <div className="shrink-0 px-2 py-2 text-center font-mono text-lg font-bold text-zinc-300" style={{ width: widths[5] }}>
+                  {formatElapsed(row.MIX_TIME)}
                 </div>
-                <div className={`shrink-0 px-2 py-2 text-center text-lg font-black ${unfreezingStyle || 'text-zinc-300'}`} style={{ width: widths[6] }}>
-                  {row.AFTR_UNFREEZING_TIME ?? '-'}
+                <div className={`shrink-0 px-2 py-2 text-center font-mono text-lg font-black ${unfreezingStyle || 'text-zinc-300'}`} style={{ width: widths[6] }}>
+                  {formatElapsed(row.AFTR_UNFREEZING_TIME)}
                 </div>
                 <div className="shrink-0 px-2 py-2 text-center text-lg font-bold text-zinc-300" style={{ width: widths[7] }}>
                   {formatDate(row.INPUT_DATE)}
@@ -182,8 +204,8 @@ export default function SolderWarningGrid({ rows, isLoading, error, scrollSecond
                 <div className="shrink-0 px-2 py-2 text-center text-lg font-bold text-zinc-300" style={{ width: widths[8] }}>
                   {formatDate(row.VISCOSITY_DATE)}
                 </div>
-                <div className={`shrink-0 px-2 py-2 text-center text-lg font-black ${gap3Style || 'text-zinc-300'}`} style={{ width: widths[9] }}>
-                  {row.GAP3 ?? '-'}
+                <div className={`shrink-0 px-2 py-2 text-center font-mono text-lg font-black ${gap3Style || 'text-zinc-300'}`} style={{ width: widths[9] }}>
+                  {formatElapsed(row.GAP3)}
                 </div>
                 <div className={`shrink-0 px-2 py-2 text-center text-lg font-black ${validStyle || 'text-zinc-300'}`} style={{ width: widths[10] }}>
                   {formatValidDate(row.VALID_DATE)}

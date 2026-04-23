@@ -3,7 +3,7 @@
  * @description 멕시코전장 SPC 관리도 API — LOG_EOL 테이블 기반 X̄-R Chart 데이터
  *
  * 초보자 가이드:
- * - GET /api/mxvc/spc → 측정항목 목록 반환 (NAME LIKE 'TURN%' + VOLT_V=13.5)
+ * - GET /api/mxvc/spc → 측정항목 목록 반환 (NAME 전체 + NAME 값 존재)
  * - GET /api/mxvc/spc?name=TURN1&dateFrom=...&dateTo=... → 해당 항목의 SPC 데이터
  * - MEAS_1 컬럼이 실측값, MIN_1/MAX_2/TYP_1이 스펙 한계
  * - 서브그룹: 일별로 측정값을 묶어 X-bar/R 계산
@@ -24,6 +24,7 @@ const d2 = 2.326;
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const name = sp.get('name');
+  const volt = sp.get('volt') ?? '';
 
   const mode = sp.get('mode');
 
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
     if (mode === 'raw') {
       return await handleRawData(sp, name);
     }
-    return await handleSpcData(sp, name);
+    return await handleSpcData(sp, name, volt);
   } catch (err) {
     console.error('SPC API 오류:', err);
     return NextResponse.json(
@@ -52,9 +53,8 @@ async function handleModels() {
   const sql = `
     SELECT DISTINCT MODEL
       FROM LOG_EOL
-     WHERE NAME LIKE 'TURN%'
-       AND VOLT_V = '13.5'
-       AND MEAS_2 IS NOT NULL AND MEAS_2 != '-'
+     WHERE NAME IS NOT NULL
+       AND TRIM(NAME) IS NOT NULL
        AND MODEL IS NOT NULL
      ORDER BY MODEL`;
 
@@ -62,7 +62,7 @@ async function handleModels() {
   return NextResponse.json({ models: rows.map((r) => r.MODEL) });
 }
 
-/** 측정항목 목록: NAME LIKE 'TURN%' AND VOLT_V = 13.5 인 고유값 */
+/** 측정항목 목록: NAME 값이 있는 고유값 (전체 NAME 대상) */
 async function handleItems(model: string) {
   const binds: Record<string, string> = {};
   let modelClause = '';
@@ -72,37 +72,50 @@ async function handleItems(model: string) {
   }
 
   const sql = `
-    SELECT DISTINCT NAME
+    SELECT DISTINCT NAME, VOLT_V
       FROM LOG_EOL
-     WHERE NAME LIKE 'TURN%'
-       AND VOLT_V = '13.5'
-       AND MEAS_2 IS NOT NULL AND MEAS_2 != '-'
+     WHERE NAME IS NOT NULL
+       AND TRIM(NAME) IS NOT NULL
+       AND VOLT_V IS NOT NULL
+       AND TRIM(VOLT_V) IS NOT NULL
        ${modelClause}
-     ORDER BY NAME`;
+     ORDER BY NAME, VOLT_V`;
 
-  const rows = await executeQuery<{ NAME: string }>(sql, binds);
-  return NextResponse.json({ items: rows.map((r) => ({ id: r.NAME, name: r.NAME })) });
+  const rows = await executeQuery<{ NAME: string; VOLT_V: string }>(sql, binds);
+  return NextResponse.json({
+    items: rows.map((r) => ({
+      id: `${r.NAME}@@${r.VOLT_V}`,
+      name: `${r.NAME} (${r.VOLT_V})`,
+      itemName: r.NAME,
+      volt: r.VOLT_V,
+    })),
+  });
 }
 
 /** SPC 데이터 조회: X̄-R Chart + Cp/Cpk */
-async function handleSpcData(sp: URLSearchParams, name: string) {
+async function handleSpcData(sp: URLSearchParams, name: string, volt: string) {
   const dateFrom = sp.get('dateFrom') ?? '';
   const dateTo = sp.get('dateTo') ?? '';
   const lineCode = sp.get('lineCode') ?? '';
   const model = sp.get('model') ?? '';
 
   /* 스펙 그룹 조회: 같은 NAME에 스펙이 다른 그룹이 존재할 수 있음 */
+  const specBinds: Record<string, string> = { name };
+  const specVoltClause = volt ? ` AND VOLT_V = :volt` : '';
+  if (volt) specBinds.volt = volt;
+
   const specSql = `
     SELECT MIN_2, TYP_2, MAX_2_2, COUNT(*) AS CNT
       FROM LOG_EOL
-     WHERE NAME = :name AND VOLT_V = '13.5' AND STEP_RESULT = 'PASS'
+     WHERE NAME = :name AND STEP_RESULT = 'PASS'
+       ${specVoltClause}
        AND MIN_2 IS NOT NULL AND MIN_2 != '-'
        AND MAX_2_2 IS NOT NULL AND MAX_2_2 != '-'
      GROUP BY MIN_2, TYP_2, MAX_2_2
      ORDER BY CNT DESC`;
 
   const specRows = await executeQuery<{ MIN_2: string; TYP_2: string; MAX_2_2: string; CNT: number }>(
-    specSql, { name },
+    specSql, specBinds,
   );
 
   /* 스펙 그룹이 여러 개면 가장 많은 데이터를 가진 그룹 사용 */
@@ -117,7 +130,11 @@ async function handleSpcData(sp: URLSearchParams, name: string) {
 
   /* 측정 데이터 조회 — 선택된 스펙 그룹과 동일한 MIN_2/MAX_2_2 범위만 */
   const binds: Record<string, string | number> = { name };
-  let where = `WHERE NAME = :name AND VOLT_V = '13.5' AND STEP_RESULT = 'PASS' AND MEAS_2 IS NOT NULL AND MEAS_2 != '-' AND REGEXP_LIKE(MEAS_2, '^-?[0-9]+(\\.[0-9]+)?$')`;
+  let where = `WHERE NAME = :name AND STEP_RESULT = 'PASS' AND MEAS_2 IS NOT NULL AND MEAS_2 != '-' AND REGEXP_LIKE(MEAS_2, '^-?[0-9]+(\\.[0-9]+)?$')`;
+  if (volt) {
+    binds.volt = volt;
+    where += ` AND VOLT_V = :volt`;
+  }
 
   if (specRows.length > 0) {
     binds.specMin = specRows[0].MIN_2;
@@ -157,9 +174,10 @@ async function handleSpcData(sp: URLSearchParams, name: string) {
   if (rows.length === 0) {
     return NextResponse.json({
       name,
+      volt,
       dateFrom,
       dateTo,
-      item: { id: name, name, unit: 'V', usl, lsl, target },
+      item: { id: name, name, volt, unit: 'V', usl, lsl, target },
       subgroups: [],
       stats: null,
       message: '데이터가 없습니다.',
@@ -217,9 +235,10 @@ async function handleSpcData(sp: URLSearchParams, name: string) {
   if (subgroups.length === 0) {
     return NextResponse.json({
       name,
+      volt,
       dateFrom,
       dateTo,
-      item: { id: name, name, unit: 'V', usl, lsl, target },
+      item: { id: name, name, volt, unit: 'V', usl, lsl, target },
       subgroups: [],
       stats: null,
       message: '서브그룹을 구성할 수 있는 데이터가 부족합니다.',
@@ -269,9 +288,10 @@ async function handleSpcData(sp: URLSearchParams, name: string) {
 
   return NextResponse.json({
     name,
+    volt,
     dateFrom,
     dateTo,
-    item: { id: name, name, unit: 'V', usl, lsl, target },
+    item: { id: name, name, volt, unit: 'V', usl, lsl, target },
     subgroups,
     stats,
     timestamp: new Date().toISOString(),
@@ -284,23 +304,33 @@ async function handleRawData(sp: URLSearchParams, name: string) {
   const dateTo = sp.get('dateTo') ?? '';
   const lineCode = sp.get('lineCode') ?? '';
   const model = sp.get('model') ?? '';
+  const volt = sp.get('volt') ?? '';
 
   /* 스펙 그룹 조회 (SPC와 동일 로직) */
+  const specBinds: Record<string, string> = { name };
+  const specVoltClause = volt ? ` AND VOLT_V = :volt` : '';
+  if (volt) specBinds.volt = volt;
+
   const specSql = `
     SELECT MIN_2, TYP_2, MAX_2_2, COUNT(*) AS CNT
       FROM LOG_EOL
-     WHERE NAME = :name AND VOLT_V = '13.5' AND STEP_RESULT = 'PASS'
+     WHERE NAME = :name AND STEP_RESULT = 'PASS'
+       ${specVoltClause}
        AND MIN_2 IS NOT NULL AND MIN_2 != '-'
        AND MAX_2_2 IS NOT NULL AND MAX_2_2 != '-'
      GROUP BY MIN_2, TYP_2, MAX_2_2
      ORDER BY CNT DESC`;
 
   const specRows = await executeQuery<{ MIN_2: string; MAX_2_2: string }>(
-    specSql, { name },
+    specSql, specBinds,
   );
 
   const binds: Record<string, string | number> = { name };
-  let where = `WHERE NAME = :name AND VOLT_V = '13.5' AND STEP_RESULT = 'PASS' AND MEAS_2 IS NOT NULL AND MEAS_2 != '-' AND REGEXP_LIKE(MEAS_2, '^-?[0-9]+(\\.[0-9]+)?$')`;
+  let where = `WHERE NAME = :name AND STEP_RESULT = 'PASS' AND MEAS_2 IS NOT NULL AND MEAS_2 != '-' AND REGEXP_LIKE(MEAS_2, '^-?[0-9]+(\\.[0-9]+)?$')`;
+  if (volt) {
+    binds.volt = volt;
+    where += ` AND VOLT_V = :volt`;
+  }
 
   if (specRows.length > 0) {
     binds.specMin = specRows[0].MIN_2;

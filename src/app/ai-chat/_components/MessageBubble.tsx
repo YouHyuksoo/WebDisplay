@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ThumbsUp, ThumbsDown, Copy, Check, ChevronDown, ChevronRight } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Copy, Check } from 'lucide-react';
 import type { ChatMessageRow } from '@/lib/ai/chat-store';
 import ResultTable from './ResultTable';
 import ResultChart from './ResultChart';
@@ -131,7 +131,6 @@ export default function MessageBubble({
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
   const [feedbackId, setFeedbackId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [sqlOpen, setSqlOpen] = useState(false);
 
   const parsed = useMemo(() => parseChartSpec(message.content || ''), [message.content]);
 
@@ -217,19 +216,9 @@ export default function MessageBubble({
     );
   }
 
-  if (message.role === 'sql') {
-    return (
-      <div className="px-4 py-1">
-        <button onClick={() => setSqlOpen((prev) => !prev)} className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300">
-          {sqlOpen ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
-          실행된 SQL {message.execMs ? `(${message.execMs}ms)` : ''}
-        </button>
-        {sqlOpen && (
-          <pre className="mt-1 whitespace-pre-wrap rounded-md bg-zinc-100 p-3 font-mono text-xs text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">{message.sqlText}</pre>
-        )}
-      </div>
-    );
-  }
+  // role === 'sql' 메시지는 UI 에 표시하지 않는다.
+  // 세션 JSON 에는 그대로 저장되어 분석(/ai-chat/analytics) 및 피드백에서 활용됨.
+  if (message.role === 'sql') return null;
 
   if (message.role === 'sql_result' && message.resultJson) {
     let rows: Record<string, unknown>[] = [];

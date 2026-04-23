@@ -47,14 +47,14 @@ export default function NgAlertBanner({
 }: NgAlertBannerProps) {
   if (compact) {
     return (
-      <div className="animate-pulse bg-red-600 px-4 py-2 text-center text-lg font-bold text-white dark:bg-red-700">
+      <div className="animate-pulse bg-pink-600 px-4 py-2 text-center text-lg font-bold text-white dark:bg-pink-700">
         {message}
       </div>
     );
   }
 
   return (
-    <div className="flex shrink-0 animate-pulse items-center justify-center gap-6 bg-red-600 px-6 py-3 text-2xl font-black text-white">
+    <div className="flex shrink-0 animate-pulse items-center justify-center gap-6 bg-pink-600 px-6 py-3 text-2xl font-black text-white">
       {showIcon && <WarningIcon />}
       {message}
       {showIcon && <WarningIcon />}

@@ -245,15 +245,8 @@ export default function MessageList({
         </div>
       )}
 
-      {isStreaming && selectedContext && (
-        <div className="px-4 py-1">
-          <div className="max-w-3xl rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-300">
-            <div>선택 site: {selectedContext.site}</div>
-            <div>tables: {selectedContext.tables.join(', ') || '-'}</div>
-            <div>domains: {selectedContext.domains.join(', ') || '-'}</div>
-          </div>
-        </div>
-      )}
+      {/* selectedContext(선택 site/tables/domains) 는 UI 에 노출하지 않는다.
+          내부 상태는 유지되어 스트리밍 단계 분기·분석 페이지에서 계속 활용됨. */}
 
       {isStreaming && !streamingText && (
         <div className="px-4 py-2">

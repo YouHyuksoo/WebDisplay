@@ -29,6 +29,7 @@
 
 import gsap from 'gsap';
 import { state } from './state';
+import type { Shortcut } from './types';
 
 // ---------------------------------------------------------------------------
 // 위젯 인터벌 추적 (cleanup용)
@@ -82,6 +83,42 @@ export function haltMenuSystem(): void {
 /** Space 모듈 캐시 (init 시 저장, halt에서 동기 접근) */
 let _spaceModule: typeof import('./space') | null = null;
 
+function areShortcutsEqual(a: Shortcut[], b: Shortcut[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    const left = a[i];
+    const right = b[i];
+    if (
+      left.id !== right.id ||
+      left.url !== right.url ||
+      left.layer !== right.layer ||
+      left.title !== right.title ||
+      left.icon !== right.icon ||
+      left.color !== right.color
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function runWhenIdle(task: () => void): void {
+  const win = window as Window & {
+    requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+  };
+  if (typeof win.requestIdleCallback === 'function') {
+    win.requestIdleCallback(task, { timeout: 1200 });
+    return;
+  }
+  setTimeout(task, 120);
+}
+
+function initSearchDeferred(): void {
+  runWhenIdle(() => {
+    import('./search').then((Search) => Search.init());
+  });
+}
+
 // ---------------------------------------------------------------------------
 // 자동 롤링 관리
 // ---------------------------------------------------------------------------
@@ -128,7 +165,6 @@ export async function initMenuSystem(): Promise<void> {
   const { COLORS } = await import('./config');
   const Storage = await import('./storage');
   const Categories = await import('./categories');
-  const Space = await import('./space');
   const { renderCards } = await import('./cards');
   const { initEventListeners, initColorPicker } = await import('./handlers');
   // Effects removed from early load
@@ -143,7 +179,6 @@ export async function initMenuSystem(): Promise<void> {
     initDialogListeners,
   } = await import('./ui');
   const Widgets = await import('./widgets');
-  const Search = await import('./search');
   const Sections = await import('./sections');
   const Lanes = await import('./lanes');
   const Tooltip = await import('./tooltip');
@@ -158,7 +193,9 @@ export async function initMenuSystem(): Promise<void> {
     state.shortcuts = Storage.loadShortcuts();
     Storage.syncCardsFromServer().then(({ cards }) => {
       const favorites = state.shortcuts.filter((s) => s.layer === 0);
-      state.shortcuts = [...favorites, ...cards];
+      const mergedShortcuts = [...favorites, ...cards];
+      if (areShortcutsEqual(state.shortcuts, mergedShortcuts)) return;
+      state.shortcuts = mergedShortcuts;
       import('./cards').then((Cards) => Cards.renderCards());
       // 서버 동기화 후 도트 인디케이터 재생성 (카테고리가 변경되었을 수 있음)
       Sections.createDepthIndicator();
@@ -177,6 +214,7 @@ export async function initMenuSystem(): Promise<void> {
     state.selectedColor = COLORS[0];
     state.enable3D = settings.enable3D ?? true;
     state.autoRolling = settings.autoRolling ?? false;
+    document.body.setAttribute('data-lite-mode', state.simpleVirtualization ? 'on' : 'off');
 
     state.isInitialized = true;
   }
@@ -262,13 +300,13 @@ export async function initMenuSystem(): Promise<void> {
           animateEntrance(isReturning);
 
           // 검색 초기화
-          Search.init();
+          initSearchDeferred();
         },
       });
     } else {
       animateEntrance(isReturning);
       // 검색 초기화
-      Search.init();
+      initSearchDeferred();
     }
   }, isReturning ? 100 : 500);
 }

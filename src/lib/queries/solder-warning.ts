@@ -48,18 +48,15 @@ SELECT w.LOT_NO,
            VISCOSITY_START_DATE                                                                       AS VISCOSITY_DATE,
            INPUT_DATE,
            F_GET_TIME_TERM_HMI(NVL(NVL(FIRST_LINE_INPUT_DATE, INPUT_DATE), SYSDATE), SYSDATE)       AS GAP2,
-           F_GET_TIME_TERM_HMI(NVL(INPUT_DATE, SYSDATE), SYSDATE)                                       AS GAP3,
+           F_GET_TIME_TERM_HHMISS(NVL(INPUT_DATE, SYSDATE), SYSDATE)                                     AS GAP3,
            VALID_DATE,
            F_GET_TIME_TERM_HHMISS(
              NVL(MIX_START_DATE, SYSDATE),
              NVL(MIX_END_DATE, SYSDATE)
            )                                                                                          AS MIX_TIME,
-           F_GET_TIME_STR(
-             DECODE(
-               SIGN((NVL(DESTROY_DATE, SYSDATE) - NVL(UNFREEZING_START_DATE, SYSDATE)) * 24),
-               -1, 0,
-               (NVL(DESTROY_DATE, SYSDATE) - NVL(UNFREEZING_START_DATE, SYSDATE)) * 24
-             )
+           F_GET_TIME_TERM_HHMISS(
+             NVL(UNFREEZING_START_DATE, SYSDATE),
+             NVL(DESTROY_DATE, SYSDATE)
            )                                                                                          AS AFTR_UNFREEZING_TIME,
            TRUNC(VALID_DATE) - TRUNC(SYSDATE)                                                        AS VALID_DATE_CHECK
       FROM IM_ITEM_SOLDER_MASTER

@@ -1,7 +1,7 @@
 /**
  * @file DisplayOption.tsx
- * @description 옵션 설정 화면 (Screen 18) 메인 컨테이너. 6탭 UI.
- * 초보자 가이드: DisplayLayout으로 감싸고, 기존 3탭 + AI 설정 3탭을 전환한다.
+ * @description 옵션 설정 화면 (Screen 18) 메인 컨테이너. 5탭 UI.
+ * 초보자 가이드: DisplayLayout으로 감싸고, 기본 3탭 + AI 설정 2탭(모델/페르소나 통합, 테이블)을 전환한다.
  */
 'use client';
 
@@ -15,26 +15,21 @@ import AutoLaunchPanel from './AutoLaunchPanel';
 
 const AiModelsPanel = dynamic(() => import('@/app/settings/ai-models/page'), { ssr: false });
 const AiPersonasPanel = dynamic(() => import('@/app/settings/ai-personas/page'), { ssr: false });
-const AiGlossaryPanel = dynamic(() => import('@/app/settings/ai-glossary/page'), { ssr: false });
-const AiTablesPanel = dynamic(() => import('@/app/settings/ai-tables/page'), { ssr: false });
+const AiTrainingPanel = dynamic(() => import('./panels/AiTrainingPanel'), { ssr: false });
 
 type Tab =
   | 'rolling'
   | 'database'
   | 'autolaunch'
   | 'aiModels'
-  | 'aiPersonas'
-  | 'aiGlossary'
-  | 'aiTables';
+  | 'aiTraining';
 
 const TAB_KEYS: { key: Tab; labelKey: string }[] = [
   { key: 'rolling', labelKey: 'pageRolling' },
   { key: 'database', labelKey: 'dbSettings' },
   { key: 'autolaunch', labelKey: 'autoLaunch' },
   { key: 'aiModels', labelKey: 'aiModels' },
-  { key: 'aiPersonas', labelKey: 'aiPersonas' },
-  { key: 'aiGlossary', labelKey: 'aiGlossary' },
-  { key: 'aiTables', labelKey: 'aiTables' },
+  { key: 'aiTraining', labelKey: 'aiTraining' },
 ];
 
 interface DisplayOptionProps {
@@ -70,10 +65,15 @@ export default function DisplayOption({ screenId }: DisplayOptionProps) {
           {activeTab === 'rolling' && <PageRollingPanel />}
           {activeTab === 'database' && <DatabasePanel />}
           {activeTab === 'autolaunch' && <AutoLaunchPanel />}
-          {activeTab === 'aiModels' && <div className="p-4"><AiModelsPanel /></div>}
-          {activeTab === 'aiPersonas' && <div className="p-4"><AiPersonasPanel /></div>}
-          {activeTab === 'aiGlossary' && <div className="p-4"><AiGlossaryPanel /></div>}
-          {activeTab === 'aiTables' && <div className="h-full"><AiTablesPanel /></div>}
+          {activeTab === 'aiModels' && (
+            <div className="space-y-6 p-4">
+              <AiModelsPanel />
+              <div className="border-t border-zinc-200 pt-6 dark:border-zinc-700">
+                <AiPersonasPanel />
+              </div>
+            </div>
+          )}
+          {activeTab === 'aiTraining' && <div className="h-full"><AiTrainingPanel /></div>}
         </div>
       </div>
     </DisplayLayout>
