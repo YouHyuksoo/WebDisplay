@@ -10,6 +10,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import ReactECharts from 'echarts-for-react';
 import type { RepairStatusRow } from '@/types/ctq/repair-status';
 
@@ -27,10 +28,13 @@ const PIE_COLORS = [
 const MAX_SLICES = 11;
 
 export default function RepairDefectPie({ rows, height = 240 }: Props) {
+  const t = useTranslations('mxvc.repairStatus.charts');
+  const uncategorized = t('uncategorized');
+  const other = t('other');
   const { data, total } = useMemo(() => {
     const map = new Map<string, number>();
     for (const r of rows) {
-      const key = r.badReasonName && r.badReasonName !== '-' ? r.badReasonName : (r.badReasonCode || '미분류');
+      const key = r.badReasonName && r.badReasonName !== '-' ? r.badReasonName : (r.badReasonCode || uncategorized);
       map.set(key, (map.get(key) ?? 0) + 1);
     }
     const sorted = Array.from(map.entries())
@@ -41,12 +45,12 @@ export default function RepairDefectPie({ rows, height = 240 }: Props) {
       ? sorted
       : [
           ...sorted.slice(0, MAX_SLICES - 1),
-          { name: '기타', value: sorted.slice(MAX_SLICES - 1).reduce((s, r) => s + r.value, 0) },
+          { name: other, value: sorted.slice(MAX_SLICES - 1).reduce((s, r) => s + r.value, 0) },
         ];
 
     const totalCount = sorted.reduce((s, r) => s + r.value, 0);
     return { data: sliced, total: totalCount };
-  }, [rows]);
+  }, [rows, uncategorized, other]);
 
   const hasData = total > 0;
 
@@ -115,15 +119,15 @@ export default function RepairDefectPie({ rows, height = 240 }: Props) {
   return (
     <div className="flex flex-col">
       <h3 className="text-xs font-semibold text-zinc-300 mb-1 px-3 pt-2">
-        불량명별 분포
-        {hasData && <span className="ml-2 font-normal text-zinc-500">총 {total}건</span>}
+        {t('defectByReason')}
+        {hasData && <span className="ml-2 font-normal text-zinc-500">{t('totalCount', { count: total })}</span>}
       </h3>
       {!hasData ? (
         <div
           className="mx-3 mb-2 flex items-center justify-center border border-dashed border-zinc-700 rounded text-xs text-zinc-500"
           style={{ height }}
         >
-          불량 없음
+          {t('noDefect')}
         </div>
       ) : (
         <ReactECharts option={option} style={{ height, width: '100%' }} notMerge lazyUpdate />

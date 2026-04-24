@@ -10,6 +10,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import type { MxvcFpySettings, MxvcFpyTableKey } from "@/types/mxvc/fpy";
 import { TABLE_KEYS, TABLE_LABELS } from "@/types/mxvc/fpy";
 
@@ -23,6 +24,8 @@ interface Props {
 export default function FpyChartSidebar({
   settings, onChange, collapsed, onToggleCollapse,
 }: Props) {
+  const tc = useTranslations('common');
+  const tf = useTranslations('mxvcFpy');
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -56,7 +59,7 @@ export default function FpyChartSidebar({
       <button
         onClick={onToggleCollapse}
         className={`absolute top-3 right-2 z-10 p-1 rounded-md bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:text-white hover:bg-blue-600 transition-all ${collapsed ? "hidden" : "block"}`}
-        title="접기"
+        title={tc('collapse')}
       >
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5">
           <path d="M15 18l-6-6 6-6" />
@@ -65,7 +68,7 @@ export default function FpyChartSidebar({
 
       <div className={collapsed ? "opacity-0 invisible" : "opacity-100 visible transition-opacity duration-300 delay-100"}>
         <div className="mb-3">
-          <h3 className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-bold">표시할 차트</h3>
+          <h3 className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-bold">{tf('chartsToShow')}</h3>
         </div>
 
         {/* 전체 선택/해제 */}
@@ -76,7 +79,7 @@ export default function FpyChartSidebar({
               onChange({ ...settings, visibleTables: allChecked ? [] : [...TABLE_KEYS] });
             }}
             className="accent-blue-500" />
-          <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300">전체</span>
+          <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300">{tc('all')}</span>
         </label>
 
         {/* 개별 테이블 토글 */}

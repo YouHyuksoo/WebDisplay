@@ -13,7 +13,14 @@
     "selected": "{count} selected",
     "noData": "No data",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "dragToResize": "Drag to resize",
+    "loading3dGraph": "Loading 3D graph...",
+    "all": "All",
+    "scrollUp": "Scroll up",
+    "scrollDown": "Scroll down"
   },
   "menu": {
     "management": "Management Settings",
@@ -58,8 +65,22 @@
         "provider": "Provider",
         "count": "Count",
         "positiveRate": "Positive %",
-        "avgResponse": "Avg Response"
+        "avgResponse": "Avg Response",
+        "rating": "Rating",
+        "question": "Question",
+        "responseTime": "Response Time",
+        "date": "Date"
       },
+      "totalChats": "Total Chats",
+      "avgResponseTime": "Avg Response Time",
+      "noFeedback": "No feedback data",
+      "perfSection": "Performance",
+      "perfSqlGen": "SQL Gen",
+      "perfSqlExec": "SQL Exec",
+      "perfAnalysis": "Analysis",
+      "perfTotal": "Total",
+      "userQuestion": "User Question",
+      "aiResponse": "AI Response",
       "countItems": "{count}",
       "selectedCount": "{count} selected",
       "delete": "Delete",
@@ -578,7 +599,8 @@
     "features": "Key Features",
     "shortcutKey": "Shortcut",
     "action": "Action",
-    "description": "Description"
+    "description": "Description",
+    "refreshSuffix": "Refresh {seconds}s"
   },
   "ctq": {
     "common": {
@@ -1242,6 +1264,19 @@
         "badReasonCode": "Defect Code",
         "badReasonName": "Defect Name",
         "handlingName": "Handling"
+      },
+      "charts": {
+        "defectByWorkstage": "Defects by Workstage",
+        "defectByModel": "Defects by Model",
+        "defectByReason": "Defects by Reason",
+        "qcResultDist": "QC Result Distribution",
+        "topN": "Top {count}",
+        "totalCount": "{count} total",
+        "noData": "No data",
+        "noDefect": "No defects",
+        "unassigned": "Unassigned",
+        "uncategorized": "Uncategorized",
+        "other": "Other"
       }
     },
     "productionKpi": {
@@ -1519,6 +1554,9 @@
   },
   "mxvcSpc": {
     "title": "Mexico MXVC SPC Control Chart"
+  },
+  "mxvcFpy": {
+    "chartsToShow": "Charts to Show"
   },
   "mxvcProcessHistory": {
     "title": "Process History",

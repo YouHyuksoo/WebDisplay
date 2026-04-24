@@ -5,6 +5,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import ReactECharts from 'echarts-for-react';
 import type { RepairStatusRow } from '@/types/ctq/repair-status';
 
@@ -15,10 +16,12 @@ interface Props {
 }
 
 export default function RepairModelBar({ rows, height = 220, topN = 10 }: Props) {
+  const t = useTranslations('mxvc.repairStatus.charts');
+  const unassigned = t('unassigned');
   const { categories, values, total } = useMemo(() => {
     const map = new Map<string, number>();
     for (const r of rows) {
-      const key = r.modelName && r.modelName !== '-' ? r.modelName : '미지정';
+      const key = r.modelName && r.modelName !== '-' ? r.modelName : unassigned;
       map.set(key, (map.get(key) ?? 0) + 1);
     }
     const sorted = Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, topN);
@@ -29,7 +32,7 @@ export default function RepairModelBar({ rows, height = 220, topN = 10 }: Props)
       values:     sorted.map(([, v]) => v),
       total:      rows.length,
     };
-  }, [rows, topN]);
+  }, [rows, topN, unassigned]);
 
   const hasData = values.length > 0;
 
@@ -82,12 +85,12 @@ export default function RepairModelBar({ rows, height = 220, topN = 10 }: Props)
   return (
     <div className="flex flex-col">
       <h3 className="text-xs font-semibold text-zinc-300 mb-1 px-3 pt-2">
-        품목별 불량건수
-        {hasData && <span className="ml-2 font-normal text-zinc-500">상위 {categories.length}개</span>}
+        {t('defectByModel')}
+        {hasData && <span className="ml-2 font-normal text-zinc-500">{t('topN', { count: categories.length })}</span>}
       </h3>
       {!hasData ? (
         <div className="mx-3 mb-2 flex items-center justify-center border border-dashed border-zinc-700 rounded text-xs text-zinc-500" style={{ height }}>
-          데이터 없음
+          {t('noData')}
         </div>
       ) : (
         <ReactECharts option={option} style={{ height, width: '100%' }} notMerge lazyUpdate />

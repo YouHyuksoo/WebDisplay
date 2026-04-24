@@ -10,16 +10,22 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import Spinner from '@/components/ui/Spinner';
 import type { GraphData, GraphNode, CategoryId } from './reverseTraceGraphBuilder';
 
+function LoadingFallback() {
+  const t = useTranslations('common');
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-[#1a1a2e] text-white text-sm">
+      <Spinner size="md" label={t('loading3dGraph')} labelClassName="text-white" />
+    </div>
+  );
+}
+
 const Inner = dynamic(() => import('./ReverseTrace3DGraphInner'), {
   ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-[#1a1a2e] text-white text-sm">
-      <Spinner size="md" label="3D 그래프 로딩 중..." labelClassName="text-white" />
-    </div>
-  ),
+  loading: LoadingFallback,
 });
 
 interface Props {

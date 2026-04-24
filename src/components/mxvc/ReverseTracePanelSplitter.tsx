@@ -10,6 +10,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Props {
   onChange: (rightWidthPercent: number) => void;
@@ -20,6 +21,7 @@ interface Props {
 export default function ReverseTracePanelSplitter({
   onChange, minPercent = 20, maxPercent = 80,
 }: Props) {
+  const t = useTranslations('common');
   const [dragging, setDragging] = useState(false);
   const parentWidthRef = useRef(0);
   const barRef = useRef<HTMLDivElement>(null);
@@ -64,7 +66,7 @@ export default function ReverseTracePanelSplitter({
       className={`w-1 shrink-0 cursor-col-resize transition-colors ${
         dragging ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-700 hover:bg-blue-400'
       }`}
-      title="드래그하여 크기 조정"
+      title={t('dragToResize')}
     />
   );
 }

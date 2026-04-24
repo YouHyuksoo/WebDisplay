@@ -10,6 +10,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { X, ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
@@ -23,9 +24,10 @@ interface Props {
 
 /** 평점 배지 (큰 사이즈) */
 function RatingBadge({ rating }: { rating: string }) {
-  if (rating === 'POSITIVE') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"><ThumbsUp size={13} /> 긍정</span>;
-  if (rating === 'NEGATIVE') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400"><ThumbsDown size={13} /> 부정</span>;
-  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"><Minus size={13} /> 중립</span>;
+  const t = useTranslations('aiChat.analytics');
+  if (rating === 'POSITIVE') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"><ThumbsUp size={13} /> {t('ratingPositive')}</span>;
+  if (rating === 'NEGATIVE') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400"><ThumbsDown size={13} /> {t('ratingNegative')}</span>;
+  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"><Minus size={13} /> {t('ratingNeutral')}</span>;
 }
 
 /** 성능 수평 바 */
@@ -43,6 +45,7 @@ function PerfBar({ label, ms, maxMs, color }: { label: string; ms: number; maxMs
 }
 
 export default function FeedbackDetailModal({ feedback, isOpen, onClose }: Props) {
+  const t = useTranslations('aiChat.analytics');
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') onClose();
   }, [onClose]);
@@ -79,22 +82,22 @@ export default function FeedbackDetailModal({ feedback, isOpen, onClose }: Props
         <div className="p-5 space-y-5">
           {/* 성능 바 */}
           <div className="space-y-1.5">
-            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">성능</h4>
-            <PerfBar label="SQL 생성" ms={feedback.SQL_GEN_MS} maxMs={maxMs} color="bg-blue-500" />
-            <PerfBar label="SQL 실행" ms={feedback.SQL_EXEC_MS} maxMs={maxMs} color="bg-cyan-500" />
-            <PerfBar label="분석" ms={feedback.ANALYSIS_MS} maxMs={maxMs} color="bg-purple-500" />
-            <PerfBar label="전체" ms={feedback.TOTAL_MS} maxMs={maxMs} color="bg-amber-500" />
+            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t('perfSection')}</h4>
+            <PerfBar label={t('perfSqlGen')} ms={feedback.SQL_GEN_MS} maxMs={maxMs} color="bg-blue-500" />
+            <PerfBar label={t('perfSqlExec')} ms={feedback.SQL_EXEC_MS} maxMs={maxMs} color="bg-cyan-500" />
+            <PerfBar label={t('perfAnalysis')} ms={feedback.ANALYSIS_MS} maxMs={maxMs} color="bg-purple-500" />
+            <PerfBar label={t('perfTotal')} ms={feedback.TOTAL_MS} maxMs={maxMs} color="bg-amber-500" />
           </div>
 
           {/* 사용자 질문 */}
           <div>
-            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">사용자 질문</h4>
+            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('userQuestion')}</h4>
             <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{feedback.USER_QUERY || '-'}</p>
           </div>
 
           {/* AI 응답 */}
           <div>
-            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">AI 응답</h4>
+            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('aiResponse')}</h4>
             <div className="prose prose-sm dark:prose-invert max-w-none text-gray-800 dark:text-gray-200">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {feedback.LLM_RESPONSE || '-'}

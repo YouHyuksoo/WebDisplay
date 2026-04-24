@@ -10,6 +10,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import ReactECharts from 'echarts-for-react';
 import type { RepairStatusRow } from '@/types/ctq/repair-status';
 
@@ -30,17 +31,19 @@ const QC_COLOR_MAP: Record<string, string> = {
 const FALLBACK_COLOR = '#6b7280';
 
 export default function RepairQcResultPie({ rows, height = 240 }: Props) {
+  const t = useTranslations('mxvc.repairStatus.charts');
+  const unassigned = t('unassigned');
   const { data, total } = useMemo(() => {
     const map = new Map<string, number>();
     for (const r of rows) {
-      const key = r.qcResultName && r.qcResultName !== '-' ? r.qcResultName : '미지정';
+      const key = r.qcResultName && r.qcResultName !== '-' ? r.qcResultName : unassigned;
       map.set(key, (map.get(key) ?? 0) + 1);
     }
     const sorted = Array.from(map.entries())
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
     return { data: sorted, total: sorted.reduce((s, r) => s + r.value, 0) };
-  }, [rows]);
+  }, [rows, unassigned]);
 
   const hasData = total > 0;
 
@@ -106,15 +109,15 @@ export default function RepairQcResultPie({ rows, height = 240 }: Props) {
   return (
     <div className="flex flex-col">
       <h3 className="text-xs font-semibold text-zinc-300 mb-1 px-3 pt-2">
-        QC 결과 분포
-        {hasData && <span className="ml-2 font-normal text-zinc-500">총 {total}건</span>}
+        {t('qcResultDist')}
+        {hasData && <span className="ml-2 font-normal text-zinc-500">{t('totalCount', { count: total })}</span>}
       </h3>
       {!hasData ? (
         <div
           className="mx-3 mb-2 flex items-center justify-center border border-dashed border-zinc-700 rounded text-xs text-zinc-500"
           style={{ height }}
         >
-          데이터 없음
+          {t('noData')}
         </div>
       ) : (
         <ReactECharts option={option} style={{ height, width: '100%' }} notMerge lazyUpdate />

@@ -7,11 +7,15 @@
  * 2. **사용 방법**: MenuScene에서 import하여 렌더링
  * 3. **중요**: 모든 ID는 원본 index.html과 동일해야 함 (JS 모듈이 getElementById 사용)
  */
+'use client';
+
+import { useTranslations } from 'next-intl';
 
 /**
  * 로딩 화면 + Three.js 캔버스 + 글로우 오브 + 3D 카드 공간 + 깊이 인디케이터
  */
 export default function MenuCanvas() {
+  const t = useTranslations('common');
   return (
     <>
       {/* 로딩 화면 */}
@@ -35,12 +39,12 @@ export default function MenuCanvas() {
 
       {/* 그리드 스크롤 버튼 */}
       <div id="grid-scroll-controls">
-        <button className="grid-scroll-btn" id="grid-scroll-up" title="위로 스크롤">
+        <button className="grid-scroll-btn" id="grid-scroll-up" title={t('scrollUp')}>
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z" />
           </svg>
         </button>
-        <button className="grid-scroll-btn" id="grid-scroll-down" title="아래로 스크롤">
+        <button className="grid-scroll-btn" id="grid-scroll-down" title={t('scrollDown')}>
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
           </svg>

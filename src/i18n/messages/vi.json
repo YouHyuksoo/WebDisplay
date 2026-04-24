@@ -13,7 +13,14 @@
     "selected": "Đã chọn {count}",
     "noData": "Không có dữ liệu",
     "edit": "Sửa",
-    "delete": "Xóa"
+    "delete": "Xóa",
+    "collapse": "Thu gọn",
+    "expand": "Mở rộng",
+    "dragToResize": "Kéo để đổi kích thước",
+    "loading3dGraph": "Đang tải đồ thị 3D...",
+    "all": "Tất cả",
+    "scrollUp": "Cuộn lên",
+    "scrollDown": "Cuộn xuống"
   },
   "menu": {
     "management": "Cài đặt quản lý",
@@ -58,8 +65,22 @@
         "provider": "Nhà cung cấp",
         "count": "Số lượng",
         "positiveRate": "Tỷ lệ tích cực",
-        "avgResponse": "Phản hồi TB"
+        "avgResponse": "Phản hồi TB",
+        "rating": "Đánh giá",
+        "question": "Câu hỏi",
+        "responseTime": "Thời gian phản hồi",
+        "date": "Ngày giờ"
       },
+      "totalChats": "Tổng cuộc trò chuyện",
+      "avgResponseTime": "Thời gian phản hồi TB",
+      "noFeedback": "Không có dữ liệu phản hồi",
+      "perfSection": "Hiệu năng",
+      "perfSqlGen": "Tạo SQL",
+      "perfSqlExec": "Thực thi SQL",
+      "perfAnalysis": "Phân tích",
+      "perfTotal": "Tổng",
+      "userQuestion": "Câu hỏi người dùng",
+      "aiResponse": "Phản hồi AI",
       "countItems": "{count} mục",
       "selectedCount": "Đã chọn {count}",
       "delete": "Xóa",
@@ -578,7 +599,8 @@
     "features": "Tính năng chính",
     "shortcutKey": "Phím tắt",
     "action": "Hành động",
-    "description": "Mô tả"
+    "description": "Mô tả",
+    "refreshSuffix": "Làm mới {seconds}s"
   },
   "ctq": {
     "common": {
@@ -1237,6 +1259,19 @@
         "badReasonCode": "Mã lỗi",
         "badReasonName": "Tên lỗi",
         "handlingName": "Xử lý"
+      },
+      "charts": {
+        "defectByWorkstage": "Lỗi theo công đoạn",
+        "defectByModel": "Lỗi theo mô hình",
+        "defectByReason": "Lỗi theo nguyên nhân",
+        "qcResultDist": "Phân bố kết quả QC",
+        "topN": "Top {count}",
+        "totalCount": "Tổng {count}",
+        "noData": "Không có dữ liệu",
+        "noDefect": "Không có lỗi",
+        "unassigned": "Chưa gán",
+        "uncategorized": "Chưa phân loại",
+        "other": "Khác"
       }
     },
     "productionKpi": {
@@ -1514,6 +1549,9 @@
   },
   "mxvcSpc": {
     "title": "Biểu đồ kiểm soát SPC Mexico MXVC"
+  },
+  "mxvcFpy": {
+    "chartsToShow": "Biểu đồ hiển thị"
   },
   "mxvcProcessHistory": {
     "title": "Lịch sử quy trình",

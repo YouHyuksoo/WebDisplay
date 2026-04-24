@@ -9,6 +9,7 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ThumbsUp, ThumbsDown, Minus, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from 'lucide-react';
 
 /** 피드백 행 타입 */
@@ -43,13 +44,14 @@ interface Props {
 
 /** 평점 배지 */
 function RatingBadge({ rating }: { rating: string }) {
+  const t = useTranslations('aiChat.analytics');
   if (rating === 'POSITIVE') {
-    return <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400"><ThumbsUp size={13} /> 긍정</span>;
+    return <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400"><ThumbsUp size={13} /> {t('ratingPositive')}</span>;
   }
   if (rating === 'NEGATIVE') {
-    return <span className="inline-flex items-center gap-1 text-xs font-medium text-red-500 dark:text-red-400"><ThumbsDown size={13} /> 부정</span>;
+    return <span className="inline-flex items-center gap-1 text-xs font-medium text-red-500 dark:text-red-400"><ThumbsDown size={13} /> {t('ratingNegative')}</span>;
   }
-  return <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400"><Minus size={13} /> 중립</span>;
+  return <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400"><Minus size={13} /> {t('ratingNeutral')}</span>;
 }
 
 /** 텍스트 truncate */
@@ -71,6 +73,7 @@ function PgBtn({ disabled, onClick, children }: { disabled: boolean; onClick: ()
 }
 
 export default function FeedbackTable({ rows, page, totalPages, selectedIds, onToggle, onToggleAll, onPageChange, onSelect }: Props) {
+  const t = useTranslations('aiChat.analytics');
   const allChecked = rows.length > 0 && rows.every((r) => selectedIds.has(r.FEEDBACK_ID));
 
   return (
@@ -84,11 +87,11 @@ export default function FeedbackTable({ rows, page, totalPages, selectedIds, onT
                 <input type="checkbox" checked={allChecked} onChange={onToggleAll}
                   className="accent-blue-500 rounded" />
               </th>
-              <th className="px-3 py-2">평점</th>
-              <th className="px-3 py-2">질문</th>
-              <th className="px-3 py-2">프로바이더</th>
-              <th className="px-3 py-2 text-right">응답시간</th>
-              <th className="px-3 py-2 text-right">일시</th>
+              <th className="px-3 py-2">{t('col.rating')}</th>
+              <th className="px-3 py-2">{t('col.question')}</th>
+              <th className="px-3 py-2">{t('col.provider')}</th>
+              <th className="px-3 py-2 text-right">{t('col.responseTime')}</th>
+              <th className="px-3 py-2 text-right">{t('col.date')}</th>
             </tr>
           </thead>
           <tbody>
@@ -112,7 +115,7 @@ export default function FeedbackTable({ rows, page, totalPages, selectedIds, onT
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-8 text-gray-400 dark:text-gray-500">피드백 데이터가 없습니다</td></tr>
+              <tr><td colSpan={6} className="text-center py-8 text-gray-400 dark:text-gray-500">{t('noFeedback')}</td></tr>
             )}
           </tbody>
         </table>
