@@ -23,22 +23,28 @@ export const dynamic = "force-dynamic";
 
 interface ProcessConfig {
   table: string;
-  dateCol: string;
   pidCol: string;
   resultCol: string;
-  dateType: "varchar" | "date";
+  /** 최초 검사 판별용 시각 컬럼 (VARCHAR 'YYYY/MM/DD HH24:MI:SS' 가정) */
+  orderCol: string;
   passValues: string[];
   extraWhere?: string;
   /** MACHINE_CODE 앞 N자리 그룹핑 (예: 6=HIPOT1, 4=ATE1). 미지정 시 LINE_CODE만 사용 */
   machinePrefixLen?: number;
 }
 
+/**
+ * 날짜 필터는 모든 공정 공통으로 ACTUAL_DATE(DATE 타입, 근무일 기준 이미 반영) 사용.
+ * - WHERE: ACTUAL_DATE IN (TRUNC(SYSDATE)-1, TRUNC(SYSDATE))  → 전일+당일 2일치
+ * - DAY_TYPE: ACTUAL_DATE = TRUNC(SYSDATE) 이면 'T'(당일), 아니면 'Y'(전일)
+ * - 재검사 제외(첫 검사 판별)는 여전히 INSPECT_DATE(시분초 포함)로 정렬해야 하므로 orderCol 별도 유지.
+ */
 const PROCESS_CONFIG: Record<U1FpyProcessKey, ProcessConfig> = {
-  HIPOT:  { table: "IQ_MACHINE_HIPOT_U1_DATA_RAW",  dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "AND SUBSTR(t.MACHINE_CODE, 1, 6) IN ('HIPOT1','HIPOT2')", machinePrefixLen: 6 },
-  ATE:    { table: "IQ_MACHINE_ATE_U1_DATA_RAW",     dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "", machinePrefixLen: 4 },
-  FW:     { table: "IQ_MACHINE_FW_U1_DATA_RAW",      dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
-  ICT:    { table: "IQ_MACHINE_ICT_U1_DATA_RAW",     dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
-  BURNIN: { table: "IQ_MACHINE_BURNIN_U1_DATA_RAW",  dateCol: "INSPECT_DATE", pidCol: "PID", resultCol: "INSPECT_RESULT", dateType: "varchar", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
+  HIPOT:  { table: "IQ_MACHINE_HIPOT_U1_DATA_RAW",  pidCol: "PID", resultCol: "INSPECT_RESULT", orderCol: "INSPECT_DATE", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "AND SUBSTR(t.MACHINE_CODE, 1, 6) IN ('HIPOT1','HIPOT2')", machinePrefixLen: 6 },
+  ATE:    { table: "IQ_MACHINE_ATE_U1_DATA_RAW",     pidCol: "PID", resultCol: "INSPECT_RESULT", orderCol: "INSPECT_DATE", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "", machinePrefixLen: 4 },
+  FW:     { table: "IQ_MACHINE_FW_U1_DATA_RAW",      pidCol: "PID", resultCol: "INSPECT_RESULT", orderCol: "INSPECT_DATE", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
+  ICT:    { table: "IQ_MACHINE_ICT_U1_DATA_RAW",     pidCol: "PID", resultCol: "INSPECT_RESULT", orderCol: "INSPECT_DATE", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
+  BURNIN: { table: "IQ_MACHINE_BURNIN_U1_DATA_RAW",  pidCol: "PID", resultCol: "INSPECT_RESULT", orderCol: "INSPECT_DATE", passValues: ["PASS", "GOOD", "OK", "Y"], extraWhere: "" },
 };
 
 const PROCESS_KEYS: U1FpyProcessKey[] = ["HIPOT", "ATE", "FW", "ICT", "BURNIN"];
@@ -78,24 +84,13 @@ function buildMachineGroupExpr(config: ProcessConfig, key: string): {
   }
 }
 
-/**
- * 2일치 날짜 범위 WHERE 절 (전일 10:00 ~ 당일+1 10:00)
- * 근무일 기준: TRUNC(SYSDATE-10/24) - 10시를 일 경계로 사용
- */
-function buildDateRange2Days(col: string, dateType: "varchar" | "date"): string {
-  if (dateType === "varchar") {
-    return `${col} >= TO_CHAR(TRUNC(SYSDATE-10/24)-1, 'YYYY/MM/DD') || ' 10:00:00' AND ${col} < TO_CHAR(TRUNC(SYSDATE-10/24)+1, 'YYYY/MM/DD') || ' 10:00:00'`;
-  }
-  return `${col} >= TRUNC(SYSDATE-10/24)-1 + 10/24 AND ${col} < TRUNC(SYSDATE-10/24)+1 + 10/24`;
-}
+/** 전일+당일 2일치 ACTUAL_DATE 필터 */
+const ACTUAL_DATE_RANGE_2DAYS =
+  `t.ACTUAL_DATE IN (TRUNC(SYSDATE) - 1, TRUNC(SYSDATE))`;
 
-/** DAY_TYPE 분류 CASE 절 (Y=전일, T=당일) */
-function buildDayCase(col: string, dateType: "varchar" | "date"): string {
-  if (dateType === "varchar") {
-    return `CASE WHEN ${col} < TO_CHAR(TRUNC(SYSDATE-10/24), 'YYYY/MM/DD') || ' 10:00:00' THEN 'Y' ELSE 'T' END`;
-  }
-  return `CASE WHEN ${col} < TRUNC(SYSDATE-10/24) + 10/24 THEN 'Y' ELSE 'T' END`;
-}
+/** DAY_TYPE 분류 (Y=전일, T=당일) — ACTUAL_DATE가 근무일 경계를 이미 반영 */
+const ACTUAL_DAY_CASE =
+  `CASE WHEN t.ACTUAL_DATE = TRUNC(SYSDATE) THEN 'T' ELSE 'Y' END`;
 
 interface U1FpyRow2Days extends U1FpyRow {
   DAY_TYPE: string;
@@ -115,9 +110,7 @@ async function queryProcess2Days(
   config: ProcessConfig,
   lineFilter: { clause: string; params: Record<string, string> },
 ): Promise<{ key: U1FpyProcessKey; rows: U1FpyRow2Days[] }> {
-  const col = `t.${config.dateCol}`;
   const passIn = config.passValues.map(v => `'${v}'`).join(",");
-  const dayCase = buildDayCase(col, config.dateType);
   const mg = buildMachineGroupExpr(config, key);
 
   const sql = `
@@ -127,12 +120,14 @@ async function queryProcess2Days(
     FROM (
       SELECT t.LINE_CODE,
              ${mg.selectExpr} AS MACHINE_GROUP,
-             ${dayCase} AS DAY_TYPE,
-             MIN(t.${config.resultCol}) KEEP (DENSE_RANK FIRST ORDER BY t.${config.dateCol}) AS FIRST_RESULT
+             ${ACTUAL_DAY_CASE} AS DAY_TYPE,
+             MIN(t.${config.resultCol}) KEEP (DENSE_RANK FIRST ORDER BY t.${config.orderCol}) AS FIRST_RESULT
       FROM ${config.table} t
-      WHERE ${buildDateRange2Days(col, config.dateType)}
+      WHERE ${ACTUAL_DATE_RANGE_2DAYS}
         ${config.extraWhere ?? ""}
         AND t.LINE_CODE IS NOT NULL
+        AND NVL(t.IS_SAMPLE, 'N') <> 'Y'
+        AND LENGTH(t.${config.pidCol}) >= 10
         ${mg.extraWhere}
         ${lineFilter.clause}
         AND EXISTS (
@@ -140,7 +135,7 @@ async function queryProcess2Days(
           WHERE b.SERIAL_NO = t.${config.pidCol}
             AND b.ITEM_CODE IS NOT NULL AND b.ITEM_CODE <> '*'
         )
-      GROUP BY t.LINE_CODE, ${mg.innerGroupBy}t.${config.pidCol}, ${dayCase}
+      GROUP BY t.LINE_CODE, ${mg.innerGroupBy}t.${config.pidCol}, ${ACTUAL_DAY_CASE}
     ) sub
     GROUP BY sub.LINE_CODE, sub.MACHINE_GROUP, sub.DAY_TYPE
   `;
@@ -172,12 +167,12 @@ export async function GET(request: NextRequest) {
     const lines = parseLines(request);
     const lineFilter = buildLineInClause(lines, "t", "ln");
 
-    /* DB 기준 날짜 범위 조회 (베트남 SYSDATE 기준, 10시 근무일 경계) */
+    /* DB 기준 날짜 범위 라벨 (ACTUAL_DATE = 근무일, UI 표시는 08:00 경계로 표기) */
     const dateRangeRows = await executeQuery<{ YD_START: string; YD_END: string; TD_START: string; TD_END: string }>(
-      `SELECT TO_CHAR(TRUNC(SYSDATE-10/24)-1, 'MM/DD') || ' 10:00' AS YD_START,
-              TO_CHAR(TRUNC(SYSDATE-10/24),   'MM/DD') || ' 10:00' AS YD_END,
-              TO_CHAR(TRUNC(SYSDATE-10/24),   'MM/DD') || ' 10:00' AS TD_START,
-              TO_CHAR(TRUNC(SYSDATE-10/24)+1, 'MM/DD') || ' 10:00' AS TD_END
+      `SELECT TO_CHAR(TRUNC(SYSDATE)-1, 'MM/DD') || ' 08:00' AS YD_START,
+              TO_CHAR(TRUNC(SYSDATE),   'MM/DD') || ' 08:00' AS YD_END,
+              TO_CHAR(TRUNC(SYSDATE),   'MM/DD') || ' 08:00' AS TD_START,
+              TO_CHAR(TRUNC(SYSDATE)+1, 'MM/DD') || ' 08:00' AS TD_END
        FROM DUAL`, {}
     );
     const dr = dateRangeRows[0];

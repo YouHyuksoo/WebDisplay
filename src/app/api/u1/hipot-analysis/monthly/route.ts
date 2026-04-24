@@ -49,6 +49,8 @@ async function queryMonthly(): Promise<HeatmapRow[]> {
     WHERE INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24)-30, 'YYYY/MM/DD') || ' 08:00:00'
       AND INSPECT_DATE <  TO_CHAR(TRUNC(SYSDATE-8/24)+1,  'YYYY/MM/DD') || ' 08:00:00'
       AND PID IS NOT NULL
+      AND NVL(IS_SAMPLE, 'N') <> 'Y'
+      AND LENGTH(PID) >= 10
       AND LAST_YN = 'Y'
     GROUP BY TO_CHAR(TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'), 'YYYY-MM-DD'),
              NVL(ZONE_CODE, 'UNKNOWN')

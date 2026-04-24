@@ -77,6 +77,8 @@ async function queryLineStats(): Promise<LineStatRow[]> {
     WHERE ${DATE_RANGE_2DAYS}
       AND MACHINE_CODE IS NOT NULL
       AND PID IS NOT NULL
+      AND NVL(IS_SAMPLE, 'N') <> 'Y'
+      AND LENGTH(PID) >= 10
       AND LAST_YN = 'Y'
     GROUP BY SUBSTR(MACHINE_CODE, 1, 4), ${DAY_CASE}
     ORDER BY MACHINE_GROUP, DAY_TYPE
@@ -93,6 +95,8 @@ async function queryHourly(): Promise<HourlyRow[]> {
     FROM IQ_MACHINE_ATE_U1_DATA_RAW
     WHERE ${DATE_RANGE_TODAY}
       AND PID IS NOT NULL
+      AND NVL(IS_SAMPLE, 'N') <> 'Y'
+      AND LENGTH(PID) >= 10
       AND LAST_YN = 'Y'
     GROUP BY SUBSTR(INSPECT_DATE, 12, 2)
     ORDER BY HOUR
@@ -110,6 +114,8 @@ async function queryMachineNg(): Promise<MachineNgRow[]> {
     WHERE ${DATE_RANGE_TODAY}
       AND MACHINE_CODE IS NOT NULL
       AND PID IS NOT NULL
+      AND NVL(IS_SAMPLE, 'N') <> 'Y'
+      AND LENGTH(PID) >= 10
       AND LAST_YN = 'Y'
     GROUP BY MACHINE_CODE
     HAVING SUM(CASE WHEN INSPECT_RESULT NOT IN (${PASS_IN}) THEN 1 ELSE 0 END) > 0
