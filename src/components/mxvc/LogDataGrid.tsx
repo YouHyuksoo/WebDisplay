@@ -69,6 +69,7 @@ const PAGE_SIZE_OPTIONS = [50, 100, 200];
 
 export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode = '', lineCodes = [], onLineCodeChange }: LogDataGridProps) {
   const t = useTranslations('common');
+  const tg = useTranslations('mxvc.logData');
   const { resolvedTheme } = useTheme();
   const serverToday = useServerTime();
   const serverNow = useServerNow();
@@ -128,7 +129,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
         const res = await fetch(
           `${apiBase}/data?table=${tableName}&metaOnly=1`,
         );
-        if (!res.ok) throw new Error('API 오류');
+        if (!res.ok) throw new Error(tg('apiError'));
         const data = await res.json();
         setColumns(data.columns ?? []);
 
@@ -184,7 +185,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
       });
       if (lineCode) params.set('lineCode', lineCode);
       const res = await fetch(`${apiBase}/data?${params}`);
-      if (!res.ok) throw new Error('API 오류');
+      if (!res.ok) throw new Error(tg('apiError'));
       const data = await res.json();
       setRows(data.rows ?? []);
       setTotal(data.total ?? 0);
@@ -263,7 +264,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
       });
       if (lineCode) params.set('lineCode', lineCode);
       const res = await fetch(`${apiBase}/data?${params}`);
-      if (!res.ok) throw new Error('엑셀 데이터 조회 실패');
+      if (!res.ok) throw new Error(tg('excelFetchError'));
       const data = await res.json();
       const exportRows = (data.rows ?? []) as Record<string, unknown>[];
       if (exportRows.length === 0) return;
@@ -302,7 +303,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || '삭제 실패');
+        throw new Error(data.error || tg('deleteFailed'));
       }
       setDeleteModalOpen(false);
       setSelectedIds([]);
@@ -318,7 +319,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
   if (!tableName) {
     return (
       <div className="flex-1 flex items-center justify-center text-zinc-500">
-        좌측에서 테이블을 선택해 주세요
+        {tg('selectInfo')}
       </div>
     );
   }
@@ -329,7 +330,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
       <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 border-b border-zinc-700 bg-zinc-900">
         {/* 테이블명 */}
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Table</span>
+          <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">{tg('table')}</span>
           <span className="text-sm font-bold text-blue-300 font-mono">{tableName}</span>
         </div>
 
@@ -339,13 +340,13 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
         {lineCodes.length > 0 && (
           <>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Line</span>
+              <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">{tg('line')}</span>
               <select
                 value={lineCode}
                 onChange={(e) => onLineCodeChange?.(e.target.value)}
                 className="h-8 px-2 text-sm rounded border border-zinc-600 bg-zinc-800 text-zinc-100 focus:outline-none focus:border-blue-500 [color-scheme:dark]"
               >
-                <option value="">전체</option>
+                <option value="">{tg('all')}</option>
                 {lineCodes.map((lc) => <option key={lc} value={lc}>{lc}</option>)}
               </select>
             </div>
@@ -361,7 +362,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
               onChange={(e) => setDateCol(e.target.value)}
               className="h-8 px-2 text-sm rounded border border-zinc-600 bg-zinc-800 text-zinc-100 focus:outline-none focus:border-blue-500 [color-scheme:dark]"
             >
-              <option value="">날짜 컬럼 선택</option>
+              <option value="">{tg('dateColSelect')}</option>
               {dateCols.map((c) => <option key={c.COLUMN_NAME} value={c.COLUMN_NAME}>{c.COLUMN_NAME}</option>)}
             </select>
             <div className="flex items-center gap-1.5 rounded border border-zinc-600 bg-zinc-800 px-2 h-8">
@@ -384,7 +385,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
 
         {/* 액션 버튼 */}
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-sm font-medium text-zinc-400 mr-1">{total.toLocaleString()}건</span>
+          <span className="text-sm font-medium text-zinc-400 mr-1">{tg('countSuffix', { count: total.toLocaleString() })}</span>
 
           <button
             onClick={() => setShowFilter((v) => !v)}
@@ -392,7 +393,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
               showFilter ? 'bg-indigo-600 text-white' : 'border border-zinc-600 bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
             }`}
           >
-            필터
+            {tg('filter')}
           </button>
 
           <button
@@ -400,7 +401,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
             disabled={selectedIds.length === 0}
             className="h-8 px-4 text-sm font-medium rounded bg-red-600 hover:bg-red-500 text-white transition-colors disabled:opacity-40"
           >
-            선택 삭제 ({selectedIds.length})
+            {tg('deleteSelected', { count: selectedIds.length })}
           </button>
 
           <button
@@ -416,7 +417,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
             disabled={total === 0 || exporting}
             className="h-8 px-4 text-sm font-medium rounded bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-40"
           >
-            {exporting ? '다운로드 중...' : 'Excel'}
+            {exporting ? tg('excelDownloading') : tg('excelLabel')}
           </button>
         </div>
       </div>
@@ -460,18 +461,20 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
       {totalPages > 0 && (
         <div className="flex items-center justify-between px-4 py-2 border-t border-zinc-700 bg-zinc-900">
           <div className="flex items-center gap-2 text-sm text-zinc-400">
-            <span>페이지당</span>
+            <span>{tg('pagePer')}</span>
             <select
               value={pageSize}
               onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
               className="h-7 px-2 text-sm rounded border border-zinc-600 bg-zinc-800 text-zinc-100 [color-scheme:dark]"
             >
-              {PAGE_SIZE_OPTIONS.map((s) => <option key={s} value={s}>{s}건</option>)}
+              {PAGE_SIZE_OPTIONS.map((s) => <option key={s} value={s}>{tg('countSuffix', { count: s })}</option>)}
             </select>
             <span className="ml-1">
-              전체 <strong className="text-zinc-200">{total.toLocaleString()}</strong>건 중{' '}
-              <strong className="text-zinc-200">{((page - 1) * pageSize + 1).toLocaleString()}</strong>~
-              <strong className="text-zinc-200">{Math.min(page * pageSize, total).toLocaleString()}</strong>
+              {tg('totalInfo', {
+                total: total.toLocaleString(),
+                start: ((page - 1) * pageSize + 1).toLocaleString(),
+                end: Math.min(page * pageSize, total).toLocaleString(),
+              })}
             </span>
           </div>
 
@@ -501,8 +504,8 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
       <Modal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        title="데이터 삭제 확인"
-        subtitle={`${tableName} 테이블에서 ${selectedIds.length}건을 삭제합니다`}
+        title={tg('deleteConfirm')}
+        subtitle={tg('deleteSubtitle', { table: tableName, count: selectedIds.length })}
         size="sm"
         footer={
           <div className="flex gap-2">
@@ -511,7 +514,7 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
               className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                          text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-              취소
+              {t('cancel')}
             </button>
             <button
               onClick={handleDelete}
@@ -519,14 +522,14 @@ export default function LogDataGrid({ tableName, apiBase = '/api/mxvc', lineCode
               className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-500
                          disabled:opacity-50 transition-colors font-medium"
             >
-              {deleting ? '삭제 중...' : `${selectedIds.length}건 삭제`}
+              {deleting ? tg('deleting') : tg('deleteBtn', { count: selectedIds.length })}
             </button>
           </div>
         }
       >
         <div className="text-sm text-gray-600 dark:text-gray-300">
-          <p className="mb-3">선택한 <strong className="text-red-500">{selectedIds.length}건</strong>의 데이터를 삭제하시겠습니까?</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500">이 작업은 되돌릴 수 없습니다.</p>
+          <p className="mb-3">{tg('deleteConfirmMsg', { table: tableName, count: selectedIds.length })}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">{tg('deleteHint')}</p>
         </div>
       </Modal>
     </div>

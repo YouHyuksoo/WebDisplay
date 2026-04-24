@@ -30,6 +30,7 @@ export default function LogTableSidebar({
   apiBase = '/api/mxvc',
 }: LogTableSidebarProps) {
   const t = useTranslations('common');
+  const tl = useTranslations('mxvcLog');
   const [tables, setTables] = useState<TableInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -39,7 +40,7 @@ export default function LogTableSidebar({
     (async () => {
       try {
         const res = await fetch(`${apiBase}/tables`);
-        if (!res.ok) throw new Error('API 오류');
+        if (!res.ok) throw new Error(tl('apiError'));
         const data = await res.json();
         setTables(data.tables ?? []);
       } catch (e) {
@@ -48,7 +49,7 @@ export default function LogTableSidebar({
         setLoading(false);
       }
     })();
-  }, []);
+  }, [apiBase, tl]);
 
   const filtered = tables.filter((t) => {
     const keyword = search.toLowerCase();
@@ -60,10 +61,10 @@ export default function LogTableSidebar({
     <aside className="w-56 min-w-[224px] border-r border-zinc-700 flex flex-col min-h-0 bg-zinc-900">
       {/* 헤더 */}
       <div className="px-4 py-3 border-b border-zinc-700">
-        <h2 className="text-sm font-bold text-zinc-100 mb-2">LOG 테이블</h2>
+        <h2 className="text-sm font-bold text-zinc-100 mb-2">{tl('sidebarTitle')}</h2>
         <input
           type="text"
-          placeholder="테이블 검색..."
+          placeholder={tl('searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full px-3 py-1.5 text-xs rounded border border-zinc-600 bg-zinc-800
@@ -80,7 +81,7 @@ export default function LogTableSidebar({
           <div className="px-4 py-4 text-center text-red-400 text-xs">{error}</div>
         )}
         {!loading && !error && filtered.length === 0 && (
-          <div className="px-4 py-8 text-center text-zinc-500 text-xs">테이블 없음</div>
+          <div className="px-4 py-8 text-center text-zinc-500 text-xs">{tl('noTable')}</div>
         )}
         {filtered.map((t) => (
           <button
@@ -106,7 +107,7 @@ export default function LogTableSidebar({
 
       {/* 푸터 */}
       <div className="px-4 py-2 border-t border-zinc-700 text-xs text-zinc-500">
-        {tables.length}개 테이블
+        {tl('tableCount', { count: tables.length })}
       </div>
     </aside>
   );

@@ -7,6 +7,7 @@
  * - 행 클릭으로 선택 → 하이라이트만 (조회는 상단 네비게이션의 [조회] 버튼 클릭 필요)
  */
 'use client';
+import { useTranslations } from 'next-intl';
 import type { TraceMode, ReelCandidate } from '@/types/mxvc/reverse-trace-wizard';
 
 interface Props {
@@ -18,18 +19,19 @@ interface Props {
 }
 
 export default function ReelListSidebar({ mode, candidates, selectedIdx, tracedReelCd, onSelect }: Props) {
+  const t = useTranslations('mxvcReverseTrace');
   return (
     <aside className="flex flex-col h-full w-full border-r border-zinc-800 bg-zinc-950">
       <header className="flex-shrink-0 px-3 py-2 border-b border-zinc-800">
         <div className="text-xs font-semibold text-zinc-200">
-          릴 후보 <span className="text-zinc-500">({mode})</span> · {candidates.length}건
+          {t('reelCandidates')} <span className="text-zinc-500">({mode})</span> · {t('candidatesCount', { count: candidates.length })}
         </div>
-        <div className="text-[10px] text-zinc-500 mt-0.5">클릭 후 [조회] 눌러 추적</div>
+        <div className="text-[10px] text-zinc-500 mt-0.5">{t('clickHint')}</div>
       </header>
 
       <div className="flex-1 min-h-0 overflow-y-auto">
         {candidates.length === 0 ? (
-          <div className="p-6 text-center text-xs text-zinc-500">조회 결과 없음</div>
+          <div className="p-6 text-center text-xs text-zinc-500">{t('noResults')}</div>
         ) : (
           <ul className="divide-y divide-zinc-800">
             {candidates.map((c, idx) => {
@@ -47,7 +49,7 @@ export default function ReelListSidebar({ mode, candidates, selectedIdx, tracedR
                 >
                   <div className="flex items-center gap-1">
                     <span className={`font-mono truncate ${isTraced ? 'text-emerald-300' : 'text-zinc-100'}`}>{c.reelCd}</span>
-                    {isTraced && <span className="ml-auto shrink-0 text-[9px] rounded bg-emerald-800 px-1.5 py-0.5 text-emerald-200">추적됨</span>}
+                    {isTraced && <span className="ml-auto shrink-0 text-[9px] rounded bg-emerald-800 px-1.5 py-0.5 text-emerald-200">{t('tracedBadge')}</span>}
                   </div>
                   {/* 모드별 보조 정보 */}
                   {'issueDate' in c && (
@@ -57,11 +59,11 @@ export default function ReelListSidebar({ mode, candidates, selectedIdx, tracedR
                   )}
                   {'slotNo' in c && (
                     <div className="mt-0.5 text-[10px] text-zinc-400">
-                      슬롯 {c.slotNo} · {c.eqpNm} · {c.startDt.slice(0, 16)}
+                      {t('slot')} {c.slotNo} · {c.eqpNm} · {c.startDt.slice(0, 16)}
                     </div>
                   )}
                   {'rowIndex' in c && (
-                    <div className="mt-0.5 text-[10px] text-zinc-500">엑셀 {c.rowIndex}행</div>
+                    <div className="mt-0.5 text-[10px] text-zinc-500">{t('excelRow', { row: c.rowIndex })}</div>
                   )}
                   {'referenceId' in c && (
                     <div className="mt-0.5 text-[10px] text-zinc-400">

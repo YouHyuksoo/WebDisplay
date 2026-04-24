@@ -11,6 +11,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Plus, MessageSquareText, Trash2, Check, X, ListChecks, Square, CheckSquare, BarChart3 } from 'lucide-react';
 import type { SessionMeta } from '@/lib/ai/chat-store';
@@ -22,6 +23,8 @@ interface Props {
 }
 
 export default function SessionSidebar({ currentSessionId, onSelect, onNew }: Props) {
+  const t = useTranslations('aiChat');
+  const tc = useTranslations('common');
   const [sessions, setSessions] = useState<SessionMeta[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   // 다건 선택 모드
@@ -104,7 +107,7 @@ export default function SessionSidebar({ currentSessionId, onSelect, onNew }: Pr
           className="flex w-full items-center justify-center gap-2 rounded-md bg-cyan-600 px-3 py-2 text-sm font-medium text-white hover:bg-cyan-500"
         >
           <Plus className="size-4" />
-          새 대화
+          {t('newChat')}
         </button>
         <button
           onClick={toggleSelectMode}
@@ -113,10 +116,10 @@ export default function SessionSidebar({ currentSessionId, onSelect, onNew }: Pr
               ? 'bg-rose-600 text-white hover:bg-rose-500'
               : 'border border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800'
           }`}
-          title={selectMode ? '선택 모드 해제' : '여러 세션 선택'}
+          title={selectMode ? t('selectModeOff') : t('selectMultipleSessions')}
         >
           {selectMode ? <X className="size-3.5" /> : <ListChecks className="size-3.5" />}
-          {selectMode ? '선택 취소' : '선택 모드'}
+          {selectMode ? t('cancelSelect') : t('selectMode')}
         </button>
       </div>
 
@@ -128,17 +131,17 @@ export default function SessionSidebar({ currentSessionId, onSelect, onNew }: Pr
             className="flex items-center gap-1 text-zinc-600 hover:text-cyan-600 dark:text-zinc-300 dark:hover:text-cyan-400"
           >
             {allSelected ? <CheckSquare className="size-3.5" /> : <Square className="size-3.5" />}
-            {allSelected ? '전체 해제' : '전체 선택'}
+            {allSelected ? t('deselectAll') : t('selectAll')}
           </button>
           <span className="text-zinc-500 dark:text-zinc-400">
-            {selectedIds.size}/{sessions.length}개 선택
+            {t('selectedCount', { selected: selectedIds.size, total: sessions.length })}
           </span>
         </div>
       )}
 
       <nav className="flex-1 overflow-y-auto p-2">
         {sessions.length === 0 && (
-          <div className="px-3 py-8 text-center text-sm text-zinc-500">아직 대화가 없습니다</div>
+          <div className="px-3 py-8 text-center text-sm text-zinc-500">{t('noSessions')}</div>
         )}
         {sessions.map((s) => {
           const isChecked = selectedIds.has(s.sessionId);
@@ -173,7 +176,7 @@ export default function SessionSidebar({ currentSessionId, onSelect, onNew }: Pr
               {/* 단건 삭제 인라인 확인 */}
               {!selectMode && confirmDeleteId === s.sessionId && (
                 <div className="ml-6 flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-xs dark:bg-red-950/30">
-                  <span className="flex-1 text-red-600 dark:text-red-400">삭제할까요?</span>
+                  <span className="flex-1 text-red-600 dark:text-red-400">{t('deleteQ')}</span>
                   <button onClick={() => handleDelete(s.sessionId)}
                     className="rounded p-1 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/50">
                     <Check className="size-3" />
@@ -196,7 +199,7 @@ export default function SessionSidebar({ currentSessionId, onSelect, onNew }: Pr
           className="flex items-center gap-2 px-3 py-2 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 rounded-md transition-colors"
         >
           <BarChart3 className="size-4" />
-          <span>대화 분석</span>
+          <span>{t('analyticsLink')}</span>
         </Link>
       </div>
 
@@ -210,18 +213,18 @@ export default function SessionSidebar({ currentSessionId, onSelect, onNew }: Pr
               className="flex w-full items-center justify-center gap-2 rounded-md bg-rose-600 px-3 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-50"
             >
               <Trash2 className="size-4" />
-              선택한 {selectedIds.size}개 삭제
+              {t('deleteSelectedCount', { count: selectedIds.size })}
             </button>
           ) : (
             <div className="flex items-center gap-2 rounded-md bg-red-50 px-3 py-2 text-xs dark:bg-red-950/30">
               <span className="flex-1 text-red-600 dark:text-red-400">
-                {selectedIds.size}개를 삭제할까요?
+                {t('deleteCountQ', { count: selectedIds.size })}
               </span>
               <button
                 onClick={handleBulkDelete}
                 disabled={bulkBusy}
                 className="rounded p-1 text-red-600 hover:bg-red-100 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/50"
-                title="삭제"
+                title={tc('delete')}
               >
                 {bulkBusy
                   ? <span className="size-3 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
@@ -231,7 +234,7 @@ export default function SessionSidebar({ currentSessionId, onSelect, onNew }: Pr
                 onClick={() => setBulkConfirm(false)}
                 disabled={bulkBusy}
                 className="rounded p-1 text-zinc-400 hover:bg-zinc-200 disabled:opacity-50 dark:hover:bg-zinc-700"
-                title="취소"
+                title={tc('cancel')}
               >
                 <X className="size-3" />
               </button>

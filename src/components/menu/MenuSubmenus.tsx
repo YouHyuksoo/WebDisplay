@@ -25,27 +25,27 @@ export default function MenuSubmenus() {
       <div id="tunnel-submenu">
         <div className="tunnel-option" data-shape="triangle">
           <span className="shape-icon">&#9651;</span>
-          <span>삼각형</span>
+          <span>{t('shape.triangle')}</span>
         </div>
         <div className="tunnel-option" data-shape="circle">
           <span className="shape-icon">&#9675;</span>
-          <span>원형</span>
+          <span>{t('shape.circle')}</span>
         </div>
         <div className="tunnel-option" data-shape="square">
           <span className="shape-icon">&#9633;</span>
-          <span>사각형</span>
+          <span>{t('shape.square')}</span>
         </div>
         <div className="tunnel-option" data-shape="hexagon">
           <span className="shape-icon">&#11041;</span>
-          <span>육각형</span>
+          <span>{t('shape.hexagon')}</span>
         </div>
         <div className="tunnel-option" data-shape="star">
           <span className="shape-icon">&#9734;</span>
-          <span>별</span>
+          <span>{t('shape.star')}</span>
         </div>
         <div className="tunnel-option" data-shape="infinity">
           <span className="shape-icon">&#8734;</span>
-          <span>무한</span>
+          <span>{t('shape.infinity')}</span>
         </div>
       </div>
 
@@ -53,44 +53,44 @@ export default function MenuSubmenus() {
       <div id="card-style-submenu">
         <div className="card-style-option" data-style="glass">
           <span className="style-preview glass-preview" />
-          <span>글래스</span>
+          <span>{t('cardStyle.glass')}</span>
         </div>
         <div className="card-style-option" data-style="rainbow">
           <span className="style-preview rainbow-preview" />
-          <span>무지개</span>
+          <span>{t('cardStyle.rainbow')}</span>
         </div>
         <div className="card-style-option" data-style="gradient">
           <span className="style-preview gradient-preview" />
-          <span>그라데이션</span>
+          <span>{t('cardStyle.gradient')}</span>
         </div>
         <div className="card-style-option" data-style="dark">
           <span className="style-preview dark-preview" />
-          <span>다크</span>
+          <span>{t('cardStyle.dark')}</span>
         </div>
         <div className="card-style-option" data-style="neon">
           <span className="style-preview neon-preview" />
-          <span>네온</span>
+          <span>{t('cardStyle.neon')}</span>
         </div>
         <div className="card-style-option" data-style="hermes">
           <span className="style-preview hermes-preview" />
-          <span>헤르메스</span>
+          <span>{t('cardStyle.hermes')}</span>
         </div>
         <div className="card-style-option" data-style="cyberpunk">
           <span className="style-preview cyberpunk-preview" />
-          <span>사이버펑크</span>
+          <span>{t('cardStyle.cyberpunk')}</span>
         </div>
         <div className="card-style-option" data-style="apple">
           <span className="style-preview apple-preview" />
-          <span>애플</span>
+          <span>{t('cardStyle.apple')}</span>
         </div>
         <div className="card-style-option" data-style="luxury">
           <span className="style-preview luxury-preview" />
-          <span>럭셔리</span>
+          <span>{t('cardStyle.luxury')}</span>
         </div>
       </div>
 
       {/* 토스트 알림 */}
-      <div id="toast">복사됨!</div>
+      <div id="toast">{t('copied')}</div>
 
       {/* 컨텍스트 메뉴 (우클릭) */}
       <div id="context-menu">

@@ -45,6 +45,7 @@ export default function InspectResultGrid({
   rows, totalCount, page, totalPages, pageSize, onPageChange, onSort, exportParams,
 }: Props) {
   const t = useTranslations("common");
+  const ti = useTranslations("mxvcInspect");
   const { resolvedTheme } = useTheme();
   const gridTheme = resolvedTheme === "dark" ? darkTheme : lightTheme;
   const gridRef = useRef<AgGridReact>(null);
@@ -53,28 +54,28 @@ export default function InspectResultGrid({
   const colDefs: ColDef[] = useMemo(() => [
     { field: "NO", headerName: "No", width: 60, sortable: false, filter: false,
       valueGetter: (params) => params.node ? (page - 1) * pageSize + params.node.rowIndex! + 1 : "" },
-    { field: "INSPECT_DATE", headerName: "검사일시", width: 170, filter: "agTextColumnFilter" },
+    { field: "INSPECT_DATE", headerName: ti("col.inspectDate"), width: 170, filter: "agTextColumnFilter" },
     { field: "LINE_CODE", headerName: "LINE", width: 80, filter: "agTextColumnFilter",
       cellClass: "font-semibold text-blue-700 dark:text-blue-400" },
-    { field: "MACHINE_CODE", headerName: "머신코드", width: 120, filter: "agTextColumnFilter" },
+    { field: "MACHINE_CODE", headerName: ti("col.machineCode"), width: 120, filter: "agTextColumnFilter" },
     { field: "PID", headerName: "PID", width: 160, filter: "agTextColumnFilter", tooltipField: "PID" },
     { field: "RUN_NO", headerName: "RUN_NO", width: 120, filter: "agTextColumnFilter" },
-    { field: "MODEL_NAME", headerName: "모델명", width: 130, filter: "agTextColumnFilter" },
-    { field: "MODEL_CODE", headerName: "모델코드", width: 100, filter: "agTextColumnFilter" },
-    { field: "MASTER_MODEL_NAME", headerName: "마스터모델", width: 120, filter: "agTextColumnFilter" },
+    { field: "MODEL_NAME", headerName: ti("col.modelName"), width: 130, filter: "agTextColumnFilter" },
+    { field: "MODEL_CODE", headerName: ti("col.modelCode"), width: 100, filter: "agTextColumnFilter" },
+    { field: "MASTER_MODEL_NAME", headerName: ti("col.masterModel"), width: 120, filter: "agTextColumnFilter" },
     { field: "PCB_ITEM", headerName: "PCB_ITEM", width: 100, filter: "agTextColumnFilter" },
-    { field: "WORKSTAGE_CODE", headerName: "공정코드", width: 80, filter: "agTextColumnFilter" },
-    { field: "WORKSTAGE_NAME", headerName: "공정명", width: 110, filter: "agTextColumnFilter" },
-    { field: "PRE_WORKSTAGE_CODE", headerName: "이전공정", width: 80, filter: "agTextColumnFilter" },
-    { field: "PRE_WORKSTAGE_NAME", headerName: "이전공정명", width: 110, filter: "agTextColumnFilter" },
-    { field: "INSPECT_RESULT", headerName: "결과", width: 80, filter: "agTextColumnFilter",
+    { field: "WORKSTAGE_CODE", headerName: ti("col.workstageCode"), width: 80, filter: "agTextColumnFilter" },
+    { field: "WORKSTAGE_NAME", headerName: ti("col.workstageName"), width: 110, filter: "agTextColumnFilter" },
+    { field: "PRE_WORKSTAGE_CODE", headerName: ti("col.preWorkstageCode"), width: 80, filter: "agTextColumnFilter" },
+    { field: "PRE_WORKSTAGE_NAME", headerName: ti("col.preWorkstageName"), width: 110, filter: "agTextColumnFilter" },
+    { field: "INSPECT_RESULT", headerName: ti("col.result"), width: 80, filter: "agTextColumnFilter",
       cellClass: (params) => params.value === "PASS" || params.value === "OK" || params.value === "GOOD" || params.value === "Y"
         ? "font-bold text-green-600 dark:text-green-400"
         : "font-bold text-red-600 dark:text-red-400" },
-    { field: "TXN_TYPE", headerName: "TXN유형", width: 100, filter: "agTextColumnFilter" },
-    { field: "ENTER_DATE", headerName: "등록일시", width: 160, filter: "agTextColumnFilter" },
-    { field: "IS_LAST", headerName: "최종", width: 55, filter: "agTextColumnFilter" },
-  ], [page, pageSize]);
+    { field: "TXN_TYPE", headerName: ti("col.txnType"), width: 100, filter: "agTextColumnFilter" },
+    { field: "ENTER_DATE", headerName: ti("col.enterDate"), width: 160, filter: "agTextColumnFilter" },
+    { field: "IS_LAST", headerName: ti("col.last"), width: 55, filter: "agTextColumnFilter" },
+  ], [page, pageSize, ti]);
 
   const onFirstDataRendered = useCallback(() => {
     gridRef.current?.api?.autoSizeAllColumns();
@@ -86,7 +87,7 @@ export default function InspectResultGrid({
     setExporting(true);
     try {
       const res = await fetch(`/api/mxvc/inspect-result?${exportParams}&exportAll=1`);
-      if (!res.ok) throw new Error("엑셀 데이터 조회 실패");
+      if (!res.ok) throw new Error(ti("excelFetchError"));
       const data = await res.json();
       const exportRows = (data.rows ?? []) as Record<string, unknown>[];
       if (exportRows.length === 0) return;
@@ -100,23 +101,23 @@ export default function InspectResultGrid({
     } finally {
       setExporting(false);
     }
-  }, [totalCount, exportParams]);
+  }, [totalCount, exportParams, ti]);
 
   return (
     <div className="flex h-full flex-col">
       {/* 결과 요약 바 */}
       <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800/50">
         <span className="text-gray-600 dark:text-gray-300">
-          총 {totalCount}건
+          {ti("totalLabel", { count: totalCount })}
           {totalCount > 0 && (
             <span className="ml-2 text-gray-400 dark:text-gray-500">
-              ({page} / {totalPages} 페이지)
+              {ti("pageInfo", { page, totalPages })}
             </span>
           )}
         </span>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400 dark:text-gray-500">
-            {pageSize}건씩 표시
+            {ti("pageSizeLabel", { count: pageSize })}
           </span>
           <button
             onClick={handleExcelExport}
@@ -125,7 +126,7 @@ export default function InspectResultGrid({
                        disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500
                        text-white rounded transition-colors"
           >
-            {exporting ? "다운로드 중..." : "Excel 다운로드"}
+            {exporting ? ti("downloading") : ti("excelDownload")}
           </button>
         </div>
       </div>

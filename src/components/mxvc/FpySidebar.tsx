@@ -27,12 +27,12 @@ interface Props {
   onToggleCollapse: () => void;
 }
 
-const PRESET_LABELS: Record<string, string> = {
-  default: "기본",
-  all: "전체",
-  smt: "SMT",
-  coating: "코팅",
-  inspection: "검사",
+const PRESET_KEYS: Record<string, string> = {
+  default: "presetDefault",
+  all: "presetAll",
+  smt: "presetSmt",
+  coating: "presetCoating",
+  inspection: "presetInspection",
 };
 
 export default function FpySidebar({
@@ -40,6 +40,7 @@ export default function FpySidebar({
   collapsed, onToggleCollapse,
 }: Props) {
   const t = useTranslations("common");
+  const tf = useTranslations("mxvcFpy");
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -73,7 +74,7 @@ export default function FpySidebar({
       <button
         onClick={onToggleCollapse}
         className={`absolute top-4 right-2 z-10 p-1.5 rounded-md bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:text-white hover:bg-blue-600 transition-all ${collapsed ? "hidden" : "block"}`}
-        title="접기"
+        title={t('collapse')}
       >
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
           <path d="M15 18l-6-6 6-6" />
@@ -82,8 +83,8 @@ export default function FpySidebar({
 
       <div className={collapsed ? "opacity-0 invisible" : "opacity-100 visible transition-opacity duration-300 delay-100"}>
         <div>
-          <h2 className="text-xs text-blue-600 dark:text-blue-400 uppercase tracking-wider font-bold">직행율 FPY</h2>
-          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">차트 설정</p>
+          <h2 className="text-xs text-blue-600 dark:text-blue-400 uppercase tracking-wider font-bold">{tf('yieldFpy')}</h2>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{tf('chartSettings')}</p>
         </div>
 
         <div className="mt-3 flex flex-col gap-3">
@@ -95,9 +96,9 @@ export default function FpySidebar({
           {/* 조회 기간 */}
           <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
             <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-              조회 기간
+              {tf('dateRange')}
               {!settings.dateFrom && !settings.dateTo && (
-                <span className="text-blue-600 dark:text-blue-400 font-mono float-right">오늘</span>
+                <span className="text-blue-600 dark:text-blue-400 font-mono float-right">{tf('today')}</span>
               )}
             </label>
             <div className="flex flex-col gap-1.5">
@@ -112,19 +113,19 @@ export default function FpySidebar({
             <button
               onClick={() => set({ dateFrom: "", dateTo: "" })}
               className="mt-2 w-full px-2 py-1 text-[10px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors">
-              오늘 (초기화)
+              {tf('todayReset')}
             </button>
           </div>
 
           {/* 프리셋 */}
           <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
-            <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">프리셋</label>
+            <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{tf('preset')}</label>
             <div className="flex flex-wrap gap-1">
-              {Object.entries(PRESET_LABELS).map(([k, v]) => (
+              {Object.entries(PRESET_KEYS).map(([k, labelKey]) => (
                 <button key={k}
                   onClick={() => set({ ...DEFAULT_FPY_SETTINGS, ...FPY_PRESETS[k] })}
                   className="px-2 py-1 text-[10px] border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
-                  {v}
+                  {tf(labelKey)}
                 </button>
               ))}
             </div>
@@ -132,20 +133,20 @@ export default function FpySidebar({
 
           {/* 레이아웃 */}
           <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
-            <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">레이아웃</label>
+            <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{tf('layout')}</label>
             <select value={settings.layout}
               onChange={(e) => set({ layout: e.target.value as MxvcFpySettings["layout"] })}
               className="w-full bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs">
-              <option value="2x3">2열</option>
-              <option value="3x2">3열</option>
-              <option value="2x2+1">2열+1</option>
+              <option value="2x3">{tf('layout2x3')}</option>
+              <option value="3x2">{tf('layout3x2')}</option>
+              <option value="2x2+1">{tf('layout2x2plus1')}</option>
             </select>
           </div>
 
           {/* 차트 높이 */}
           <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
             <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-              차트 높이 <span className="text-blue-600 dark:text-blue-400 font-mono float-right">{settings.chartHeight}px</span>
+              {tf('chartHeight')} <span className="text-blue-600 dark:text-blue-400 font-mono float-right">{settings.chartHeight}px</span>
             </label>
             <input type="range" min={120} max={350} value={settings.chartHeight}
               onChange={(e) => set({ chartHeight: Number(e.target.value) })}
@@ -154,7 +155,7 @@ export default function FpySidebar({
 
           {/* 팔레트 */}
           <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
-            <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">색상 팔레트</label>
+            <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{tf('colorPalette')}</label>
             <select value={settings.palette}
               onChange={(e) => set({ palette: e.target.value as MxvcFpySettings["palette"] })}
               className="w-full bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs">
@@ -167,7 +168,7 @@ export default function FpySidebar({
 
           {/* 차트 토글 */}
           <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg p-3">
-            <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">표시할 차트</label>
+            <label className="block text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{tf('chartsToShow')}</label>
             {TABLE_KEYS.map((key) => (
               <label key={key} className="flex items-center gap-2 mt-1 cursor-pointer">
                 <input type="checkbox"

@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ThumbsUp, ThumbsDown, Copy, Check } from 'lucide-react';
@@ -128,6 +129,7 @@ export default function MessageBubble({
   userQuery,
   perf,
 }: Props) {
+  const t = useTranslations('aiChat');
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
   const [feedbackId, setFeedbackId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -257,18 +259,18 @@ export default function MessageBubble({
           <button
             onClick={() => handleFeedback('up')}
             className={`rounded p-1 transition-colors ${feedback === 'up' ? 'text-cyan-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
-            title="도움이 됐어요"
+            title={t('helpfulYes')}
           >
             <ThumbsUp className="size-3.5" />
           </button>
           <button
             onClick={() => handleFeedback('down')}
             className={`rounded p-1 transition-colors ${feedback === 'down' ? 'text-rose-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}`}
-            title="도움이 안됐어요"
+            title={t('helpfulNo')}
           >
             <ThumbsDown className="size-3.5" />
           </button>
-          <button onClick={handleCopy} className="rounded p-1 text-zinc-400 transition-colors hover:text-zinc-600 dark:hover:text-zinc-300" title="복사">
+          <button onClick={handleCopy} className="rounded p-1 text-zinc-400 transition-colors hover:text-zinc-600 dark:hover:text-zinc-300" title={t('copy')}>
             {copied ? <Check className="size-3.5 text-green-500" /> : <Copy className="size-3.5" />}
           </button>
         </div>

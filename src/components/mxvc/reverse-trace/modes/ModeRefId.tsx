@@ -4,6 +4,7 @@
  */
 'use client';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { RefIdModeInput } from '@/types/mxvc/reverse-trace-wizard';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function ModeRefId({ onSubmit, onBack, loading }: Props) {
+  const t = useTranslations('mxvcReverseTrace');
   const today = new Date().toISOString().slice(0, 10);
   const [referenceId,  setReferenceId]  = useState('');
   const [startDtFrom,  setStartDtFrom]  = useState(today);
@@ -26,20 +28,20 @@ export default function ModeRefId({ onSubmit, onBack, loading }: Props) {
   return (
     <div className="space-y-3">
       <div>
-        <label className="block mb-1 text-xs font-medium text-zinc-300">ReferenceID *</label>
+        <label className="block mb-1 text-xs font-medium text-zinc-300">{t('refid.refLabel')}</label>
         <input
           type="text"
           value={referenceId}
           onChange={(e) => setReferenceId(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && canSubmit) handleSubmit(); }}
           autoFocus
-          placeholder="예: R0101"
+          placeholder={t('refid.refPlaceholder')}
           className="w-full rounded border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
         />
       </div>
       <div className="flex gap-2">
         <div className="flex-1">
-          <label className="block mb-1 text-xs font-medium text-zinc-300">장착일 시작 *</label>
+          <label className="block mb-1 text-xs font-medium text-zinc-300">{t('refid.installFrom')}</label>
           <input
             type="date"
             value={startDtFrom}
@@ -48,7 +50,7 @@ export default function ModeRefId({ onSubmit, onBack, loading }: Props) {
           />
         </div>
         <div className="flex-1">
-          <label className="block mb-1 text-xs font-medium text-zinc-300">장착일 종료 *</label>
+          <label className="block mb-1 text-xs font-medium text-zinc-300">{t('refid.installTo')}</label>
           <input
             type="date"
             value={startDtTo}
@@ -57,14 +59,14 @@ export default function ModeRefId({ onSubmit, onBack, loading }: Props) {
           />
         </div>
       </div>
-      <p className="text-xs text-zinc-500">HW_VW_LTS — ReferenceID + 장착일 구간으로 릴 조회</p>
+      <p className="text-xs text-zinc-500">{t('refid.hint')}</p>
       <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
-        <button onClick={onBack} className="px-3 py-1.5 text-sm rounded border border-zinc-700 text-zinc-300 hover:bg-zinc-800">◀ 뒤로</button>
+        <button onClick={onBack} className="px-3 py-1.5 text-sm rounded border border-zinc-700 text-zinc-300 hover:bg-zinc-800">{t('back')}</button>
         <button
           onClick={handleSubmit}
           disabled={!canSubmit || loading}
           className="px-4 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-40"
-        >{loading ? '조회 중...' : '조회 →'}</button>
+        >{loading ? t('searching') : t('search')}</button>
       </div>
     </div>
   );

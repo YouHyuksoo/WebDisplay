@@ -11,7 +11,8 @@
  */
 'use client';
 
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import ForceGraph3D, { ForceGraphMethods } from 'react-force-graph-3d';
 import * as THREE from 'three';
 import SpriteText from 'three-spritetext';
@@ -32,31 +33,27 @@ interface Props {
 /** 지원하는 레이아웃 모드 */
 type LayoutMode = 'force' | 'radialout' | 'radialin' | 'td' | 'bu' | 'lr' | 'rl' | 'zout' | 'zin';
 
-const LAYOUT_OPTIONS: { value: LayoutMode; label: string }[] = [
-  { value: 'force',     label: 'Force (자유)' },
-  { value: 'radialout', label: '방사형 (외곽)' },
-  { value: 'radialin',  label: '방사형 (내곽)' },
-  { value: 'td',        label: '계층 (위→아래)' },
-  { value: 'bu',        label: '계층 (아래→위)' },
-  { value: 'lr',        label: '계층 (왼→오)' },
-  { value: 'rl',        label: '계층 (오→왼)' },
-  { value: 'zout',      label: 'Z축 (앞→뒤)' },
-  { value: 'zin',       label: 'Z축 (뒤→앞)' },
-];
+const LAYOUT_KEYS: LayoutMode[] = ['force', 'radialout', 'radialin', 'td', 'bu', 'lr', 'rl', 'zout', 'zin'];
 
 const LAYOUT_STORAGE_KEY = 'mxvc-reverse-trace-layout';
 
 export default function ReverseTrace3DGraphInner({
   data, onCategoryToggle, onEntityClick, onReset, onExpandAll, onCollapseAll, width, height,
 }: Props) {
+  const t = useTranslations('mxvcReverseTrace.graph');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fgRef = useRef<any>(null);
+
+  const layoutOptions = useMemo(
+    () => LAYOUT_KEYS.map((key) => ({ value: key, label: t(`layout.${key}`) })),
+    [t],
+  );
 
   /* 레이아웃 모드 (localStorage 영구 저장) */
   const [layout, setLayout] = useState<LayoutMode>('force');
   useEffect(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem(LAYOUT_STORAGE_KEY) : null;
-    if (saved && LAYOUT_OPTIONS.some((o) => o.value === saved)) {
+    if (saved && LAYOUT_KEYS.includes(saved as LayoutMode)) {
       setLayout(saved as LayoutMode);
     }
   }, []);
@@ -144,14 +141,14 @@ export default function ReverseTrace3DGraphInner({
       return `<div style="padding:6px"><b>${node.label}</b></div>`;
     }
     if (node.type === 'category') {
-      return `<div style="padding:6px"><b>${node.label}</b><br/>클릭하여 펼침/접힘</div>`;
+      return `<div style="padding:6px"><b>${node.label}</b><br/>${t('clickToToggle')}</div>`;
     }
     const details = src ? Object.entries(src)
       .slice(0, 4)
       .map(([k, v]) => `${k}: ${String(v).slice(0, 30)}`)
       .join('<br/>') : '';
     return `<div style="padding:6px"><b>${node.label}</b><br/>${details}</div>`;
-  }, []);
+  }, [t]);
 
   return (
     <div className="relative w-full h-full bg-[#1a1a2e]">
@@ -161,9 +158,9 @@ export default function ReverseTrace3DGraphInner({
           value={layout}
           onChange={(e) => handleLayoutChange(e.target.value as LayoutMode)}
           className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white border border-gray-600 hover:bg-gray-700 focus:outline-none"
-          title="레이아웃 모드"
+          title={t('layoutMode')}
         >
-          {LAYOUT_OPTIONS.map((o) => (
+          {layoutOptions.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
@@ -171,41 +168,41 @@ export default function ReverseTrace3DGraphInner({
           <>
             <button onClick={onExpandAll}
               className="p-1.5 rounded bg-blue-600/80 text-white hover:bg-blue-500"
-              title="모든 카테고리 펼침"><ChevronsDown size={14} /></button>
+              title={t('expandAll')}><ChevronsDown size={14} /></button>
             <button onClick={onCollapseAll}
               className="p-1.5 rounded bg-gray-800/80 text-white hover:bg-gray-700"
-              title="모든 카테고리 접기"><ChevronsUp size={14} /></button>
+              title={t('collapseAll')}><ChevronsUp size={14} /></button>
             <button onClick={() => fgRef.current?.zoomToFit?.(600, 40)}
               className="p-1.5 rounded bg-gray-800/80 text-white hover:bg-gray-700"
-              title="전체 보기 (화면에 맞춤)"><Maximize2 size={14} /></button>
+              title={t('fitView')}><Maximize2 size={14} /></button>
             <button onClick={onReset}
               className="p-1.5 rounded bg-gray-800/80 text-white hover:bg-gray-700"
-              title="리셋"><RotateCcw size={14} /></button>
+              title={t('reset')}><RotateCcw size={14} /></button>
           </>
         ) : (
           <>
             <button onClick={onExpandAll}
               className="px-2 py-1 text-xs rounded bg-blue-600/80 text-white hover:bg-blue-500"
-              title="모든 카테고리 펼침">전체펼침</button>
+              title={t('expandAll')}>{t('expandAllShort')}</button>
             <button onClick={onCollapseAll}
               className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
-              title="모든 카테고리 접기">전체접기</button>
+              title={t('collapseAll')}>{t('collapseAllShort')}</button>
             <button onClick={() => fgRef.current?.zoomToFit?.(600, 40)}
               className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
-              title="전체 보기 (화면에 맞춤)">중심</button>
+              title={t('fitView')}>{t('center')}</button>
             <button onClick={onReset}
               className="px-2 py-1 text-xs rounded bg-gray-800/80 text-white hover:bg-gray-700"
-              title="리셋">리셋</button>
+              title={t('reset')}>{t('reset')}</button>
           </>
         )}
       </div>
 
       {/* 범례 */}
       <div className="absolute bottom-2 left-2 z-10 flex gap-3 text-[10px] text-white bg-black/50 px-2 py-1 rounded">
-        <span className="text-emerald-400">▼ 입고</span>
-        <span className="text-amber-400">▲ 출고</span>
-        <span className="text-cyan-400">● 릴투입</span>
-        <span className="text-purple-400">⟲ 교환</span>
+        <span className="text-emerald-400">▼ {t('legend.inbound')}</span>
+        <span className="text-amber-400">▲ {t('legend.outbound')}</span>
+        <span className="text-cyan-400">● {t('legend.reelInput')}</span>
+        <span className="text-purple-400">⟲ {t('legend.exchange')}</span>
         <span className="text-blue-400">■ PCB</span>
       </div>
 

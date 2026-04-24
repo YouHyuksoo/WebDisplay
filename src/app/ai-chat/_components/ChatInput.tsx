@@ -11,7 +11,8 @@
  */
 'use client';
 
-import { useState, useRef, useCallback, useEffect, memo } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo, memo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Send, Mic, MicOff, Lightbulb, Paperclip, X, BarChart3, Table2, FileText, Sparkles, Code2, Globe, Type, ChevronDown, Zap, Minus, BookOpen, List, ListOrdered, Wand2 } from 'lucide-react';
 import { postSse } from '../_lib/sse-client';
 import type { ProviderId } from '@/lib/ai/providers/types';
@@ -20,75 +21,44 @@ import type { ProviderId } from '@/lib/ai/providers/types';
 /*  MES 예시 질문 그룹                                                  */
 /* ------------------------------------------------------------------ */
 
-const EXAMPLE_GROUPS = [
-  {
-    title: '생산 현황', icon: '📊',
-    questions: [
-      '오늘 P51 야간 생산 계획 알려줘',
-      '어제 SMD 라인별 생산수량 비교',
-      '이번 주 SMPS 라인 시간대별 실적 차트',
-      '라인별 UPH 달성률 순위',
-    ],
-  },
-  {
-    title: '품질 분석', icon: '🔍',
-    questions: [
-      '오늘 CTQ 이상점 발생한 라인 목록',
-      '이번 달 FPY 톱 5 / 워스트 5 라인',
-      'AOI 불량률 추이 차트 (최근 7일)',
-      'SPC 관리도 이탈 항목',
-    ],
-  },
-  {
-    title: '설비/자재', icon: '⚙️',
-    questions: [
-      '현재 MSL 경고 발생한 자재',
-      '솔더 투입 이력 (오늘)',
-      '설비 알람 로그 최근 10건',
-      '피더 상태 이상 라인',
-    ],
-  },
-  {
-    title: '추적성', icon: '🔗',
-    questions: [
-      '바코드 XXXX의 공정 이력',
-      '런카드별 투입/포장 수량 비교',
-      '매거진 재고 현황',
-      '팩 시리얼 추적',
-    ],
-  },
-];
+const EXAMPLE_GROUP_KEYS = ['production', 'quality', 'equipment', 'traceability'] as const;
+const EXAMPLE_ICONS: Record<typeof EXAMPLE_GROUP_KEYS[number], string> = {
+  production: '📊',
+  quality: '🔍',
+  equipment: '⚙️',
+  traceability: '🔗',
+};
 
 /* ------------------------------------------------------------------ */
 /*  출력형식 옵션                                                       */
 /* ------------------------------------------------------------------ */
 
-const FORMAT_OPTIONS = [
-  { key: 'auto', icon: Sparkles, label: '자동' },
-  { key: 'table', icon: Table2, label: '표' },
-  { key: 'chart', icon: BarChart3, label: '차트' },
-  { key: 'detail', icon: FileText, label: '상세' },
-  { key: 'markdown', icon: Code2, label: 'MD' },
-  { key: 'html', icon: Globe, label: 'HTML' },
-  { key: 'text', icon: Type, label: 'TEXT' },
+const FORMAT_OPTIONS_META = [
+  { key: 'auto',     icon: Sparkles },
+  { key: 'table',    icon: Table2 },
+  { key: 'chart',    icon: BarChart3 },
+  { key: 'detail',   icon: FileText },
+  { key: 'markdown', icon: Code2 },
+  { key: 'html',     icon: Globe },
+  { key: 'text',     icon: Type },
 ] as const;
 
-type OutputFormat = typeof FORMAT_OPTIONS[number]['key'];
+type OutputFormat = typeof FORMAT_OPTIONS_META[number]['key'];
 
 /* ------------------------------------------------------------------ */
 /*  응답 스타일 옵션 — 답변 길이/깊이 프리셋                             */
 /* ------------------------------------------------------------------ */
 
-const RESPONSE_STYLE_OPTIONS = [
-  { key: 'auto', icon: Wand2, label: '자동' },
-  { key: 'brief', icon: Zap, label: '간결' },
-  { key: 'normal', icon: Minus, label: '보통' },
-  { key: 'detailed', icon: BookOpen, label: '상세' },
-  { key: 'summary', icon: List, label: '요약' },
-  { key: 'steps', icon: ListOrdered, label: '단계별' },
+const RESPONSE_STYLE_OPTIONS_META = [
+  { key: 'auto',     icon: Wand2 },
+  { key: 'brief',    icon: Zap },
+  { key: 'normal',   icon: Minus },
+  { key: 'detailed', icon: BookOpen },
+  { key: 'summary',  icon: List },
+  { key: 'steps',    icon: ListOrdered },
 ] as const;
 
-type ResponseStyle = typeof RESPONSE_STYLE_OPTIONS[number]['key'];
+type ResponseStyle = typeof RESPONSE_STYLE_OPTIONS_META[number]['key'];
 
 const LS_KEY_FORMAT = 'ai-chat-output-format';
 const LS_KEY_STYLE = 'ai-chat-response-style';
@@ -160,6 +130,7 @@ const ChatInput = memo(function ChatInput({
   onStreamStart, onStreamEnd, onSessionAutoCreate,
   onStreamToken, onConfirmRequired, onContextSelected, suggestedInput, onSuggestedInputHandled,
 }: Props) {
+  const t = useTranslations('aiChat.input');
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
@@ -169,15 +140,33 @@ const ChatInput = memo(function ChatInput({
   const [responseStyle, setResponseStyle] = useState<ResponseStyle>('auto');
   const [showStyleMenu, setShowStyleMenu] = useState(false);
 
+  const exampleGroups = useMemo(
+    () => EXAMPLE_GROUP_KEYS.map((k) => ({
+      key: k,
+      icon: EXAMPLE_ICONS[k],
+      title: t(`examples.${k}.title`),
+      questions: [0, 1, 2, 3].map((i) => t(`examples.${k}.q${i}`)),
+    })),
+    [t],
+  );
+  const formatOptions = useMemo(
+    () => FORMAT_OPTIONS_META.map((m) => ({ ...m, label: t(`format.${m.key}`) })),
+    [t],
+  );
+  const responseStyleOptions = useMemo(
+    () => RESPONSE_STYLE_OPTIONS_META.map((m) => ({ ...m, label: t(`style.${m.key}`) })),
+    [t],
+  );
+
   // localStorage에서 사용자 선호 복원 (마운트 1회)
   useEffect(() => {
     try {
       const savedFormat = localStorage.getItem(LS_KEY_FORMAT);
-      if (savedFormat && FORMAT_OPTIONS.some((o) => o.key === savedFormat)) {
+      if (savedFormat && FORMAT_OPTIONS_META.some((o) => o.key === savedFormat)) {
         setOutputFormat(savedFormat as OutputFormat);
       }
       const savedStyle = localStorage.getItem(LS_KEY_STYLE);
-      if (savedStyle && RESPONSE_STYLE_OPTIONS.some((o) => o.key === savedStyle)) {
+      if (savedStyle && RESPONSE_STYLE_OPTIONS_META.some((o) => o.key === savedStyle)) {
         setResponseStyle(savedStyle as ResponseStyle);
       }
     } catch { /* SSR·차단 환경 무시 */ }
@@ -363,7 +352,7 @@ const ChatInput = memo(function ChatInput({
           onClick={() => fileInputRef.current?.click()}
           disabled={busy}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 disabled:opacity-50"
-          title="파일 첨부 (.xlsx, .xls, .csv)"
+          title={t('attachFile')}
         >
           <Paperclip className="size-4" />
         </button>
@@ -379,7 +368,7 @@ const ChatInput = memo(function ChatInput({
                   ? 'bg-rose-500 text-white hover:bg-rose-600'
                   : 'text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'
               }`}
-              title={isListening ? '음성 인식 중지' : '음성으로 입력'}
+              title={isListening ? t('speechStop') : t('speechStart')}
             >
               {isListening ? <Mic className="size-4" /> : <MicOff className="size-4" />}
             </button>
@@ -398,7 +387,7 @@ const ChatInput = memo(function ChatInput({
                 ? 'bg-cyan-600/20 text-cyan-400'
                 : 'text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'
             }`}
-            title="예시 질문"
+            title={t('examplesTitle')}
           >
             <Lightbulb className="size-4" />
           </button>
@@ -406,14 +395,14 @@ const ChatInput = memo(function ChatInput({
           {showExamples && (
             <div className="absolute bottom-full left-0 mb-2 w-[700px] max-h-[350px] overflow-y-auto rounded-xl border border-zinc-300 bg-white p-4 shadow-xl dark:border-zinc-700 dark:bg-zinc-800 z-50">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">예시 질문</h3>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">{t('examplesTitle')}</h3>
                 <button onClick={() => setShowExamples(false)} className="rounded p-1 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700">
                   <X className="size-4" />
                 </button>
               </div>
               <div className="grid grid-cols-4 gap-3">
-                {EXAMPLE_GROUPS.map((group) => (
-                  <div key={group.title}>
+                {exampleGroups.map((group) => (
+                  <div key={group.key}>
                     <div className="mb-2 flex items-center gap-1 border-b border-zinc-200 pb-1 dark:border-zinc-700">
                       <span>{group.icon}</span>
                       <span className="text-xs font-semibold text-zinc-900 dark:text-white">{group.title}</span>
@@ -437,7 +426,7 @@ const ChatInput = memo(function ChatInput({
         {/* 출력형식 드롭다운 */}
         <div className="relative">
           {(() => {
-            const current = FORMAT_OPTIONS.find((o) => o.key === outputFormat) ?? FORMAT_OPTIONS[0];
+            const current = formatOptions.find((o) => o.key === outputFormat) ?? formatOptions[0];
             const CurrentIcon = current.icon;
             return (
               <button
@@ -448,7 +437,7 @@ const ChatInput = memo(function ChatInput({
                     ? 'border-cyan-500 bg-cyan-600 text-white'
                     : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
                 }`}
-                title={`출력형식: ${current.label}`}
+                title={t('formatLabel', { label: current.label })}
                 aria-haspopup="listbox"
                 aria-expanded={showFormatMenu}
               >
@@ -471,7 +460,7 @@ const ChatInput = memo(function ChatInput({
                 role="listbox"
                 className="absolute bottom-full left-0 z-50 mb-2 w-36 overflow-hidden rounded-lg border border-zinc-300 bg-white py-1 shadow-xl dark:border-zinc-700 dark:bg-zinc-800"
               >
-                {FORMAT_OPTIONS.map(({ key, icon: Icon, label }) => {
+                {formatOptions.map(({ key, icon: Icon, label }) => {
                   const selected = outputFormat === key;
                   return (
                     <li key={key} role="option" aria-selected={selected}>
@@ -502,7 +491,7 @@ const ChatInput = memo(function ChatInput({
         {/* 응답스타일 드롭다운 — 답변 길이/깊이 프리셋 */}
         <div className="relative">
           {(() => {
-            const current = RESPONSE_STYLE_OPTIONS.find((o) => o.key === responseStyle) ?? RESPONSE_STYLE_OPTIONS[0];
+            const current = responseStyleOptions.find((o) => o.key === responseStyle) ?? responseStyleOptions[0];
             const CurrentIcon = current.icon;
             return (
               <button
@@ -513,7 +502,7 @@ const ChatInput = memo(function ChatInput({
                     ? 'border-violet-500 bg-violet-600 text-white'
                     : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
                 }`}
-                title={`응답스타일: ${current.label}`}
+                title={t('styleLabel', { label: current.label })}
                 aria-haspopup="listbox"
                 aria-expanded={showStyleMenu}
               >
@@ -535,7 +524,7 @@ const ChatInput = memo(function ChatInput({
                 role="listbox"
                 className="absolute bottom-full left-0 z-50 mb-2 w-36 overflow-hidden rounded-lg border border-zinc-300 bg-white py-1 shadow-xl dark:border-zinc-700 dark:bg-zinc-800"
               >
-                {RESPONSE_STYLE_OPTIONS.map(({ key, icon: Icon, label }) => {
+                {responseStyleOptions.map(({ key, icon: Icon, label }) => {
                   const selected = responseStyle === key;
                   return (
                     <li key={key} role="option" aria-selected={selected}>
@@ -578,10 +567,10 @@ const ChatInput = memo(function ChatInput({
             }}
             placeholder={
               isListening
-                ? '🎤 말씀하세요...'
+                ? t('placeholderListening')
                 : selectedFile
-                  ? '파일과 함께 보낼 메시지를 입력하세요...'
-                  : '질문을 입력하세요... (Enter 전송)'
+                  ? t('placeholderWithFile')
+                  : t('placeholderDefault')
             }
             className={`h-9 w-full rounded-lg border px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 dark:text-white ${
               isListening
@@ -608,12 +597,12 @@ const ChatInput = memo(function ChatInput({
           ) : (
             <Send className="size-4" />
           )}
-          <span className="hidden sm:inline">{busy ? '처리중...' : '전송'}</span>
+          <span className="hidden sm:inline">{busy ? t('sending') : t('send')}</span>
         </button>
       </div>
 
       <p className="mt-2 text-center text-xs text-zinc-400">
-        AI 어시스턴트는 MES 데이터를 분석하여 답변합니다. 민감한 정보는 입력하지 마세요.
+        {t('disclaimer')}
       </p>
     </div>
   );

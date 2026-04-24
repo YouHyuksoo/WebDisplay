@@ -29,6 +29,7 @@ const DUAL_MODE_KEY = 'mxvc-production-kpi-dual-mode';
  */
 export default function MxvcProductionKpiStatus() {
   const t = useTranslations('display');
+  const tk = useTranslations('mxvc.productionKpi');
   const timing = useDisplayTiming();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedLines, setSelectedLines] = useState(() => getSelectedLines(SCREEN_ID));
@@ -99,7 +100,7 @@ export default function MxvcProductionKpiStatus() {
           ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300 hover:bg-cyan-500/30'
           : 'bg-zinc-800 border-zinc-600 text-zinc-400 hover:bg-zinc-700'}
       `}
-      title={dualMode ? '싱글 모드로 전환' : '듀얼 모드로 전환'}
+      title={dualMode ? tk('toggleSingle') : tk('toggleDual')}
     >
       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={2}>
         {dualMode ? (
@@ -111,7 +112,7 @@ export default function MxvcProductionKpiStatus() {
           </>
         )}
       </svg>
-      {dualMode ? '싱글' : '듀얼'}
+      {dualMode ? tk('single') : tk('dual')}
     </button>
   );
 

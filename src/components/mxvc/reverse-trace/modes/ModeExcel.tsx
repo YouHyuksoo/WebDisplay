@@ -9,6 +9,7 @@
  */
 'use client';
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import * as XLSX from 'xlsx';
 import type { ExcelCandidate } from '@/types/mxvc/reverse-trace-wizard';
 
@@ -20,6 +21,7 @@ interface Props {
 const MAX_ROWS = 1000;
 
 export default function ModeExcel({ onSubmit, onBack }: Props) {
+  const t = useTranslations('mxvcReverseTrace');
   const [fileName, setFileName] = useState('');
   const [parsed, setParsed]     = useState<ExcelCandidate[]>([]);
   const [error, setError]       = useState('');
@@ -33,7 +35,7 @@ export default function ModeExcel({ onSubmit, onBack }: Props) {
       const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false });
       const body = rows.slice(1); // 1행 헤더 제거
       if (body.length > MAX_ROWS) {
-        setError(`${body.length}행이 입력되었습니다. 최대 ${MAX_ROWS}행만 지원합니다.`);
+        setError(t('excel.errorTooMany', { input: body.length, max: MAX_ROWS }));
         return;
       }
       const seen = new Set<string>();
@@ -47,20 +49,20 @@ export default function ModeExcel({ onSubmit, onBack }: Props) {
         list.push({ reelCd, rowIndex: idx + 2 });  // +2: 1행 헤더 + 0-based → 1-based
       });
       if (list.length === 0) {
-        setError('릴번호를 찾을 수 없습니다. 1열(A열)에 자재바코드롯트번호를 넣어주세요.');
+        setError(t('excel.errorNoReels'));
         return;
       }
       setParsed(list);
     } catch (e) {
-      setError(`파일 읽기 실패: ${(e as Error).message}`);
+      setError(t('excel.errorReadFile', { msg: (e as Error).message }));
     }
-  }, []);
+  }, [t]);
 
   const canSubmit = parsed.length > 0 && !error;
   return (
     <div className="space-y-3">
       <div>
-        <label className="block mb-1 text-xs font-medium text-zinc-300">엑셀 파일 (.xlsx)</label>
+        <label className="block mb-1 text-xs font-medium text-zinc-300">{t('excel.fileLabel')}</label>
         <input
           type="file"
           accept=".xlsx,.xls"
@@ -71,24 +73,24 @@ export default function ModeExcel({ onSubmit, onBack }: Props) {
           className="block w-full text-sm text-zinc-300 file:mr-3 file:rounded file:border-0 file:bg-blue-600 file:px-4 file:py-1.5 file:text-white file:hover:bg-blue-500"
         />
         <p className="mt-1 text-xs text-zinc-500">
-          1열(A열) = 자재바코드롯트번호. 1행은 헤더로 자동 제외. 최대 {MAX_ROWS}행.
+          {t('excel.hint', { max: MAX_ROWS })}
         </p>
       </div>
       {fileName && !error && parsed.length > 0 && (
         <div className="rounded border border-emerald-700 bg-emerald-900/20 p-2 text-xs text-emerald-300">
-          ✅ {fileName} — 유효한 릴 {parsed.length}개 추출됨 (중복 제거 후)
+          {t('excel.parsedOk', { file: fileName, count: parsed.length })}
         </div>
       )}
       {error && (
         <div className="rounded border border-red-700 bg-red-900/20 p-2 text-xs text-red-300">{error}</div>
       )}
       <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
-        <button onClick={onBack} className="px-3 py-1.5 text-sm rounded border border-zinc-700 text-zinc-300 hover:bg-zinc-800">◀ 뒤로</button>
+        <button onClick={onBack} className="px-3 py-1.5 text-sm rounded border border-zinc-700 text-zinc-300 hover:bg-zinc-800">{t('back')}</button>
         <button
           onClick={() => onSubmit(parsed)}
           disabled={!canSubmit}
           className="px-4 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-40"
-        >다음 →</button>
+        >{t('excel.next')}</button>
       </div>
     </div>
   );

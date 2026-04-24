@@ -20,6 +20,7 @@ import {
   type RowClickedEvent,
 } from 'ag-grid-community';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 import * as XLSX from 'xlsx';
 import { useServerTime, useServerNow } from '@/hooks/useServerTime';
 import Modal from '@/components/ui/Modal';
@@ -69,6 +70,8 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
   const serverToday = useServerTime();
   const serverNow = useServerNow();
   const gridTheme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
+  const t = useTranslations('mxvcMasterDetail');
+  const tc = useTranslations('common');
 
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -139,13 +142,13 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
 
   /** 마스터 컬럼 정의 */
   const masterCols: ColDef<MasterRow>[] = useMemo(() => [
-    { field: 'EQUIPMENT_ID', headerName: '설비', minWidth: 130 },
-    { field: 'MODEL', headerName: '모델', minWidth: 140 },
-    { field: 'BARCODE', headerName: '바코드', minWidth: 200 },
-    { field: 'FILE_NAME', headerName: '파일명', minWidth: 200 },
-    { field: 'LINE_CODE', headerName: '라인', minWidth: 80 },
+    { field: 'EQUIPMENT_ID', headerName: t('col.equipment'), minWidth: 130 },
+    { field: 'MODEL', headerName: t('col.model'), minWidth: 140 },
+    { field: 'BARCODE', headerName: t('col.barcode'), minWidth: 200 },
+    { field: 'FILE_NAME', headerName: t('col.fileName'), minWidth: 200 },
+    { field: 'LINE_CODE', headerName: t('col.line'), minWidth: 80 },
     {
-      field: 'FIRST_TIME', headerName: '최초시간', minWidth: 160,
+      field: 'FIRST_TIME', headerName: t('col.firstTime'), minWidth: 160,
       valueFormatter: (p) => {
         if (!p.value) return '';
         const d = new Date(p.value);
@@ -153,18 +156,18 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
       },
     },
     {
-      field: 'ARRAY_RESULT', headerName: '결과', minWidth: 80,
+      field: 'ARRAY_RESULT', headerName: t('col.result'), minWidth: 80,
       cellStyle: (p) => /FAIL/i.test(String(p.value ?? ''))
         ? { backgroundColor: '#ef444466', color: '#fca5a5', fontWeight: 600 }
         : null,
     },
-    { field: 'LABEL', headerName: '라벨', minWidth: 120 },
-    { field: 'STEP_COUNT', headerName: '스텝수', minWidth: 80, type: 'numericColumn' },
-    { field: 'START_TIME', headerName: '시작시간', minWidth: 140 },
-    { field: 'END_TIME', headerName: '종료시간', minWidth: 140 },
+    { field: 'LABEL', headerName: t('col.label'), minWidth: 120 },
+    { field: 'STEP_COUNT', headerName: t('col.stepCount'), minWidth: 80, type: 'numericColumn' },
+    { field: 'START_TIME', headerName: t('col.startTime'), minWidth: 140 },
+    { field: 'END_TIME', headerName: t('col.endTime'), minWidth: 140 },
     { field: 'IS_LAST', headerName: 'Last', minWidth: 60 },
     { field: 'IS_SAMPLE', headerName: 'Sample', minWidth: 70 },
-  ], []);
+  ], [t]);
 
   /** 디테일 컬럼 정의 (체크박스 + 스텝 컬럼) */
   const detailCols: ColDef[] = useMemo(() => [
@@ -178,10 +181,10 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
     { field: 'NO', headerName: 'No', minWidth: 60, type: 'numericColumn',
       comparator: (a, b) => Number(a) - Number(b),
       valueGetter: (p) => p.data?.NO != null ? Number(p.data.NO) : null },
-    { field: 'NAME', headerName: '항목명', minWidth: 140 },
-    { field: 'NAME_DETAIL', headerName: '상세', minWidth: 140 },
+    { field: 'NAME', headerName: t('col.name'), minWidth: 140 },
+    { field: 'NAME_DETAIL', headerName: t('col.nameDetail'), minWidth: 140 },
     {
-      field: 'STEP_RESULT', headerName: '결과', minWidth: 70,
+      field: 'STEP_RESULT', headerName: t('col.result'), minWidth: 70,
       cellStyle: (p) => /FAIL/i.test(String(p.value ?? ''))
         ? { backgroundColor: '#ef444466', color: '#fca5a5', fontWeight: 600 }
         : null,
@@ -195,12 +198,12 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
     { field: 'TYP_2', headerName: 'Typ2', minWidth: 70 },
     { field: 'MAX_2_2', headerName: 'Max2', minWidth: 70 },
     { field: 'MEAS_2', headerName: 'Meas2', minWidth: 80 },
-    { field: 'CAN_STD', headerName: 'CAN기준', minWidth: 80 },
-    { field: 'MEAS_CAN', headerName: 'CAN측정', minWidth: 80 },
-    { field: 'DTC_CODE', headerName: 'DTC', minWidth: 80 },
-    { field: 'MEAS_DTC_CODE', headerName: 'DTC측정', minWidth: 80 },
-    { field: 'STEP_TIME', headerName: '스텝시간', minWidth: 80 },
-  ], []);
+    { field: 'CAN_STD', headerName: t('col.canStd'), minWidth: 80 },
+    { field: 'MEAS_CAN', headerName: t('col.measCan'), minWidth: 80 },
+    { field: 'DTC_CODE', headerName: t('col.dtc'), minWidth: 80 },
+    { field: 'MEAS_DTC_CODE', headerName: t('col.measDtc'), minWidth: 80 },
+    { field: 'STEP_TIME', headerName: t('col.stepTime'), minWidth: 80 },
+  ], [t]);
 
   const defaultColDef: ColDef = useMemo(() => ({
     sortable: true, filter: true, resizable: true, minWidth: 60,
@@ -212,7 +215,7 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
       <div className="flex items-center gap-4 px-6 py-3.5 border-b
                        border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60">
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Table</span>
+          <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">{t('table')}</span>
           <span className="text-sm font-bold text-blue-600 dark:text-blue-300 font-mono">LOG_EOL</span>
         </div>
         <div className="w-px h-7 bg-gray-300 dark:bg-gray-700" />
@@ -220,7 +223,7 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
         {lineCodes.length > 0 && (
           <>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Line</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">{t('line')}</span>
               <select
                 value={lineCode}
                 onChange={(e) => onLineCodeChange?.(e.target.value)}
@@ -228,7 +231,7 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
                            bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
                            text-gray-900 dark:text-white focus:outline-none focus:border-blue-500"
               >
-                <option value="">전체</option>
+                <option value="">{tc('all')}</option>
                 {lineCodes.map((lc) => (
                   <option key={lc} value={lc}>{lc}</option>
                 ))}
@@ -246,11 +249,11 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
             className="bg-transparent text-sm text-gray-900 dark:text-white focus:outline-none" />
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{total.toLocaleString()}건</span>
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('countSuffix', { count: total.toLocaleString() })}</span>
           <button onClick={fetchMaster} disabled={loading}
             className="h-9 px-5 text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:bg-gray-300
                        dark:disabled:bg-gray-700 text-white rounded-lg transition-colors">
-            {loading ? '조회 중...' : '새로고침'}
+            {loading ? t('loadingShort') : tc('refresh')}
           </button>
           <button
             onClick={() => {
@@ -258,7 +261,7 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
               const wb = XLSX.utils.book_new();
               /* 마스터 시트 */
               const masterClean = masterRows.map((r) => ({ ...r })) as Record<string, unknown>[];
-              XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(masterClean), 'LOG_EOL 마스터');
+              XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(masterClean), t('masterSheet', { table: 'LOG_EOL' }));
               /* 디테일 시트 (선택된 바코드가 있을 때만) */
               if (detailRows.length > 0) {
                 const cleaned = detailRows.map((row) => {
@@ -266,7 +269,7 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
                   for (const [k, v] of Object.entries(row)) if (k !== 'RNUM') o[k] = v;
                   return o;
                 });
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cleaned), 'LOG_EOL 디테일');
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cleaned), t('detailSheet', { table: 'LOG_EOL' }));
               }
               const today = serverToday || new Date().toISOString().slice(0, 10);
               XLSX.writeFile(wb, `LOG_EOL_${today}.xlsx`);
@@ -274,9 +277,9 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
             disabled={masterRows.length === 0}
             className="h-9 px-5 text-sm font-medium bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-300
                        dark:disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-lg transition-colors"
-            title="마스터 + 선택된 디테일을 각 시트로 저장"
+            title={t('excelTooltip')}
           >
-            Excel 다운로드
+            {t('excelDownload')}
           </button>
         </div>
       </div>
@@ -303,8 +306,8 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
                        bg-gray-100 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700">
         <span>
           {selectedKey
-            ? `상세 스텝: ${selectedKey.split('|')[2]} (${detailRows.length}건)${detailLoading ? ' 조회 중...' : ''}`
-            : '마스터 행을 클릭하면 상세 스텝이 표시됩니다'}
+            ? t('detailHeaderStep', { key: selectedKey.split('|')[2], count: detailRows.length }) + (detailLoading ? t('loadingSuffix') : '')
+            : t('emptyHintStep')}
         </span>
         {selectedKey && (
           <div className="flex items-center gap-2">
@@ -314,12 +317,12 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
               className="px-2 py-0.5 text-[11px] rounded bg-red-600 hover:bg-red-500 text-white font-medium
                        disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500 transition-colors"
             >
-              선택 삭제 ({selectedDetailIds.length})
+              {t('deleteSelectedBtn', { count: selectedDetailIds.length })}
             </button>
             <button
               onClick={() => setDetailMaximized((v) => !v)}
               className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              title={detailMaximized ? '원래 크기' : '최대화'}
+              title={detailMaximized ? t('originalSize') : t('maximize')}
             >
             {detailMaximized ? (
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
@@ -360,14 +363,14 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
       <Modal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        title="디테일 스텝 삭제 확인"
-        subtitle={`LOG_EOL 테이블에서 선택한 스텝 ${selectedDetailIds.length}건 삭제`}
+        title={t('deleteModalTitleStep')}
+        subtitle={t('deleteModalSubtitleStep', { table: 'LOG_EOL', count: selectedDetailIds.length })}
         size="sm"
         footer={
           <div className="flex gap-2">
             <button onClick={() => setDeleteModalOpen(false)}
               className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-              취소
+              {tc('cancel')}
             </button>
             <button onClick={async () => {
                 setDeleting(true);
@@ -380,7 +383,7 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
                   });
                   if (!res.ok) {
                     const err = await res.json();
-                    throw new Error(err.error || '삭제 실패');
+                    throw new Error(err.error || t('deleteFailedDefault'));
                   }
                   setDeleteModalOpen(false);
                   setSelectedDetailIds([]);
@@ -405,14 +408,14 @@ export default function LogEolMasterDetail({ apiBase = '/api/mxvc', lineCode = '
               }}
               disabled={deleting}
               className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-500 disabled:opacity-50 transition-colors font-medium">
-              {deleting ? '삭제 중...' : `${selectedDetailIds.length}건 삭제`}
+              {deleting ? t('deleting') : t('deleteCountBtn', { count: selectedDetailIds.length })}
             </button>
           </div>
         }
       >
         <div className="text-sm text-gray-600 dark:text-gray-300">
-          <p className="mb-3">선택한 <strong className="text-red-500">{selectedDetailIds.length}</strong>건의 스텝 로그를 삭제하시겠습니까?</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500">이 작업은 되돌릴 수 없습니다.</p>
+          <p className="mb-3">{t('deleteConfirmStep', { count: selectedDetailIds.length })}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">{t('deleteWarning')}</p>
           {deleteError && <p className="mt-2 text-xs text-red-500">{deleteError}</p>}
         </div>
       </Modal>

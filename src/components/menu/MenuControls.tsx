@@ -247,7 +247,7 @@ export default function MenuControls() {
           <span className="icon">
             <AppWindow size={16} />
           </span>
-          <span>카드 관리</span>
+          <span>{t('cardManage')}</span>
         </div>
         <div
           className="settings-item"

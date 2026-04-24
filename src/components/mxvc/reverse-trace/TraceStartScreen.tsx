@@ -8,11 +8,14 @@
  */
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 interface Props {
   onStart: () => void;
 }
 
 export default function TraceStartScreen({ onStart }: Props) {
+  const t = useTranslations('mxvcReverseTrace');
   return (
     <div className="flex h-full w-full items-center justify-center p-8">
       <div className="max-w-lg w-full rounded-xl border border-zinc-700 bg-zinc-900/50 p-10 text-center shadow-lg">
@@ -22,16 +25,18 @@ export default function TraceStartScreen({ onStart }: Props) {
             <path d="m21 21-4.3-4.3" />
           </svg>
         </div>
-        <h2 className="mb-2 text-xl font-semibold text-zinc-100">역추적을 시작하세요</h2>
+        <h2 className="mb-2 text-xl font-semibold text-zinc-100">{t('startTitle')}</h2>
         <p className="mb-6 text-sm text-zinc-400">
-          릴번호를 알면 바로 입력하고,<br />
-          모를 때는 <span className="text-zinc-200">출고 / 런번호 / 피더 / 엑셀</span> 조건으로 찾아 추적할 수 있습니다.
+          {t.rich('startBody', {
+            br: () => <br />,
+            strong: (chunks) => <span className="text-zinc-200">{chunks}</span>,
+          })}
         </p>
         <button
           onClick={onStart}
           className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500"
         >
-          추적 시작
+          {t('startButton')}
           <span aria-hidden>→</span>
         </button>
       </div>

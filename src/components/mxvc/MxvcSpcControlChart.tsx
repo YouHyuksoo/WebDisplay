@@ -89,11 +89,11 @@ function useChartTheme() {
 
 /* -- Cpk 등급 판정 -- */
 
-function getCpkGrade(cpk: number): { label: string; color: string; bg: string } {
-  if (cpk >= 1.67) return { label: 'A (우수)', color: '#22c55e', bg: 'bg-green-900/30 border-green-700/50' };
-  if (cpk >= 1.33) return { label: 'B (양호)', color: '#3b82f6', bg: 'bg-blue-900/30 border-blue-700/50' };
-  if (cpk >= 1.0)  return { label: 'C (보통)', color: '#f59e0b', bg: 'bg-yellow-900/30 border-yellow-700/50' };
-  return { label: 'D (불량)', color: '#ef4444', bg: 'bg-red-900/30 border-red-700/50' };
+function getCpkGrade(cpk: number, t: (key: string) => string): { label: string; color: string; bg: string } {
+  if (cpk >= 1.67) return { label: t('gradeA'), color: '#22c55e', bg: 'bg-green-900/30 border-green-700/50' };
+  if (cpk >= 1.33) return { label: t('gradeB'), color: '#3b82f6', bg: 'bg-blue-900/30 border-blue-700/50' };
+  if (cpk >= 1.0)  return { label: t('gradeC'), color: '#f59e0b', bg: 'bg-yellow-900/30 border-yellow-700/50' };
+  return { label: t('gradeD'), color: '#ef4444', bg: 'bg-red-900/30 border-red-700/50' };
 }
 
 /* -- OOC 점 강조 Dot (이탈점 클릭 가능) -- */
@@ -158,6 +158,7 @@ interface Props {
 
 export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props) {
   const t = useTranslations('common');
+  const ts = useTranslations('mxvcSpc');
   const theme = useChartTheme();
   const serverToday = useServerTime();
 
@@ -275,7 +276,7 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
       <section className={`rounded-lg border p-3 ${theme.sectionBg}`}>
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <div className={labelCls}>기간</div>
+            <div className={labelCls}>{ts('period')}</div>
             <div className="flex items-center gap-1">
               <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={`${inputCls} w-36`} />
               <span className={`text-sm ${theme.textMuted}`}>~</span>
@@ -283,16 +284,16 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
             </div>
           </div>
           <div>
-            <div className={labelCls}>모델</div>
+            <div className={labelCls}>{ts('model')}</div>
             <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className={`${inputCls} w-48`}>
-              <option value="">전체</option>
+              <option value="">{t('all')}</option>
               {models.map((m) => (
                 <option key={m} value={m}>{m}</option>
               ))}
             </select>
           </div>
           <div>
-            <div className={labelCls}>측정항목</div>
+            <div className={labelCls}>{ts('measItem')}</div>
             <select value={selectedItem} onChange={(e) => setSelectedItem(e.target.value)} className={`${inputCls} w-44`}>
               {items.map((i) => (
                 <option key={i.id} value={i.id}>{i.name}</option>
@@ -305,7 +306,7 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
           </button>
           <button onClick={handleRawOpen} disabled={!selectedItem}
             className={`${btnBase} bg-zinc-600 text-white hover:bg-zinc-500 disabled:opacity-50`}>
-            RAW 데이터
+            {ts('rawData')}
           </button>
 
           {data && (
@@ -327,21 +328,21 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
           {/* ═══════ Cp/Cpk 게이지 + 통계 요약 ═══════ */}
           <section className="grid grid-cols-[1fr_1fr_2fr] gap-2">
             <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-3 text-center">
-              <div className="text-xs text-zinc-400 dark:text-zinc-500 mb-1">Cp (공정능력)</div>
-              <div className="text-3xl font-black" style={{ color: getCpkGrade(s.cp).color }}>{s.cp.toFixed(3)}</div>
-              <div className="text-xs text-zinc-500 mt-1">{getCpkGrade(s.cp).label}</div>
+              <div className="text-xs text-zinc-400 dark:text-zinc-500 mb-1">{ts('cpLabel')}</div>
+              <div className="text-3xl font-black" style={{ color: getCpkGrade(s.cp, ts).color }}>{s.cp.toFixed(3)}</div>
+              <div className="text-xs text-zinc-500 mt-1">{getCpkGrade(s.cp, ts).label}</div>
             </div>
             <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-3 text-center">
-              <div className="text-xs text-zinc-400 dark:text-zinc-500 mb-1">Cpk (공정능력지수)</div>
-              <div className="text-3xl font-black" style={{ color: getCpkGrade(s.cpk).color }}>{s.cpk.toFixed(3)}</div>
-              <div className="text-xs text-zinc-500 mt-1">{getCpkGrade(s.cpk).label}</div>
+              <div className="text-xs text-zinc-400 dark:text-zinc-500 mb-1">{ts('cpkLabel')}</div>
+              <div className="text-3xl font-black" style={{ color: getCpkGrade(s.cpk, ts).color }}>{s.cpk.toFixed(3)}</div>
+              <div className="text-xs text-zinc-500 mt-1">{getCpkGrade(s.cpk, ts).label}</div>
             </div>
             <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-3">
               <div className="grid grid-cols-4 gap-x-6 gap-y-1 text-xs">
-                <StatRow label="X-bar (평균)" value={s.xbarBar} />
-                <StatRow label="R̄ (평균 범위)" value={s.rBar} />
-                <StatRow label="σ̂ (추정 표준편차)" value={s.sigmaEst} />
-                <StatRow label="이탈 점 수" value={s.oocPoints.length} unit="개" color={s.oocPoints.length > 0 ? '#ef4444' : '#22c55e'} />
+                <StatRow label={ts('xbarMean')} value={s.xbarBar} />
+                <StatRow label={ts('rBar')} value={s.rBar} />
+                <StatRow label={ts('sigmaEst')} value={s.sigmaEst} />
+                <StatRow label={ts('oocCount')} value={s.oocPoints.length} unit={ts('countUnit')} color={s.oocPoints.length > 0 ? '#ef4444' : '#22c55e'} />
                 <StatRow label="X-bar UCL" value={s.xbarUCL} color="#ef4444" />
                 <StatRow label="X-bar LCL" value={s.xbarLCL} color="#3b82f6" />
                 <StatRow label="R UCL" value={s.rUCL} color="#ef4444" />
@@ -354,7 +355,7 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
           <section className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-3 flex-1 min-h-[220px]">
             <div className="mb-2 flex items-center gap-2">
               <span className="text-sm font-bold text-zinc-300">X-bar Chart</span>
-              <span className="text-xs text-zinc-500">— 평균 관리도</span>
+              <span className="text-xs text-zinc-500">— {ts('meanChart')}</span>
               <span className="text-xs text-zinc-600 ml-auto">Histogram →</span>
             </div>
             <div className="flex h-[85%] gap-1">
@@ -408,7 +409,7 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
           <section className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-3 flex-1 min-h-[220px]">
             <div className="mb-2 flex items-center gap-2">
               <span className="text-sm font-bold text-zinc-300">R Chart</span>
-              <span className="text-xs text-zinc-500">— 범위 관리도</span>
+              <span className="text-xs text-zinc-500">— {ts('rangeChart')}</span>
               <span className="text-xs text-zinc-600 ml-auto">Process Capability →</span>
             </div>
             <div className="flex h-[85%] gap-1">
@@ -450,7 +451,7 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
 
       {!data && !loading && (
         <div className="flex-1 flex items-center justify-center text-zinc-600 text-sm">
-          측정항목을 선택한 후 조회하세요
+          {ts('selectItemHint')}
         </div>
       )}
 
@@ -458,20 +459,20 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
       <Modal
         isOpen={rawOpen}
         onClose={() => setRawOpen(false)}
-        title={`RAW 데이터 — ${selectedItemMeta?.name ?? selectedItem}`}
-        subtitle={`${dateFrom} ~ ${dateTo} | ${rawRows.length}건`}
+        title={ts('rawTitle', { name: selectedItemMeta?.name ?? selectedItem })}
+        subtitle={ts('rawSubtitle', { from: dateFrom, to: dateTo, count: rawRows.length })}
         size="full"
         footer={
           <button onClick={handleExcelDownload} disabled={rawRows.length === 0}
             className={`${btnBase} bg-green-600 text-white hover:bg-green-500 disabled:opacity-50`}>
-            Excel 다운로드
+            {ts('excelDownload')}
           </button>
         }
       >
         {rawLoading ? (
-          <div className="flex items-center justify-center py-10 text-zinc-400">로딩중...</div>
+          <div className="flex items-center justify-center py-10 text-zinc-400">{t('loading')}</div>
         ) : rawRows.length === 0 ? (
-          <div className="flex items-center justify-center py-10 text-zinc-500">데이터가 없습니다</div>
+          <div className="flex items-center justify-center py-10 text-zinc-500">{ts('noData')}</div>
         ) : (
           <div className="overflow-auto max-h-[60vh]">
             <table className="w-full text-xs border-collapse">
@@ -506,8 +507,8 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
       <Modal
         isOpen={!!oocSubgroup}
         onClose={() => setOocSubgroup(null)}
-        title={`이탈점 상세 — ${oocSubgroup?.dateLabel ?? ''}`}
-        subtitle={`서브그룹 #${oocSubgroup?.id ?? ''} | X̄=${oocSubgroup?.xbar} | R=${oocSubgroup?.range}`}
+        title={ts('oocTitle', { date: oocSubgroup?.dateLabel ?? '' })}
+        subtitle={ts('oocSubtitle', { id: oocSubgroup?.id ?? '', xbar: oocSubgroup?.xbar ?? '', range: oocSubgroup?.range ?? '' })}
         size="lg"
       >
         {oocSubgroup && s && (
@@ -516,11 +517,11 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
             <div className="grid grid-cols-4 gap-3">
               <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
                 <div className="text-lg font-bold font-mono text-red-400">{oocSubgroup.xbar.toFixed(4)}</div>
-                <div className="text-[10px] text-zinc-500 mt-1">X̄ (평균)</div>
+                <div className="text-[10px] text-zinc-500 mt-1">{ts('xbarShort')}</div>
               </div>
               <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
                 <div className="text-lg font-bold font-mono text-yellow-400">{oocSubgroup.range.toFixed(4)}</div>
-                <div className="text-[10px] text-zinc-500 mt-1">R (범위)</div>
+                <div className="text-[10px] text-zinc-500 mt-1">{ts('rRange')}</div>
               </div>
               <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
                 <div className="text-sm font-mono text-zinc-300">
@@ -532,24 +533,24 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
               </div>
               <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
                 <div className={`text-lg font-bold ${oocSubgroup.xbar > s.xbarUCL ? 'text-red-400' : 'text-blue-400'}`}>
-                  {oocSubgroup.xbar > s.xbarUCL ? 'UCL 초과' : 'LCL 미달'}
+                  {oocSubgroup.xbar > s.xbarUCL ? ts('uclExceed') : ts('lclShort')}
                 </div>
-                <div className="text-[10px] text-zinc-500 mt-1">이탈 유형</div>
+                <div className="text-[10px] text-zinc-500 mt-1">{ts('oocType')}</div>
               </div>
             </div>
 
             {/* 샘플 데이터 테이블 */}
             <div>
-              <h4 className="text-xs font-bold text-zinc-400 uppercase mb-2">샘플 데이터 ({oocSubgroup.samples.length}개)</h4>
+              <h4 className="text-xs font-bold text-zinc-400 uppercase mb-2">{ts('sampleData', { count: oocSubgroup.samples.length })}</h4>
               <div className="rounded-lg border border-zinc-700 overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-zinc-800 text-zinc-400">
                     <tr>
                       <th className="px-3 py-2 text-center w-16">#</th>
-                      <th className="px-3 py-2 text-right">측정값</th>
-                      <th className="px-3 py-2 text-center">USL 대비</th>
-                      <th className="px-3 py-2 text-center">LSL 대비</th>
-                      <th className="px-3 py-2 text-center">판정</th>
+                      <th className="px-3 py-2 text-right">{ts('measValue')}</th>
+                      <th className="px-3 py-2 text-center">{ts('vsUsl')}</th>
+                      <th className="px-3 py-2 text-center">{ts('vsLsl')}</th>
+                      <th className="px-3 py-2 text-center">{ts('judgment')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -589,6 +590,7 @@ export default function MxvcSpcControlChart({ apiBase = '/api/mxvc/spc' }: Props
 type ChartTheme = ReturnType<typeof useChartTheme>;
 
 function Histogram({ subgroups, stats, theme }: { subgroups: Subgroup[]; stats: SpcStats; theme: ChartTheme }) {
+  const ts = useTranslations('mxvcSpc');
   const bins = useMemo(() => buildHistogram(subgroups, stats), [subgroups, stats]);
 
   return (
@@ -607,8 +609,8 @@ function Histogram({ subgroups, stats, theme }: { subgroups: Subgroup[]; stats: 
         <YAxis tick={{ fontSize: 10, fill: theme.tick }} width={30} />
         <Tooltip
           contentStyle={{ background: theme.tooltip.bg, border: `1px solid ${theme.tooltip.border}`, borderRadius: 8 }}
-          formatter={(value, name) => [value, name === 'count' ? '빈도' : '정규분포']}
-          labelFormatter={(label) => `구간: ${label}`}
+          formatter={(value, name) => [value, name === 'count' ? ts('frequency') : ts('normalDist')]}
+          labelFormatter={(label) => ts('bin', { value: String(label) })}
         />
         <ReferenceLine x={stats.usl} stroke="#ff6b6b" strokeWidth={2} label={{ value: 'USL', fill: '#ff6b6b', fontSize: 10, position: 'top' }} />
         <ReferenceLine x={stats.lsl} stroke="#4dabf7" strokeWidth={2} label={{ value: 'LSL', fill: '#4dabf7', fontSize: 10, position: 'top' }} />
@@ -626,6 +628,7 @@ function Histogram({ subgroups, stats, theme }: { subgroups: Subgroup[]; stats: 
 /* -- 공정능력 분석도 (Process Capability Chart) -- */
 
 function CapabilityChart({ subgroups, stats, theme }: { subgroups: Subgroup[]; stats: SpcStats; theme: ChartTheme }) {
+  const ts = useTranslations('mxvcSpc');
   const chartData = useMemo(() => {
     const allSamples = subgroups.flatMap((s) => s.samples);
     const mean = allSamples.reduce((s, v) => s + v, 0) / allSamples.length;
@@ -655,7 +658,7 @@ function CapabilityChart({ subgroups, stats, theme }: { subgroups: Subgroup[]; s
   }, [subgroups, stats]);
 
   const { points } = chartData;
-  const grade = getCpkGrade(stats.cpk);
+  const grade = getCpkGrade(stats.cpk, ts);
 
   return (
     <div className="flex h-full flex-col">
@@ -667,7 +670,7 @@ function CapabilityChart({ subgroups, stats, theme }: { subgroups: Subgroup[]; s
           <Tooltip
             contentStyle={{ background: theme.tooltip.bg, border: `1px solid ${theme.tooltip.border}`, borderRadius: 8 }}
             formatter={(value) => [Number(value).toFixed(4), '']}
-            labelFormatter={(label) => `값: ${label}`}
+            labelFormatter={(label) => ts('value', { value: String(label) })}
           />
           <Bar dataKey="fill" fill="#22c55e" fillOpacity={0.25} barSize={8} isAnimationActive={false} />
           <Bar dataKey="outOfSpec" fill="#ef4444" fillOpacity={0.35} barSize={8} isAnimationActive={false} />
@@ -680,7 +683,7 @@ function CapabilityChart({ subgroups, stats, theme }: { subgroups: Subgroup[]; s
       <div className="flex items-center justify-center gap-4 mt-1">
         <div className="flex items-center gap-1.5 text-xs">
           <span className="text-zinc-500">Cp</span>
-          <span className="font-mono font-bold" style={{ color: getCpkGrade(stats.cp).color }}>{stats.cp.toFixed(3)}</span>
+          <span className="font-mono font-bold" style={{ color: getCpkGrade(stats.cp, ts).color }}>{stats.cp.toFixed(3)}</span>
         </div>
         <div className="flex items-center gap-1.5 text-xs">
           <span className="text-zinc-500">Cpk</span>

@@ -11,6 +11,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import ReverseTrace3DGraph from '@/components/mxvc/ReverseTrace3DGraph';
@@ -114,6 +115,7 @@ const thCls = 'px-3 py-2 text-left text-xs font-semibold';
 const tdCls = 'px-3 py-1.5 text-sm';
 
 export default function TraceResultPanel({ reelCd }: Props) {
+  const t = useTranslations('mxvcReverseTrace.panel');
   const [receipt, setReceipt] = useState<ReceiptInfo[]>([]);
   const [issues, setIssues] = useState<IssueInfo[]>([]);
   const [reelMaster, setReelMaster] = useState<ReelMasterInfo[]>([]);
@@ -391,23 +393,23 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
       {hasData && (
         <div className="shrink-0 flex items-center gap-3 px-5 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/80">
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            추적 중: <code className="font-mono text-emerald-600 dark:text-emerald-400">{reelCd}</code>
-            {' · '}입고 <strong className="text-emerald-500">{receipt.length}</strong>건
-            {' / '}출고 <strong className="text-orange-500">{issues.length}</strong>건
-            {' / '}릴교환 <strong className="text-purple-500">{reelChanges.length}</strong>건
-            {' / '}PCB <strong className="text-blue-500">{boards.length}</strong>건
+            {t('tracing')}: <code className="font-mono text-emerald-600 dark:text-emerald-400">{reelCd}</code>
+            {' · '}{t('receipt')} <strong className="text-emerald-500">{receipt.length}</strong>{t('countUnit')}
+            {' / '}{t('issue')} <strong className="text-orange-500">{issues.length}</strong>{t('countUnit')}
+            {' / '}{t('reelChange')} <strong className="text-purple-500">{reelChanges.length}</strong>{t('countUnit')}
+            {' / '}PCB <strong className="text-blue-500">{boards.length}</strong>{t('countUnit')}
           </span>
           <div className="ml-auto flex items-center gap-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400">받아내기:</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">{t('exportLabel')}</span>
             <button onClick={handleExportHtml}
               className="px-3 py-1.5 rounded text-xs font-semibold bg-sky-500 hover:bg-sky-600 text-white transition-colors"
-              title="HTML 파일로 저장">HTML</button>
+              title={t('exportHtmlTitle')}>HTML</button>
             <button onClick={handleExportExcel}
               className="px-3 py-1.5 rounded text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
-              title="Excel(xlsx) 파일로 저장">Excel</button>
+              title={t('exportExcelTitle')}>Excel</button>
             <button onClick={handleExportPdf}
               className="px-3 py-1.5 rounded text-xs font-semibold bg-rose-500 hover:bg-rose-600 text-white transition-colors"
-              title="인쇄 대화상자에서 PDF 저장">PDF</button>
+              title={t('exportPdfTitle')}>PDF</button>
           </div>
         </div>
       )}
@@ -433,7 +435,7 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
 
           {!loading && !hasData && (
             <div className="flex items-center justify-center py-16 text-sm text-gray-400 dark:text-gray-500">
-              자재릴번호(ReelCd)를 입력하고 조회하세요
+              {t('emptyHint')}
             </div>
           )}
 
@@ -441,25 +443,25 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           {receipt.length > 0 && (
             <section>
               <h3 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-2">
-                입고이력
+                {t('section.receipt')}
                 <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">IM_ITEM_RECEIPT_BARCODE</span>
               </h3>
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-emerald-50 dark:bg-emerald-900/20 text-gray-600 dark:text-gray-300">
                     <tr>
-                      <th className={thCls}>릴바코드</th>
-                      <th className={thCls}>품번</th>
+                      <th className={thCls}>{t('col.reelBarcode')}</th>
+                      <th className={thCls}>{t('col.partNo')}</th>
                       <th className={thCls}>LOT NO</th>
-                      <th className={thCls}>입고일</th>
-                      <th className={`${thCls} text-right`}>수량</th>
-                      <th className={thCls}>거래처</th>
-                      <th className={thCls}>입고전표</th>
-                      <th className={thCls}>제조일</th>
-                      <th className={thCls}>제조주차</th>
+                      <th className={thCls}>{t('col.inboundDate')}</th>
+                      <th className={`${thCls} text-right`}>{t('col.qty')}</th>
+                      <th className={thCls}>{t('col.supplier')}</th>
+                      <th className={thCls}>{t('col.receiptSlip')}</th>
+                      <th className={thCls}>{t('col.mfgDate')}</th>
+                      <th className={thCls}>{t('col.mfgWeek')}</th>
                       <th className={thCls}>Vendor LOT</th>
-                      <th className={`${thCls} text-center`}>검사</th>
-                      <th className={`${thCls} text-center`}>상태</th>
+                      <th className={`${thCls} text-center`}>{t('col.inspect')}</th>
+                      <th className={`${thCls} text-center`}>{t('col.status')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -497,23 +499,23 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           {issues.length > 0 && (
             <section>
               <h3 className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase mb-2">
-                출고이력 ({issues.length}건)
+                {t('section.issue', { count: issues.length })}
                 <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">IM_ITEM_ISSUE</span>
               </h3>
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-orange-50 dark:bg-orange-900/20 text-gray-600 dark:text-gray-300">
                     <tr>
-                      <th className={thCls}>출고일</th>
-                      <th className={thCls}>품번</th>
+                      <th className={thCls}>{t('col.outboundDate')}</th>
+                      <th className={thCls}>{t('col.partNo')}</th>
                       <th className={thCls}>LOT(MFS)</th>
-                      <th className={thCls}>모델명</th>
-                      <th className={thCls}>라인</th>
-                      <th className={thCls}>공정</th>
-                      <th className={`${thCls} text-right`}>수량</th>
-                      <th className={`${thCls} text-center`}>상태</th>
-                      <th className={thCls}>등록자</th>
-                      <th className={thCls}>등록일</th>
+                      <th className={thCls}>{t('col.modelName')}</th>
+                      <th className={thCls}>{t('col.line')}</th>
+                      <th className={thCls}>{t('col.workstage')}</th>
+                      <th className={`${thCls} text-right`}>{t('col.qty')}</th>
+                      <th className={`${thCls} text-center`}>{t('col.status')}</th>
+                      <th className={thCls}>{t('col.enterBy')}</th>
+                      <th className={thCls}>{t('col.enterDate')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -548,24 +550,24 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           {reelMaster.length > 0 && (
             <section>
               <h3 className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase mb-2">
-                릴 투입이력 ({reelMaster.length}건)
+                {t('section.reelMaster', { count: reelMaster.length })}
                 <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">HW_ITS_REEL</span>
               </h3>
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-cyan-50 dark:bg-cyan-900/20 text-gray-600 dark:text-gray-300">
                     <tr>
-                      <th className={thCls}>릴코드</th>
-                      <th className={thCls}>품번</th>
-                      <th className={thCls}>타입</th>
-                      <th className={thCls}>Vendor명</th>
+                      <th className={thCls}>{t('col.reelCd')}</th>
+                      <th className={thCls}>{t('col.partNo')}</th>
+                      <th className={thCls}>{t('col.type')}</th>
+                      <th className={thCls}>{t('col.vendorName')}</th>
                       <th className={thCls}>Vendor LOT</th>
-                      <th className={`${thCls} text-right`}>초기수량</th>
-                      <th className={`${thCls} text-right`}>현재수량</th>
+                      <th className={`${thCls} text-right`}>{t('col.initQty')}</th>
+                      <th className={`${thCls} text-right`}>{t('col.currentQty')}</th>
                       <th className={`${thCls} text-center`}>MSL</th>
-                      <th className={thCls}>최종투입</th>
-                      <th className={thCls}>등록일</th>
-                      <th className={`${thCls} text-center`}>사용</th>
+                      <th className={thCls}>{t('col.lastLoad')}</th>
+                      <th className={thCls}>{t('col.regDate')}</th>
+                      <th className={`${thCls} text-center`}>{t('col.use')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -603,7 +605,7 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           {reelChanges.length > 0 && (
             <section>
               <h3 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase mb-2">
-                릴교환이력 ({reelChanges.length}건)
+                {t('section.reelChange', { count: reelChanges.length })}
                 <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">HW_ITS_REELCHANGEHISTORY</span>
               </h3>
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -614,9 +616,9 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
                       <th className={thCls}>PartNo</th>
                       <th className={thCls}>Feeder</th>
                       <th className={thCls}>Slot</th>
-                      <th className={thCls}>장비</th>
-                      <th className={thCls}>장착 시간</th>
-                      <th className={thCls}>해제 시간</th>
+                      <th className={thCls}>{t('col.equipment')}</th>
+                      <th className={thCls}>{t('col.installDt')}</th>
+                      <th className={thCls}>{t('col.uninstallDt')}</th>
                       <th className={`${thCls} text-right`}>Map ID</th>
                     </tr>
                   </thead>
@@ -649,12 +651,12 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
           {/* ═══ 5. 사용된 PCB 목록 ═══ */}
           <section>
             <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-2">
-              사용된 PCB ({boards.length}건)
+              {t('section.pcb', { count: boards.length })}
               <span className="ml-2 text-[10px] font-mono text-gray-400 dark:text-gray-500 normal-case">HW_VW_LTS</span>
             </h3>
             {boards.length === 0 ? (
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-6 text-center text-xs text-gray-400 dark:text-gray-500">
-                데이터 없음
+                {t('noData')}
               </div>
             ) : (
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -663,13 +665,13 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
                     <tr>
                       <th className={`${thCls} w-8`}></th>
                       <th className={thCls}>BoardSN</th>
-                      <th className={thCls}>라인</th>
-                      <th className={thCls}>장비</th>
+                      <th className={thCls}>{t('col.line')}</th>
+                      <th className={thCls}>{t('col.equipment')}</th>
                       <th className={thCls}>Part No</th>
-                      <th className={thCls}>작업지시</th>
-                      <th className={thCls}>시작 시간</th>
-                      <th className={thCls}>종료 시간</th>
-                      <th className={`${thCls} text-right`}>스텝수</th>
+                      <th className={thCls}>{t('col.jobOrder')}</th>
+                      <th className={thCls}>{t('col.startTime')}</th>
+                      <th className={thCls}>{t('col.endTime')}</th>
+                      <th className={`${thCls} text-right`}>{t('col.stepCount')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -704,7 +706,7 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
                               <div className="bg-gray-50 dark:bg-gray-800/60 px-8 py-3">
                                 {detailLoading ? (
                                   <div className="flex items-center gap-2 py-3 text-xs text-gray-400">
-                                    <Spinner size="sm" label="장착 상세 조회 중..." className="gap-2" />
+                                    <Spinner size="sm" label={t('loadingDetail')} className="gap-2" />
                                   </div>
                                 ) : details.length > 0 ? (
                                   <table className="w-full text-xs">
@@ -716,8 +718,8 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
                                         <th className="px-2 py-1 text-left">SlotNo</th>
                                         <th className="px-2 py-1 text-center">Array</th>
                                         <th className="px-2 py-1 text-center">Block</th>
-                                        <th className="px-2 py-1 text-left">시작</th>
-                                        <th className="px-2 py-1 text-left">종료</th>
+                                        <th className="px-2 py-1 text-left">{t('col.start')}</th>
+                                        <th className="px-2 py-1 text-left">{t('col.end')}</th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -736,7 +738,7 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
                                     </tbody>
                                   </table>
                                 ) : (
-                                  <div className="py-2 text-xs text-gray-400">상세 데이터 없음</div>
+                                  <div className="py-2 text-xs text-gray-400">{t('noDetail')}</div>
                                 )}
                               </div>
                             </td>
@@ -766,7 +768,7 @@ ${toTable(boards, '사용된 PCB', '#2563eb')}
             <button
               onClick={() => setMaximized((v) => !v)}
               className="absolute top-2 left-2 z-20 p-1.5 rounded bg-blue-600/70 text-white hover:bg-blue-500 transition-colors"
-              title={maximized ? '원래 크기 (ESC)' : '최대화'}
+              title={maximized ? t('originalSizeEsc') : t('maximize')}
             >
               {maximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
             </button>

@@ -63,6 +63,7 @@ const GRID_STROKE = "#1f2937";
 
 export default function FpyChartCard({ tableKey, data, height, chartType, maximized, onToggleMaximize }: Props) {
   const t = useTranslations("common");
+  const tf = useTranslations("mxvcFpy");
   const label = TABLE_LABELS[tableKey];
   const { summary, hourly } = data;
 
@@ -149,13 +150,13 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
         }`}
         style={{ minHeight: height }}
         onClick={() => { if (!isEmpty) setLevel('daily'); }}
-        title={isEmpty ? '데이터 없음' : '클릭하여 일별 상세'}
+        title={isEmpty ? tf('noData') : tf('clickForDaily')}
       >
         {onToggleMaximize && (
           <button
             onClick={(e) => { e.stopPropagation(); onToggleMaximize(); }}
             className="absolute top-2 right-2 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-            title={maximized ? '원래 크기' : '최대화'}
+            title={maximized ? tf('originalSize') : tf('maximize')}
           >
             {maximized ? (
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
@@ -174,7 +175,7 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
             <div className={`font-extrabold font-mono ${color} ${maximized ? 'text-6xl' : 'text-3xl'}`}>
               —
             </div>
-            <div className="text-gray-400 dark:text-gray-500 mt-2 text-xs">데이터 없음</div>
+            <div className="text-gray-400 dark:text-gray-500 mt-2 text-xs">{tf('noData')}</div>
           </>
         ) : (
           <>
@@ -198,7 +199,7 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
               </div>
             )}
 
-            <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-3">클릭하여 일별 상세 →</div>
+            <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-3">{tf('clickForDailyArrow')}</div>
           </>
         )}
       </div>
@@ -215,7 +216,7 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
             className="px-2 py-0.5 text-[10px] rounded border border-gray-300 dark:border-gray-600
                        text-blue-500 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition-colors"
           >
-            ← {level === 'hourly' ? '일별' : '요약'}
+            ← {level === 'hourly' ? tf('daily') : tf('summary')}
           </button>
           <h3 className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">
             {label}
@@ -226,7 +227,7 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
         </div>
         <div className="flex items-center gap-2 text-xs">
           {summary.total === 0 ? (
-            <span className="font-bold font-mono text-gray-400">— 데이터 없음</span>
+            <span className="font-bold font-mono text-gray-400">— {tf('noData')}</span>
           ) : (
             <>
               <span className={`font-bold font-mono ${getSummaryColor(summary.yield)}`}>
@@ -238,13 +239,13 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
             </>
           )}
           {level === 'daily' && hourly.length > 0 && (
-            <span className="text-[10px] text-blue-500">X축 날짜 클릭 → 시간별</span>
+            <span className="text-[10px] text-blue-500">{tf('clickXForHourly')}</span>
           )}
           {onToggleMaximize && (
             <button
               onClick={onToggleMaximize}
               className="ml-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-              title={maximized ? '원래 크기' : '최대화'}
+              title={maximized ? tf('originalSize') : tf('maximize')}
             >
               {maximized ? (
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
@@ -262,7 +263,7 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
 
       {drillLoading ? (
         <div className="flex items-center justify-center text-gray-400 text-xs" style={{ height }}>
-          로딩중...
+          {t('loading')}
         </div>
       ) : chartData.length === 0 ? (
         <div className="flex items-center justify-center text-gray-400 dark:text-gray-600 text-xs" style={{ height }}>
@@ -287,7 +288,7 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
               <Area
                 type="monotone"
                 dataKey="yield"
-                name="직행율"
+                name={tf('yieldName')}
                 stroke="#4ade80"
                 strokeWidth={2}
                 fill={`url(#grad-${tableKey})`}
@@ -309,7 +310,7 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
               <Line
                 type="monotone"
                 dataKey="yield"
-                name="직행율"
+                name={tf('yieldName')}
                 stroke="#8b5cf6"
                 strokeWidth={2.5}
                 dot={({ cx, cy, payload }: Record<string, unknown>) => {
@@ -328,7 +329,7 @@ export default function FpyChartCard({ tableKey, data, height, chartType, maximi
               <YAxis {...yAxisProps} />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <ReferenceLine y={90} stroke="#ef4444" strokeDasharray="4 4" strokeOpacity={0.6} />
-              <Bar dataKey="yield" name="직행율">
+              <Bar dataKey="yield" name={tf('yieldName')}>
                 {chartData.map((entry, i) => (
                   <Cell key={i} fill={getYieldColor(entry.yield)} />
                 ))}

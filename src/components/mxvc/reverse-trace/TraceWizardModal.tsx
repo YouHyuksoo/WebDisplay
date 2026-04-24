@@ -9,6 +9,7 @@
  */
 'use client';
 import { useState, useEffect, type ComponentType } from 'react';
+import { useTranslations } from 'next-intl';
 import { Zap, Package, Tag, Wrench, FileSpreadsheet, ScanLine, X, type LucideProps } from 'lucide-react';
 import ModeImmediate from './modes/ModeImmediate';
 import ModeIssue    from './modes/ModeIssue';
@@ -41,13 +42,13 @@ interface Props {
 
 type IconType = ComponentType<LucideProps>;
 
-const MODE_CARDS: { mode: TraceMode; Icon: IconType; desc: string }[] = [
-  { mode: 'immediate', Icon: Zap,              desc: '릴번호를 바로 입력' },
-  { mode: 'issue',     Icon: Package,          desc: '기간 + 품목으로 출고된 릴 찾기' },
-  { mode: 'run',       Icon: Tag,              desc: '런번호(RUN_NO)로 찾기' },
-  { mode: 'feeder',    Icon: Wrench,           desc: '특정일 피더에 걸린 릴 찾기' },
-  { mode: 'excel',     Icon: FileSpreadsheet,  desc: '엑셀(1열) 릴번호 일괄 업로드' },
-  { mode: 'refid',     Icon: ScanLine,         desc: 'ReferenceID + 날짜로 마운터 장착 릴 찾기' },
+const MODE_CARDS: { mode: TraceMode; Icon: IconType; descKey: string }[] = [
+  { mode: 'immediate', Icon: Zap,              descKey: 'modeCard.immediate' },
+  { mode: 'issue',     Icon: Package,          descKey: 'modeCard.issue' },
+  { mode: 'run',       Icon: Tag,              descKey: 'modeCard.run' },
+  { mode: 'feeder',    Icon: Wrench,           descKey: 'modeCard.feeder' },
+  { mode: 'excel',     Icon: FileSpreadsheet,  descKey: 'modeCard.excel' },
+  { mode: 'refid',     Icon: ScanLine,         descKey: 'modeCard.refid' },
 ];
 
 export default function TraceWizardModal({
@@ -55,6 +56,8 @@ export default function TraceWizardModal({
   onClose,
   onImmediateSubmit, onIssueSubmit, onRunSubmit, onFeederSubmit, onExcelSubmit, onRefIdSubmit,
 }: Props) {
+  const t = useTranslations('mxvcReverseTrace');
+  const tc = useTranslations('common');
   const [step, setStep] = useState<'pick' | 'input'>(initialMode ? 'input' : 'pick');
   const [mode, setMode] = useState<TraceMode | null>(initialMode ?? null);
 
@@ -84,11 +87,11 @@ export default function TraceWizardModal({
       <div className="w-full max-w-xl rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl">
         <header className="flex items-center justify-between border-b border-zinc-800 px-5 py-3">
           <h3 className="text-sm font-semibold text-zinc-100">
-            역추적 {step === 'pick' ? '— 모드 선택' : mode ? `— ${MODE_LABELS[mode]}` : ''}
+            {step === 'pick' ? t('wizardTitlePick') : mode ? t('wizardTitleMode', { label: MODE_LABELS[mode] }) : t('wizardTitleBase')}
           </h3>
           <button
             onClick={onClose}
-            aria-label="닫기"
+            aria-label={tc('close')}
             className="text-zinc-400 hover:text-zinc-200 leading-none"
           >
             <X size={18} strokeWidth={2} />
@@ -112,7 +115,7 @@ export default function TraceWizardModal({
                       className="text-zinc-400 group-hover:text-blue-400 transition-colors"
                     />
                     <span className="text-sm font-semibold text-zinc-100">{MODE_LABELS[c.mode]}</span>
-                    <span className="text-xs text-zinc-400">{c.desc}</span>
+                    <span className="text-xs text-zinc-400">{t(c.descKey)}</span>
                   </button>
                 );
               })}

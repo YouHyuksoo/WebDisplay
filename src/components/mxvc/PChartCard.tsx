@@ -42,6 +42,7 @@ function getPColor(p: number, ucl: number, lcl: number): string {
 
 export default function PChartCard({ tableKey, data, height }: Props) {
   const t = useTranslations("common");
+  const ts = useTranslations("mxvcSpc");
   const label = TABLE_LABELS[tableKey];
   const { stats, daily } = data;
 
@@ -77,12 +78,12 @@ export default function PChartCard({ tableKey, data, height }: Props) {
           {isDrill && (
             <button onClick={handleBack}
               className="px-2 py-0.5 text-[10px] rounded border border-gray-300 dark:border-gray-600 text-blue-500 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition-colors">
-              ← 일별
+              {ts('backToDaily')}
             </button>
           )}
           <h3 className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">
             {label}
-            {isDrill && <span className="text-blue-400 ml-1.5">({drill.dateLabel} 시간별)</span>}
+            {isDrill && <span className="text-blue-400 ml-1.5">({ts('hourlyOf', { date: drill.dateLabel })})</span>}
           </h3>
         </div>
         <div className="flex items-center gap-3 text-xs">
@@ -96,7 +97,7 @@ export default function PChartCard({ tableKey, data, height }: Props) {
             <span className="text-red-400 font-bold">OOC: {chartStats.oocCount}</span>
           )}
           {!isDrill && daily.length > 0 && (
-            <span className="text-[10px] text-gray-500">클릭하여 드릴다운</span>
+            <span className="text-[10px] text-gray-500">{ts('clickToDrill')}</span>
           )}
         </div>
       </div>
@@ -104,7 +105,7 @@ export default function PChartCard({ tableKey, data, height }: Props) {
       {/* 차트 */}
       {drillLoading ? (
         <div className="flex items-center justify-center text-gray-400 text-xs" style={{ height }}>
-          로딩중...
+          {t('loading')}
         </div>
       ) : chartData.length === 0 ? (
         <div className="flex items-center justify-center text-gray-400 dark:text-gray-600 text-xs" style={{ height }}>
@@ -144,7 +145,7 @@ export default function PChartCard({ tableKey, data, height }: Props) {
             <Tooltip
               contentStyle={{ background: "#1e293b", border: "1px solid #334155", fontSize: 12 }}
               formatter={(value, name) => {
-                const labels: Record<string, string> = { p: "양품률", ucl: "UCL", lcl: "LCL" };
+                const labels: Record<string, string> = { p: ts('passRate'), ucl: "UCL", lcl: "LCL" };
                 return [`${Number(value).toFixed(2)}%`, labels[String(name)] ?? name];
               }}
             />
