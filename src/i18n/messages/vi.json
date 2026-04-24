@@ -103,7 +103,12 @@
       "flagActive": "Hoạt động",
       "defaultModel": "Mô hình mặc định",
       "testing": "Đang kiểm tra...",
-      "testConnection": "Kiểm tra kết nối"
+      "testConnection": "Kiểm tra kết nối",
+      "notRegistered": "(chưa đăng ký)",
+      "editKey": "Sửa",
+      "newKeyPlaceholder": "Nhập khóa API mới",
+      "saving": "Đang lưu...",
+      "save": "Lưu"
     },
     "personas": {
       "tabLabel": "Vai trò AI",
@@ -1552,6 +1557,28 @@
   },
   "mxvcFpy": {
     "chartsToShow": "Biểu đồ hiển thị"
+  },
+  "mxvcReverseTrace": {
+    "back": "◀ Quay lại",
+    "search": "Tìm →",
+    "searching": "Đang tìm...",
+    "immediate": {
+      "label": "Lô mã vật liệu (ReelCd)",
+      "placeholder": "VD: 1234-ABC-500",
+      "hint": "Nhấn Enter hoặc [Tìm] để truy vết ngay"
+    },
+    "run": {
+      "label": "Số Run (RUN_NO) *",
+      "placeholder": "VD: RUN-20260414-01",
+      "hint": "Dựa trên IM_ITEM_ISSUE.RUN_NO — tất cả reel đã phát cho lệnh này"
+    }
+  },
+  "mxvcTraceMaster": {
+    "modelDesc": "Mô tả mô hình",
+    "masterModel": "Mô hình chính",
+    "mfsGroup": "Nhóm sản xuất",
+    "modelCode": "Mã mô hình",
+    "customerCode": "Mã khách hàng"
   },
   "mxvcProcessHistory": {
     "title": "Lịch sử quy trình",

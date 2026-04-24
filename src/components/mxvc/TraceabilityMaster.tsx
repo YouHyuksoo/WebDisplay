@@ -11,6 +11,8 @@
 
 'use client'
 
+import { useTranslations } from 'next-intl';
+
 /**
  * 객체에서 안전하게 문자열 값을 추출하는 헬퍼 함수
  * @param obj - 대상 객체
@@ -46,6 +48,7 @@ export default function TraceabilityMaster({
   runCard,
   modelMaster,
 }: TraceabilityMasterProps) {
+  const t = useTranslations('mxvcTraceMaster');
   if (!master) return null
 
   return (
@@ -61,17 +64,17 @@ export default function TraceabilityMaster({
       {/* 2행 */}
       <div className="grid grid-cols-4 divide-x divide-gray-200 dark:divide-gray-700
                       border-b border-gray-200 dark:border-gray-700">
-        <Field label="모델설명" value={val(modelMaster, 'MODEL_DESC') || val(modelMaster, 'DESCRIPTION')} />
+        <Field label={t('modelDesc')} value={val(modelMaster, 'MODEL_DESC') || val(modelMaster, 'DESCRIPTION')} />
         <Field label="RUN NO" value={val(master, 'RUN_NO')} />
         <Field label="RUN DATE" value={(val(master, 'RUN_DATE') || val(runCard, 'RUN_DATE')).replace(/T.*$/, '')} />
         <Field label="LOT NO" value={val(master, 'LOT_NO') || val(runCard, 'LOT_NO')} />
       </div>
       {/* 3행 */}
       <div className="grid grid-cols-4 divide-x divide-gray-200 dark:divide-gray-700">
-        <Field label="마스터모델" value={val(runCard, 'MASTER_MODEL_NAME')} />
-        <Field label="제조그룹" value={val(runCard, 'MFS_GROUP_NO')} />
-        <Field label="모델코드" value={val(modelMaster, 'MODEL_CODE')} />
-        <Field label="고객코드" value={val(modelMaster, 'CUSTOMER_CODE')} />
+        <Field label={t('masterModel')} value={val(runCard, 'MASTER_MODEL_NAME')} />
+        <Field label={t('mfsGroup')} value={val(runCard, 'MFS_GROUP_NO')} />
+        <Field label={t('modelCode')} value={val(modelMaster, 'MODEL_CODE')} />
+        <Field label={t('customerCode')} value={val(modelMaster, 'CUSTOMER_CODE')} />
       </div>
     </div>
   )

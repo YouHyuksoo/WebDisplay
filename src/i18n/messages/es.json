@@ -103,7 +103,12 @@
       "flagActive": "Activo",
       "defaultModel": "Modelo predeterminado",
       "testing": "Probando...",
-      "testConnection": "Probar conexión"
+      "testConnection": "Probar conexión",
+      "notRegistered": "(sin registrar)",
+      "editKey": "Editar",
+      "newKeyPlaceholder": "Ingresar nueva clave API",
+      "saving": "Guardando...",
+      "save": "Guardar"
     },
     "personas": {
       "tabLabel": "Personajes IA",
@@ -1555,6 +1560,28 @@
   },
   "mxvcFpy": {
     "chartsToShow": "Gráficos a mostrar"
+  },
+  "mxvcReverseTrace": {
+    "back": "◀ Atrás",
+    "search": "Buscar →",
+    "searching": "Buscando...",
+    "immediate": {
+      "label": "Lote código material (ReelCd)",
+      "placeholder": "ej. 1234-ABC-500",
+      "hint": "Presione Enter o [Buscar] para rastrear inmediatamente"
+    },
+    "run": {
+      "label": "Número Run (RUN_NO) *",
+      "placeholder": "ej. RUN-20260414-01",
+      "hint": "Basado en IM_ITEM_ISSUE.RUN_NO — todos los rieles emitidos para esta orden"
+    }
+  },
+  "mxvcTraceMaster": {
+    "modelDesc": "Desc Modelo",
+    "masterModel": "Modelo Maestro",
+    "mfsGroup": "Grupo Mfg",
+    "modelCode": "Código Modelo",
+    "customerCode": "Código Cliente"
   },
   "mxvcProcessHistory": {
     "title": "Historial de Procesos",

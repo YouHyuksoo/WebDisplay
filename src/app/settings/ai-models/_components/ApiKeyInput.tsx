@@ -5,6 +5,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Edit2, Eye, EyeOff } from 'lucide-react';
 
 interface Props {
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export default function ApiKeyInput({ hasKey, masked, onSave }: Props) {
+  const t = useTranslations('settingsAi.models');
+  const tc = useTranslations('common');
   const [editing, setEditing] = useState(false);
   const [show, setShow] = useState(false);
   const [val, setVal] = useState('');
@@ -23,11 +26,11 @@ export default function ApiKeyInput({ hasKey, masked, onSave }: Props) {
     return (
       <div className="flex items-center gap-2">
         <div className="flex-1 rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-400">
-          {hasKey ? masked : '(미등록)'}
+          {hasKey ? masked : t('notRegistered')}
         </div>
         <button onClick={() => { setEditing(true); setVal(''); }}
           className="flex items-center gap-1 rounded border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:bg-zinc-800">
-          <Edit2 className="size-3" /> 편집
+          <Edit2 className="size-3" /> {t('editKey')}
         </button>
       </div>
     );
@@ -40,7 +43,7 @@ export default function ApiKeyInput({ hasKey, masked, onSave }: Props) {
           type={show ? 'text' : 'password'}
           value={val}
           onChange={(e) => setVal(e.target.value)}
-          placeholder="새 API 키 입력"
+          placeholder={t('newKeyPlaceholder')}
           className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 pr-10 text-sm text-zinc-100"
         />
         <button onClick={() => setShow(!show)}
@@ -52,11 +55,11 @@ export default function ApiKeyInput({ hasKey, masked, onSave }: Props) {
         disabled={!val || busy}
         onClick={async () => { setBusy(true); await onSave(val); setBusy(false); setEditing(false); }}
         className="rounded bg-cyan-600 px-3 py-2 text-xs text-white hover:bg-cyan-500 disabled:opacity-50">
-        {busy ? '저장...' : '저장'}
+        {busy ? t('saving') : t('save')}
       </button>
       <button onClick={() => setEditing(false)}
         className="rounded border border-zinc-700 px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800">
-        취소
+        {tc('cancel')}
       </button>
     </div>
   );

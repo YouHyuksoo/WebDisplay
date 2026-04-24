@@ -103,7 +103,12 @@
       "flagActive": "Active",
       "defaultModel": "Default Model",
       "testing": "Testing...",
-      "testConnection": "Test Connection"
+      "testConnection": "Test Connection",
+      "notRegistered": "(not registered)",
+      "editKey": "Edit",
+      "newKeyPlaceholder": "Enter new API key",
+      "saving": "Saving...",
+      "save": "Save"
     },
     "personas": {
       "tabLabel": "AI Personas",
@@ -1557,6 +1562,28 @@
   },
   "mxvcFpy": {
     "chartsToShow": "Charts to Show"
+  },
+  "mxvcReverseTrace": {
+    "back": "◀ Back",
+    "search": "Search →",
+    "searching": "Searching...",
+    "immediate": {
+      "label": "Material Barcode Lot (ReelCd)",
+      "placeholder": "e.g. 1234-ABC-500",
+      "hint": "Press Enter or [Search] to trace immediately"
+    },
+    "run": {
+      "label": "Run No (RUN_NO) *",
+      "placeholder": "e.g. RUN-20260414-01",
+      "hint": "Based on IM_ITEM_ISSUE.RUN_NO — all reels issued for this work order"
+    }
+  },
+  "mxvcTraceMaster": {
+    "modelDesc": "Model Desc",
+    "masterModel": "Master Model",
+    "mfsGroup": "Mfg Group",
+    "modelCode": "Model Code",
+    "customerCode": "Customer Code"
   },
   "mxvcProcessHistory": {
     "title": "Process History",

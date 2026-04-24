@@ -103,7 +103,12 @@
       "flagActive": "활성",
       "defaultModel": "기본 모델",
       "testing": "테스트 중...",
-      "testConnection": "연결 테스트"
+      "testConnection": "연결 테스트",
+      "notRegistered": "(미등록)",
+      "editKey": "편집",
+      "newKeyPlaceholder": "새 API 키 입력",
+      "saving": "저장...",
+      "save": "저장"
     },
     "personas": {
       "tabLabel": "AI 페르소나",
@@ -1554,6 +1559,28 @@
   },
   "mxvcFpy": {
     "chartsToShow": "표시할 차트"
+  },
+  "mxvcReverseTrace": {
+    "back": "◀ 뒤로",
+    "search": "조회 →",
+    "searching": "조회 중...",
+    "immediate": {
+      "label": "자재바코드롯트 (ReelCd)",
+      "placeholder": "예: 1234-ABC-500",
+      "hint": "Enter 또는 [조회] 클릭 시 바로 추적 실행"
+    },
+    "run": {
+      "label": "런번호 (RUN_NO) *",
+      "placeholder": "예: RUN-20260414-01",
+      "hint": "IM_ITEM_ISSUE.RUN_NO 기준 — 해당 작업지시로 출고된 모든 릴 조회"
+    }
+  },
+  "mxvcTraceMaster": {
+    "modelDesc": "모델설명",
+    "masterModel": "마스터모델",
+    "mfsGroup": "제조그룹",
+    "modelCode": "모델코드",
+    "customerCode": "고객코드"
   },
   "mxvcProcessHistory": {
     "title": "공정통과이력",
