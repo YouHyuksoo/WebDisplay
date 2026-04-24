@@ -41,21 +41,21 @@ interface DateRangeRow {
 /** 최근 7일 라인별 일간 합격률 조회 */
 async function queryWeekly(): Promise<WeeklyRow[]> {
   const sql = `
-    SELECT TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD') AS WORK_DATE_RAW,
-           TO_CHAR(TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'), 'YYYY-MM-DD') AS WORK_DATE,
+    SELECT ACTUAL_DATE AS WORK_DATE_RAW,
+           TO_CHAR(ACTUAL_DATE, 'YYYY-MM-DD') AS WORK_DATE,
            LINE_CODE,
            COUNT(*) AS TOTAL_CNT,
            SUM(CASE WHEN INSPECT_RESULT IN (${PASS_IN}) THEN 1 ELSE 0 END) AS PASS_CNT
     FROM IQ_MACHINE_HIPOT_U1_DATA_RAW
-    WHERE INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24)-7, 'YYYY/MM/DD') || ' 08:00:00'
-      AND INSPECT_DATE <  TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'
+    WHERE ACTUAL_DATE >= TRUNC(SYSDATE) - 7
+      AND ACTUAL_DATE <  TRUNC(SYSDATE) + 1
       AND LINE_CODE IS NOT NULL
       AND PID IS NOT NULL
-      AND NVL(IS_SAMPLE, 'N') <> 'Y'
+      AND NVL(SAMPLE_YN, 'N') <> 'Y'
       AND LENGTH(PID) >= 10
       AND LAST_YN = 'Y'
-    GROUP BY TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'),
-             TO_CHAR(TO_DATE(SUBSTR(INSPECT_DATE, 1, 10), 'YYYY/MM/DD'), 'YYYY-MM-DD'),
+    GROUP BY ACTUAL_DATE,
+             TO_CHAR(ACTUAL_DATE, 'YYYY-MM-DD'),
              LINE_CODE
     ORDER BY WORK_DATE, LINE_CODE
   `;
@@ -65,8 +65,8 @@ async function queryWeekly(): Promise<WeeklyRow[]> {
 /** DB 기준 날짜 범위 라벨 조회 */
 async function queryDateRange(): Promise<DateRangeRow[]> {
   const sql = `
-    SELECT TO_CHAR(TRUNC(SYSDATE-8/24)-7, 'YYYY-MM-DD') AS FROM_DATE,
-           TO_CHAR(TRUNC(SYSDATE-8/24),   'YYYY-MM-DD') AS TO_DATE
+    SELECT TO_CHAR(TRUNC(SYSDATE)-7, 'YYYY-MM-DD') AS FROM_DATE,
+           TO_CHAR(TRUNC(SYSDATE),   'YYYY-MM-DD') AS TO_DATE
     FROM DUAL
   `;
   return executeQuery<DateRangeRow>(sql, {});

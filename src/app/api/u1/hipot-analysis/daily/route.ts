@@ -4,7 +4,7 @@
  *
  * 초보자 가이드:
  * 1. IQ_MACHINE_HIPOT_U1_DATA_RAW 테이블에서 2일치 데이터를 조회
- * 2. 근무일 경계는 08:00 (TRUNC(SYSDATE-8/24))
+ * 2. 근무일 경계는 08:00 (TRUNC(SYSDATE))
  * 3. 4개 쿼리를 Promise.all로 병렬 실행하여 응답 속도 최적화
  * 4. LAST_YN = 'Y' 조건 필수 (중복 검사 중 최종 결과만 사용)
  */
@@ -23,16 +23,17 @@ export const dynamic = "force-dynamic";
 /** PASS로 인정되는 값 목록 */
 const PASS_IN = `'PASS','GOOD','OK','Y'`;
 
-/** 2일치 날짜 범위 WHERE 조건 (전일 08:00 ~ 당일+1 08:00) */
-const DATE_RANGE_2DAYS = `INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24)-1, 'YYYY/MM/DD') || ' 08:00:00'
-   AND INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'`;
+/** 현재 날짜 — ACTUAL_DATE 비교용 (근무일 경계는 저장 시점에 반영됨) */
+const WORKDAY = `TRUNC(SYSDATE)`;
 
-/** 당일 전용 날짜 범위 WHERE 조건 (당일 08:00 ~ 당일+1 08:00) */
-const DATE_RANGE_TODAY = `INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24), 'YYYY/MM/DD') || ' 08:00:00'
-   AND INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'`;
+/** 2일치 날짜 범위 WHERE 조건 (전일 + 당일, ACTUAL_DATE 사용) */
+const DATE_RANGE_2DAYS = `ACTUAL_DATE IN (${WORKDAY} - 1, ${WORKDAY})`;
+
+/** 당일 전용 날짜 범위 WHERE 조건 */
+const DATE_RANGE_TODAY = `ACTUAL_DATE = ${WORKDAY}`;
 
 /** DAY_TYPE 분류 CASE 절 (Y=전일, T=당일) */
-const DAY_CASE = `CASE WHEN INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24), 'YYYY/MM/DD') || ' 08:00:00' THEN 'Y' ELSE 'T' END`;
+const DAY_CASE = `CASE WHEN ACTUAL_DATE = ${WORKDAY} THEN 'T' ELSE 'Y' END`;
 
 // ---------------------------------------------------------------------------
 // DB row 인터페이스
@@ -82,7 +83,7 @@ async function queryLineStats(): Promise<LineStatRow[]> {
     WHERE ${DATE_RANGE_2DAYS}
       AND LINE_CODE IS NOT NULL
       AND PID IS NOT NULL
-      AND NVL(IS_SAMPLE, 'N') <> 'Y'
+      AND NVL(SAMPLE_YN, 'N') <> 'Y'
       AND LENGTH(PID) >= 10
       AND LAST_YN = 'Y'
     GROUP BY LINE_CODE, ${DAY_CASE}
@@ -100,7 +101,7 @@ async function queryHourly(): Promise<HourlyRow[]> {
     FROM IQ_MACHINE_HIPOT_U1_DATA_RAW
     WHERE ${DATE_RANGE_TODAY}
       AND PID IS NOT NULL
-      AND NVL(IS_SAMPLE, 'N') <> 'Y'
+      AND NVL(SAMPLE_YN, 'N') <> 'Y'
       AND LENGTH(PID) >= 10
       AND LAST_YN = 'Y'
     GROUP BY SUBSTR(INSPECT_DATE, 12, 2)
@@ -119,7 +120,7 @@ async function queryMachineNg(): Promise<MachineNgRow[]> {
     WHERE ${DATE_RANGE_TODAY}
       AND MACHINE_CODE IS NOT NULL
       AND PID IS NOT NULL
-      AND NVL(IS_SAMPLE, 'N') <> 'Y'
+      AND NVL(SAMPLE_YN, 'N') <> 'Y'
       AND LENGTH(PID) >= 10
       AND LAST_YN = 'Y'
     GROUP BY MACHINE_CODE
@@ -133,8 +134,8 @@ async function queryMachineNg(): Promise<MachineNgRow[]> {
 /** DB 기준 날짜 범위 라벨 조회 */
 async function queryDateRange(): Promise<DateRangeRow[]> {
   const sql = `
-    SELECT TO_CHAR(TRUNC(SYSDATE-8/24)-1, 'YYYY-MM-DD') AS YESTERDAY,
-           TO_CHAR(TRUNC(SYSDATE-8/24),   'YYYY-MM-DD') AS TODAY
+    SELECT TO_CHAR(TRUNC(SYSDATE)-1, 'YYYY-MM-DD') AS YESTERDAY,
+           TO_CHAR(TRUNC(SYSDATE),   'YYYY-MM-DD') AS TODAY
     FROM DUAL
   `;
   return executeQuery<DateRangeRow>(sql, {});

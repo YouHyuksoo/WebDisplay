@@ -31,6 +31,9 @@ const FPY_PROCESSES = [
   { key: "ATE",    table: "IQ_MACHINE_ATE_U1_DATA_RAW" },
 ];
 
+/** 현재 날짜 — ACTUAL_DATE 비교용 (근무일 경계는 저장 시점에 반영됨) */
+const WORKDAY = `TRUNC(SYSDATE)`;
+
 export async function GET(request: NextRequest) {
   try {
     const lines = parseLines(request);
@@ -115,18 +118,19 @@ export async function GET(request: NextRequest) {
       FPY_PROCESSES.map(p =>
         executeQuery<FpyRow>(`
           SELECT '${p.key}' AS NAME,
-                 CASE WHEN t.INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24), 'YYYY/MM/DD') || ' 08:00:00' THEN 'Y' ELSE 'T' END AS DAY_TYPE,
+                 CASE WHEN t.ACTUAL_DATE = ${WORKDAY} THEN 'T' ELSE 'Y' END AS DAY_TYPE,
                  COUNT(DISTINCT t.PID) AS TOTAL,
                  COUNT(DISTINCT CASE WHEN t.INSPECT_RESULT IN ('PASS','GOOD','OK','Y') THEN t.PID END) AS PASS,
                  CASE WHEN COUNT(DISTINCT t.PID) > 0
                    THEN ROUND(COUNT(DISTINCT CASE WHEN t.INSPECT_RESULT IN ('PASS','GOOD','OK','Y') THEN t.PID END) / COUNT(DISTINCT t.PID) * 100, 1)
                    ELSE 0 END AS FPY
           FROM ${p.table} t
-          WHERE t.INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24)-1, 'YYYY/MM/DD') || ' 08:00:00'
-            AND t.INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'
+          WHERE t.ACTUAL_DATE IN (${WORKDAY} - 1, ${WORKDAY})
+            AND NVL(t.SAMPLE_YN, 'N') <> 'Y'
+            AND LENGTH(t.PID) >= 10
             AND t.LAST_YN = 'Y'
             ${fpyLineFilter.clause}
-          GROUP BY CASE WHEN t.INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24), 'YYYY/MM/DD') || ' 08:00:00' THEN 'Y' ELSE 'T' END
+          GROUP BY CASE WHEN t.ACTUAL_DATE = ${WORKDAY} THEN 'T' ELSE 'Y' END
         `, { ...fpyLineFilter.params })
       )
     );

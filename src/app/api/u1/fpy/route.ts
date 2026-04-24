@@ -84,13 +84,20 @@ function buildMachineGroupExpr(config: ProcessConfig, key: string): {
   }
 }
 
+/**
+ * 현재 날짜 — ACTUAL_DATE 비교용.
+ * ACTUAL_DATE는 이미 근무일 기준(08:00 경계)으로 저장되므로 조회는 단순 TRUNC(SYSDATE).
+ * 예: 04/25 07:00 검사 → ACTUAL_DATE=04/24 저장 → 조회 시 전일로 집계됨 (현장 관점 OK).
+ */
+const WORKDAY = `TRUNC(SYSDATE)`;
+
 /** 전일+당일 2일치 ACTUAL_DATE 필터 */
 const ACTUAL_DATE_RANGE_2DAYS =
-  `t.ACTUAL_DATE IN (TRUNC(SYSDATE) - 1, TRUNC(SYSDATE))`;
+  `t.ACTUAL_DATE IN (${WORKDAY} - 1, ${WORKDAY})`;
 
 /** DAY_TYPE 분류 (Y=전일, T=당일) — ACTUAL_DATE가 근무일 경계를 이미 반영 */
 const ACTUAL_DAY_CASE =
-  `CASE WHEN t.ACTUAL_DATE = TRUNC(SYSDATE) THEN 'T' ELSE 'Y' END`;
+  `CASE WHEN t.ACTUAL_DATE = ${WORKDAY} THEN 'T' ELSE 'Y' END`;
 
 interface U1FpyRow2Days extends U1FpyRow {
   DAY_TYPE: string;
@@ -126,7 +133,7 @@ async function queryProcess2Days(
       WHERE ${ACTUAL_DATE_RANGE_2DAYS}
         ${config.extraWhere ?? ""}
         AND t.LINE_CODE IS NOT NULL
-        AND NVL(t.IS_SAMPLE, 'N') <> 'Y'
+        AND NVL(t.SAMPLE_YN, 'N') <> 'Y'
         AND LENGTH(t.${config.pidCol}) >= 10
         ${mg.extraWhere}
         ${lineFilter.clause}
@@ -169,10 +176,10 @@ export async function GET(request: NextRequest) {
 
     /* DB 기준 날짜 범위 라벨 (ACTUAL_DATE = 근무일, UI 표시는 08:00 경계로 표기) */
     const dateRangeRows = await executeQuery<{ YD_START: string; YD_END: string; TD_START: string; TD_END: string }>(
-      `SELECT TO_CHAR(TRUNC(SYSDATE)-1, 'MM/DD') || ' 08:00' AS YD_START,
-              TO_CHAR(TRUNC(SYSDATE),   'MM/DD') || ' 08:00' AS YD_END,
-              TO_CHAR(TRUNC(SYSDATE),   'MM/DD') || ' 08:00' AS TD_START,
-              TO_CHAR(TRUNC(SYSDATE)+1, 'MM/DD') || ' 08:00' AS TD_END
+      `SELECT TO_CHAR(${WORKDAY} - 1, 'MM/DD') || ' 08:00' AS YD_START,
+              TO_CHAR(${WORKDAY},     'MM/DD') || ' 08:00' AS YD_END,
+              TO_CHAR(${WORKDAY},     'MM/DD') || ' 08:00' AS TD_START,
+              TO_CHAR(${WORKDAY} + 1, 'MM/DD') || ' 08:00' AS TD_END
        FROM DUAL`, {}
     );
     const dr = dateRangeRows[0];

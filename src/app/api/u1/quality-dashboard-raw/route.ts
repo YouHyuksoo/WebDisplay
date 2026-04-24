@@ -26,17 +26,22 @@ const PROCS = [
   { key: "ATE",    table: "IQ_MACHINE_ATE_U1_DATA_RAW" },
 ];
 
+/** 현재 날짜 — ACTUAL_DATE 비교용 (근무일 경계는 저장 시점에 반영됨) */
+const WORKDAY = `TRUNC(SYSDATE)`;
+
 interface CountRow { NAME: string; CNT: number; }
 interface NgMatrixRow { LINE_NAME: string; PROC: string; NG_CNT: number; }
 interface RetestRow { NAME: string; TOTAL: number; DISTINCT_PID: number; RETEST_RATE: number; }
 interface TrendRow { DT: string; PROC: string; FPY: number; }
 
-/** UNION ALL 서브쿼리 생성 — LAST_YN='Y' 포함 */
+/** UNION ALL 서브쿼리 생성 — LAST_YN='Y' + SAMPLE 제외 + 바코드 길이 필터 */
 function buildUnionAll(lineFilter: { clause: string }, dateWhere: string) {
   return PROCS.map(p => `
-    SELECT '${p.key}' AS PROC, t.PID, t.INSPECT_DATE, t.INSPECT_RESULT, t.LINE_CODE
+    SELECT '${p.key}' AS PROC, t.PID, t.ACTUAL_DATE, t.INSPECT_DATE, t.INSPECT_RESULT, t.LINE_CODE
     FROM ${p.table} t
     WHERE ${dateWhere}
+      AND NVL(t.SAMPLE_YN, 'N') <> 'Y'
+      AND LENGTH(t.PID) >= 10
       AND t.LAST_YN = 'Y'
       ${lineFilter.clause}
   `).join(" UNION ALL ");
@@ -46,9 +51,8 @@ export async function GET(request: NextRequest) {
   try {
     const lines = parseLines(request);
     const lf = buildLineInClause(lines, "t", "ln");
-    /* U1 기준: 08:00 시작 */
-    const todayWhere = `t.INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24), 'YYYY/MM/DD') || ' 08:00:00'
-      AND t.INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'`;
+    /* U1 기준: 08:00 시작 (ACTUAL_DATE 이미 근무일 반영) */
+    const todayWhere = `t.ACTUAL_DATE = ${WORKDAY}`;
     const unionToday = buildUnionAll(lf, todayWhere);
 
     const [inspVolumeR, hourlyInspR, lineProdR, ngMatrixR, retestR, trendR] = await Promise.all([
@@ -86,10 +90,9 @@ export async function GET(request: NextRequest) {
         FROM (${unionToday}) GROUP BY PROC ORDER BY PROC
       `, lf.params),
 
-      /* 6. 주간 직행율 추이 (최근 7일) — 08:00 기준 */
+      /* 6. 주간 직행율 추이 (최근 7일) — ACTUAL_DATE 기반 */
       (async () => {
-        const weekWhere = `t.INSPECT_DATE >= TO_CHAR(TRUNC(SYSDATE-8/24)-6, 'YYYY/MM/DD') || ' 08:00:00'
-          AND t.INSPECT_DATE < TO_CHAR(TRUNC(SYSDATE-8/24)+1, 'YYYY/MM/DD') || ' 08:00:00'`;
+        const weekWhere = `t.ACTUAL_DATE >= ${WORKDAY} - 6 AND t.ACTUAL_DATE <= ${WORKDAY}`;
         const unionWeek = buildUnionAll(lf, weekWhere);
         return executeQuery<TrendRow>(`
           SELECT DT, PROC,
@@ -98,7 +101,7 @@ export async function GET(request: NextRequest) {
                    ELSE 0 END AS FPY
           FROM (
             SELECT PROC, PID, INSPECT_RESULT,
-                   TO_CHAR(TO_DATE(SUBSTR(INSPECT_DATE,1,10),'YYYY/MM/DD'), 'MM/DD') AS DT
+                   TO_CHAR(ACTUAL_DATE, 'MM/DD') AS DT
             FROM (${unionWeek})
           )
           GROUP BY DT, PROC ORDER BY DT, PROC
