@@ -627,8 +627,7 @@
     "catName8": "GIÁM SÁT VC MEXICO",
     "catSub8": "Giám sát VC Mexico",
     "cardManage": "Quản lý thẻ",
-    "copied": "Đã sao chép!",
-    "shape": {
+    "shapes": {
       "triangle": "Tam giác",
       "circle": "Tròn",
       "square": "Vuông",
@@ -636,7 +635,7 @@
       "star": "Sao",
       "infinity": "Vô cực"
     },
-    "cardStyle": {
+    "cardStyles": {
       "glass": "Kính",
       "rainbow": "Cầu vồng",
       "gradient": "Gradient",

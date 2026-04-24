@@ -627,8 +627,7 @@
     "catName8": "MONITOREO VC MÉXICO",
     "catSub8": "Monitoreo VC México",
     "cardManage": "Gestor de tarjetas",
-    "copied": "¡Copiado!",
-    "shape": {
+    "shapes": {
       "triangle": "Triángulo",
       "circle": "Círculo",
       "square": "Cuadrado",
@@ -636,7 +635,7 @@
       "star": "Estrella",
       "infinity": "Infinito"
     },
-    "cardStyle": {
+    "cardStyles": {
       "glass": "Vidrio",
       "rainbow": "Arcoíris",
       "gradient": "Gradiente",

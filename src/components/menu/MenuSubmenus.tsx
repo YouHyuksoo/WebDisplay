@@ -25,27 +25,27 @@ export default function MenuSubmenus() {
       <div id="tunnel-submenu">
         <div className="tunnel-option" data-shape="triangle">
           <span className="shape-icon">&#9651;</span>
-          <span>{t('shape.triangle')}</span>
+          <span>{t('shapes.triangle')}</span>
         </div>
         <div className="tunnel-option" data-shape="circle">
           <span className="shape-icon">&#9675;</span>
-          <span>{t('shape.circle')}</span>
+          <span>{t('shapes.circle')}</span>
         </div>
         <div className="tunnel-option" data-shape="square">
           <span className="shape-icon">&#9633;</span>
-          <span>{t('shape.square')}</span>
+          <span>{t('shapes.square')}</span>
         </div>
         <div className="tunnel-option" data-shape="hexagon">
           <span className="shape-icon">&#11041;</span>
-          <span>{t('shape.hexagon')}</span>
+          <span>{t('shapes.hexagon')}</span>
         </div>
         <div className="tunnel-option" data-shape="star">
           <span className="shape-icon">&#9734;</span>
-          <span>{t('shape.star')}</span>
+          <span>{t('shapes.star')}</span>
         </div>
         <div className="tunnel-option" data-shape="infinity">
           <span className="shape-icon">&#8734;</span>
-          <span>{t('shape.infinity')}</span>
+          <span>{t('shapes.infinity')}</span>
         </div>
       </div>
 
@@ -53,39 +53,39 @@ export default function MenuSubmenus() {
       <div id="card-style-submenu">
         <div className="card-style-option" data-style="glass">
           <span className="style-preview glass-preview" />
-          <span>{t('cardStyle.glass')}</span>
+          <span>{t('cardStyles.glass')}</span>
         </div>
         <div className="card-style-option" data-style="rainbow">
           <span className="style-preview rainbow-preview" />
-          <span>{t('cardStyle.rainbow')}</span>
+          <span>{t('cardStyles.rainbow')}</span>
         </div>
         <div className="card-style-option" data-style="gradient">
           <span className="style-preview gradient-preview" />
-          <span>{t('cardStyle.gradient')}</span>
+          <span>{t('cardStyles.gradient')}</span>
         </div>
         <div className="card-style-option" data-style="dark">
           <span className="style-preview dark-preview" />
-          <span>{t('cardStyle.dark')}</span>
+          <span>{t('cardStyles.dark')}</span>
         </div>
         <div className="card-style-option" data-style="neon">
           <span className="style-preview neon-preview" />
-          <span>{t('cardStyle.neon')}</span>
+          <span>{t('cardStyles.neon')}</span>
         </div>
         <div className="card-style-option" data-style="hermes">
           <span className="style-preview hermes-preview" />
-          <span>{t('cardStyle.hermes')}</span>
+          <span>{t('cardStyles.hermes')}</span>
         </div>
         <div className="card-style-option" data-style="cyberpunk">
           <span className="style-preview cyberpunk-preview" />
-          <span>{t('cardStyle.cyberpunk')}</span>
+          <span>{t('cardStyles.cyberpunk')}</span>
         </div>
         <div className="card-style-option" data-style="apple">
           <span className="style-preview apple-preview" />
-          <span>{t('cardStyle.apple')}</span>
+          <span>{t('cardStyles.apple')}</span>
         </div>
         <div className="card-style-option" data-style="luxury">
           <span className="style-preview luxury-preview" />
-          <span>{t('cardStyle.luxury')}</span>
+          <span>{t('cardStyles.luxury')}</span>
         </div>
       </div>
 

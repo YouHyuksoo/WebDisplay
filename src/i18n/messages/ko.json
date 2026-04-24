@@ -627,8 +627,7 @@
     "catName8": "멕시코전장모니터링",
     "catSub8": "Mexico VC Monitoring",
     "cardManage": "카드 관리",
-    "copied": "복사됨!",
-    "shape": {
+    "shapes": {
       "triangle": "삼각형",
       "circle": "원형",
       "square": "사각형",
@@ -636,7 +635,7 @@
       "star": "별",
       "infinity": "무한"
     },
-    "cardStyle": {
+    "cardStyles": {
       "glass": "글래스",
       "rainbow": "무지개",
       "gradient": "그라데이션",

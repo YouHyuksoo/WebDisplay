@@ -627,8 +627,7 @@
     "catName8": "MEXICO VC MONITORING",
     "catSub8": "Mexico VC Monitoring",
     "cardManage": "Card Manager",
-    "copied": "Copied!",
-    "shape": {
+    "shapes": {
       "triangle": "Triangle",
       "circle": "Circle",
       "square": "Square",
@@ -636,7 +635,7 @@
       "star": "Star",
       "infinity": "Infinity"
     },
-    "cardStyle": {
+    "cardStyles": {
       "glass": "Glass",
       "rainbow": "Rainbow",
       "gradient": "Gradient",
