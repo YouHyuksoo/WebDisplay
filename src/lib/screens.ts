@@ -53,7 +53,18 @@ export const SCREENS: Record<string, ScreenConfig> = {
 
   // 멕시코전장 독립 화면 (display/ 화면과 별도 라인 선택 저장)
   'mxvc-production-kpi': { id: 'mxvc-production-kpi', title: 'Line Production KPI (MXVC)', titleKo: '라인별생산현황(멕시코전장)', titleEs: 'KPI de producción por línea (MXVC)', titleVi: 'KPI sản xuất theo Line (MXVC)', window: '', group: 'mxvc', lineFilter: true },
-  'mxvc-post-process': { id: 'mxvc-post-process', title: 'Post-Process Production Status (MXVC)', titleKo: '후공정생산현황(멕시코전장)', titleEs: 'Estado de Producción Post-Proceso (MXVC)', window: '', group: 'mxvc', lineFilter: true },
+  'mxvc-post-process': { id: 'mxvc-post-process', title: 'Post-Process Production Status (MXVC)', titleKo: '후공정생산현황(멕시코전장)', titleEs: 'Estado de Producción Post-Proceso (MXVC)', titleVi: 'Tình trạng sản xuất hậu công đoạn (MXVC)', window: '', group: 'mxvc', lineFilter: true },
   'mxvc-repair-status': { id: 'mxvc-repair-status', title: 'Repair Status (MXVC)', titleKo: '수리현황(멕시코전장)', titleEs: 'Estado de Reparación (MXVC)', titleVi: 'Tình trạng sửa chữa (MXVC)', window: '', group: 'mxvc', lineFilter: false },
   'mxvc-process-history': { id: 'mxvc-process-history', title: 'Process Pass History (MXVC)', titleKo: '공정통과이력(멕시코전장)', titleEs: 'Historial de Paso de Proceso (MXVC)', titleVi: 'Lịch sử đi qua công đoạn (MXVC)', window: '', group: 'mxvc', lineFilter: false },
+
+  // 멕시코전장 카드 메뉴 (cards.json /mxvc/* URL 매핑)
+  'mxvc-log':            { id: 'mxvc-log',            title: 'Log Inquiry',                titleKo: '로그조회',          titleEs: 'Consulta de registros',         titleVi: 'Tra cứu nhật ký',                  window: '', group: 'mxvc' },
+  'mxvc-fpy':            { id: 'mxvc-fpy',            title: 'Yield (FPY)',                titleKo: '직행율',            titleEs: 'Rendimiento (FPY)',             titleVi: 'Tỷ lệ trực hành (FPY)',           window: '', group: 'mxvc' },
+  'mxvc-interlock':      { id: 'mxvc-interlock',      title: 'Equipment Call Analysis',    titleKo: '설비호출이력분석',  titleEs: 'Análisis de llamadas de equipo', titleVi: 'Phân tích cuộc gọi thiết bị',     window: '', group: 'mxvc' },
+  'mxvc-inspect-result': { id: 'mxvc-inspect-result', title: 'Equipment Call History',     titleKo: '설비호출저장이력',  titleEs: 'Historial de llamadas de equipo', titleVi: 'Lịch sử cuộc gọi thiết bị',      window: '', group: 'mxvc' },
+  'mxvc-traceability':   { id: 'mxvc-traceability',   title: 'Forward Trace (PCB→Material)', titleKo: '정추적(PCB→자재)', titleEs: 'Trazabilidad directa (PCB→Material)', titleVi: 'Truy vết xuôi (PCB→Vật liệu)', window: '', group: 'mxvc' },
+  'mxvc-reverse-trace':  { id: 'mxvc-reverse-trace',  title: 'Reverse Trace (Material→PCB)', titleKo: '역추적(자재→PCB)', titleEs: 'Trazabilidad inversa (Material→PCB)', titleVi: 'Truy vết ngược (Vật liệu→PCB)', window: '', group: 'mxvc' },
+  'mxvc-spc':            { id: 'mxvc-spc',            title: 'SPC Control Chart',          titleKo: 'SPC 관리도보기',    titleEs: 'Gráfico de control SPC',        titleVi: 'Biểu đồ kiểm soát SPC',           window: '', group: 'mxvc' },
+  'mxvc-foolproof':      { id: 'mxvc-foolproof',      title: 'Foolproof Status',           titleKo: '종합F/P현황',       titleEs: 'Estado Foolproof',              titleVi: 'Tình trạng Foolproof',            window: '', group: 'mxvc' },
+  'mxvc-p-chart':        { id: 'mxvc-p-chart',        title: 'p Control Chart',            titleKo: 'p 관리도',          titleEs: 'Gráfico de control p',          titleVi: 'Biểu đồ kiểm soát p',             window: '', group: 'mxvc' },
 };

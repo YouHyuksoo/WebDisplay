@@ -112,16 +112,27 @@ export function getScreenTitle(shortcut: { id?: string; url: string; title: stri
   }
 
   // Display 카드: screens.ts에서 로케일별 제목
-  const match = shortcut.url.match(/\/display\/(\d+)/);
-  if (match) {
-    const screen = SCREENS[match[1]];
-    if (screen) {
-      const locale = getLocale();
-      if (locale === 'ko') return screen.titleKo;
-      if (locale === 'es' && screen.titleEs) return screen.titleEs;
-      if (locale === 'vi' && screen.titleVi) return screen.titleVi;
-      return screen.title; // 영문 기본
-    }
+  const displayMatch = shortcut.url.match(/\/display\/(\d+)/);
+  if (displayMatch) {
+    const screen = SCREENS[displayMatch[1]];
+    if (screen) return localizedTitle(screen);
   }
+
+  // 멕시코전장 카드: /mxvc/<id> → SCREENS['mxvc-<id>']
+  const mxvcMatch = shortcut.url.match(/^\/mxvc\/([\w-]+)/);
+  if (mxvcMatch) {
+    const screen = SCREENS[`mxvc-${mxvcMatch[1]}`];
+    if (screen) return localizedTitle(screen);
+  }
+
   return shortcut.title;
+}
+
+/** 현재 로케일에 맞는 화면 제목을 반환한다 (없으면 영문 기본) */
+function localizedTitle(screen: { title: string; titleKo: string; titleEs?: string; titleVi?: string }): string {
+  const locale = getLocale();
+  if (locale === 'ko') return screen.titleKo;
+  if (locale === 'es' && screen.titleEs) return screen.titleEs;
+  if (locale === 'vi' && screen.titleVi) return screen.titleVi;
+  return screen.title;
 }
