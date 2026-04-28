@@ -467,6 +467,14 @@
       "color": "#14b8a6",
       "icon": "svg:error-log",
       "layer": 8
+    },
+    {
+      "id": "menu-mxvc-liquid-shelf-life",
+      "title": "액형자재 모니터링",
+      "url": "/mxvc/liquid-shelf-life",
+      "color": "#fbbf24",
+      "icon": "svg:material",
+      "layer": 8
     }
   ]
 }

@@ -67,4 +67,5 @@ export const SCREENS: Record<string, ScreenConfig> = {
   'mxvc-spc':            { id: 'mxvc-spc',            title: 'SPC Control Chart',          titleKo: 'SPC 관리도보기',    titleEs: 'Gráfico de control SPC',        titleVi: 'Biểu đồ kiểm soát SPC',           window: '', group: 'mxvc' },
   'mxvc-foolproof':      { id: 'mxvc-foolproof',      title: 'Foolproof Status',           titleKo: '종합F/P현황',       titleEs: 'Estado Foolproof',              titleVi: 'Tình trạng Foolproof',            window: '', group: 'mxvc' },
   'mxvc-p-chart':        { id: 'mxvc-p-chart',        title: 'p Control Chart',            titleKo: 'p 관리도',          titleEs: 'Gráfico de control p',          titleVi: 'Biểu đồ kiểm soát p',             window: '', group: 'mxvc' },
+  'mxvc-liquid-shelf-life': { id: 'mxvc-liquid-shelf-life', title: 'Liquid Material Shelf Life', titleKo: '액형자재 모니터링', titleEs: 'Vida útil de material líquido', titleVi: 'Giám sát hạn dùng vật liệu lỏng', window: '', group: 'mxvc' },
 };
