@@ -77,6 +77,13 @@ export interface TableColumnConfig {
    * 필터 형태: NVL(IS_SAMPLE,'N') <> 'Y'  (NULL 포함)
    */
   hasIsSample?: boolean;
+  /**
+   * 동일 스키마(필요 컬럼 호환)인 추가 테이블과 UNION ALL로 합쳐 조회.
+   * 예) LOG_SPI 와 LOG_SPI_VD 가 다른 라인의 SPI 검사 결과를 분리 저장 → 통합 집계 필요.
+   * 코드는 두 테이블 모두에서 (LOG_TIMESTAMP, resultCol, barcodeCol[, stepCol][, IS_SAMPLE])
+   * 컬럼만 SELECT 하여 UNION ALL — 컬럼 누락/타입 불일치 시 ORA 에러 가능.
+   */
+  unionWith?: string[];
 }
 
 /** 판정값별 세부 집계 (breakdown) */
@@ -100,7 +107,7 @@ export const TABLE_CONFIG: Record<MxvcFpyTableKey, TableColumnConfig> = {
   LOG_COATINGVISION: { resultCol: "FINAL_RESULT",   barcodeCol: "MAIN_BARCODE",   groupedFpy: true, stepCol: "FILE_NAME", breakdown: true, hasIsSample: true },
   LOG_ICT:           { resultCol: "RESULT",         barcodeCol: "BARCODE",        groupedFpy: true,  breakdown: true, hasIsSample: true },
   LOG_AOI:           { resultCol: "RESULT",         barcodeCol: "SERIAL_NO",      breakdown: true, hasIsSample: true },
-  LOG_SPI:           { resultCol: "PCB_RESULT",     barcodeCol: "ARRAY_BARCODE",  breakdown: true, hasIsSample: true },
+  LOG_SPI:           { resultCol: "PCB_RESULT",     barcodeCol: "ARRAY_BARCODE",  breakdown: true, hasIsSample: true, unionWith: ["LOG_SPI_VD"] },
 };
 
 export const TABLE_KEYS: MxvcFpyTableKey[] = Object.keys(TABLE_CONFIG) as MxvcFpyTableKey[];

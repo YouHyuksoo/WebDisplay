@@ -38,6 +38,24 @@ function workDayStartSql(): string {
     END`;
 }
 
+/**
+ * FROM 절 빌드 — unionWith 옵션 있으면 동일 스키마 테이블들과 UNION ALL 인라인 뷰.
+ * 예) LOG_SPI + LOG_SPI_VD 통합 집계.
+ * 컬럼은 쿼리에서 실제 참조하는 것만 명시(SELECT *)하여 두 테이블 추가 컬럼 차이를 흡수.
+ */
+function buildFromClause(
+  tableKey: MxvcFpyTableKey,
+  cfg: { resultCol: string; barcodeCol: string; stepCol?: string; hasIsSample?: boolean; unionWith?: string[] },
+): string {
+  if (!cfg.unionWith || cfg.unionWith.length === 0) return tableKey;
+  const cols = ["LOG_TIMESTAMP", cfg.resultCol, cfg.barcodeCol];
+  if (cfg.stepCol) cols.push(cfg.stepCol);
+  if (cfg.hasIsSample) cols.push("IS_SAMPLE");
+  const colsStr = cols.join(", ");
+  const tables = [tableKey, ...cfg.unionWith];
+  return `(${tables.map((t) => `SELECT ${colsStr} FROM ${t}`).join(" UNION ALL ")})`;
+}
+
 /** 단일 테이블 직행율 조회 (bucket: 'hour' = 시간대별, 'day' = 일별) */
 async function queryTableFpy(
   tableKey: MxvcFpyTableKey,
@@ -85,6 +103,8 @@ async function queryTableFpy(
    */
   const sampleFilter = cfg.hasIsSample ? `AND NVL(IS_SAMPLE, 'N') <> 'Y'` : '';
 
+  const fromClause = buildFromClause(tableKey, cfg);
+
   /**
    * 쿼리 분기:
    * 1) groupedFpy=true (EOL/ICT/FCT, COATINGVISION 등) → 바코드(±스텝) 단위 1건 카운트 (진짜 FPY)
@@ -101,7 +121,7 @@ async function queryTableFpy(
           MIN(LOG_TIMESTAMP) AS MIN_TS,
           CASE WHEN SUM(CASE WHEN ${cfg.resultCol} NOT IN (${passIn}) THEN 1 ELSE 0 END) = 0
                THEN 1 ELSE 0 END AS PASS_FLAG
-        FROM ${tableKey}
+        FROM ${fromClause}
         WHERE ${whereTime}
           AND ${cfg.resultCol} IS NOT NULL
           ${groupNotNull}
@@ -115,7 +135,7 @@ async function queryTableFpy(
       SELECT ${bucketExpr} AS HOUR,
              COUNT(*) AS TOTAL_CNT,
              SUM(CASE WHEN ${cfg.resultCol} IN (${passIn}) THEN 1 ELSE 0 END) AS PASS_CNT
-      FROM ${tableKey}
+      FROM ${fromClause}
       WHERE ${whereTime}
         AND ${cfg.resultCol} IS NOT NULL
         ${sampleFilter}
@@ -152,7 +172,7 @@ async function queryTableFpy(
                     THEN 'FAIL'
                     ELSE MAX(${cfg.resultCol})
                     END AS FINAL_LABEL
-               FROM ${tableKey}
+               FROM ${fromClause}
               WHERE ${whereTime}
                 AND ${cfg.resultCol} IS NOT NULL
                 ${groupNotNull}
@@ -162,7 +182,7 @@ async function queryTableFpy(
            GROUP BY FINAL_LABEL
            ORDER BY CNT DESC`
         : `SELECT ${cfg.resultCol} AS VAL, COUNT(*) AS CNT
-             FROM ${tableKey}
+             FROM ${fromClause}
             WHERE ${whereTime}
               AND ${cfg.resultCol} IS NOT NULL
               ${sampleFilter}
