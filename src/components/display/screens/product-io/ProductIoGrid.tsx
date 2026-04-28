@@ -37,7 +37,7 @@ interface ProductIoGridProps {
   isLoading: boolean; error?: Error;
 }
 
-const TD = 'border border-zinc-700 px-3 py-1';
+const TD = 'border border-zinc-700 px-3 py-1 whitespace-nowrap';
 
 export default function ProductIoGrid({
   plan, timeZones, targets, totalActual, timeLabels, shift, zoneLabels, models = [], isLoading, error,
@@ -61,13 +61,13 @@ export default function ProductIoGrid({
   return (
     <div className="flex h-full flex-col bg-zinc-950 p-1 text-white">
       {/* 헤더 + 요약 */}
-      <div className="mb-2 flex items-center justify-between rounded bg-zinc-900 px-4 py-2">
-        <span className="text-3xl font-bold text-cyan-400">{plan?.LINE_NAME ?? t('lineNotSelected')}</span>
-        <span className="text-2xl font-bold text-yellow-300">{shiftLabel}</span>
-        <span className="text-base text-zinc-500">{t('plan')}: <strong className="text-2xl text-white">{fmtNum(planQty)}</strong></span>
-        <span className="text-base text-zinc-500">{t('finished')}: <strong className="text-2xl text-green-400">{fmtNum(totalActual)}</strong></span>
-        <span className="text-base text-zinc-500">{t('rate')}: <strong className={`text-2xl ${Number(completionRate) >= 100 ? 'text-green-400' : 'text-yellow-300'}`}>{completionRate}%</strong></span>
-        <span className="font-mono text-xl text-zinc-400">{clock}</span>
+      <div className="mb-2 flex items-center justify-between gap-4 rounded bg-zinc-900 px-4 py-2">
+        <span className="whitespace-nowrap text-5xl font-bold text-cyan-400">{plan?.LINE_NAME ?? t('lineNotSelected')}</span>
+        <span className="whitespace-nowrap text-4xl font-bold text-yellow-300">{shiftLabel}</span>
+        <span className="whitespace-nowrap text-xl text-zinc-500">{t('plan')}: <strong className="text-5xl text-white">{fmtNum(planQty)}</strong></span>
+        <span className="whitespace-nowrap text-xl text-zinc-500">{t('finished')}: <strong className="text-5xl text-green-400">{fmtNum(totalActual)}</strong></span>
+        <span className="whitespace-nowrap text-xl text-zinc-500">{t('rate')}: <strong className={`text-5xl ${Number(completionRate) >= 100 ? 'text-green-400' : 'text-yellow-300'}`}>{completionRate}%</strong></span>
+        <span className="whitespace-nowrap font-mono text-3xl text-zinc-400">{clock}</span>
       </div>
 
       {/* 메인 그리드 — 상단/하단 사이 가변 */}
@@ -75,56 +75,56 @@ export default function ProductIoGrid({
         <table className="h-full w-full table-fixed border-collapse text-center">
           <thead>
             <tr className="bg-zinc-800">
-              <th className={`${TD} w-36 text-xl text-zinc-400`}></th>
+              <th className={`${TD} w-64 text-2xl text-zinc-400`}></th>
               {['A', 'B', 'C', 'D', 'E'].slice(0, timeLabels.length).map((letter, i) => (
-                <th key={i} className={`${TD} text-4xl font-bold text-zinc-200`}>
+                <th key={i} className={`${TD} text-6xl font-bold text-zinc-200`}>
                   {letter}
-                  <div className="text-sm font-normal text-zinc-500">{timeLabels[i] ?? ''}</div>
+                  <div className="text-lg font-normal text-zinc-500">{timeLabels[i] ?? ''}</div>
                 </th>
               ))}
-              <th className={`${TD} text-4xl font-bold text-yellow-300`}>{t('total')}</th>
+              <th className={`${TD} text-6xl font-bold text-yellow-300`}>{t('total')}</th>
             </tr>
           </thead>
           <tbody>
             {/* Target */}
             <tr className="bg-zinc-900/80">
-              <td className={`${TD} text-3xl font-bold text-yellow-400`}>{t('target')}</td>
+              <td className={`${TD} text-5xl font-bold text-yellow-400`}>{t('target')}</td>
               {targets.map((v, i) => (
-                <td key={i} className={`${TD} text-4xl font-bold`}>{fmtNum(v)}</td>
+                <td key={i} className={`${TD} text-7xl font-bold`}>{fmtNum(v)}</td>
               ))}
-              <td className={`${TD} text-4xl font-bold text-yellow-300`}>{fmtNum(totalTarget)}</td>
+              <td className={`${TD} text-7xl font-bold text-yellow-300`}>{fmtNum(totalTarget)}</td>
             </tr>
             {/* Actual */}
             <tr className="bg-zinc-950/60">
-              <td className={`${TD} text-3xl font-bold text-green-400`}>{t('actual')}</td>
+              <td className={`${TD} text-5xl font-bold text-green-400`}>{t('actual')}</td>
               {timeZones.map((v, i) => (
-                <td key={i} className={`${TD} text-4xl font-bold text-cyan-400`}>{fmtNum(v)}</td>
+                <td key={i} className={`${TD} text-7xl font-bold text-cyan-400`}>{fmtNum(v)}</td>
               ))}
-              <td className={`${TD} text-4xl font-bold text-cyan-400`}>{fmtNum(totalActual)}</td>
+              <td className={`${TD} text-7xl font-bold text-cyan-400`}>{fmtNum(totalActual)}</td>
             </tr>
             {/* Shortage */}
             <tr className="bg-zinc-900/80">
-              <td className={`${TD} text-3xl font-bold text-red-400`}>{t('shortage')}</td>
+              <td className={`${TD} text-5xl font-bold text-red-400`}>{t('shortage')}</td>
               {timeZones.map((v, i) => {
                 const d = v - targets[i];
                 return (
-                  <td key={i} className={`${TD} text-4xl font-bold ${d < 0 ? 'text-red-500' : 'text-white'}`}>
+                  <td key={i} className={`${TD} text-7xl font-bold ${d < 0 ? 'text-red-500' : 'text-white'}`}>
                     {fmtNum(d)}
                   </td>
                 );
               })}
-              <td className={`${TD} text-4xl font-bold ${totalShortage < 0 ? 'text-red-500' : 'text-white'}`}>
+              <td className={`${TD} text-7xl font-bold ${totalShortage < 0 ? 'text-red-500' : 'text-white'}`}>
                 {fmtNum(totalShortage)}
               </td>
             </tr>
             {/* % Rate */}
             <tr className="bg-zinc-950/60">
-              <td className={`${TD} text-3xl font-bold text-cyan-400`}>{t('percentRate')}</td>
+              <td className={`${TD} text-5xl font-bold text-cyan-400`}>{t('percentRate')}</td>
               {timeZones.map((v, i) => {
                 const r = targets[i] > 0 ? ((v / targets[i]) * 100).toFixed(1) : '-';
-                return <td key={i} className={`${TD} text-3xl font-bold text-cyan-300`}>{r}%</td>;
+                return <td key={i} className={`${TD} text-6xl font-bold text-cyan-300`}>{r}%</td>;
               })}
-              <td className={`${TD} text-3xl font-bold text-yellow-300`}>{completionRate}%</td>
+              <td className={`${TD} text-6xl font-bold text-yellow-300`}>{completionRate}%</td>
             </tr>
           </tbody>
         </table>
@@ -134,29 +134,29 @@ export default function ProductIoGrid({
       <div className="flex shrink-0 items-stretch gap-2 px-1">
         {/* 모델 테이블 (최대 4행 표시) */}
         <div className="min-w-0 flex-1 overflow-auto rounded border border-zinc-700">
-          <table className="w-full border-collapse text-center text-lg">
+          <table className="w-full border-collapse text-center text-2xl">
             <thead>
-              <tr className="bg-zinc-800 text-2xl font-bold text-zinc-300">
-                <th className="border border-zinc-700 px-2 py-1">{t('modelType')}</th>
-                <th className="border border-zinc-700 px-2 py-1">{t('uph')}</th>
-                <th className="border border-zinc-700 px-2 py-1">{t('code')}</th>
-                <th className="border border-zinc-700 px-2 py-1">{t('planQty')}</th>
-                <th className="border border-zinc-700 px-2 py-1">{t('completionQty')}</th>
+              <tr className="bg-zinc-800 text-3xl font-bold text-zinc-300">
+                <th className="whitespace-nowrap border border-zinc-700 px-2 py-1">{t('modelType')}</th>
+                <th className="whitespace-nowrap border border-zinc-700 px-2 py-1">{t('uph')}</th>
+                <th className="whitespace-nowrap border border-zinc-700 px-2 py-1">{t('code')}</th>
+                <th className="whitespace-nowrap border border-zinc-700 px-2 py-1">{t('planQty')}</th>
+                <th className="whitespace-nowrap border border-zinc-700 px-2 py-1">{t('completionQty')}</th>
               </tr>
             </thead>
             <tbody>
               {/* 모델별 실적 행 — 최초 IO 시간순 */}
               {models.map((m, i) => (
                 <tr key={`${m.MODEL_NAME}-${i}`} className={i % 2 === 0 ? 'bg-zinc-900' : 'bg-zinc-950'}>
-                  <td className="border border-zinc-700 px-2 py-1 font-bold">{m.MODEL_NAME}</td>
-                  <td className="border border-zinc-700 px-2 py-1">{plan?.UPH ?? '-'}</td>
-                  <td className="border border-zinc-700 px-2 py-1 text-cyan-400">{m.ITEM_CODE}</td>
-                  <td className="border border-zinc-700 px-2 py-1">-</td>
-                  <td className="border border-zinc-700 px-2 py-1 text-green-400">{fmtNum(m.QTY)}</td>
+                  <td className="whitespace-nowrap border border-zinc-700 px-2 py-1 font-bold">{m.MODEL_NAME}</td>
+                  <td className="whitespace-nowrap border border-zinc-700 px-2 py-1">{plan?.UPH ?? '-'}</td>
+                  <td className="whitespace-nowrap border border-zinc-700 px-2 py-1 text-cyan-400">{m.ITEM_CODE}</td>
+                  <td className="whitespace-nowrap border border-zinc-700 px-2 py-1">-</td>
+                  <td className="whitespace-nowrap border border-zinc-700 px-2 py-1 text-green-400">{fmtNum(m.QTY)}</td>
                 </tr>
               ))}
-              {/* 빈 행으로 최소 5행 공간 확보 */}
-              {Array.from({ length: Math.max(0, 5 - models.length) }).map((_, i) => (
+              {/* 빈 행으로 최소 3행 공간 확보 */}
+              {Array.from({ length: Math.max(0, 3 - models.length) }).map((_, i) => (
                 <tr key={`empty-${i}`} className={(models.length + i) % 2 === 0 ? 'bg-zinc-900' : 'bg-zinc-950'}>
                   <td className="border border-zinc-700 px-2 py-1">&nbsp;</td>
                   <td className="border border-zinc-700 px-2 py-1">&nbsp;</td>
@@ -169,25 +169,25 @@ export default function ProductIoGrid({
           </table>
           {/* NOTICE — 테이블 아래 빈 공간 활용 */}
           {plan?.COMMENTS && (
-            <div className="mt-1 px-2">
-              <span className="text-base font-bold text-red-500">{t('notice')}</span>
-              <span className="ml-2 text-lg font-bold text-yellow-300">{plan.COMMENTS}</span>
+            <div className="mt-1 whitespace-nowrap px-2">
+              <span className="text-xl font-bold text-red-500">{t('notice')}</span>
+              <span className="ml-2 text-2xl font-bold text-yellow-300">{plan.COMMENTS}</span>
             </div>
           )}
         </div>
         {/* 리더 영역 — 사진 + 이름 */}
         <div className="flex shrink-0 gap-3 rounded bg-zinc-900 px-3 py-2">
           <div className="flex flex-col items-center gap-1">
-            <div className="text-xs font-bold text-zinc-400">{t('leader')}</div>
-            <div className="flex h-56 w-44 items-center justify-center rounded bg-zinc-800 text-7xl text-zinc-600">👤</div>
-            <div className="text-sm font-bold text-zinc-200">{plan?.LEADER_NAME ?? '-'}</div>
-            <div className="text-xs text-zinc-500">{plan?.LEADER_ID ?? ''}</div>
+            <div className="whitespace-nowrap text-base font-bold text-zinc-400">{t('leader')}</div>
+            <div className="flex h-32 w-32 items-center justify-center rounded bg-zinc-800 text-5xl text-zinc-600">👤</div>
+            <div className="whitespace-nowrap text-xl font-bold text-zinc-200">{plan?.LEADER_NAME ?? '-'}</div>
+            <div className="whitespace-nowrap text-sm text-zinc-500">{plan?.LEADER_ID ?? ''}</div>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <div className="text-xs font-bold text-zinc-400">{t('subLeader')}</div>
-            <div className="flex h-56 w-44 items-center justify-center rounded bg-zinc-800 text-7xl text-zinc-600">👤</div>
-            <div className="text-sm font-bold text-zinc-200">{plan?.SUB_LEADER_NAME ?? '-'}</div>
-            <div className="text-xs text-zinc-500">{plan?.SUB_LEADER_ID ?? ''}</div>
+            <div className="whitespace-nowrap text-base font-bold text-zinc-400">{t('subLeader')}</div>
+            <div className="flex h-32 w-32 items-center justify-center rounded bg-zinc-800 text-5xl text-zinc-600">👤</div>
+            <div className="whitespace-nowrap text-xl font-bold text-zinc-200">{plan?.SUB_LEADER_NAME ?? '-'}</div>
+            <div className="whitespace-nowrap text-sm text-zinc-500">{plan?.SUB_LEADER_ID ?? ''}</div>
           </div>
         </div>
       </div>
